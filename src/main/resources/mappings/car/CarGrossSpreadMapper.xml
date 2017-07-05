@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarGrossSpreadDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+    <id column="rate_id" property="rateId" jdbcType="VARCHAR" />
+    <result column="dict_product_type" property="dictProductType" jdbcType="VARCHAR" />
+    <result column="dict_deadline" property="dictDeadline" jdbcType="VARCHAR" />
+    <result column="gross_rate" property="grossRate" jdbcType="NUMERIC" />
+    <result column="dict_initiate" property="dictInitiate" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="rate_type" property="rateType" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    rate_id, dict_product_type, dict_deadline, gross_rate, dict_initiate, create_by, 
+    create_time, modify_by, modify_time,rate_type
+  </sql>
+  
+<!--    展示车借总费率列表 -->  
+  <select id="selectCarGrossSpreadList"  resultMap="BaseResultMap" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread">
+  	select
+  	<include refid="Base_Column_List" />
+  	from t_cj_gross_spread
+  	<where>
+  	  <if test="dictProductType != null and dictProductType !='' " >
+       and  dict_product_type = #{dictProductType,jdbcType=VARCHAR} 
+      </if>
+      <if test="dictDeadline != null  and dictDeadline !=''  ">
+        and dict_deadline = #{dictDeadline,jdbcType=VARCHAR}
+      </if>
+      <if test="grossRate != null and grossRate != 0  " >
+        and gross_rate = #{grossRate,jdbcType=NUMERIC}
+      </if>
+      <if test="rateType != null and rateType !='' " >
+       and  rate_type = #{rateType,jdbcType=VARCHAR} 
+      </if>
+    </where>
+  	 order by rate_id DESC
+  </select>
+  
+  <!-- 根据借款期限、产品类型获取总费率 -->  
+  <select id="selectCarGross"  resultMap="BaseResultMap" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread">
+  	select
+  	<include refid="Base_Column_List" />
+  	from t_cj_gross_spread
+  	<where>
+  	  dict_initiate = '1'
+  	  <if test="dictProductType != null and dictProductType !='' " >
+         and dict_product_type = #{dictProductType,jdbcType=VARCHAR} 
+      </if>
+      <if test="dictDeadline != null  and dictDeadline !=''  ">
+        and dict_deadline = #{dictDeadline,jdbcType=VARCHAR}
+      </if>
+      <if test="rateType != null  and rateType !=''  ">
+        and rate_type = #{rateType,jdbcType=VARCHAR}
+      </if>
+  	</where>
+  </select>
+  
+<!--    根据rateId查看一条数据 -->  
+  <select id="findByRateId" resultMap="BaseResultMap" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+	select
+	<include refid="Base_Column_List" />
+	from t_cj_gross_spread 
+	where rate_id = #{rateId,jdbcType=VARCHAR}
+  </select>  
+  <delete id="delete" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+    delete from t_cj_gross_spread
+    where rate_id = #{rateId,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 查询复核条件的 CarGrossSpread 数量 -->
+   <select id="findCarGrossSpreadCount"  resultType="Integer"  parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+   		select count(1)  from t_cj_gross_spread
+			where    dict_product_type = #{dictProductType}
+			and dict_deadline = #{dictDeadline} 
+			and gross_rate =  #{grossRate,jdbcType=NUMERIC}
+			and rate_type = #{rateType,jdbcType=VARCHAR}
+			<if test="rateId != null  and  rateId != ''" >
+		       and rate_id  &lt;>  #{rateId,jdbcType=VARCHAR}
+		    </if>
+   </select>
+  
+<!--    新增一条数据 -->  
+  <insert id="insertCarGrossSpread" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+    insert into t_cj_gross_spread (rate_id,dict_product_type, dict_deadline, 
+      gross_rate, dict_initiate, create_by, 
+      create_time, modify_by, modify_time,rate_type
+      )
+    values (#{rateId,jdbcType=VARCHAR},#{dictProductType,jdbcType=VARCHAR}, #{dictDeadline,jdbcType=VARCHAR}, 
+      #{grossRate,jdbcType=NUMERIC}, #{dictInitiate,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP},
+      #{rateType,jdbcType=VARCHAR}
+      )
+  </insert>
+   
+<!--    修改一条数据 -->   
+  <update id="updateCarGrossSpread" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+    update t_cj_gross_spread
+    <set >
+      <if test="dictProductType != null" >
+        dict_product_type = #{dictProductType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictDeadline != null" >
+        dict_deadline = #{dictDeadline,jdbcType=VARCHAR},
+      </if>
+      <if test="grossRate != null" >
+        gross_rate = #{grossRate,jdbcType=NUMERIC},
+      </if>
+      <if test="dictInitiate != null" >
+        dict_initiate = #{dictInitiate,jdbcType=VARCHAR},
+      </if>
+     
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where rate_id = #{rateId,jdbcType=VARCHAR}
+  </update>
+  
+<!--    将状态修改成为 启用 -->
+   <update id="updateDictInitiate1" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+   	update t_cj_gross_spread
+   	<set>
+       		dict_initiate = 1
+   	</set>
+   	where rate_id = #{rateId,jdbcType=VARCHAR}
+   </update>
+
+<!--    将状态修改成为 停用 -->
+   <update id="updateDictInitiate0" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+   	update t_cj_gross_spread
+   	<set>
+       		dict_initiate = 0
+   	</set>
+   	where rate_id = #{rateId,jdbcType=VARCHAR}
+   </update>
+   
+<!--    根据rateId进入分配城市页面，带回参数-->
+	<select id="showSpreadProvinceCity" resultMap="BaseResultMap" parameterType="com.creditharmony.loan.car.common.entity.CarGrossSpread" >
+	select
+	<include refid="Base_Column_List" />
+	from t_cj_gross_spread
+	where rate_id = #{rateId,jdbcType=VARCHAR}
+	</select>   
+	
+	<!--    查询城市关联的产品总费率-->
+	<select id="getCarGrossSpreadByCarGrossSpreadEx" resultMap="BaseResultMap" parameterType="com.creditharmony.loan.car.carTotalRate.ex.CarGrossSpreadEx" >
+		SELECT A.*
+	    FROM T_CJ_GROSS_SPREAD A
+	    INNER JOIN T_CJ_SPREAD_PROVINCE_CITY_RELATION  R    ON R.RATE_ID = A.RATE_ID
+	  WHERE DICT_PRODUCT_TYPE =  #{dictProductType,jdbcType=VARCHAR} 
+	    AND DICT_DEADLINE = #{dictDeadline,jdbcType=VARCHAR}
+	    AND PROVINCE_CITY_ID = #{provinceCityId,jdbcType=VARCHAR}
+	</select>   
+   
+</mapper>

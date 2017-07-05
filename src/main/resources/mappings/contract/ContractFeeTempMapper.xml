@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.ContractFeeTempDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.contract.entity.ContractFeeTemp" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+    <result column="fee_all_raio" property="feeAllRaio" jdbcType="NUMERIC" />
+    <result column="fee_petition" property="feePetition" jdbcType="NUMERIC" />
+    <result column="fee_expedited" property="feeExpedited" jdbcType="NUMERIC" />
+    <result column="fee_consult" property="feeConsult" jdbcType="NUMERIC" />
+    <result column="fee_audit_amount" property="feeAuditAmount" jdbcType="NUMERIC" />
+    <result column="fee_service" property="feeService" jdbcType="NUMERIC" />
+    <result column="fee_urged_service" property="feeUrgedService" jdbcType="NUMERIC" />
+    <result column="fee_info_service" property="feeInfoService" jdbcType="NUMERIC" />
+    <result column="fee_count" property="feeCount" jdbcType="NUMERIC" />
+    <result column="fee_payment_amount" property="feePaymentAmount" jdbcType="NUMERIC" />
+    <result column="fee_loan_rate" property="feeLoanRate" jdbcType="NUMERIC" />
+    <result column="fee_month_rate" property="feeMonthRate" jdbcType="NUMERIC" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="month_fee_consult" property="monthFeeConsult" jdbcType="NUMERIC" />
+    <result column="month_mid_fee_service" property="monthMidFeeService" jdbcType="NUMERIC" />
+    <result column="month_fee_service" property="monthFeeService" jdbcType="NUMERIC" />
+    <result column="month_late_fee" property="monthLateFee" jdbcType="NUMERIC" />
+    <result column="comprehensive_service_rate" property="comprehensiveServiceRate" jdbcType="NUMERIC" />
+    <result column="month_rate_service" property="monthRateService" jdbcType="NUMERIC" />
+    <result column="dict_source_type" property="dictSourceType" jdbcType="VARCHAR" />
+    <result column="dict_source_type_pcl" property="dictSourceTypePcl" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, contract_code, fee_all_raio, fee_petition, fee_expedited, fee_consult, fee_audit_amount, 
+    fee_service, fee_urged_service, fee_info_service, fee_count, fee_payment_amount, 
+    fee_loan_rate, fee_month_rate, create_time, create_by, modify_by, modify_time, month_fee_consult, 
+    month_mid_fee_service, month_fee_service, month_late_fee, comprehensive_service_rate, 
+    month_rate_service, dict_source_type, dict_source_type_pcl
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_contract_fee_temp
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+
+   <select id="selectByContractCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_contract_fee_temp
+    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </select>
+  <update id="updateByBankCode" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractFee">
+    update jk.t_jk_contract_fee_temp
+    set first_grant_amount = #{firstGrantAmount,jdbcType=VARCHAR},
+      last_grant_amount = #{lastGrantAmount,jdbcType=NUMERIC}
+    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </update>
+  <select id="searchContractFeeTempByContractCode" parameterType="map" resultType="com.creditharmony.loan.borrow.contract.entity.ContractFeeTemp">
+  	select 
+		c.contract_code,
+		c.channel_flag,
+		c.audit_amount,
+		cf.fee_petition,
+		cf.fee_payment_amount,
+		cf.fee_count,
+		c.contract_amount,
+		cf.month_fee_service,
+		c.contract_month_repay_amount,
+		cf.fee_urged_service,
+		c.contract_month_repay_total,
+		c.contract_expect_amount,
+		c.contract_months,
+		cf.fee_all_raio,
+		cf.comprehensive_service_rate,
+		cf.month_rate_service,
+		cf.fee_month_rate,
+		cf.fee_expedited,
+		c.contract_replay_day,
+		c.contract_due_day,
+		c.isreceive,
+		cf.fee_petition_temp
+	from 
+		jk.t_jk_contract_temp c left join jk.t_jk_contract_fee_temp cf on c.contract_code = cf.contract_code
+	where c.contract_code = #{contractCode,jdbcType=VARCHAR}	
+		<if test="isreceive != null and isreceive != ''">
+			and c.isreceive = #{isreceive}
+		</if>
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from jk.t_jk_contract_fee_temp
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByContractCode" parameterType="java.lang.String" >
+  delete from jk.t_jk_contract_fee_temp fee
+     where fee.contract_code =#{contractCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractFeeTemp" >
+    insert into jk.t_jk_contract_fee_temp (id, contract_code, fee_all_raio, 
+      fee_petition, fee_expedited, fee_consult, 
+      fee_audit_amount, fee_service, fee_urged_service, 
+      fee_info_service, fee_count, fee_payment_amount, 
+      fee_loan_rate, fee_month_rate, create_time, 
+      create_by, modify_by, modify_time, 
+      month_fee_consult, month_mid_fee_service, month_fee_service, 
+      month_late_fee, comprehensive_service_rate, 
+      month_rate_service, dict_source_type, dict_source_type_pcl
+      )
+    values (#{id,jdbcType=VARCHAR}, #{contractCode,jdbcType=VARCHAR}, #{feeAllRaio,jdbcType=NUMERIC}, 
+      #{feePetition,jdbcType=NUMERIC}, #{feeExpedited,jdbcType=NUMERIC}, #{feeConsult,jdbcType=NUMERIC}, 
+      #{feeAuditAmount,jdbcType=NUMERIC}, #{feeService,jdbcType=NUMERIC}, #{feeUrgedService,jdbcType=NUMERIC}, 
+      #{feeInfoService,jdbcType=NUMERIC}, #{feeCount,jdbcType=NUMERIC}, #{feePaymentAmount,jdbcType=NUMERIC}, 
+      #{feeLoanRate,jdbcType=NUMERIC}, #{feeMonthRate,jdbcType=NUMERIC}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{createBy,jdbcType=VARCHAR}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, 
+      #{monthFeeConsult,jdbcType=NUMERIC}, #{monthMidFeeService,jdbcType=NUMERIC}, #{monthFeeService,jdbcType=NUMERIC}, 
+      #{monthLateFee,jdbcType=NUMERIC}, #{comprehensiveServiceRate,jdbcType=NUMERIC}, 
+      #{monthRateService,jdbcType=NUMERIC}, #{dictSourceType,jdbcType=VARCHAR}, #{dictSourceTypePcl,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractFeeTemp" >
+    insert into jk.t_jk_contract_fee_temp
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="contractCode != null" >
+        contract_code,
+      </if>
+      <if test="feeAllRaio != null" >
+        fee_all_raio,
+      </if>
+      <if test="feePetition != null" >
+        fee_petition,
+      </if>
+      <if test="feeExpedited != null" >
+        fee_expedited,
+      </if>
+      <if test="feeConsult != null" >
+        fee_consult,
+      </if>
+      <if test="feeAuditAmount != null" >
+        fee_audit_amount,
+      </if>
+      <if test="feeService != null" >
+        fee_service,
+      </if>
+      <if test="feeUrgedService != null" >
+        fee_urged_service,
+      </if>
+      <if test="feeInfoService != null" >
+        fee_info_service,
+      </if>
+      <if test="feeCount != null" >
+        fee_count,
+      </if>
+      <if test="feePaymentAmount != null" >
+        fee_payment_amount,
+      </if>
+      <if test="feeLoanRate != null" >
+        fee_loan_rate,
+      </if>
+      <if test="feeMonthRate != null" >
+        fee_month_rate,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="monthFeeConsult != null" >
+        month_fee_consult,
+      </if>
+      <if test="monthMidFeeService != null" >
+        month_mid_fee_service,
+      </if>
+      <if test="monthFeeService != null" >
+        month_fee_service,
+      </if>
+      <if test="monthLateFee != null" >
+        month_late_fee,
+      </if>
+      <if test="comprehensiveServiceRate != null" >
+        comprehensive_service_rate,
+      </if>
+      <if test="monthRateService != null" >
+        month_rate_service,
+      </if>
+      <if test="dictSourceType != null" >
+        dict_source_type,
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        dict_source_type_pcl,
+      </if>
+       <if test="feePetitionTemp != null" >
+        fee_petition_temp,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="feeAllRaio != null" >
+        #{feeAllRaio,jdbcType=NUMERIC},
+      </if>
+      <if test="feePetition != null" >
+        #{feePetition,jdbcType=NUMERIC},
+      </if>
+      <if test="feeExpedited != null" >
+        #{feeExpedited,jdbcType=NUMERIC},
+      </if>
+      <if test="feeConsult != null" >
+        #{feeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="feeAuditAmount != null" >
+        #{feeAuditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="feeService != null" >
+        #{feeService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeUrgedService != null" >
+        #{feeUrgedService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeInfoService != null" >
+        #{feeInfoService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeCount != null" >
+        #{feeCount,jdbcType=NUMERIC},
+      </if>
+      <if test="feePaymentAmount != null" >
+        #{feePaymentAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="feeLoanRate != null" >
+        #{feeLoanRate,jdbcType=NUMERIC},
+      </if>
+      <if test="feeMonthRate != null" >
+        #{feeMonthRate,jdbcType=NUMERIC},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="monthFeeConsult != null" >
+        #{monthFeeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="monthMidFeeService != null" >
+        #{monthMidFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthFeeService != null" >
+        #{monthFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthLateFee != null" >
+        #{monthLateFee,jdbcType=NUMERIC},
+      </if>
+      <if test="comprehensiveServiceRate != null" >
+        #{comprehensiveServiceRate,jdbcType=NUMERIC},
+      </if>
+      <if test="monthRateService != null" >
+        #{monthRateService,jdbcType=NUMERIC},
+      </if>
+      <if test="dictSourceType != null" >
+        #{dictSourceType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        #{dictSourceTypePcl,jdbcType=VARCHAR},
+      </if>
+      <if test="feePetitionTemp != null" >
+        #{feePetitionTemp,jdbcType=NUMERIC},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractFeeTemp" >
+    update jk.t_jk_contract_fee_temp
+    <set >
+      <if test="contractCode != null" >
+        contract_code = #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="feeAllRaio != null" >
+        fee_all_raio = #{feeAllRaio,jdbcType=NUMERIC},
+      </if>
+      <if test="feePetition != null" >
+        fee_petition = #{feePetition,jdbcType=NUMERIC},
+      </if>
+      <if test="feeExpedited != null" >
+        fee_expedited = #{feeExpedited,jdbcType=NUMERIC},
+      </if>
+      <if test="feeConsult != null" >
+        fee_consult = #{feeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="feeAuditAmount != null" >
+        fee_audit_amount = #{feeAuditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="feeService != null" >
+        fee_service = #{feeService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeUrgedService != null" >
+        fee_urged_service = #{feeUrgedService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeInfoService != null" >
+        fee_info_service = #{feeInfoService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeCount != null" >
+        fee_count = #{feeCount,jdbcType=NUMERIC},
+      </if>
+      <if test="feePaymentAmount != null" >
+        fee_payment_amount = #{feePaymentAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="feeLoanRate != null" >
+        fee_loan_rate = #{feeLoanRate,jdbcType=NUMERIC},
+      </if>
+      <if test="feeMonthRate != null" >
+        fee_month_rate = #{feeMonthRate,jdbcType=NUMERIC},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="monthFeeConsult != null" >
+        month_fee_consult = #{monthFeeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="monthMidFeeService != null" >
+        month_mid_fee_service = #{monthMidFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthFeeService != null" >
+        month_fee_service = #{monthFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthLateFee != null" >
+        month_late_fee = #{monthLateFee,jdbcType=NUMERIC},
+      </if>
+      <if test="comprehensiveServiceRate != null" >
+        comprehensive_service_rate = #{comprehensiveServiceRate,jdbcType=NUMERIC},
+      </if>
+      <if test="monthRateService != null" >
+        month_rate_service = #{monthRateService,jdbcType=NUMERIC},
+      </if>
+      <if test="dictSourceType != null" >
+        dict_source_type = #{dictSourceType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        dict_source_type_pcl = #{dictSourceTypePcl,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractFeeTemp" >
+    update jk.t_jk_contract_fee_temp
+    set contract_code = #{contractCode,jdbcType=VARCHAR},
+      fee_all_raio = #{feeAllRaio,jdbcType=NUMERIC},
+      fee_petition = #{feePetition,jdbcType=NUMERIC},
+      fee_expedited = #{feeExpedited,jdbcType=NUMERIC},
+      fee_consult = #{feeConsult,jdbcType=NUMERIC},
+      fee_audit_amount = #{feeAuditAmount,jdbcType=NUMERIC},
+      fee_service = #{feeService,jdbcType=NUMERIC},
+      fee_urged_service = #{feeUrgedService,jdbcType=NUMERIC},
+      fee_info_service = #{feeInfoService,jdbcType=NUMERIC},
+      fee_count = #{feeCount,jdbcType=NUMERIC},
+      fee_payment_amount = #{feePaymentAmount,jdbcType=NUMERIC},
+      fee_loan_rate = #{feeLoanRate,jdbcType=NUMERIC},
+      fee_month_rate = #{feeMonthRate,jdbcType=NUMERIC},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      month_fee_consult = #{monthFeeConsult,jdbcType=NUMERIC},
+      month_mid_fee_service = #{monthMidFeeService,jdbcType=NUMERIC},
+      month_fee_service = #{monthFeeService,jdbcType=NUMERIC},
+      month_late_fee = #{monthLateFee,jdbcType=NUMERIC},
+      comprehensive_service_rate = #{comprehensiveServiceRate,jdbcType=NUMERIC},
+      month_rate_service = #{monthRateService,jdbcType=NUMERIC},
+      dict_source_type = #{dictSourceType,jdbcType=VARCHAR},
+      dict_source_type_pcl = #{dictSourceTypePcl,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <insert id="insertContractFeeSelective" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractFeeTemp" >
+    insert into jk.t_jk_contract_fee
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="contractCode != null" >
+        contract_code,
+      </if>
+      <if test="feeAllRaio != null" >
+        fee_all_raio,
+      </if>
+      <if test="feePetition != null" >
+        fee_petition,
+      </if>
+      <if test="feeExpedited != null" >
+        fee_expedited,
+      </if>
+      <if test="feeConsult != null" >
+        fee_consult,
+      </if>
+      <if test="feeAuditAmount != null" >
+        fee_audit_amount,
+      </if>
+      <if test="feeService != null" >
+        fee_service,
+      </if>
+      <if test="feeUrgedService != null" >
+        fee_urged_service,
+      </if>
+      <if test="feeInfoService != null" >
+        fee_info_service,
+      </if>
+      <if test="feeCount != null" >
+        fee_count,
+      </if>
+      <if test="feePaymentAmount != null" >
+        fee_payment_amount,
+      </if>
+      <if test="feeLoanRate != null" >
+        fee_loan_rate,
+      </if>
+      <if test="feeMonthRate != null" >
+        fee_month_rate,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="monthFeeConsult != null" >
+        month_fee_consult,
+      </if>
+      <if test="monthMidFeeService != null" >
+        month_mid_fee_service,
+      </if>
+      <if test="monthFeeService != null" >
+        month_fee_service,
+      </if>
+      <if test="monthLateFee != null" >
+        month_late_fee,
+      </if>
+      <if test="comprehensiveServiceRate != null" >
+        comprehensive_service_rate,
+      </if>
+      <if test="monthRateService != null" >
+        month_rate_service,
+      </if>
+      <if test="dictSourceType != null" >
+        dict_source_type,
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        dict_source_type_pcl,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="feeAllRaio != null" >
+        #{feeAllRaio,jdbcType=NUMERIC},
+      </if>
+      <if test="feePetition != null" >
+        #{feePetition,jdbcType=NUMERIC},
+      </if>
+      <if test="feeExpedited != null" >
+        #{feeExpedited,jdbcType=NUMERIC},
+      </if>
+      <if test="feeConsult != null" >
+        #{feeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="feeAuditAmount != null" >
+        #{feeAuditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="feeService != null" >
+        #{feeService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeUrgedService != null" >
+        #{feeUrgedService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeInfoService != null" >
+        #{feeInfoService,jdbcType=NUMERIC},
+      </if>
+      <if test="feeCount != null" >
+        #{feeCount,jdbcType=NUMERIC},
+      </if>
+      <if test="feePaymentAmount != null" >
+        #{feePaymentAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="feeLoanRate != null" >
+        #{feeLoanRate,jdbcType=NUMERIC},
+      </if>
+      <if test="feeMonthRate != null" >
+        #{feeMonthRate,jdbcType=NUMERIC},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="monthFeeConsult != null" >
+        #{monthFeeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="monthMidFeeService != null" >
+        #{monthMidFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthFeeService != null" >
+        #{monthFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthLateFee != null" >
+        #{monthLateFee,jdbcType=NUMERIC},
+      </if>
+      <if test="comprehensiveServiceRate != null" >
+        #{comprehensiveServiceRate,jdbcType=NUMERIC},
+      </if>
+      <if test="monthRateService != null" >
+        #{monthRateService,jdbcType=NUMERIC},
+      </if>
+      <if test="dictSourceType != null" >
+        #{dictSourceType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        #{dictSourceTypePcl,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

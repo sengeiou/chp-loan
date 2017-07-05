@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.CustInfoDao">
+<resultMap type="com.creditharmony.loan.borrow.contract.entity.ex.CustInfo" id="custInfo">
+   <result column="cobo_name" jdbcType="VARCHAR" property="compCustName"/>
+  <result column="cobo_cert_type" property="compCertType"/>
+  <result column="cobo_cert_num" property="compCertNum"/>
+  <result column="cust_cert_type" property="mainCertType"/>
+  <result column="customer_cert_num" property="mainCertNum"/>
+  <result column="customer_sex" property="mainCertSex"/>
+  <result column="customer_name" jdbcType="VARCHAR" property="mainLoaner"/>
+  <result column="loan_team_orgid" property="applyOrgCode"/>
+  <result column="loan_store_orgid" property="loanStoreOrgId"/>
+  <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag"/>
+  <result column="product_type" jdbcType="VARCHAR" property="productType"/>
+  <result column="audit_months" jdbcType="INTEGER" property="contractMonths"/>
+  <result column="loan_urgent_flag" jdbcType="VARCHAR" property="loanUrgentFlag"/>
+  <result column="audit_amount" jdbcType="NUMERIC" property="auditAmount"/>
+  <result column="audit_ensure_name" jdbcType="VARCHAR" property="auditEnsureName"/>
+  <result column="audit_legal_man" jdbcType="VARCHAR" property="auditLegalMan"/>
+  <result column="loan_audit_time" jdbcType="TIMESTAMP" property="auditTime"/>
+  <result column="ensureman_business_place" jdbcType="VARCHAR" property="ensuremanBusinessPlace"/>
+  <result column="customer_phone_first" jdbcType="VARCHAR" property="customerPhoneFirst"/>
+  <result column="customer_phone_second" jdbcType="VARCHAR" property="customerPhoneSecond"/>
+  <result column="customer_tel" jdbcType="VARCHAR" property="customerTel"/>
+  <result column="trusteeship_flag" jdbcType="VARCHAR" property="trusteeshipFlag"/>
+  <result column="loan_code" jdbcType="VARCHAR" property="loanCode"/>
+  <result column="frozen_code" jdbcType="VARCHAR" property="frozenCode" />
+  <result column="frozen_reason" jdbcType="VARCHAR" property="frozenReason" />
+  <result column="message_auth_code" jdbcType="VARCHAR" property="customerPin"/>
+  <result column="captcha_if_confirm" property="captchaIfConfirm"/>
+  <result column="confirm_timeout" property="confirmTimeout"/>
+  <result column="customer_code" jdbcType="VARCHAR" property="customerCode"/>
+  <result column="customerId" jdbcType="VARCHAR" property="customerId"/>
+  <result column="app_sign_flag" property="appSignFlag"/>
+  <result column="id_valid_flag" property="idValidFlag"/>
+  <result column="compose_photo_id" property="composePhotoId"/>
+  <result column="gross_rate" property="grossRate"/>
+  <result column="model" property="model"/>
+  <result column="business_prove_id" property="businessProveId"/>
+  <result column="id_valid_score" property="idValidScore"/>
+  <result column="maddressName" property="maddressName"/>
+  <result column="customer_email" property="customerEmail"/>
+  <result column="audit_rate" property="auditRate"/>
+</resultMap>
+<select id="findCustInfo" parameterType="string" resultMap="custInfo">
+        select 
+               cust.id as customerId,                      <!--主借人ID  -->
+               cust.dict_cert_type as cust_cert_type,      <!--主借人证件类型  -->
+               cust.customer_cert_num,                     <!--主借人证件号码  -->
+               cust.customer_name,                         <!--主借人姓名  -->
+               cust.customer_sex,
+               cust.customer_code,                         <!-- 客户编号    -->
+               cust.message_auth_code,                     <!-- 短信验证码 -->
+               cust.captcha_if_confirm,                    <!-- 短信验证标识 -->
+               cust.confirm_timeout,                       <!-- 验证超时时间 -->
+               cust.app_sign_flag,                         <!-- APP签字 -->
+               cust.id_valid_flag,                         <!-- 身份证验证标识 -->
+               cust.compose_photo_id,                      <!-- 合成图片文件ID -->
+               case when cust.trusteeship_no is null 
+                    or char_length(ltrim(cust.trusteeship_no))=0 
+                    then 0 
+                    else 1 
+               end as  trusteeship_flag,                   <!--金账户标识  -->
+               info.loan_team_orgid,                       <!--组织结构ID-->
+               info.loan_store_orgid,                      <!--门店ID   -->
+               info.loan_flag,                             <!--标识 -->
+               info.model,                                 <!--模式  -->
+               info.loan_urgent_flag,                      <!--是否加急--> 
+               info.loan_code,                             <!--借款编号--> 
+               info.frozen_code,                           <!--冻结原因 -->
+               info.frozen_reason,                         <!--原因描述 -->
+               cust.customer_phone_first,                  <!--联系电话 -->
+               cust.customer_phone_second,                 <!--联系电话2 -->
+               cust.customer_tel,                          <!--固定电话 -->   
+               cust.id_valid_score,                        <!--身份证验证评分 --> 
+               cust.customer_email							<!-- 邮件 -->
+        from jk.t_jk_loan_customer cust 
+        left join jk.t_jk_loan_info info on cust.loan_code = info.loan_code
+        where  cust.apply_id = #{applyId}    
+  </select>
+  <select id="findAuditInfo" parameterType="string" resultMap="custInfo">
+      select 
+         a.product_type,              <!--审批产品-->
+         a.audit_months,              <!--审批分期 -->
+         a.audit_amount,              <!--批复额度 -->
+         a.audit_ensure_name, 	      <!--保证人姓名 -->
+         a.audit_legal_man,           <!--法定代表人 -->
+         a.ensureman_business_place,  <!--保证人实际经营场所--> 
+         a.gross_rate,                <!--产品总费率  -->
+         a.business_prove_id,          <!--保证人ID  --> 
+         case when pp.area_name =pc.area_name then pc.area_name ||  pa.area_name || a.ensureman_business_place else pp.area_name || pc.area_name ||  pa.area_name || a.ensureman_business_place
+  				end AS maddressName,
+  				a.audit_rate        <!-- 批借费率 -->
+       from jk.t_jk_audit_result a 
+       left join   jk.t_gl_province_city pa on a.ensureman_business_area=pa.id
+  	   left join   jk.t_gl_province_city pc on pc.id=pa.parent_id
+  	   left join   jk.t_gl_province_city pp on pp.id=pc.parent_id
+       where a.apply_id=#{applyId}  and a.audit_result = '0' and 
+        a.create_time = (select max(b.create_time) from jk.t_jk_audit_result b where b.apply_id=#{applyId} and b.audit_result = '0') 
+  </select> 
+  <select id="findReconsiderCustInfo" parameterType="map" resultMap="custInfo">
+       select 
+               cust.id as customerId,                      <!--主借人ID  -->
+               cust.dict_cert_type as cust_cert_type,      <!--主借人证件类型  -->
+               cust.customer_cert_num,                     <!--主借人证件号码  -->
+               cust.customer_name,                         <!--主借人姓名  -->
+               cust.customer_sex,
+               cust.customer_code,                         <!-- 客户编号    -->
+               cust.message_auth_code,                     <!-- 短信验证码 -->
+               cust.captcha_if_confirm,                    <!-- 短信验证标识 -->
+               cust.confirm_timeout,                       <!-- 验证超时时间 -->
+               cust.app_sign_flag,                         <!-- APP签字 -->
+               cust.id_valid_flag,                         <!-- 身份证验证标识 -->
+               cust.compose_photo_id,                      <!-- 合成图片文件ID -->
+               case when cust.trusteeship_no is null 
+                    or char_length(ltrim(cust.trusteeship_no))=0 
+                    then 0 
+                    else 1 
+               end as  trusteeship_flag,                   <!--金账户标识  -->
+               info.loan_team_orgid,                       <!--组织结构ID-->
+               info.loan_store_orgid,                      <!--门店ID   -->
+               info.loan_flag,                             <!--标识 -->
+               info.model,                                 <!--模式  -->
+               info.loan_urgent_flag,                      <!--是否加急--> 
+               info.loan_code,                             <!--借款编号--> 
+               info.frozen_code,                           <!--冻结原因 -->
+               info.frozen_reason,                         <!--原因描述 -->
+               cust.customer_phone_first,                  <!--联系电话 -->
+               cust.customer_phone_second,                 <!--联系电话2 -->
+               cust.customer_tel,                          <!--固定电话 -->   
+               cust.id_valid_score,                         <!--身份证验证评分 --> 
+               cust.customer_email 
+        from jk.t_jk_loan_customer cust 
+        left join jk.t_jk_loan_info info on cust.loan_code = info.loan_code 
+        left join jk.t_jk_reconsider_apply apply on apply.loan_code=cust.loan_code 
+        where  apply.apply_id = #{applyId} 
+  </select>
+   <update id="updateFlag" parameterType="map">
+    update jk.t_jk_loan_info  
+    set modify_by = #{userCode},
+        modify_time = sysdate
+    <if test="attributName=='loanFlag'">
+     ,loan_flag=#{val}
+     </if>
+     where apply_id in 
+     <foreach item="item" index="index" collection="applyIds" open="(" separator="," close=")">  
+        #{item}  
+      </foreach> 
+  </update>
+  <select id="findOutSide" parameterType="string" resultType="map">
+  	select to_char(a.item_distance) item_distance , b.outside_flag		 
+    from (select loan_code,outside_flag from jk.t_jk_loan_info where loan_code=#{loan_code} ) b
+    left join (select max(item_distance) item_distance,loan_code  from jk.t_jk_outside_task_list where loan_code=#{loan_code} group by loan_code) a on a.loan_code= b.loan_code
+  </select>
+  </mapper>

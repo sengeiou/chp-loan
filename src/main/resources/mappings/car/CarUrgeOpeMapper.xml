@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarUrgeOpeDao">
+
+	<!--催收服务费操作历史-->
+	<insert id="insert">
+		INSERT INTO jk.t_cj_urge_operation(
+		id,
+		r_urge_id,
+		dict_loan_status,
+		dict_r_deduct_type,
+		operate_result,
+		operator,
+		operator_code,
+		operate_time,
+		remark,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time)
+		VALUES (
+		#{id},
+		#{rUrgeId},
+		#{dictLoanStatus},
+		#{dictRDeductType},
+		#{operateResult},
+		#{operator},
+		#{operateCode},
+		#{operateTime},
+		#{remarks},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime});
+	</insert>
+	
+	<!-- 查看催收服务费历史 -->
+	<select id="getUrgeOpe" parameterType="map" resultType="com.creditharmony.loan.car.common.entity.CarUrgeOpe">
+		SELECT a.id,
+		a.r_urge_id, a.dict_loan_status, a.dict_r_deduct_type,
+		a.operate_result,
+		case when b.name is null then 'FinanceBatch' else b.name end as operator,
+	    a.operator_code, a.operate_time, a.remark,
+		a.create_by, a.create_time,
+		a.modify_by, a.modify_time
+		FROM
+		jk.t_cj_urge_operation a left join jk.t_gl_user b 
+		on a.operator = b.id
+		<where>
+		<if test="dictRDeductType != null and dictRDeductType != ''">
+			and a.dict_r_deduct_type = #{dictRDeductType,jdbcType=VARCHAR}
+		</if>
+		<if test="rUrgeId != null">
+			and a.r_urge_id = #{rUrgeId,jdbcType=VARCHAR}
+		</if>
+		<if test="operateResult != null and operateResult != '' ">
+			and a.operate_result  in (${operateResult})
+		</if>
+        </where>
+		order by create_time DESC 	
+	</select>
+</mapper>

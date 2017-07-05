@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.PaybackDeductsDueDao">
+      
+      <!-- 查询预约划扣时间列表 -->
+    <select id="getDeductsDue" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackDeductsDue" parameterType="java.util.Map">
+	select id, 
+	due_bank,
+	due_time,
+	dict_deal_type,
+	dict_deducts_type,
+	create_day,
+	effective_flag,
+	create_time,
+	modify_by,
+	modify_time,
+	mode_Way,
+	is_execute,(select name from jk.t_gl_user a where
+	a.id=b.modify_by) as create_by from jk.t_jk_payback_deducts_due b
+	where <!-- t_jk_payback_deducts_due.create_time>${createDay} -->
+    
+	<include refid="PagingConditionsquery" />
+    order by   create_time  desc,id asc
+    
+    </select>
+    
+    <!-- 将预约划扣的时间置为有效 -->
+    <update id="updateUse">
+      	update jk.t_jk_payback_deducts_due set effective_flag='1' where <!-- id=#{id} -->
+		<!-- <![CDATA[ to_char(t_jk_payback_deducts_due.due_time,'yyyy-mm-dd hh24:mi:ss') >= #{createDayStr}]]> -->
+		<include refid="PagingConditions" />
+    </update>
+    
+    <!-- 将预约划扣的时间置为无效 -->  
+    <update id="updateUnUse"> 
+      	update jk.t_jk_payback_deducts_due set effective_flag='0' where  <!-- id=#{id} -->
+      	<!-- <![CDATA[ to_char(t_jk_payback_deducts_due.due_time,'yyyy-mm-dd hh24:mi:ss') >= #{createDayStr}]]> -->
+		<include refid="PagingConditions" />
+    </update>
+    
+    <!-- 新增划扣预约时间 -->
+    <insert id="addDue">
+       insert into jk.t_jk_payback_deducts_due(id,due_bank,due_time,create_by,modify_by,effective_flag,is_execute,mode_Way)
+       values (#{id},#{dueBank},#{dueTime},#{createBy},#{modifyBy},#{effectiveFlag},#{isExecute},#{modeWay})
+    </insert>
+    
+    <sql id="PagingConditions">
+    <trim prefixOverrides="AND | OR">  
+    	<if test="bankIds != null and bankIds.size()!=0">
+			AND due_bank in <!-- ('${bankId}') -->
+			<foreach item="item" index="index" collection="bankIds" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="dueTimeStr != null and !dueTimeStr.equals('')">
+			AND to_char(due_time,'yyyy-mm-dd hh24:mi:ss') = #{dueTimeStr}
+		</if>
+	
+		<if test="effectiveFlag!= null and !effectiveFlag.equals('')">
+			AND effective_flag = #{effectiveFlag}
+		</if>
+		
+		<if test="ids != null and ids.size()!=0">
+			AND id in
+			<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="modeWay != null and !modeWay.equals('')">
+		  AND mode_Way = #{modeWay}
+		</if>
+		</trim>
+    </sql>
+    
+    
+   <sql id="PagingConditionsquery">
+    <trim prefixOverrides="AND | OR">  
+    	<if test="bankIds != null and bankIds.size()!=0">
+			AND due_bank in <!-- ('${bankId}') -->
+			<foreach item="item" index="index" collection="bankIds" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		
+		<if test="createDayStr != null and !createDayStr.equals('')">
+			 <![CDATA[ to_char(due_time,'yyyy-mm-dd') >= #{createDayStr}]]>
+		</if>
+	
+		<if test="dueTimeStr != null and !dueTimeStr.equals('')">
+			AND to_char(due_time,'yyyy-mm-dd hh24:mi:ss') = #{dueTimeStr}
+		</if>
+	
+		<if test="effectiveFlag!= null and !effectiveFlag.equals('')">
+			AND effective_flag = #{effectiveFlag}
+		</if>
+		
+		<if test="ids != null and ids.size()!=0">
+			AND id in
+			<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="modeWay != null and !modeWay.equals('')">
+		  AND mode_Way = #{modeWay}
+		</if>
+		</trim>
+    </sql>
+    
+</mapper>
+	

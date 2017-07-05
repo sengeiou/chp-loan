@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.PaybackBlueAmountDao">
+	<!-- 划扣汇款冲抵修改蓝补金额 -->
+	<update id="updateBuleAmount">
+		update jk.t_jk_payback
+		<set>
+			<if test="paybackBuleAmount != null">
+				payback_bule_amount=#{paybackBuleAmount},
+			</if>
+			<if test="paybackCurrentMonth != null and paybackCurrentMonth != ''">
+				payback_current_month=#{paybackCurrentMonth},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+	
+	<!-- 添加蓝补交易明细记录 -->
+	
+	<select id="insertPaybackBuleAmount">
+		insert into t_jk_payback_bule_amont(
+	            id, r_month_id, deal_time, trade_type, operator, dict_deal_use, 
+	            trade_amount, surplus_bule_amount, create_by, create_time,modify_by,modify_time,dict_offset_type,contract_code)
+    	values (#{id}, #{rMonthId}, #{createTime}, #{tradeType}, #{createBy}, #{dictDealUse}, 
+	            #{tradeAmount}, #{surplusBuleAmount}, #{createBy}, #{createTime},#{modifyBy},#{modifyTime},#{dictOffsetType},#{contractCode} )
+	</select>
+	
+
+</mapper>

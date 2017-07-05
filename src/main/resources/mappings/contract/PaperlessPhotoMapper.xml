@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.PaperlessPhotoDao">
+ <resultMap type="com.creditharmony.loan.borrow.contract.entity.PaperlessPhoto" id="baseColumnMap">
+   <result column="id" jdbcType="VARCHAR" property="id"/>
+   <result column="relation_id" jdbcType="VARCHAR" property="relationId"/>
+   <result column="customer_type" jdbcType="VARCHAR" property="customerType"/>
+   <result column="loan_code" jdbcType="VARCHAR" property="loanCode"/>
+   <result column="id_photo_id" jdbcType="VARCHAR" property="idPhotoId"/>
+   <result column="spot_photo_id" jdbcType="VARCHAR" property="spotPhotoId"/>
+   <result column="sign_photo_id" jdbcType="VARCHAR" property="signPhotoId"/>
+   <result column="create_by" jdbcType="VARCHAR" property="createBy"/>
+   <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+   <result column="modify_by" jdbcType="VARCHAR" property="modifyBy"/>
+   <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime"/>
+ </resultMap>
+ <sql id="baseColumn">
+	 id,relation_id,customer_type,loan_code,id_photo_id,spot_photo_id,sign_photo_id,
+ 	 create_by,create_time,modify_by,modify_time 
+ </sql>
+ <!-- 使用主借人表|共借人表的ID获取所有的图片信息  -->
+ <select id="getByRelationId" parameterType="map" resultMap="baseColumnMap">
+    select <include refid="baseColumn"/> 
+     from jk.t_jk_loan_paperless_photo 
+     where relation_id = #{relationId,jdbcType=VARCHAR} 
+ </select>
+ <!-- 使用loanCode获取所有的图片信息  -->
+ <select id="getByLoanCode" parameterType="string" resultMap="baseColumnMap">
+    select <include refid="baseColumn"/> 
+     from jk.t_jk_loan_paperless_photo 
+     where loan_code = #{loanCode,jdbcType=VARCHAR} 
+     order by customer_type 
+ </select>
+  <!-- 使用主借人表|共借人表的ID更新相关图片信息  -->
+ <update id="updateByRelationId" parameterType="com.creditharmony.loan.borrow.contract.entity.PaperlessPhoto">
+  update jk.t_jk_loan_paperless_photo
+    <set>
+      <if test="id != null">
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="customerType != null and customerType!=''">
+        customer_type = #{customerType,jdbcType=VARCHAR},
+      </if>
+      <if test="idPhotoId != null and idPhotoId!=''">
+        id_photo_id = #{idPhotoId,jdbcType=VARCHAR},
+      </if>
+      <if test="spotPhotoId != null and spotPhotoId!=''">
+        spot_photo_id = #{spotPhotoId,jdbcType=VARCHAR},
+      </if>
+      <if test="signPhotoId != null and signPhotoId!=''">
+        sign_photo_id = #{signPhotoId,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where relation_id = #{relationId,jdbcType=VARCHAR}
+ </update>
+ <!-- 新增图片信息  -->
+ <insert id="insertPaperlessPhoto" parameterType="com.creditharmony.loan.borrow.contract.entity.PaperlessPhoto">
+  insert into jk.t_jk_loan_paperless_photo (<include refid="baseColumn"/>) 
+   values(#{id,jdbcType=VARCHAR},#{relationId,jdbcType=VARCHAR},
+          #{customerType,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR},
+          #{idPhotoId,jdbcType=VARCHAR},#{spotPhotoId,jdbcType=VARCHAR},
+          #{signPhotoId,jdbcType=VARCHAR},#{createBy,jdbcType=VARCHAR},
+          #{createTime,jdbcType=TIMESTAMP},#{modifyBy,jdbcType=VARCHAR},
+          #{modifyTime,jdbcType=TIMESTAMP}
+          )
+ </insert>
+</mapper>

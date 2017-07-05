@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanCreditInfoDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanCreditInfo">
+    <id column="id"  property="id" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="credit_authorizer"  property="creditAuthorizer" />
+    <result column="dict_mortgage_type"  property="dictMortgageType" />
+    <result column="credit_mortgage_goods"  property="creditMortgageGoods" />
+    <result column="org_code"  property="orgCode" />
+    <result column="credit_loan_limit"  property="creditLoanLimit" />
+    <result column="credit_months_amount"  property="creditMonthsAmount" />
+    <result column="credit_loan_blanace"  property="creditLoanBlance" />
+    <result column="credit_card_num"  property="creditCardNum" />
+ 
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, loan_code, credit_authorizer, dict_mortgage_type, credit_mortgage_goods, org_code, 
+    credit_loan_limit, credit_months_amount, credit_loan_blanace, credit_card_num, create_by, create_time, 
+    modify_by, modify_time
+  </sql>
+
+  <select id="findListByLoanCode" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_loan_credit_info
+    where loan_code = #{loanCode}
+  </select>
+  <delete id="deleteByCondition" parameterType="map">
+    delete from jk.t_jk_loan_credit_info  
+    where id=#{id,jdbcType=VARCHAR} 
+  </delete>
+  <insert id="insert">
+    insert into jk.t_jk_loan_credit_info(
+      
+      <include refid="Base_Column_List"/>
+    )values(
+     #{id,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR},#{creditAuthorizer,jdbcType=VARCHAR},
+     #{dictMortgageType,jdbcType=VARCHAR},#{creditMortgageGoods,jdbcType=VARCHAR},
+     #{orgCode,jdbcType=VARCHAR},#{creditLoanLimit,jdbcType=NUMERIC},#{creditMonthsAmount,jdbcType=NUMERIC},
+     #{creditLoanBlance,jdbcType=NUMERIC},#{creditCardNum,jdbcType=INTEGER},
+     #{createBy,jdbcType=VARCHAR},#{createTime,jdbcType=VARCHAR},
+     #{modifyBy,jdbcType=VARCHAR},#{modifyTime,jdbcType=VARCHAR}
+    )
+  </insert>
+  <update id="update">
+       update jk.t_jk_loan_credit_info
+    <set>
+      <if test="loanCode != null">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="creditAuthorizer != null">
+        credit_authorizer = #{creditAuthorizer,jdbcType=VARCHAR},
+      </if>
+      <if test="dictMortgageType != null">
+        dict_mortgage_type = #{dictMortgageType,jdbcType=VARCHAR},
+      </if>
+      <if test="creditMortgageGoods != null">
+        credit_mortgage_goods = #{creditMortgageGoods,jdbcType=VARCHAR},
+      </if>
+      <if test="orgCode != null">
+        org_code = #{orgCode,jdbcType=VARCHAR},
+      </if>
+      <if test="creditLoanLimit != null">
+        credit_loan_limit = #{creditLoanLimit,jdbcType=NUMERIC},
+      </if>
+      <if test="creditMonthsAmount != null">
+        credit_months_amount = #{creditMonthsAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="creditLoanBlance != null">
+        credit_loan_blanace = #{creditLoanBlance,jdbcType=NUMERIC},
+      </if>
+      <if test="creditCardNum != null">
+        credit_card_num = #{creditCardNum,jdbcType=INTEGER},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

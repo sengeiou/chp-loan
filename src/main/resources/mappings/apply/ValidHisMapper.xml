@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.consult.dao.ValidHisDao">
+  <resultMap id="baseValidMap" type="com.creditharmony.loan.borrow.consult.entity.ValidHistory">
+    <result property="id" column="id" jdbcType="VARCHAR"/>
+    <result property="loanName" column="loan_name" jdbcType="VARCHAR"/>
+    <result property="contractCode" column="contract_code" jdbcType="VARCHAR"/>
+    <result property="certNum" column="cert_num" jdbcType="VARCHAR"/>
+    <result property="updateType" column="update_type" jdbcType="VARCHAR"/>
+    <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+    <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+  </resultMap>
+  <sql id="baseColumn">
+     id,loan_name,contract_code,cert_num,update_type,create_by,create_time
+  </sql>
+  
+  	<!--修改共借人身份验证状态 -->
+	<update id="updateCoborrowerStatus" parameterType="map">
+	   update jk.t_jk_loan_coborrower set id_valid_flag = 1 
+	   where loan_code =(select cc.loan_code from t_jk_contract cc where cc.contract_code=#{contractCode,jdbcType=VARCHAR}) 
+	   and cobo_cert_num = #{certNum,jdbcType=VARCHAR}
+	   
+	</update>
+	
+	<!--修改主借人身份验证状态 -->
+	<update id="updateLoanCustomerStatus" parameterType="map">
+	   UPDATE jk.t_jk_loan_customer SET id_valid_score = 20, id_valid_flag = '1' 
+	   WHERE apply_id =( SELECT t.apply_id FROM jk.t_jk_contract T WHERE t.contract_code = #{contractCode,jdbcType=VARCHAR} ) 
+	   AND customer_cert_num = #{certNum,jdbcType=VARCHAR}
+	   
+	</update>
+	<!--插入身份验证历史表 -->
+	<insert id="insertValidHis">
+		INSERT INTO jk.t_jk_loan_valid_his(
+			id,
+			loan_name,
+			contract_code,  
+			cert_num,
+			update_type,
+			create_by,
+			create_time
+		) VALUES (
+			#{id},
+			#{loanName}, 
+			#{contractCode}, 
+			#{certNum}, 
+			#{updateType}, 
+			#{createBy},
+			#{createTime}
+		)
+	</insert>
+	<!-- 根据applyId查询线下放款列表， 车借 -->
+	<select id="findList" 
+		resultMap="baseValidMap">
+		select 
+		vh.id,
+		vh.loan_name,
+		vh.contract_code,
+		vh.cert_num,
+		(case when vh.update_type='0' then '主借人' else '共借人' end) update_type,
+		vh.create_time,
+		users."name"  create_by
+		from jk.t_jk_loan_valid_his vh 
+		left join jk.t_gl_user users on users.id=vh.create_by
+		where 1=1
+		<if test="contractCode != null and contractCode != ''">
+			and vh.contract_code like  '%'||#{contractCode}||'%'
+		</if>
+		<if test="certNum != null and certNum != ''">
+			and vh.cert_num like '%'||#{certNum}||'%'
+		</if>
+		<if test="updateType != null and updateType != '-1'">
+			and vh.update_type = #{updateType}
+		</if>
+		order by vh.create_time desc 
+	</select>
+	
+</mapper>

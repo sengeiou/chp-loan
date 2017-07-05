@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.channel.goldcredit.dao.GCGrantDao">
+	<resultMap id="GCGrantViewMap"
+		type="com.creditharmony.loan.channel.goldcredit.view.GCGrantView">
+		<result property="sequenceNumber" column="SEQUENCENUMBER"/>
+		<result property="storeName" column="STORESNAME"></result>
+		<result property="contractCode" column="CONTRACT_CODE"></result>
+		<result property="customerName" column="CUSTOMER_NAME"></result>
+		<result property="identityCode" column="CUSTOMER_CERT_NUM"></result>
+		<result property="months" column="CONTRACT_MONTHS"></result>
+		<result property="contractMoney" column="CONTRACT_AMOUNT"></result>
+		<result property="lendingMoney" column="GRANT_AMOUNT"></result>
+		<result property="bankAccountNumber" column="BANK_ACCOUNT"></result>
+		<result property="depositBank" column="BANK_NAME"></result><!--开户行  -->
+		<result property="bankBranchName" column="BANK_BRANCH"></result><!-- 支行名称 -->
+		<result property="channelName" column="CHANNEL_NAME"></result><!-- 标识 -->
+		<result property="bankProvinceName" column="BANK_PROVINCE_NAMe"></result>
+		<result property="bankCityName" column="BANK_CITY_NAME"></result>
+		<result property="contractVersion" column="CONTRACT_VERSION"></result>
+		<result property="feeUrgedService" column="FEE_URGED_SERVICE"></result>
+		<result property="urgentFlag" column="LOAN_URGENT_FLAG"></result>
+		<result property="loanType" column="LOAN_TYPE"></result>
+		<result property="productName" column="PRODUCT_NAME"></result>
+		<result property="unDeductMoney" column="UNDEDUCT_MONEY"></result>
+		<result property="replyMonth" column="REPLY_MONTH"></result>
+		<result property="bankAccountName" column="BANK_ACCOUNT_NAME"></result>
+		<result property="lendingTime" column="LENDING_TIME"></result>
+		<result property="grantBatchCode" column="GRANT_BATCH"></result><!-- 放款批次 -->
+	</resultMap>
+	<select id="exportGrantList" parameterType="java.util.List"
+		resultMap="GCGrantViewMap">
+		SELECT ROW_NUMBER() OVER() SEQUENCENUMBER,A.*
+		FROM
+			(SELECT
+				M4.NAME AS STORESNAME,
+				D.CONTRACT_CODE,
+				C.CUSTOMER_NAME,
+				C.CUSTOMER_CERT_NUM,
+				D.CONTRACT_MONTHS,
+				round(D.CONTRACT_AMOUNT,2)CONTRACT_AMOUNT,
+				round(A.GRANT_AMOUNT,2)GRANT_AMOUNT,
+				E.BANK_ACCOUNT,
+				M3.LABEL BANK_NAME,
+				E.BANK_BRANCH,
+				'金信' CHANNEL_NAME,
+				M1.AREA_NAME BANK_PROVINCE_NAME,
+				M2.AREA_NAME BANK_CITY_NAME,
+				D.CONTRACT_VERSION,
+				round(F.FEE_URGED_SERVICE,2)FEE_URGED_SERVICE,
+				B.LOAN_URGENT_FLAG,
+				A.GRANT_BATCH,
+				'信借' LOAN_TYPE,
+				M5.PRODUCT_NAME,
+				round(COALESCE(G.URGE_MOENY,0)-COALESCE(G.URGE_DECUTE_MOENY,0)-COALESCE(G.AUDIT_AMOUNT,0),2) UNDEDUCT_MONEY,
+				B.LOAN_AUDIT_MONTHS REPLY_MONTH,
+				E.BANK_ACCOUNT_NAME,
+				TO_CHAR(A.LENDING_TIME,'yyyy-MM-dd')LENDING_TIME,
+				M6.LABEL,
+				ROW_NUMBER() OVER(PARTITION BY A.LOAN_CODE ORDER BY G.CREATE_TIME DESC) ROW_NO
+			FROM JK.T_JK_LOAN_GRANT A INNER JOIN JK.T_JK_LOAN_INFO B ON A.LOAN_CODE=B.LOAN_CODE
+				INNER JOIN JK.T_JK_LOAN_CUSTOMER C ON B.LOAN_CODE=C.LOAN_CODE
+				INNER JOIN JK.T_JK_CONTRACT D ON A.LOAN_CODE=D.LOAN_CODE
+				LEFT JOIN JK.T_JK_LOAN_BANK E ON A.LOAN_CODE=E.LOAN_CODE AND E.BANK_TOP_FLAG='1' AND E.REPAYMENT_FLAG='0'
+				LEFT JOIN JK.T_JK_CONTRACT_FEE F ON D.CONTRACT_CODE=F.CONTRACT_CODE
+				LEFT JOIN JK.T_JK_URGE_SERVICES_AMOUNT G ON A.ID=G.R_GRANT_ID AND RETURN_LOGO!='1'
+				LEFT JOIN JK.T_GL_PROVINCE_CITY_CMB M1 ON E.BANK_PROVINCE=M1.AREA_CODE
+				LEFT JOIN JK.T_GL_PROVINCE_CITY_CMB M2 ON E.BANK_CITY=M2.AREA_CODE
+				LEFT JOIN JK.T_GL_DICT M3 ON E.BANK_NAME = M3.VALUE AND M3.TYPE = 'jk_open_bank'
+				LEFT JOIN JK.T_GL_ORG M4 ON M4.ID = B.LOAN_STORE_ORGID
+				LEFT JOIN JK.T_GL_DICT M6 ON B.LOAN_URGENT_FLAG = M6.VALUE AND M6.TYPE = 'jk_urgent_flag'
+				
+				LEFT JOIN JK.T_GL_JK_PRODUCT M5 ON M5.PRODUCT_CODE=D.PRODUCT_TYPE
+			<where>
+				<if test="list != null and list.size() != 0">
+					A.LOAN_CODE IN
+					<foreach collection="list" item="item" open="(" close=")" separator=",">
+				  		#{item}
+					</foreach>
+				</if>
+	  		</where>
+			) A
+		WHERE A.ROW_NO=1
+	</select>
+</mapper>

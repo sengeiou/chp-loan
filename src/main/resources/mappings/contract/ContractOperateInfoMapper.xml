@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.ContractOperateInfoDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.contract.entity.ContractOperateInfo">
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="dict_operate_type" property="dictOperateType" jdbcType="VARCHAR" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="operate_time" property="operateTime" jdbcType="TIMESTAMP" />
+    <result column="operate_org_code" property="operateOrgCode" jdbcType="VARCHAR" />
+    <result column="dict_contract_next_node" property="dictContractNextNode" jdbcType="VARCHAR" />
+    <result column="dict_operate_result" property="dictOperateResult" jdbcType="VARCHAR" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="verification" property="verification" jdbcType="VARCHAR" />
+    <result column="return_reason" property="returnReason" jdbcType="VARCHAR" />
+  </resultMap>
+   <sql id="Base_Column_List">
+       id,contract_code,loan_code,dict_operate_type,operator,
+       operate_time,operate_org_code,dict_contract_next_node,
+       dict_operate_result,remarks,create_by,create_time,modify_by,modify_time, verification,return_reason
+  </sql>
+  <select id="findByLoanCode" parameterType="map" resultMap="BaseResultMap">
+     select 
+       <include refid="Base_Column_List" />
+     from jk.t_jk_contract_operate_info 
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <!-- 查询最新的一条操作信息 -->
+  <select id="findInfoByLoanCode" parameterType="map" resultMap="BaseResultMap">
+     select 
+       <include refid="Base_Column_List" />
+     from jk.t_jk_contract_operate_info 
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+     order by operate_time desc  
+  </select>
+  <select id="findByParam" parameterType="map" resultMap="BaseResultMap">
+     select 
+       <include refid="Base_Column_List" />
+     from  jk.t_jk_contract_operate_info 
+     where loan_code = #{loanCode,jdbcType=VARCHAR} 
+      and  dict_contract_next_node=#{dictNextNode,jdbcType=VARCHAR} 
+      and  operate_time = (
+       select max(operate_time) from jk.t_jk_contract_operate_info 
+       where loan_code = #{loanCode,jdbcType=VARCHAR} 
+      and  dict_contract_next_node=#{dictNextNode,jdbcType=VARCHAR} 
+      )
+  </select>
+  <select id="findBackNode" parameterType="map" resultMap="BaseResultMap">
+     SELECT 
+        <include refid="Base_Column_List" />  
+     FROM t_jk_contract_operate_info 
+     WHERE loan_code = #{loanCode,jdbcType=VARCHAR} 
+      and dict_operate_result =#{dictOperateResult,jdbcType=VARCHAR} order by dict_operate_type  desc  limit 1
+     
+  </select>
+  <insert id="insertContractOperation" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractOperateInfo" >
+    insert into jk.t_jk_contract_operate_info (id, contract_code, loan_code, 
+      dict_operate_type, operator, operate_time, 
+      operate_org_code, dict_contract_next_node, dict_operate_result, 
+      remarks, create_by, create_time, 
+      modify_by, modify_time)
+    values (#{id,jdbcType=VARCHAR}, #{contractCode,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, 
+      #{dictOperateType,jdbcType=VARCHAR}, #{operator,jdbcType=VARCHAR}, #{operateTime,jdbcType=TIMESTAMP}, 
+      #{operateOrgCode,jdbcType=VARCHAR}, #{dictContractNextNode,jdbcType=VARCHAR}, #{dictOperateResult,jdbcType=VARCHAR}, 
+      #{remarks,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractOperateInfo" >
+    insert into t_jk_contract_operate_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="contractCode != null" >
+        contract_code,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="dictOperateType != null" >
+        dict_operate_type,
+      </if>
+      <if test="operator != null" >
+        operator,
+      </if>
+      <if test="operateTime != null" >
+        operate_time,
+      </if>
+      <if test="operateOrgCode != null" >
+        operate_org_code,
+      </if>
+      <if test="dictContractNextNode != null" >
+        dict_contract_next_node,
+      </if>
+      <if test="dictOperateResult != null" >
+        dict_operate_result,
+      </if>
+      <if test="remarks != null" >
+        remarks,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="verification != null" >
+        verification,
+      </if>
+      <if test="returnReason != null" >
+        return_reason,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictOperateType != null" >
+        #{dictOperateType,jdbcType=VARCHAR},
+      </if>
+      <if test="operator != null" >
+        #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="operateTime != null" >
+        #{operateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operateOrgCode != null" >
+        #{operateOrgCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictContractNextNode != null" >
+        #{dictContractNextNode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictOperateResult != null" >
+        #{dictOperateResult,jdbcType=VARCHAR},
+      </if>
+      <if test="remarks != null" >
+        #{remarks,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="verification != null" >
+        #{verification,jdbcType=VARCHAR},
+      </if>
+      <if test="returnReason != null" >
+        #{returnReason,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

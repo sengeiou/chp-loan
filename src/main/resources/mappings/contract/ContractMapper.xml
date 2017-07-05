@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.ContractDao">
+<resultMap type="com.creditharmony.loan.borrow.contract.entity.Contract" id="contract">
+    <id column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <result column="class_type" jdbcType="VARCHAR" property="classType" />
+    <result column="contract_due_day" jdbcType="TIMESTAMP" property="contractDueDay" />
+    <result column="contract_fact_day" jdbcType="TIMESTAMP" property="contractFactDay" />
+    <result column="contract_replay_day" jdbcType="TIMESTAMP" property="contractReplayDay" />
+    <result column="contract_end_day" jdbcType="TIMESTAMP" property="contractEndDay" />
+    <result column="product_type" jdbcType="VARCHAR" property="productType" />
+    <result column="contract_month_repay_amount" jdbcType="NUMERIC" property="contractMonthRepayAmount"/>
+    <result column="contract_month_repay_total" jdbcType="NUMERIC" property="monthPayTotalAmount"/>
+    <result column="audit_amount" jdbcType="NUMERIC" property="auditAmount" />
+    <result column="contract_months" jdbcType="NUMERIC" property="contractMonths" />
+    <result column="mid_id" jdbcType="VARCHAR" property="midId" />
+    <result column="dict_repay_method" jdbcType="VARCHAR" property="dictRepayMethod" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractAmount" />
+    <result column="contract_expect_amount" jdbcType="NUMERIC" property="contractExpectAmount" />
+    <result column="dict_check_status" jdbcType="VARCHAR" property="dictCheckStatus" />
+    <result column="contract_back_result" jdbcType="VARCHAR" property="contractBackResult" />
+    <result column="audit_count" jdbcType="INTEGER" property="auditCount"/>
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion" />
+    <result column="back_flag" jdbcType="VARCHAR" property="backFlag"/>
+    <result column="doc_id" jdbcType="VARCHAR" property="docId"/>
+    <result column="isobsolete" jdbcType="VARCHAR" property="isobsolete"/>
+    <result column="cobo_name" jdbcType="VARCHAR" property="coboName"/>
+    <result column="cobo_cert_num" jdbcType="VARCHAR" property="coboCertNum"/>
+    <result column="loan_name" jdbcType="VARCHAR" property="loanName"/>
+    <result column="loan_cert_num" jdbcType="VARCHAR" property="loanCertNum"/>
+    <result column="model" jdbcType="VARCHAR" property="model"/>
+    <result column="channel_flag" jdbcType="VARCHAR" property="channelFlag"/>
+    <result column="paperless_flag" jdbcType="VARCHAR" property="paperLessFlag"/>
+    <result column="company_name" jdbcType="VARCHAR" property="companyName"/>
+    <result column="legal_man" jdbcType="VARCHAR" property="legalMan"/>
+    <result column="maddress" jdbcType="VARCHAR" property="maddress"/>
+    <result column="is_register" jdbcType="VARCHAR" property="isRegister"/>
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="contract_history_version" jdbcType="VARCHAR" property="contractHistoryVersion" />
+    <result column="push_number" jdbcType="NUMERIC" property="pushNumber" /> 
+    <result column="revisit_status" jdbcType="VARCHAR" property="revisitStatus" />
+    <result column="auditing_by" jdbcType="VARCHAR" property="auditingBy" />
+    <result column="auditing_time" jdbcType="TIMESTAMP" property="auditingTime" />
+     <result column="contract_end_day_temp" property="contractEndDayTemp" jdbcType="VARCHAR" />
+</resultMap>
+<!--缺合同编号、产品总费率、加急费  -->
+  <select id="findStoreInfo" parameterType="string">
+     
+  </select>
+  <sql id="Base_Column_List">
+    contract_code, id, apply_id, loan_code, contract_due_day, contract_fact_day, 
+    contract_replay_day, contract_end_day,class_type, product_type, audit_amount, contract_months, 
+    mid_id, dict_repay_method, contract_amount, contract_month_repay_amount,contract_month_repay_total,contract_expect_amount, dict_check_status, 
+     contract_back_result,audit_count,contract_version,back_flag,doc_id,isobsolete,cobo_name,
+      cobo_cert_num,loan_name,loan_cert_num,channel_flag,paperless_flag,model,
+      company_name,legal_man,maddress,is_register,channel_flag,
+      create_by, create_time, modify_by, modify_time,contract_history_version ,revisit_status,push_number,new_flag,lender,sign_up_flag
+  </sql>
+  <select id="findByContractCode" parameterType="string" resultMap="contract">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_contract
+    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </select>
+  <select id="findByLoanCode" parameterType="string" resultMap="contract">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_contract
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <select id="findByApplyId" parameterType="string" resultMap="contract">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_contract
+    where apply_id = #{applyId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByLoanCode" parameterType="string">
+     delete from jk.t_jk_contract t 
+     where t.loan_code = #{loanCode} 
+  </delete>
+  <update id="updateContract">
+    update jk.t_jk_contract
+    <set>
+      <if test="id != null and id!=''">
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId != null and applyId!=''">
+        apply_id = #{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null and loanCode!=''">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="contractDueDay != null">
+        contract_due_day = #{contractDueDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractFactDay != null">
+        contract_fact_day = #{contractFactDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractReplayDay != null">
+        contract_replay_day = #{contractReplayDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractEndDayTemp != null">
+        contract_end_day_temp = #{contractEndDayTemp,jdbcType=TIMESTAMP},
+      </if>
+       <if test="contractEndDay != null">
+        contract_end_day = #{contractEndDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="classType != null and classType!=''">
+        class_type = #{classType,jdbcType=VARCHAR},
+      </if>
+      <if test="productType != null and productType!=''">
+        product_type = #{productType,jdbcType=VARCHAR},
+      </if>
+      <if test="auditAmount != null">
+        audit_amount = #{auditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="contractMonthRepayAmount!=null">
+           contract_month_repay_amount = #{contractMonthRepayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPayTotalAmount!=null">
+           contract_month_repay_total = #{monthPayTotalAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="auditCount !=null">
+        audit_count = #{auditCount,jdbcType=INTEGER},
+      </if>
+      <if test="contractMonths != null">
+        contract_months = #{contractMonths,jdbcType=NUMERIC},
+      </if>
+      <if test="midId != null and midId!=''">
+        mid_id = #{midId,jdbcType=VARCHAR},
+      </if>
+      <if test="dictRepayMethod != null and dictRepayMethod!=''">
+        dict_repay_method = #{dictRepayMethod,jdbcType=VARCHAR},
+      </if>
+      <if test="contractAmount != null">
+        contract_amount = #{contractAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="contractExpectAmount != null">
+        contract_expect_amount = #{contractExpectAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="model!=null and model!=''">
+          model = #{model,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckStatus != null and dictCheckStatus!=''">
+        dict_check_status = #{dictCheckStatus,jdbcType=NUMERIC},
+      </if>
+      <if test="contractBackResult != null">
+        contract_back_result = #{contractBackResult,jdbcType=VARCHAR},
+      </if>
+      <if test="contractVersion != null and contractVersion!=''">
+        contract_version = #{contractVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="backFlag!=null and backFlag!=''">
+           back_flag = #{backFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="docId!=null and docId!=''">
+        doc_id = #{docId,jdbcType=VARCHAR},
+      </if>
+      <if test="isobsolete!=null and isobsolete!=''">
+        isobsolete = #{isobsolete,jdbcType=VARCHAR},
+      </if>
+      <if test="coboName!=null and coboName!=''">
+        cobo_name = #{coboName,jdbcType=VARCHAR},
+      </if>
+      <if test="coboCertNum!=null and coboCertNum!=''">
+        cobo_cert_num = #{coboCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="loanName!=null and loanName!=''">
+        loan_name = #{loanName,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCertNum!=null and loanCertNum!=''">
+        loan_cert_num = #{loanCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="channelFlag!=null">
+        channel_flag = #{channelFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="paperLessFlag!=null">
+        paperless_flag = #{paperLessFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName!=null and companyName!=''">
+        company_name = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="legalMan!=null and legalMan!=''">
+        legal_man = #{legalMan,jdbcType=VARCHAR},
+      </if>
+      <if test="maddress!=null and maddress!=''">
+        maddress = #{maddress,jdbcType=VARCHAR},
+      </if>
+      <if test="isRegister!=null and isRegister!=''">
+        is_register = #{isRegister,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null and createBy!=''">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null  and modifyBy!=''">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+       <if test="contractHistoryVersion != null">
+        contract_history_version = #{contractHistoryVersion,jdbcType=TIMESTAMP},
+      </if>
+       <if test="revisitStatus != null  and revisitStatus!=''">
+        revisit_status = #{revisitStatus,jdbcType=VARCHAR},
+      </if>
+       <if test="pushTime != null ">
+        push_time = #{pushTime,jdbcType=TIMESTAMP},
+      </if>
+       <if test="pushNumber != null  and pushNumber!=''">
+        push_number = #{pushNumber,jdbcType=NUMERIC},
+      </if>
+      <if test="revisitReason != null">
+        revisit_reason = #{revisitReason,jdbcType=VARCHAR},
+      </if>
+      <if test="signUpFlag != null">
+      	sign_up_flag = #{signUpFlag,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where 
+	<trim prefixOverrides="AND | OR">  
+    	<if test="contractCode!=null">
+     		and contract_code = #{contractCode,jdbcType=VARCHAR} 
+    	</if>
+    	<if test="applyId!=null">
+     		and apply_id = #{applyId,jdbcType=VARCHAR} 
+    	</if>
+    	<if test="loanCode != null and loanCode!=''">
+     		and loan_code = #{loanCode,jdbcType=VARCHAR} 
+    	</if>
+    </trim>
+  </update>
+  <insert id="insertSelective">
+    insert into jk.t_jk_contract 
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="contractCode != null and contractCode!=''">
+        contract_code,
+      </if>
+      <if test="id != null and id!=''">
+        id,
+      </if>
+      <if test="applyId != null and applyId != ''">
+        apply_id,
+      </if>
+      <if test="loanCode != null and loanCode != ''">
+        loan_code,
+      </if>
+      <if test="contractDueDay != null">
+        contract_due_day,
+      </if>
+      <if test="contractFactDay != null">
+        contract_fact_day,
+      </if>
+      <if test="contractReplayDay != null">
+        contract_replay_day,
+      </if>
+      <if test="contractEndDay != null">
+        contract_end_day,
+      </if>
+      <if test="classType!=null and classType != ''">
+         class_type,
+      </if>
+      <if test="productType != null and productType!= ''">
+        product_type,
+      </if>
+      <if test="auditAmount != null">
+        audit_amount,
+      </if>
+      <if test="auditCount !=null">
+        audit_count,
+      </if>
+      <if test="contractMonths != null">
+        contract_months,
+      </if>
+      <if test="midId != null and midId!= ''">
+        mid_id,
+      </if>
+      <if test="dictRepayMethod != null and dictRepayMethod!= ''">
+        dict_repay_method,
+      </if>
+      <if test="model!=null and model!=''">
+          model,
+      </if>
+      <if test="contractAmount != null">
+        contract_amount,
+      </if>
+      <if test="contractExpectAmount != null">
+        contract_expect_amount,
+      </if>
+      <if test="contractMonthRepayAmount!=null">
+        contract_month_repay_amount,
+      </if>
+      <if test="monthPayTotalAmount!=null">
+        contract_month_repay_total,
+      </if>
+      <if test="dictCheckStatus != null and dictCheckStatus!= ''">
+        dict_check_status,
+      </if>
+      <if test="contractBackResult != null and contractBackResult!= ''">
+        contract_back_result,
+      </if>
+      <if test="contractVersion != null and contractVersion!= ''">
+        contract_version,
+      </if>
+      <if test="backFlag!=null and backFlag!=''">
+           back_flag,
+      </if>
+      <if test="docId!=null and docId!=''">
+        doc_id,
+      </if>
+      <if test="isobsolete!=null and isobsolete!=''">
+        isobsolete,
+      </if>
+      <if test="coboName!=null and coboName!=''">
+        cobo_name,
+      </if>
+      <if test="coboCertNum!=null and coboCertNum!=''">
+        cobo_cert_num,
+      </if>
+      <if test="loanName!=null and loanName!=''">
+        loan_name,
+      </if>
+      <if test="loanCertNum!=null and loanCertNum!=''">
+        loan_cert_num,
+      </if>
+         channel_flag,
+      <if test="paperLessFlag!=null">
+        paperless_flag,
+      </if>
+      <if test="companyName!=null and companyName!=''">
+        company_name,
+      </if>
+      <if test="legalMan!=null and legalMan!=''">
+        legal_man,
+      </if>
+      <if test="maddress!=null and maddress!=''">
+        maddress,
+      </if>
+      <if test="isRegister!=null and isRegister!=''">
+        is_register,
+      </if>
+       <if test="createBy != null and createBy!= ''">
+        create_by,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifyBy != null and modifyBy!= ''">
+        modify_by,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="contractCode != null and contractCode !=''">
+        #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="id != null and id !=''">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId != null and applyId !=''">
+        #{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null and loanCode!=''">
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="contractDueDay != null">
+        #{contractDueDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractFactDay != null">
+        #{contractFactDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractReplayDay != null">
+        #{contractReplayDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractEndDay != null">
+        #{contractEndDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="productType != null and productType!=''">
+        #{productType,jdbcType=VARCHAR},
+      </if>
+      <if test="auditAmount != null">
+        #{auditAmount,jdbcType=NUMERIC},
+      </if>
+       <if test="auditCount !=null">
+        #{auditCount,jdbcType=INTEGER},
+      </if>
+      <if test="contractMonths != null">
+        #{contractMonths,jdbcType=NUMERIC},
+      </if>
+      <if test="midId != null and midId !=''">
+        #{midId,jdbcType=VARCHAR},
+      </if>
+      <if test="dictRepayMethod != null and dictRepayMethod!=''">
+        #{dictRepayMethod,jdbcType=VARCHAR},
+      </if>
+      <if test="model!=null and model!=''">
+        #{model,jdbcType=VARCHAR},
+      </if>
+      <if test="contractAmount != null">
+        #{contractAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="contractExpectAmount != null">
+        #{contractExpectAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="contractMonthRepayAmount!=null">
+        #{contractMonthRepayAmount,jdbcType = NUMERIC},
+      </if>
+      <if test="monthPayTotalAmount!=null">
+        #{monthPayTotalAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="dictCheckStatus != null and dictCheckStatus!=''">
+        #{dictCheckStatus,jdbcType = VARCHAR},
+      </if>
+      <if test="contractBackResult != null and contractBackResult!=''">
+        #{contractBackResult,jdbcType = VARCHAR},
+      </if>
+      <if test="contractVersion != null and contractVersion!=''">
+        #{contractVersion,jdbcType = VARCHAR},
+      </if>
+      <if test="backFlag!=null and backFlag!=''">
+        #{backFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="docId!=null and docId!=''">
+        #{docId,jdbcType = VARCHAR},
+      </if>
+      <if test="isobsolete!=null and isobsolete!=''">
+        #{isobsolete,jdbcType=VARCHAR},
+      </if>
+      <if test="coboName!=null and coboName!=''">
+        #{coboName,jdbcType=VARCHAR},
+      </if>
+      <if test="coboCertNum!=null and coboCertNum!=''">
+        #{coboCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="loanName!=null and loanName!=''">
+        #{loanName,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCertNum!=null and loanCertNum!=''">
+        #{loanCertNum,jdbcType=VARCHAR},
+      </if>
+        #{channelFlag,jdbcType=VARCHAR},
+      <if test="paperLessFlag!=null">
+        #{paperLessFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="companyName!=null and companyName!=''">
+        #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="legalMan!=null and legalMan!=''">
+        #{legalMan,jdbcType=VARCHAR},
+      </if>
+      <if test="maddress!=null and maddress!=''">
+        #{maddress,jdbcType=VARCHAR},
+      </if>
+      <if test="isRegister!=null and isRegister!=''">
+         #{isRegister,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null and createBy!=''">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null and modifyBy!=''">
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateApplyIdByOldApplyId" parameterType="map">
+    update jk.t_jk_contract 
+     set apply_id = #{applyId,jdbcType=VARCHAR} 
+     where apply_id = #{oldApplyId,jdbcType=VARCHAR} 
+  </update>
+  <update id="updateLoanFlagByContractCode" parameterType="string">
+    update jk.t_jk_loan_info 
+     set loan_flag = #{loanFlag,jdbcType=VARCHAR} 
+     where loan_code = ( select loan_code from jk.t_jk_contract c where c.contract_code = #{contractCode,jdbcType=VARCHAR} )
+  </update>
+  <update id="updateLoanStatusByContractCode" parameterType="string">
+    update jk.t_jk_loan_info 
+     set DICT_LOAN_STATUS = #{status,jdbcType=VARCHAR} 
+     where loan_code = ( select loan_code from jk.t_jk_contract c where c.contract_code = #{contractCode,jdbcType=VARCHAR} )
+  </update>
+  <select id="getContractVersion" parameterType="map" resultType="string">
+    select distinct(version) from t_gl_contract_template where  
+     dict_flag=#{dictFlag,jdbcType=VARCHAR}                      <!-- 查询主合同  -->
+ 	 <if test="status!=null and status!=''">
+  		 and status=#{status,jdbcType=VARCHAR}                   <!-- 有效标识 -->
+  	 </if> 
+     order by version
+  </select>
+  <select id="getSummary" parameterType="map" resultType="com.creditharmony.loan.borrow.contract.entity.ex.ContractAmountSummaryEx">
+    select round(sum(a.contract_amount),2) as contractAmountSum,
+           round((sum(a.contract_amount)/d.total_contract_amount)*100,2) as percent,
+           round(b.fee_month_rate,3) as rate from jk.t_jk_contract a 
+  	  left join jk.t_jk_contract_fee b on a.contract_code = b.contract_code 
+   	  left join (
+         select sum(c.contract_amount) total_contract_amount, c.dict_check_status 
+         from jk.t_jk_contract c 
+          where
+           1=1 
+           <if test="status!=null and status!=''">
+            and c.dict_check_status = #{status,jdbcType=VARCHAR}
+           </if>
+            group by dict_check_status
+   	  ) d on d.dict_check_status = a.dict_check_status 
+    where
+    	 1=1
+    	<if test="status!=null and status!=''">
+           and a.dict_check_status = #{status,jdbcType=VARCHAR}
+        </if>
+   group by b.fee_month_rate,d.total_contract_amount
+  </select>
+   <!-- 更新借款状态 -->
+  <update id="updateLoanStatus" parameterType="com.creditharmony.loan.borrow.contract.view.ContractBusiView">
+  	update jk.t_jk_loan_info
+  	set frozen_flag = '0'
+  		<if test="dictLoanStatusCode !=null and dictLoanStatusCode !=''">
+  		,dict_loan_status=#{dictLoanStatusCode}
+  		</if>
+  	where loan_code=#{loanCode}
+  </update>
+   
+  
+  <update id="updateContractForBack">
+    update jk.t_jk_contract
+    <set>
+      <if test="id != null and id!=''">
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      
+      <if test="backFlag!=null and backFlag!=''">
+           back_flag = #{backFlag,jdbcType=VARCHAR},
+      </if>
+     
+    </set>
+    where 
+    <trim prefixOverrides="AND | OR">  
+    	<if test="contractCode!=null">
+     		and contract_code = #{contractCode,jdbcType=VARCHAR} 
+    	</if>
+    	<if test="applyId!=null">
+     		and apply_id = #{applyId,jdbcType=VARCHAR} 
+    	</if>
+    	<if test="loanCode != null and loanCode!=''">
+     		and loan_code = #{loanCode,jdbcType=VARCHAR} 
+    	</if>
+    </trim>
+  </update>
+  
+  <select id="getHiscontract" resultType="java.lang.Integer" parameterType="string">
+   	select count(1) count  from jk.t_jk_loan_status_his 
+   	where dict_loan_status in('65','96') 
+	and loan_code=#{loanCode};
+  </select>
+  <update id="updateContractAuditing">
+    update jk.t_jk_contract set auditing_by='${auditingBy}'
+    <if test="auditingTime =='' or auditingTime==null">
+     ,auditing_time=null
+    </if>
+    <if test="auditingTime !='' and auditingTime!=null">
+     ,auditing_time='${auditingTime}'
+    </if>
+    
+    where 1=1 
+    <if test="contractCode!=null and contractCode!=''">
+     and contract_code = #{contractCode,jdbcType=VARCHAR} 
+    </if>
+    <if test="applyId!=null and applyId!=''">
+     and apply_id = #{applyId,jdbcType=VARCHAR} 
+    </if>
+    <if test="loanCode != null and loanCode!=''">
+     and loan_code = #{loanCode,jdbcType=VARCHAR} 
+    </if>
+  </update>
+  
+  <update id="updateLender" parameterType="Map">
+    update jk.t_jk_contract set lender = #{lender} where apply_id = #{applyId} 
+  </update>
+  
+  <!-- 查询合同金额和实放金额 -->
+  <select id="selectContractAmountAndfeePaymentAmount" parameterType="com.creditharmony.loan.borrow.contract.entity.ContractAndContractFee" resultType="com.creditharmony.loan.borrow.contract.entity.ContractAndContractFee">
+  	SELECT
+   		c.contract_code,c.contract_amount,f.fee_payment_amount
+	FROM
+	    jk.t_jk_contract C LEFT JOIN jk.t_jk_contract_fee f
+	        ON c.contract_code = f.contract_code
+	WHERE
+	    c.contract_code = #{contractCode}
+  </select>
+  <select id="searchContractByoldLoanCodeAndIssplit" parameterType="map" resultMap="contract">
+  	select
+  		c.loan_code,
+  		c.contract_code
+  	from jk.t_jk_contract c left join jk.t_jk_loan_info l on c.loan_code = l.loan_code 
+  	where l.old_loan_code = #{loanCode} and l.issplit = #{issplit}
+  </select>
+
+  <!--根据合同状态查询信息 -->
+  <select id="findByContractStatus" parameterType="string" resultMap="contract">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_contract
+    where dict_check_status = #{dictCheckStatus,jdbcType=VARCHAR}
+  </select>
+  
+  
+  
+  <update id="updateContractTemp">
+    update jk.t_jk_contract_temp
+    <set>
+     
+      <if test="contractDueDay != null">
+        contract_due_day = #{contractDueDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractFactDay != null">
+        contract_fact_day = #{contractFactDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractReplayDay != null">
+        contract_replay_day = #{contractReplayDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="contractEndDay != null">
+        contract_end_day = #{contractEndDay,jdbcType=TIMESTAMP},
+      </if>
+     <if test="contractEndDayTemp != null">
+        contract_end_day_temp = #{contractEndDayTemp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null  and modifyBy!=''">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      
+    </set>
+    where contract_code in(${contractCodeTemp})
+    	
+   
+  </update>
+  
+  <select id="selectTableColumnName" parameterType="map" resultType="string">
+  	select string_agg(column_name,',')
+  	from information_schema.columns
+	where table_schema=#{tableSchema} and table_name=#{tableName}
+  </select>
+  <insert id="insertTableTOTable" parameterType="map">
+  	<if test="id != null and id != ''">
+  		insert into ${sqlColums} select ${sqlValues} where id=#{id}
+  	</if>
+  </insert>
+  
+  <insert id="addArchives" parameterType="Map">
+	INSERT
+	INTO
+	t_jk_contract_archives(
+	id,
+	contract_code,
+	loan_code,
+	file_num,
+	file_name
+	) SELECT
+        	getUuid32(),
+            #{contractCode},
+            c.loan_code,
+            #{fileNum},
+            #{fileName}
+        FROM
+            jk.t_jk_contract c
+        WHERE c.contract_code=#{contractCode}
+	</insert>
+
+</mapper>
+	

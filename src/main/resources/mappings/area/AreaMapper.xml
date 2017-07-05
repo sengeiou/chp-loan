@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.stores.dao.AreaPreDao">
+	<!--  根据区域id获取区域名称 -->
+     <select id="getAreaName" resultType="java.lang.String">
+     	select area_name from jk.t_gl_province_city where id = #{addressId}
+     </select>
+     <!-- 根据用户名id获取用户姓名 -->
+     <select id="getUserName" resultType="java.lang.String">
+     	select name from jk.t_gl_user where id = #{userId}
+     </select>
+     <!-- 根据组织机构id获取组织机构名字 -->
+     <select id="getOrgName" resultType="java.lang.String">
+     	select name from jk.t_gl_org where id = #{orgId}
+     </select>
+     <!-- 根据applyId获取当前流程状态 -->
+     <select id="getStatusByApplyId" resultType="java.lang.String">
+     	select dict_loan_status from jk.t_jk_loan_info where apply_id = #{applyId}
+     </select>
+     <!-- 根据借款编码查询退回门店原因 -->
+     <select id="getBackReason" resultType="java.lang.String">
+     	select feed_back from jk.t_jk_audit_back where loan_code = #{loanCode} and modify_time =
+		(select max(modify_time) from jk.t_jk_audit_back where loan_code = #{loanCode})
+     </select>
+     <!-- 根据产品code获得产品名称 -->
+     <select id="getProductNameByCode" resultType="java.lang.String">
+     	select product_name from jk.t_gl_jk_product where product_code = #{productCode}
+     </select>
+     <!-- 根据applyId查询loanCode -->
+     <select id="getLoanCodeByApplyId" resultType="java.lang.String">
+     	select loan_code from jk.t_jk_loan_info where apply_id = #{applyId}
+     </select>
+     <!-- 根据门店id查询门店省份id -->
+     <select id="getProvinceId" resultType="java.lang.String">
+     	select province_id from t_gl_org where id = #{orgId}
+     </select>
+     <!-- 根据门店id查询城市id -->
+     <select id="getCityId" resultType="java.lang.String">
+     	select city_id from t_gl_org where id = #{orgId}
+     </select>
+     <!-- 根据复议applyId查询信借applyId -->
+     <select id="getApplyId" resultType="java.lang.String">
+     	select apply_id from jk.t_jk_loan_info where loan_code = 
+     	(select loan_code from jk.t_jk_reconsider_apply where apply_id = #{applyId}) 
+     </select>
+     <!-- 通过用户code获得用户姓名 -->
+     <select id="selectNameByCode" resultType="java.lang.String">
+     	select distinct name from jk.t_gl_user where user_code = #{userCode} 
+     </select>
+     <!-- 根据loanCode获得applyId -->
+     <select id="getApplyIdByLoanCode" resultType="java.lang.String">
+     	  select 
+			case when tj.apply_id is not null then tj.apply_id else t.apply_id end as applyid
+		    from t_jk_loan_info t
+		    left join t_jk_reconsider_apply tj on t.loan_code=tj.loan_code
+		    where t.loan_code= #{loanCode} 
+     </select>
+</mapper>

@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.channel.jyj.dao.JYJUrgeGuaranteeMoneyDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesMoneyEx">
+    <id column="id" jdbcType="VARCHAR" property="urgeId" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag" />
+    <result column="dict_deal_type" jdbcType="VARCHAR" property="dictDealType" />
+    <result column="product_name" jdbcType="VARCHAR" property="productName" />
+    <result column="lending_time" jdbcType="DATE" property="lendingTime" />
+    <result column="decuct_time" jdbcType="DATE" property="decuctTime" />
+    <result column="split_back_result" jdbcType="VARCHAR" property="splitBackResult" />
+    <result column="split_fail_result" jdbcType="VARCHAR" property="splitFailResult" />
+    <result column="dict_deal_status" jdbcType="VARCHAR" property="dictDealStatus" />
+    <result column="bank_name" jdbcType="VARCHAR" property="bankName" />
+    <result column="contract_months" jdbcType="VARCHAR" property="contractMonths" />
+    <result column="contract_months" jdbcType="VARCHAR" property="contractMonths" />
+    <result column="urge_moeny" jdbcType="NUMERIC" property="urgeMoeny" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractAmount" />
+    <result column="grant_amount" jdbcType="NUMERIC" property="grantAmount" />
+    <result column="product_type_name" jdbcType="VARCHAR" property="classType" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="customerTelesalesFlag" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+    <result column="store_name" jdbcType="VARCHAR" property="storeName"/>
+    <result column="wait_urge_moeny"  property="waitUrgeMoeny" />
+     <association property="urgeServicesCheckApply" javaType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesCheckApply">
+			<id column="id" property="id" />
+			<result column="r_service_charge_id" property="rServiceChargeId" />
+			<result column="contract_code" property="contractCode" />
+			<result column="urge_apply_amount" property="urgeApplyAmount" />
+			<result column="urge_apply_date" property="urgeApplyDate" />
+			<result column="urge_apply_status" property="urgeApplyStatus" />
+			<result column="urge_really_amount" property="urgeReallyAmount" />
+			<result column="urge_back_reason" property="urgeBackReason" />
+	</association>
+	<association property="PaybackTransferInfo" javaType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferInfo">
+			<id column="r_payback_apply_id" property="rPaybackApplyId" />
+			<result column="contract_code" property="contractCode" />
+			<result column="dict_deposit" property="dictDeposit" /><!-- 存款方式 -->
+			<result column="tran_deposit_time" property="tranDepositTime" /><!-- 存款时间-->
+			<result column="stores_in_account" property="storesInAccount" />
+			<result column="stores_in_accountname" property="storesInAccountname" />
+			<result column="really_amount" property="reallyAmount" />
+			<result column="audit_status" property="auditStatus" />
+	</association>
+	
+	<association property="payback" javaType="com.creditharmony.loan.borrow.payback.entity.Payback">
+			<id column="contract_code" property="contractCode" />
+			<result column="payback_bule_amount" jdbcType="NUMERIC" property="paybackBuleAmount" />
+	</association>
+  </resultMap>
+  
+  <resultMap id="PaybackOpeResultMap" type="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="r_payback_id" jdbcType="VARCHAR" property="rPaybackId" />
+    <result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+    <result column="dict_r_deduct_type" jdbcType="VARCHAR" property="dictRDeductType" />
+    <result column="operate_result" jdbcType="VARCHAR" property="operateResult" />
+    <result column="operator" jdbcType="VARCHAR" property="operator" />
+    <result column="operate_role_id" jdbcType="VARCHAR" property="operateRoleId" />
+    <result column="operate_time" jdbcType="DATE" property="operateTime" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+
+  </resultMap>
+  
+    <sql id="PaybackOpe_Column_List">
+    f.id, f.r_payback_id, f.dict_loan_status, f.dict_r_deduct_type, f.operate_result, f.operator, f.operate_role_id,
+    f.operate_time, f.remark
+  </sql>
+  <!-- 查询催收保证金待催收列表 -->
+  <select id="selectGuaranteeMoneyList"  resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesMoneyEx">
+    select distinct
+  	e.id,
+  	e.id as urgeId,
+  	e.dict_deal_type as dictDealType,<!-- 划扣平台 -->
+  	e.deduct_fail_reason, <!-- 催收服务费失败原因 -->
+    round(urge_moeny,2) as allFee,   -- 费用总额 
+    round(cf.fee_count,2) as feeCount, -- 前期综合服务费
+    round(cf.fee_petition,2) as feePetition, --外访费
+    round(cf.fee_expedited,2) as feeExpedited, --加急费
+    round(urge_decute_moeny,2) as splitAmount, <!-- 已划金额 -->
+    round(urge_moeny-urge_decute_moeny-e.audit_amount,2) as waitUrgeMoeny, -- 待收取金额 
+    urge_decute_date, <!-- 划扣日期 -->
+    c.contract_code,
+    b.customer_name,
+    b.customer_cert_num,
+	j.product_name,
+	round(d.contract_amount,2) as contractAmount,
+	round(cf.first_grant_amount,2) as firstGrantAmount,
+	d.contract_months,
+	h.bank_name,
+	c.lending_time,
+	b.customer_telesales_flag,
+	a.loan_flag,
+	e.dict_deal_status as splitBackResult,<!-- 处理状态，催收主表的回盘结果 -->
+	p.product_type_name as classType,
+	o.name as name <!-- 门店名称 -->
+    from
+    	t_jk_urge_services_amount e 
+    	LEFT JOIN jk.t_jk_payback_split f ON f.r_payback_apply_id = e.id 
+    	LEFT JOIN jk.t_jk_loan_grant c ON c.id=e.r_grant_id
+    	LEFT JOIN jk.t_jk_contract d ON d.contract_code=c.contract_code
+    	LEFT JOIN jk.t_jk_contract_fee cf ON cf.contract_code = d.contract_code
+		LEFT JOIN jk.t_jk_loan_info a ON a.loan_code=d.loan_code
+		LEFT JOIN jk.t_jk_loan_customer b ON  b.loan_code=a.loan_code
+		LEFT JOIN jk.t_jk_loan_bank h ON h.loan_code=a.loan_code
+		AND h.bank_top_flag='1' AND h.repayment_flag='1'
+		LEFT JOIN jk.t_gl_jk_product j ON  j.product_code=d.product_type
+		LEFT JOIN jk.t_gl_jk_product_type p ON p.class_type=a.class_type
+		LEFT JOIN jk.t_gl_org o ON o.id = a.loan_store_orgid
+	where (e.dict_deal_status!='0' and e.dict_deal_status!='2' and e.dict_deal_status!='6')
+			 and e.return_logo = '0' and d.product_type = 'A020' and e.deduct_yesno = '1'
+		<if test="urgeId != null and urgeId != ''">
+			and e.id = #{urgeId}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and b.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and c.contract_code LIKE CONCAT('%', #{contractCode}, '%')
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and b.customer_cert_num LIKE CONCAT('%', #{customerCertNum}, '%')
+		</if>
+		<if test="startDate != null and startDate != ''">
+			and c.lending_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and c.lending_time &lt;= #{endDate}
+		</if>
+		 ${queryRight} 
+  </select>
+  
+   <!-- 查询拆分表-->
+  <select id="selectpaybackSplit" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit"  resultType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+    select 
+			*
+	 from t_jk_payback_split f 
+	where
+			f.r_payback_apply_id = #{rId}
+			and f.dict_r_deduct_type = #{dictRDeductType}
+			and f.split_back_result = #{splitBackResult}
+  </select>
+  
+  <!-- 更新拆分表-->
+   <update id="updatepaybackSplit" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+    update t_jk_payback_split 
+    <set>
+       send_flag = #{isSend}
+    </set>
+    where id = #{id}
+  </update> 
+  
+  <!-- 插入查账申请表 -->
+  <insert id="saveUrgeApply" parameterType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesCheckApply">
+  	INSERT INTO jk.t_jk_urge_services_checkapply(
+            id, r_service_charge_id, contract_code, urge_method, urge_apply_amount, urge_apply_date, 
+            urge_apply_status, urge_really_amount, urge_back_reason,dict_deposit_account, create_by, 
+            create_time)
+    VALUES (#{id}, #{rServiceChargeId}, #{contractCode}, #{urgeMethod}, #{urgeApplyAmount}, #{urgeApplyDate}, 
+            #{urgeApplyStatus}, #{urgeReallyAmount}, #{urgeBackReason}, #{dictDepositAccount}, #{createBy}, 
+            #{createTime});
+  </insert>
+  
+  <!--保存还款转账记录信息 -->
+	<insert id="savePayBackTransferInfo">
+		INSERT INTO jk.t_jk_payback_transfer_info (
+			id,
+			r_payback_apply_id,
+			contract_code,
+			dict_deposit,
+			tran_deposit_time,
+			stores_in_account,
+			stores_in_accountname,
+			really_amount,
+			deposit_name,
+			audit_status,
+			upload_name,
+			upload_date,
+			upload_filename,
+			upload_path,
+			create_by, 
+			create_time,
+			relation_type)
+			VALUES(
+			#{paybackTransferInfo.id},
+			#{urgeServicesCheckApply.id},
+			#{urgeServicesCheckApply.contractCode},
+			#{paybackTransferInfo.dictDeposit},
+			#{paybackTransferInfo.tranDepositTime},
+			#{paybackTransferInfo.storesInAccount},
+			#{paybackTransferInfo.storesInAccountname},
+			#{paybackTransferInfo.reallyAmount},
+			#{paybackTransferInfo.depositName},
+			#{paybackTransferInfo.auditStatus},
+			#{paybackTransferInfo.uploadName},
+			#{paybackTransferInfo.uploadDate},
+			#{paybackTransferInfo.uploadFilename},
+			#{paybackTransferInfo.uploadPath},
+			#{paybackTransferInfo.createBy},
+			#{paybackTransferInfo.createTime},
+			#{paybackTransferInfo.relationType})
+	</insert>
+	
+	  <!-- 催收服务费查账匹配列表查询 ，根据申请表的申请状态取查询 备注： 查账状态为in-->
+  <select id="selCheckInfo" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesMoneyEx">
+  SELECT
+			pa.id,  
+			pa.id as "urgeServicesCheckApply.id",
+			pa.dict_deposit_account as "urgeServicesCheckApply.dict_deposit_account", 
+			pa.contract_code as "urgeServicesCheckApply.contract_code",
+			us.id as urgeId,
+			lg.contract_code,
+			pa.r_service_charge_id as "urgeServicesCheckApply.r_service_charge_id",
+			pa.URGE_REALLY_AMOUNT as "urgeServicesCheckApply.URGE_REALLY_AMOUNT", 
+			pa.URGE_APPLY_DATE as "urgeServicesCheckApply.URGE_APPLY_DATE",
+			pa.URGE_APPLY_STATUS as "urgeServicesCheckApply.URGE_APPLY_STATUS",
+			pa.URGE_APPLY_AMOUNT as "urgeServicesCheckApply.URGE_APPLY_AMOUNT",
+			(us.URGE_MOENY - us.URGE_DECUTE_MOENY-us.AUDIT_AMOUNT) as wait_urge_moeny, --待查账金额
+			urge_moeny as allFee,   -- 费用总额 
+			cf.fee_count as feeCount, -- 前期综合服务费
+			cf.fee_petition as feePetition, --外访费
+			cf.fee_expedited as feeExpedited, --加急费
+			mp.bank_card_no as "middlePerson.bank_card_no",
+			mp.mid_bank_name as "middlePerson.mid_bank_name",
+			o.name as store_name , 
+			lc.customer_cert_num,
+			lc.customer_name,
+			lc.customer_telesales_flag,
+			c.loan_code,
+			c.product_type,
+			c.contract_amount,
+			c.contract_months,
+			c.contract_replay_day,
+			c.contract_end_day,
+			li.dict_loan_status,
+			li.loan_team_orgid,
+			li.loan_store_orgid as storeId, <!-- 门店id -->
+			li.loan_flag,
+			lb.id as loanBankId,
+			lb.loan_code,
+			lb.bank_account_name,
+			lb.bank_account,
+			lb.bank_branch,
+			lb.bank_name,
+			us.URGE_MOENY,
+			cf.first_grant_amount as firstGrantAmount, --首次放款金额
+			pro.product_name,
+			pb.payback_bule_amount as "payback.payback_bule_amount"
+			from jk.T_JK_URGE_SERVICES_CHECKAPPLY pa <!-- 催收查账申请表 -->
+			LEFT JOIN jk.t_jk_loan_grant lg ON lg.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_contract c ON c.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_contract_fee cf ON cf.contract_code = c.contract_code
+			LEFT JOIN jk.t_jk_loan_info li ON li.loan_code = c.loan_code
+			LEFT JOIN jk.t_jk_loan_customer lc ON lc.loan_code = li.loan_code  
+			LEFT JOIN jk.t_jk_loan_Bank lb ON lb.loan_code = c.loan_code and lb.bank_top_flag = '1' and lb.repayment_flag = '1'
+			LEFT JOIN jk.t_jk_urge_services_amount us on us.id = pa.r_service_charge_id
+			LEFT JOIN JK.t_gl_jk_product pro on c.product_type = pro.product_code
+			LEFT JOIN jk.t_gl_org o ON o.id = li.loan_store_orgid 
+			LEFT JOIN JK.t_jk_payback pb on pb.contract_code = pa.contract_code 
+			
+			<!--存入银行 -->
+			LEFT JOIN jk.t_jk_middle_person mp ON
+			mp.bank_card_no=pa.dict_deposit_account
+			where us.urge_type = '1' and (pa.urge_apply_status = '5' or pa.urge_apply_status = '8')   <!-- 匹配列表中只能查看申请表中查账状态为未查账的 -->
+			<if test="contractCode!= null and !contractCode.equals('')">
+			AND pa.contract_code = #{contractCode}
+		   </if>
+		   <if test="urgeServicesCheckApply!=null and urgeServicesCheckApply.id!= null and !urgeServicesCheckApply.id.equals('')">
+			AND pa.id = #{urgeServicesCheckApply.id}
+		   </if>
+		   <!-- 查账申请表中的查账申请状态 -->
+		   <if test="urgeServicesCheckApply!=null and urgeServicesCheckApply.urgeApplyStatus!= null and !urgeServicesCheckApply.urgeApplyStatus.equals('')">
+			AND pa.urge_apply_status in (${urgeServicesCheckApply.urgeApplyStatus})
+		   </if>
+		   <if test="urgeId!=null and !urgeId.equals('')">
+			AND us.id = #{urgeId}
+		   </if>
+		   <if test="storeId!=null">
+		     AND li.loan_store_orgid in
+	  	    <foreach collection="storeId" index="index" item="item" open="(" separator="," close=")">   
+               #{item,jdbcType=VARCHAR}   
+             </foreach> 
+		   </if>
+		   <if test="customerName!=null and customerName!=''">
+		     AND li.loan_customer_name like '%'||#{customerName,jdbcType=VARCHAR}||'%'
+		   </if> 
+		   <if test="urgeServicesCheckApply!=null and urgeServicesCheckApply.urgeApplyAmount!=null">
+		     AND pa.urge_apply_amount=#{urgeServicesCheckApply.urgeApplyAmount,jdbcType=NUMERIC}  
+		   </if> 
+		   <if test="loanFlag!=null and loanFlag!=''">
+		     AND li.loan_flag = #{loanFlag,jdbcType=VARCHAR} 
+		   </if> 
+		   <if test="middlePerson!=null and middlePerson.bankCardNo != null and middlePerson.bankCardNo !='' ">
+		     AND mp.bank_card_no = #{middlePerson.bankCardNo} 
+		   </if>
+  </select> 
+  
+  <!--查询查账账款列表   -->
+	<select id="findUrgeTransfer" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferInfo">
+		SELECT id, 
+		   r_payback_apply_id, 
+		   contract_code, 
+		   dict_deposit,
+		   tran_deposit_time, 
+	       stores_in_account, 
+	       stores_in_accountname, 
+	       round(really_amount,2) as reallyAmount, 
+	       deposit_name, 
+	       audit_status, 
+	       upload_name, 
+	       upload_date, 
+	       upload_filename, 
+	       upload_path, 
+	       create_by, 
+	       create_time, 
+	       modify_by, 
+	       modify_time
+	  FROM t_jk_payback_transfer_info 
+		 where  1=1
+	 	<if test="id != null and !id.equals('')">
+			AND id = #{id}
+		</if>
+		<if test="rPaybackApplyId != null and !rPaybackApplyId.equals('')">
+			AND r_payback_apply_id = #{rPaybackApplyId}
+		</if>
+		<if test="auditStatus != null and !auditStatus.equals('')"> <!-- 查账状态默认为未查账 -->
+			AND audit_status in (${auditStatus})
+		</if>
+		<if test="relationType != null and !relationType.equals('')">
+			AND RELATION_TYPE = #{relationType}
+		</if>
+	</select>
+	
+	  <!--匹配更新汇款查账状态   -->
+	<update id="updateInfoStatus">
+		UPDATE jk.t_jk_payback_transfer_info 
+		<set>
+		 <if test="auditStatus != null and auditStatus != ''"> 
+		 	audit_status=#{auditStatus},
+		 </if>
+		 <if test="modifyTime != null">
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </set>
+		WHERE 
+		<trim prefixOverrides="AND | OR">  
+			<if test="id != null and !id.equals('')">
+				AND id = #{id}
+	    	</if>
+	    	<if test="rPaybackApplyId != null and !rPaybackApplyId.equals('')">
+				AND R_PAYBACK_APPLY_ID = #{rPaybackApplyId}
+	    	</if>
+	    	<if test="reqTime != null and !reqTime.equals('')">
+				AND cast(extract(epoch from modify_time) as varchar) = #{reqTime}
+	    	</if>
+	    </trim>
+	</update>
+	
+	<update id="updateUrgeApply">
+	UPDATE jk.t_jk_urge_services_checkapply 
+		<set>
+		 <if test="urgeApplyAmount!= null and urgeApplyAmount != ''"> 
+		 	URGE_APPLY_AMOUNT = #{urgeApplyAmount},
+		 </if>
+		 <if test="urgeReallyAmount != null"> 
+		 	urge_really_amount = #{urgeReallyAmount},
+		 </if>
+		  <if test="urgeApplyStatus != null and urgeApplyStatus != ''"> 
+		 	urge_apply_status = #{urgeApplyStatus},
+		 </if>
+		 <if test="urgeBackReason != null "> 
+		 	urge_back_reason = #{urgeBackReason},
+		 </if>
+		  <if test="dictDepositAccount != null and dictDepositAccount != '' "> 
+		 	dict_deposit_account = #{dictDepositAccount},
+		 </if>
+		 <if test="modifyTime != null and modifyTime != ''">
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </set>
+		WHERE 
+		<trim prefixOverrides="AND | OR">  
+			<if test="id != null and !id.equals('')">
+				AND id = #{id}
+	    	</if>
+	    	<if test="reqTime != null and !reqTime.equals('')">
+				AND cast(extract(epoch from modify_time) as varchar) = #{reqTime}
+	    	</if>
+			<if test="rServiceChargeId != null and !rServiceChargeId.equals('')">
+				AND R_SERVICE_CHARGE_ID = #{rServiceChargeId}
+	    	</if>
+	    </trim>
+	</update>
+	
+	<select id="getUrgeApplyById" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesCheckApply">
+	SELECT id, contract_code, urge_method, urge_apply_amount,
+		urge_apply_date,
+		urge_apply_status, urge_really_amount, urge_back_reason, r_service_charge_id,dict_deposit_account
+	FROM jk.t_jk_urge_services_checkapply
+	where 1=1
+	<if test="id != null and !id.equals('')">
+		AND id = #{id}
+	</if>
+	<if test="urgeApplyStatus != null and !urgeApplyStatus.equals('')">
+		AND URGE_APPLY_STATUS = #{urgeApplyStatus}
+	</if>
+	<if test="rServiceChargeId != null and !rServiceChargeId.equals('')">
+		AND R_SERVICE_CHARGE_ID = #{rServiceChargeId}
+	</if>
+	</select>
+	
+	<!--门店待办更新汇款信息   -->
+	<delete id="deletePaybackTransferInfo">
+		DELETE FROM jk.t_jk_payback_transfer_info
+		WHERE r_payback_apply_id = #{rPaybackApplyId}
+	</delete>
+	
+	
+	<select id="findUrgeApplyList" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesCheckApply">
+	SELECT id, contract_code, urge_method, urge_apply_amount,
+		urge_apply_date,
+		urge_apply_status, urge_really_amount, urge_back_reason, r_service_charge_id
+	FROM jk.t_jk_urge_services_checkapply
+	where 1=1
+	<if test="id != null and !id.equals('')">
+		AND id = #{id}
+	</if>
+	<if test="urgeApplyStatus != null and !urgeApplyStatus.equals('')">
+		AND URGE_APPLY_STATUS in (${urgeApplyStatus})
+	</if>
+	<if test="rServiceChargeId != null and !rServiceChargeId.equals('')">
+		AND R_SERVICE_CHARGE_ID = #{rServiceChargeId}
+	</if>
+	</select>
+	
+	<!-- 匹配加锁-->
+	<select id="getApplyUrgeReq"  resultType = "com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesCheckApply">
+	   select id, 
+	   cast (extract(epoch from modify_time) as varchar) as reqTime,
+	   urge_really_amount
+	   from jk.t_jk_urge_services_checkapply
+	   where 
+	   id = #{reqId} 
+	   and urge_apply_status = #{reqStatus} for update
+	</select>
+	
+	<!-- 手动匹配加锁-->
+	<select id="getstransferInfoUrge"  resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackTransferInfo">
+	   select id, cast (extract(epoch from modify_time) as varchar) as reqTime from t_jk_payback_transfer_info
+	   where 
+	   id = #{reqId} 
+	   and audit_status = #{reqStatus} for update
+	</select>
+</mapper>

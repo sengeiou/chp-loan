@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.borrow.trusteeship.dao.GoldAccountBusinessDao">
+	<resultMap id="businessMap"
+		type="com.creditharmony.loan.borrow.trusteeship.view.GoldAccountBusiness">
+		<result property="applyId" column="id"></result><!--apply_id -->
+		<result property="storesName" column="name"></result><!-- 门店名称 -->
+		<result property="referralsDate" column="introduction_time"></result><!-- 推荐日期 -->
+		<result property="customerName" column="customer_name"></result><!-- 客户姓名 -->
+		<result property="customerNum" column="customer_cert_num"></result><!-- 身份证号 -->
+		<result property="bankName" column="BANK_NAME"></result><!-- 开户行 -->
+		<result property="bankAccount" column="bank_account"></result><!-- 银行账号 -->
+		<result property="loanAuditAmount" column="LOAN_AUDIT_AMOUNT"></result><!-- 批借金额 -->
+		<result property="feePetition" column="FEE_CONSULT"></result><!-- 外访费 -->
+		<result property="feeExpedited" column="FEE_EXPEDITED"></result><!-- 加急费 -->
+		<result property="grantAmount" column="grant_amount"></result><!-- 放款金额 -->
+		<result property="loanMonths" column="loan_months"></result><!-- 期限 -->
+		<result property="loanStatus" column="dict_loan_status"></result><!-- 放款状态 -->
+		<result property="grantDate" column="lending_time"></result><!-- 放款日期 -->
+		<result property="channel" column="loan_flag"></result><!-- 渠道 -->
+		<result property="model" column="model"></result><!-- 模式 -->
+		<result property="yesNO" column="paperless_flag"></result><!-- 是否无纸化 -->
+		<result property="warrantor" column="is_register"></result><!-- 是否有保证人 -->
+		<!-- 2019-05-12 -->
+		<result property="contractAmount" column="contract_amount"></result><!-- 合同金额 -->
+		<result property="contractVersion" column="contract_version"></result><!-- 合同版本号 -->
+		<result property="loanCode" column="loan_code"></result><!-- 合同版本号 -->
+	</resultMap>
+	<sql id="ceilingColumns">
+		loan_info.apply_id as id,
+		org.name as name,
+		to_date(to_char(
+		loan_info.LOAN_AUDIT_TIME,'yyyy-MM-dd'),'yyyy-MM-dd')introduction_time,
+		loan_customer.customer_name,loan_customer.customer_cert_num,
+		open_bank.label BANK_NAME,loan_bank.bank_account,
+		round(loan_info.LOAN_AUDIT_AMOUNT,2)LOAN_AUDIT_AMOUNT,
+		round(contract_fee.FEE_CONSULT,2)FEE_CONSULT,
+		round(contract_fee.FEE_EXPEDITED,2)FEE_EXPEDITED,
+		loan_info.LOAN_MONTHS,gl_dicts.label DICT_LOAN_STATUS,
+		round(loan_grant.grant_amount,2)grant_amount,
+		to_date(to_char(
+		loan_grant.LENDING_TIME,'yyyy-MM-dd'),'yyyy-MM-dd')lending_time,
+		loan_info.loan_flag LOAN_FLAG,
+		loan_info.model model,
+		contract.paperless_flag,
+		contract.is_register,
+		contract.contract_version,
+		round(contract.contract_amount,2)contract_amount,
+		loan_info.loan_code loan_code
+	</sql>
+	<sql id="selectCondition">
+		<if test="params.referralsDate != null and params.referralsDate != ''">
+			and to_date(to_char(loan_info.LOAN_AUDIT_TIME,'yyyy-MM-dd'),'yyyy-MM-dd') = #{params.referralsDate}
+		</if>
+		<if test="params.customerName != null and params.customerName !=''">
+			and loan_customer.customer_name like '%' ||
+			#{params.customerName} || '%'
+		</if>
+		<if test="params.loanStatus != null and params.loanStatus != ''">
+			and loan_info.DICT_LOAN_STATUS = #{params.loanStatus}
+		</if>
+		<if test="params.grantDate != null and params.grantDate != ''">
+			and loan_grant.LENDING_TIME =#{params.grantDate}
+		</if>
+		<!-- <if test="params.channel != null and params.channel != ''">
+			and loan_info.LOAN_FLAG = #{params.channel}
+		</if> -->
+		<if test="params.applyId != null and params.applyId != ''">
+			and loan_info.apply_id = #{params.applyId}
+		</if>
+		 <if test="params.channel != null  and params.channel!=''">
+             and loan_info.model = #{params.channel}
+         </if>
+		<!-- 2016-05-12 start-->
+		<!-- 是否无纸化 -->
+		<if test="params.yesNO != null and params.yesNO != ''">
+			and contract.paperless_flag = #{params.yesNO}
+		</if>
+		<!-- 是否有保证人 -->
+		<if test="params.warrantor != null and params.warrantor != ''">
+			and contract.is_register = #{params.warrantor}
+		</if>
+		<!-- 合同版本号 -->
+		<if test="params.contractVersion != null and params.contractVersion != ''">
+			and contract.contract_version = #{params.contractVersion}
+		</if>
+		<!-- 2016-05-12 end-->		
+		<if test="params.storeOrgId != null and params.storeOrgId != ''">
+			and org.id in
+			<foreach item="item" index="index" collection="storeOrgIds"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="params.applyIds != null and params.applyIds != ''">
+		   and loan_info.apply_id in
+		   <foreach item="item" index="index" collection="applyIds"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		   
+		</if>
+	</sql>
+	<select id="getGoldAccountBusinessList" resultMap="businessMap">
+		select
+		<include refid="ceilingColumns" />
+		<!-- from   jk.T_JK_LOAN_INFO loan_info  
+		LEFT JOIN jk.T_JK_LOAN_CUSTOMER loan_customer		
+		ON loan_info.loan_code = loan_customer.loan_code
+		LEFT JOIN jk.T_JK_LOAN_BANK loan_bank
+		ON loan_customer.loan_code = loan_bank.loan_code
+		LEFT JOIN jk.T_GL_DICT open_bank 
+		ON loan_bank.BANK_NAME = open_bank.value
+		LEFT JOIN jk.T_JK_CONTRACT contract
+		ON loan_bank.loan_code = contract.loan_code
+		LEFT JOIN jk.T_JK_CONTRACT_FEE contract_fee
+		ON contract.CONTRACT_CODE = contract_fee.CONTRACT_CODE
+		LEFT JOIN jk.T_JK_LOAN_GRANT loan_grant
+		ON loan_bank.loan_code = loan_grant.loan_code
+		LEFT JOIN jk.t_gl_org org
+		ON loan_info.STORE_CODE = org.STORE_CODE
+		LEFT JOIN jk.T_GL_DICT gl_dicts
+		ON loan_info.dict_loan_status = gl_dicts .value
+		WHERE
+		gl_dicts.type = 'jk_loan_apply_status'
+		and open_bank.type = 'jk_open_bank'
+		and loan_info.dict_loan_status not in ('33','34','35','36') -->
+		from
+		(select apply_id,LOAN_AUDIT_TIME,LOAN_MONTHS,LOAN_FLAG,LOAN_AUDIT_AMOUNT,loan_code,STORE_CODE,dict_loan_status,model,loan_store_orgid from jk.T_JK_LOAN_INFO where model='1' and LOAN_AUDIT_TIME IS NOT NULL ) loan_info  
+		LEFT JOIN jk.T_JK_LOAN_CUSTOMER loan_customer		
+		ON loan_info.loan_code = loan_customer.loan_code
+		LEFT JOIN jk.T_JK_LOAN_BANK loan_bank
+		ON loan_customer.loan_code = loan_bank.loan_code
+		LEFT JOIN (select value,label from jk.T_GL_DICT where type = 'jk_open_bank') open_bank 
+		ON loan_bank.BANK_NAME = open_bank.value
+		LEFT JOIN jk.T_JK_CONTRACT contract
+		ON loan_bank.loan_code = contract.loan_code
+		LEFT JOIN jk.T_JK_CONTRACT_FEE contract_fee
+		ON contract.CONTRACT_CODE = contract_fee.CONTRACT_CODE
+		LEFT JOIN jk.T_JK_LOAN_GRANT loan_grant
+		ON loan_bank.loan_code = loan_grant.loan_code
+		LEFT JOIN jk.t_gl_org org
+		ON loan_info.loan_store_orgid = org.id
+		LEFT JOIN (select value,label from jk.T_GL_DICT where type = 'jk_loan_apply_status') gl_dicts
+		ON loan_info.dict_loan_status = gl_dicts .value
+		where 1=1 and loan_bank.bank_top_flag = 1 and loan_bank.repayment_flag = '0' 
+		<include refid="selectCondition" /> 
+		order by loan_info.LOAN_AUDIT_TIME asc
+	</select>
+</mapper>

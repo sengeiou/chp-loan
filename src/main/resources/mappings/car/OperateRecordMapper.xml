@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.OperateRecordMapper">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.OperateRecord">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <result column="operate_type" jdbcType="VARCHAR" property="operateType" />
+    <result column="operate_step" jdbcType="VARCHAR" property="operateStep" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="operate_time" jdbcType="TIMESTAMP" property="operateTime" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, loan_code, operate_type, operate_step, reason, operate_time, user_id, user_name
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_operate_record
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_cj_operate_record
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.OperateRecord">
+    insert into t_cj_operate_record (id, loan_code, operate_type, 
+      operate_step, reason, operate_time, 
+      user_id, user_name)
+    values (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{operateType,jdbcType=VARCHAR}, 
+      #{operateStep,jdbcType=VARCHAR}, #{reason,jdbcType=VARCHAR}, #{operateTime,jdbcType=TIMESTAMP}, 
+      #{userId,jdbcType=VARCHAR}, #{userName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.car.common.entity.OperateRecord">
+    insert into t_cj_operate_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="loanCode != null">
+        loan_code,
+      </if>
+      <if test="operateType != null">
+        operate_type,
+      </if>
+      <if test="operateStep != null">
+        operate_step,
+      </if>
+      <if test="reason != null">
+        reason,
+      </if>
+      <if test="operateTime != null">
+        operate_time,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="userName != null">
+        user_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="operateType != null">
+        #{operateType,jdbcType=VARCHAR},
+      </if>
+      <if test="operateStep != null">
+        #{operateStep,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null">
+        #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="operateTime != null">
+        #{operateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.car.common.entity.OperateRecord">
+    update t_cj_operate_record
+    <set>
+      <if test="loanCode != null">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="operateType != null">
+        operate_type = #{operateType,jdbcType=VARCHAR},
+      </if>
+      <if test="operateStep != null">
+        operate_step = #{operateStep,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null">
+        reason = #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="operateTime != null">
+        operate_time = #{operateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.car.common.entity.OperateRecord">
+    update t_cj_operate_record
+    set loan_code = #{loanCode,jdbcType=VARCHAR},
+      operate_type = #{operateType,jdbcType=VARCHAR},
+      operate_step = #{operateStep,jdbcType=VARCHAR},
+      reason = #{reason,jdbcType=VARCHAR},
+      operate_time = #{operateTime,jdbcType=TIMESTAMP},
+      user_id = #{userId,jdbcType=VARCHAR},
+      user_name = #{userName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

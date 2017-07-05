@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.channel.goldcredit.dao.GCBusinessDao">
+	<resultMap id="businessMap"
+		type="com.creditharmony.loan.channel.goldcredit.view.GCBusiness">
+		<result property="applyId" column="apply_id"></result><!--apply_id -->
+		<result property="storesName" column="name"></result><!-- 门店名称 -->
+		<result property="referralsDate" column="introduction_time"></result><!-- 推荐日期 -->
+		<result property="customerName" column="customer_name"></result><!-- 客户姓名 -->
+		<result property="customerNum" column="customer_cert_num"></result><!-- 身份证号 -->
+		<result property="bankName" column="BANK_NAME"></result><!-- 开户行 -->
+		<result property="bankAccount" column="bank_account"></result><!-- 银行账号 -->
+		<result property="loanAuditAmount" column="LOAN_AUDIT_AMOUNT"></result><!-- 批借金额 -->
+		<result property="feePetition" column="FEE_CONSULT"></result><!-- 外访费 -->
+		<result property="feeExpedited" column="FEE_EXPEDITED"></result><!-- 加急费 -->
+		<result property="grantAmount" column="grant_amount"></result><!-- 放款金额 -->
+		<result property="loanMonths" column="loan_months"></result><!-- 期限 -->
+		<result property="loanStatus" column="dict_loan_status"></result><!-- 放款状态 -->
+		<result property="grantDate" column="lending_time"></result><!-- 放款日期 -->
+		<result property="channel" column="loan_flag"></result><!-- 标识 -->
+		<result property="contractAmount" column="contract_amount"></result><!-- 合同金额 -->
+		<result property="contractVersion" column="contract_version"></result><!-- 合同版本号 -->
+		<result property="loanCodes" column="loan_code"></result><!-- 借款编号 -->
+	</resultMap>
+	<sql id="ceilingColumns">
+		distinct LOAN_INFO.LOAN_AUDIT_TIME,
+		loan_info.id,
+		loan_info.apply_id,
+		org.name,
+		to_date(to_char(
+		loan_info.LOAN_AUDIT_TIME,'yyyy-MM-dd'),'yyyy-MM-dd')introduction_time,
+		loan_customer.customer_name,loan_customer.customer_cert_num,
+		open_bank.label bank_name,loan_bank.bank_account,
+		round(loan_info.LOAN_AUDIT_AMOUNT,2)LOAN_AUDIT_AMOUNT,
+		round(contract_fee.FEE_PETITION,2)FEE_CONSULT,
+		round(contract_fee.FEE_EXPEDITED,2)FEE_EXPEDITED,
+		loan_info.LOAN_MONTHS,gl_dicts.label DICT_LOAN_STATUS,
+		round(contract_fee.fee_payment_amount,2)grant_amount,
+		to_date(to_char(
+		loan_grant.LENDING_TIME,'yyyy-MM-dd'),'yyyy-MM-dd')lending_time,
+		'金信'LOAN_FLAG,
+		CONTRACT_VERSION.LABEL contract_version,
+		round(contract.contract_amount,2)contract_amount,
+		loan_info.loan_code
+	</sql>
+	<sql id="selectCondition">
+		<where>
+			<if test="params.referralsDate != null and params.referralsDate != ''">
+				and to_date(to_char(loan_info.LOAN_AUDIT_TIME,'yyyy-MM-dd'),'yyyy-MM-dd') =#{params.referralsDate}
+			</if>
+			<if test="params.customerName != null and params.customerName !=''">
+				and loan_customer.customer_name like '%' ||
+				#{params.customerName} || '%'
+			</if>
+			<if test="params.loanStatus != null and params.loanStatus != ''">
+				and loan_info.DICT_LOAN_STATUS = #{params.loanStatus}
+			</if>
+			<if test="params.grantDate != null and params.grantDate != ''">
+				and loan_grant.LENDING_TIME = #{params.grantDate}
+			</if>
+			<if test="params.channel != null and params.channel != ''">
+				and loan_info.LOAN_FLAG = #{params.channel}
+			</if>
+			<if test="params.applyId != null and params.applyId != ''">
+				and loan_info.apply_id = #{params.applyId}
+			</if>
+			<!-- 是否无纸化 -->
+			<if test="params.yesNO != null and params.yesNO != ''">
+				and contract.paperless_flag = #{params.yesNO}
+			</if>
+			<!-- 是否有保证人 -->
+			<if test="params.warrantor != null and params.warrantor != ''">
+				<if test="params.warrantor==1">
+				
+					and (contract.company_name is not null 
+					      and contract.legal_man is not null 
+					      and maddress is not null 
+					     )
+				</if>
+				<if test="params.warrantor==0">
+				
+					and (contract.company_name is  null and 
+						 contract.legal_man is  null and
+					     maddress is  null 
+					     )
+				</if>
+			</if>
+			<!-- 合同版本号 -->
+			<if test="params.contractVersion != null and params.contractVersion != ''">
+				and contract.contract_version = #{params.contractVersion}
+			</if>
+			<if test="params.storeOrgId != null and params.storeOrgId != ''">
+				and org.id in
+				<foreach item="item" index="index" collection="storeOrgIds"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="params.loanCodes != null and params.loanCodes != ''">
+				and loan_info.loan_code in
+				<foreach item="item" index="index" collection="loanCodes"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	<select id="getGCBusinessList" resultMap="businessMap">
+		select
+		<include refid="ceilingColumns" />
+		from (select id,apply_id,loan_audit_time,loan_audit_amount,loan_months,
+			     loan_code,dict_loan_status,loan_store_orgid,store_code,loan_flag from jk.t_jk_loan_info 
+			     where loan_audit_time is not null 
+		     )loan_info
+		left join jk.T_JK_LOAN_CUSTOMER loan_customer		
+		on loan_info.loan_code = loan_customer.loan_code
+		left join jk.T_JK_LOAN_BANK loan_bank
+		on loan_customer.loan_code = loan_bank.loan_code and loan_bank.bank_top_flag = '1'
+		left join (SELECT LABEL,VALUE FROM jk.T_GL_DICT WHERE type = 'jk_open_bank') open_bank 
+		on loan_bank.BANK_NAME = open_bank.value
+		left join jk.T_JK_CONTRACT contract
+		on loan_bank.loan_code = contract.loan_code
+		left join jk.T_JK_CONTRACT_FEE contract_fee
+		on contract.CONTRACT_CODE = contract_fee.CONTRACT_CODE
+		left join jk.T_JK_LOAN_GRANT loan_grant
+		on loan_bank.loan_code = loan_grant.loan_code
+		left join jk.t_gl_org org
+		on loan_info.loan_store_orgid=org.id
+		left join (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE type = 'jk_loan_apply_status') gl_dicts
+		on loan_info.dict_loan_status = gl_dicts.value
+		left join (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_contract_ver') CONTRACT_VERSION ON 
+		CONTRACT.CONTRACT_VERSION = CONTRACT_VERSION.VALUE
+		<include refid="selectCondition" />
+		ORDER BY LOAN_INFO.LOAN_AUDIT_TIME DESC
+	</select>
+</mapper>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.transate.dao.TransateDao">
+     <!-- 映射关系配置   entity 与 sql 语句查询结果 的 映射关系-->
+      <resultMap id="loanInfo" type="com.creditharmony.loan.borrow.transate.entity.ex.TransateEx" >
+      	<result property="loanCode" column="LOAN_CODE"></result><!-- 借款编号 -->    	
+      	<result property="loanCustomerService" column="LOAN_CUSTOMER_SERVICE"></result><!-- 客服编号 -->
+     	<result property="contractVersion" column="CONTRACT_VERSION"></result><!-- 合同版本号 -->
+    	<result property="contractCode" column="CONTRACT_CODE"></result><!-- 合同编号 -->
+        <result property="loanCustomerName" column="LOAN_CUSTOMER_NAME"></result><!-- 客户姓名 -->     	
+    	<result property="productName" column="PRODUCT_NAME"></result><!-- 批借产品名称 -->
+    	<result property="dictLoanStatus" column="DICT_LOAN_STATUS"></result><!-- 申请状态 -->
+    	<result property="dictPayStatus" column="dict_pay_status"/><!-- 还款状态 -->
+    	<result property="money" column="LOAN_AUDIT_AMOUNT"></result><!-- 批复金额 -->
+    	<result property="contractMonths" column="LOAN_AUDIT_MONTHS"></result><!-- 批复分期 -->
+    	<result property="loanManageCode" column="LOAN_MANAGERCODE"></result><!-- 客户经理编号 -->
+    	<result property="userName" column="NAME"></result><!-- 客户经理姓名-->
+    	<result property="loanTeamManagercode" column="LOAN_TEAM_MANAGERCODE"/><!-- 团队经理id -->
+    	<result property="teamManagerName" column="TEAM_NAME"/><!-- 团队经理姓名 -->
+  		<result property="customerIntoTime" column="CUSTOMER_INTO_TIME"></result><!-- 进件时间 -->
+      	<result property="loanIsRaise" column="LOAN_RAISE_FLAG"></result><!-- 上调标识 -->
+    	<result property="loanIsPhone" column="CUSTOMER_TELESALES_FLAG"></result><!-- 是否电销(0:否,1:是) -->
+      	<result property="loanIsUrgent" column="LOAN_URGENT_FLAG"></result><!-- 是否加急 -->
+    	<result property="loanMarking" column="LOAN_FLAG"></result><!-- 标识 --> 
+    	<result property="provinceId" column="PROVINCE_ID"></result><!-- 省份编号 -->
+    	<result property="cityId" column="CITY_ID"></result><!-- 城市编号 --> 	
+    	<result property="loanTeamOrgid" column="LOAN_TEAM_ORGID"></result><!-- 团队组织ID -->
+    	<result property="customerCertNum" column="CUSTOMER_CERT_NUM"></result><!-- 证件号码 -->
+    	<result property="dictSourceType" column="DICT_SOURCE_TYPE"></result><!-- 来源版本 -->
+    	<result property="dictIsAdditional" column="DICT_IS_ADDITIONAL"></result><!-- 是否追加借 -->
+    	<result property="storeId" column="LOAN_STORE_ORGID"></result><!-- 门店ID -->  
+    	<result property="applyId" column="APPLY_ID"/><!-- 流程id -->	
+    	<result property="frozenApplyTimes" column="frozen_apply_times"/><!-- 申请冻结次数 -->
+    	<result property="frozenLastApplyTime" column="frozen_last_apply_time"/><!-- 申请冻结时间 -->
+    	<result property="servicename" column="service_name"/> <!-- 客服 -->
+    	<result property="empname" column="emp_name"/><!-- 外访人员 -->
+    	<result property="applicationProductName" column="APPLICATION_PRODUCT_NAME"/><!-- 申请产品类型 -->
+    	<result property="loanInfoOldOrNewFlag" column="LOANINFO_OLDORNEW_FLAG"/><!-- 申请产品类型 -->
+    	<result property="revisitStatus" column="revisit_status"/><!-- 回访状态 -->
+    	<result property="bestCoborrower" column="bestCoborrower"/><!-- 最优自然保证人 -->
+    	<result property="coroName" column="coro_name"/><!-- 共借人或自然人保证人-->
+     </resultMap>
+ 
+  	<!-- 已办列表 -->
+  	<select id="getTransact" parameterType="com.creditharmony.loan.borrow.transate.entity.ex.TraParamsEx" resultMap="loanInfo">
+		select distinct a.id as id,
+		a.LOAN_CODE,
+		(select string_agg(cobo_name,',') from jk.t_jk_loan_coborrower where loan_code = a.loan_code) as coro_name,
+		a.APPLY_ID,
+		a.LOAN_TEAM_MANAGERCODE,
+		b.CONTRACT_VERSION,
+		b.CONTRACT_CODE,
+		b.back_flag,
+		a.LOAN_CUSTOMER_NAME,
+		a.frozen_apply_times,
+		trim(a.frozen_code) frozen_code,
+		a.frozen_last_apply_time,
+		d.PROVINCE_ID,
+		d.CITY_ID,
+		d.NAME LOAN_TEAM_ORGID,
+		e.PRODUCT_NAME,
+		e1.PRODUCT_NAME as APPLICATION_PRODUCT_NAME,
+		a.DICT_LOAN_STATUS,
+		a.LOAN_AUDIT_AMOUNT,
+		a.LOAN_AUDIT_MONTHS,
+		a.LOAN_MANAGERCODE,
+		f.NAME,
+		a.CUSTOMER_INTO_TIME,
+		a.LOAN_RAISE_FLAG,
+		g.CUSTOMER_TELESALES_FLAG,
+		a.LOAN_URGENT_FLAG,
+		a.LOAN_FLAG,
+		a.LOAN_STORE_ORGID,
+		h.dict_pay_status,
+		i.NAME as TEAM_NAME,
+    	tgu.name as service_name,   <!-- 客服 -->
+		tgu1.name as emp_name,       <!-- 外访人员 -->
+		a.loaninfo_oldornew_flag,	<!-- 信借申请新旧版的标志位 -->
+		b.revisit_status,         <!-- 回访状态 -->
+		(select lb.cobo_name from jk.t_jk_audit_result re left join jk.t_jk_loan_coborrower lb on re.best_coborrower_id = lb.id where re.loan_code  = b.loan_code order by re.create_time desc limit 1) as bestCoborrower <!-- 最优自然保证人 -->		
+		from (select DICT_IS_ADDITIONAL,id,loan_survey_emp_id ,loan_customer_service, LOAN_CODE,APPLY_ID,LOAN_TEAM_MANAGERCODE,LOAN_CUSTOMER_NAME,frozen_apply_times,frozen_code,frozen_last_apply_time,DICT_LOAN_STATUS,LOAN_AUDIT_AMOUNT,LOAN_AUDIT_MONTHS,
+		LOAN_MANAGERCODE,CUSTOMER_INTO_TIME,LOAN_RAISE_FLAG,LOAN_URGENT_FLAG,LOAN_FLAG,LOAN_STORE_ORGID,loan_audit_product,product_type,loaninfo_oldornew_flag from jk.T_JK_LOAN_INFO
+		where issplit!='2' and apply_id in (select apply_id from jk.T_JK_LOAN_STATUS_HIS where create_by = #{userCode})) a
+		left join 	jk.T_JK_CONTRACT b on a.LOAN_CODE = b.LOAN_CODE
+		left join   jk.T_GL_ORG d on a.LOAN_STORE_ORGID = d.ID
+		left join   
+			(select * from jk.T_GL_JK_PRODUCT where product_type = 'products_type_loan_credit' and product_status = '1') e 
+			on  a.loan_audit_product = e.PRODUCT_CODE
+		left join   
+			(select * from jk.T_GL_JK_PRODUCT where product_type = 'products_type_loan_credit' and product_status = '1') e1
+			on  a.product_type = e1.PRODUCT_CODE
+		left join   jk.T_GL_USER f on a.LOAN_MANAGERCODE = f.id	
+		left join   jk.T_JK_LOAN_CUSTOMER g on a.LOAN_CODE = g.LOAN_CODE
+		left join   jk.t_jk_payback h on b.CONTRACT_CODE = h.contract_code
+		left join   jk.T_GL_USER i on a.LOAN_TEAM_MANAGERCODE = i.id	  
+		
+		left join   jk.t_gl_user tgu on tgu.id=a.loan_customer_service
+	    left join   jk.t_gl_user tgu1 on tgu1.id=a.loan_survey_emp_id	
+		where 1 = 1
+		<!-- 按客户姓名模糊查询 -->
+		<if test="loanCustomerName!=null and loanCustomerName!=''">
+			and a.LOAN_CUSTOMER_NAME = #{loanCustomerName}
+		</if>	
+		<!-- 客服名称-->
+		<if test="servicename!=null and servicename!=''">
+			and tgu.name like '%${servicename}%'
+		</if>		
+		<!-- 外访人员 -->
+		<if test="empname!=null and empname!=''">
+			and tgu1.name like '%${empname}%'
+		</if>	
+		<!-- 按证件号码模糊查询 -->
+		<if test="customerCertNum!=null and customerCertNum!=''">
+			and g.CUSTOMER_CERT_NUM like '%${customerCertNum }%'
+		</if>	
+		<!-- 根据客户经理姓名模糊查询 -->
+		<if test="userName!=null and userName!=''">
+			and  f.NAME like '%${userName }%'
+		</if>
+		<!-- 是否加急 -->
+		<if test="isUrgent != null and isUrgent !='' ">
+			and a.LOAN_URGENT_FLAG = #{isUrgent }
+		</if>
+		<!-- 根据产品名称搜索 -->
+		<if test="products !=null and products !='' "> 
+			and e.PRODUCT_NAME = #{products }
+		</if>
+		<!--是否冻结 -->
+		<if test="frozenCode == 1 and frozenCode!=null and frozenCode != ''">
+			and a.frozen_code is not null 
+		</if> 
+		<if test="frozenCode == 0 and frozenCode!=null and frozenCode != ''">
+			and a.frozen_code is  null 
+		</if>
+		<!-- 根据产品名称搜索申请产品  -->
+		<if test="applicationProduct !=null and applicationProduct !='' "> 
+			and e1.PRODUCT_NAME = #{applicationProduct }
+		</if>
+		<!-- 根据标识搜索 -->
+		<if test="markings != null and markings !='' ">
+			and a.LOAN_FLAG = #{markings }
+		</if>
+		<!-- 根据系统来源搜索 -->
+		<if test="sources != null and sources != '' ">
+			and a.DICT_SOURCE_TYPE = #{sources }
+		</if>
+		<!-- 是否电销 -->
+		<if test="loanIsPhone != null and loanIsPhone !='' ">
+			and g.CUSTOMER_TELESALES_FLAG = #{loanIsPhone }
+		</if>
+		<!-- 是否追加借 -->
+		<if test="dictIsAdditional != null and dictIsAdditional !='' ">
+			and a.DICT_IS_ADDITIONAL = #{dictIsAdditional }
+		</if>	
+		<!-- 根据门店搜索 -->
+		<if test="orgId != null and orgId.length > 0">
+			and a.LOAN_STORE_ORGID in <!-- = #{orgCode} -->
+			<foreach item="item" index="index" collection="orgId" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<!-- 申请状态 -->
+		<if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and a.DICT_LOAN_STATUS = #{dictLoanStatus}
+		</if>
+		<!-- 还款状态 -->
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+			and h.dict_pay_status = #{dictPayStatus}
+		</if>
+		<!-- 回访状态 -->
+		<if test="revisitStatus != null and revisitStatus != '' and revisitStatus != 'null'">
+			and b.revisit_status = #{revisitStatus}
+		</if>
+		<if test="revisitStatus == 'null'">
+			and b.revisit_status is null
+		</if>		 
+		 order by a.CUSTOMER_INTO_TIME desc  
+  	</select>
+  	<!-- 通过借款编码查询共借人 -->
+	<select id="getCobos" parameterType="java.lang.String" resultType="java.lang.String">
+		select cobo_name from jk.t_jk_loan_coborrower where loan_code = #{loanCode}
+	</select>
+	<!-- 查询数据是否利率审核  -->
+	<select id="checkUrl" parameterType="java.lang.String" resultType="java.lang.String">
+		select distinct loan_code from t_jk_contract_operate_info where loan_code = #{loanCode}
+	</select>
+</mapper>

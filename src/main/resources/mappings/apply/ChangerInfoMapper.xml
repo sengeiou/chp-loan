@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.ChangerInfoDao">
+    <insert id="insertChangerInfo" parameterType="com.creditharmony.loan.borrow.applyinfo.view.ChangerInfo">
+  	insert into t_jk_changer_info (id,apply_id,change_code,change_type,
+		change_result,change_begin,change_after,cob_id,del_flag,update_id,modify_by,modify_time,create_by)
+	values(#{id,jdbcType=VARCHAR},#{applyId,jdbcType=VARCHAR},#{changeCode,jdbcType=VARCHAR},
+		#{changeType,jdbcType=VARCHAR},#{changeResult,jdbcType=VARCHAR},#{changeBegin,jdbcType=VARCHAR},
+		#{changeAfter,jdbcType=VARCHAR},#{cobId,jdbcType=VARCHAR},#{dealFlag,jdbcType=VARCHAR},
+		#{updateId,jdbcType=VARCHAR},#{modifyBy,jdbcType=VARCHAR},#{modifyTime,jdbcType=DATE},#{createBy,jdbcType=VARCHAR})
+  </insert>
+
+</mapper>

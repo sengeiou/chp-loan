@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.refund.dao.RefundDao">
+	<resultMap id="BaseRefundMap"
+		type="com.creditharmony.loan.borrow.refund.entity.Refund">
+		<result column="id" jdbcType="VARCHAR" property="id" /> 
+		<result column="mendianId" jdbcType="VARCHAR" property="mendianId" />
+		<result column="contractCode" jdbcType="VARCHAR" property="contractCode" />
+		<result column="customerName" jdbcType="VARCHAR" property="customerName" />
+		<result column="contractAmount" jdbcType="NUMERIC" property="contractAmount" />
+		<result column="loanMoney" jdbcType="NUMERIC" property="loanMoney" />
+		<result column="loanStatus" jdbcType="VARCHAR" property="loanStatus" />
+		<result column="money" jdbcType="NUMERIC" property="money" />
+		<result column="refundMoney" jdbcType="NUMERIC" property="refundMoney" />
+		<result column="appType" jdbcType="VARCHAR" property="appType" />
+		<result column="bankCode" jdbcType="VARCHAR" property="bankCode" />
+		<result column="refundBank" jdbcType="VARCHAR" property="refundBank" />
+		<result column="appStatus" jdbcType="VARCHAR" property="appStatus" />
+		<result column="certNum" jdbcType="VARCHAR" property="certNum" />
+		<result column="remark" jdbcType="VARCHAR" property="remark" />
+		<result column="fkResult" jdbcType="VARCHAR" property="fkResult" />
+		<result column="fkReason" jdbcType="VARCHAR" property="fkReason" />
+		<result column="fkRemark" jdbcType="VARCHAR" property="fkRemark" />
+		<result column="zcResult" jdbcType="VARCHAR" property="zcResult" />
+		<result column="zcReason" jdbcType="VARCHAR" property="zcReason" />
+		<result column="zcRemark" jdbcType="VARCHAR" property="zcRemark" />
+		<result column="createBy" jdbcType="VARCHAR" property="createBy" />
+		<result column="createTimes" jdbcType="DATE" property="createTimes" />
+		<result column="modifyBy" jdbcType="VARCHAR" property="modifyBy" />
+		<result column="modifyTimes" jdbcType="DATE" property="modifyTimes" />
+		<result column="backDate" jdbcType="DATE" property="backDate" />
+		<result column="mt" jdbcType="VARCHAR" property="mt" />
+		<result column="channelFlag" jdbcType="VARCHAR" property="channelFlag" />
+	</resultMap>
+  
+  
+  <select id="getInfo" parameterType="String" resultType="Map">
+	SELECT
+     c.customer_name as loanCustomerName,
+    i.loan_apply_amount as loanApplyAmount,
+    i.dict_loan_status as dictLoanStatus,
+    i.loan_team_orgid as loanTeamOrgid,
+    b.bank_name as bankName,
+    b.bank_branch as bankBranch,
+    b.bank_account as bankAccount,
+    b.bank_account_name as bankAccountName,
+    b.bank_province as bankProvince,
+    b.bank_city as bankCity,
+    c.customer_cert_num as customerCertNum
+FROM
+    t_jk_contract ct,
+    t_jk_loan_info i,
+    t_jk_loan_bank b,
+    t_jk_loan_customer c
+WHERE
+    ct.contract_code = #{contractCode}
+    AND ct.loan_code = c.loan_code
+    AND c.loan_code = i.loan_code
+    AND i.loan_code = b.loan_code
+    AND b.repayment_flag = '1' AND b.bank_top_flag ='1' limit 1
+</select>
+
+  <update id="insert" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund">
+	INSERT INTO jk.t_jk_loan_payback_refund
+	(id,
+	mendian_id,
+	contract_code,
+	customer_name,
+	loan_money,
+	loan_status,
+	money,
+	refund_money,
+	app_type,
+	bank_code,
+	refund_bank,
+	app_status,
+	cert_num,
+	remark,
+	create_by,
+	modify_by,
+	income_account,
+	income_name,
+	income_bank,
+	income_branch,
+	income_city,
+	income_county,
+	urgeid,
+	charge_id)
+	VALUES(#{id},
+	#{mendianId},
+	#{contractCode},
+	#{customerName},
+	#{loanMoney},
+	#{loanStatus},
+	#{money},
+	#{refundMoney},
+	#{appType},
+	#{bankCode},
+	#{refundBank},
+	#{appStatus},
+	#{certNum},
+	#{remark},
+	#{createBy},
+	#{modifyBy},
+	#{incomeAccount},
+	#{incomeName},
+	#{incomeBank},
+	#{incomeBranch},
+	#{incomeCity},
+	#{incomeCounty},
+	#{urgeid},
+	#{chargeId});
+</update>
+  
+  <update id="update" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund">
+	update jk.t_jk_loan_payback_refund
+	set
+	<if test="money != null ">
+		money = #{money},
+	</if>
+	<if test="refundMoney != null ">
+		refund_money = #{refundMoney},
+	</if>
+	<if test="incomeAccount != null and incomeAccount != ''">
+		income_account = #{incomeAccount},
+	</if>
+	<if test="incomeName != null and incomeName != '' ">
+		income_name = #{incomeName},
+	</if>
+	<if test="incomeBank != null and incomeBank != '' ">
+		income_bank = #{incomeBank},
+	</if>
+	<if test="incomeBranch != null ">
+		income_branch = #{incomeBranch},
+	</if>
+	<if test="incomeCity != null and incomeCity != '' ">
+		income_city = #{incomeCity},
+	</if>
+	<if test="incomeCounty != null and incomeCounty != '' ">
+		income_county = #{incomeCounty},
+	</if>
+	<if test="remark != null and remark != '' ">
+		remark = #{remark},
+	</if>
+	<if test="appStatus != null and appStatus != ''">
+		app_status = #{appStatus},
+	</if>
+	<if test="fkResult != null ">
+		fk_result = #{fkResult},
+	</if>
+	<if test="fkReason != null ">
+		fk_reason = #{fkReason},
+	</if>
+	<if test="fkRemark != null ">
+		fk_remark = #{fkRemark},
+	</if>
+	<if test="zcResult != null ">
+		zc_result = #{zcResult},
+	</if>
+	<if test="zcReason != null ">
+		zc_reason = #{zcReason},
+	</if>
+	<if test="zcRemark != null ">
+		zc_remark = #{zcRemark},
+	</if>
+	<if test="createTimes != null">
+		create_time = #{createTimes},
+	</if>
+	<if test="createBy != null and createBy != ''">
+		create_by = #{createBy},
+	</if>
+	<if test="modifyBy != null and modifyBy != ''">
+		modify_by = #{modifyBy},
+	</if>
+	<if test="modifyTime != null">
+		modify_time = #{modifyTime}
+	</if>
+	where id = #{id}
+</update>
+   
+   <update id="insertHistory"
+	parameterType="com.creditharmony.loan.borrow.refund.entity.PaybackHistory">
+	INSERT INTO jk.t_jk_loan_payback_history
+	(id,
+	contract_code,
+	OPER_NAME,
+	OPER_RESULT,
+	OPER_NOTES,
+	create_by,
+	modify_by)
+	VALUES(#{id},
+	#{contractCode},
+	#{operName},
+	#{operResult},
+	#{operNotes},
+	#{createBy},
+	#{modifyBy});
+</update>
+
+<!-- 退款列表(数据管理部) -->
+  	<select id="selectRefundList" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund" resultMap="BaseRefundMap">
+		SELECT
+			r.id,
+		    (select o2.name from jk.t_gl_org o2 where o2.id=o.parent_id) mendianName,
+		    r.contract_code as contractCode,
+		    r.customer_name as customerName,
+		    r.loan_money as loanMoney,
+		    r.money as money,
+	    	li.dict_loan_status as loanStatus,
+		    r.refund_money as refundMoney,
+		    r.back_date as backDate,
+		    r.create_time as createTimes,
+		    to_char(r.modify_time,'yyyy-mm-dd hh24:mi:ss') as mt,
+		    r.app_type as appType,
+		    r.bank_code as bankCode,
+		    r.income_branch as incomeBranch,
+		    r.refund_bank as refundBank,
+		    r.app_status as appStatus,
+		    li.loan_flag as loanFlag,
+		    li.model as model,
+		    c.contract_amount contractAmount,
+		    li.dict_loan_status realLoanStatus
+		FROM
+	    	jk.t_jk_loan_payback_refund r 
+	    	LEFT JOIN jk.t_gl_org o  ON r.mendian_id = o.id
+	    	LEFT JOIN jk.t_jk_contract c ON c.contract_code = r.contract_code 
+	    	LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+		WHERE 1=1
+		<include refid="refundCondition"/>
+	</select>
+<!-- 退款列表(数据管理部) 统计笔数和总金额-->
+  	<select id="selectRefundListForSumAndCount" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund" resultMap="BaseRefundMap">
+		SELECT
+			sum(r.refund_money) as refundTotalMony,
+			count(1) as refundTotalNum
+		FROM
+	    	jk.t_jk_loan_payback_refund r 
+	    	LEFT JOIN jk.t_gl_org o  ON r.mendian_id = o.id
+	    	LEFT JOIN jk.t_jk_contract c ON c.contract_code = r.contract_code 
+	    	LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+		WHERE 1=1
+		<include refid="refundCondition"/>
+	</select>	
+	<!-- 退款导出Excel -->
+  	<select id="refundExportList" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund" resultType="com.creditharmony.loan.borrow.refund.entity.RefundExportExcel">
+		SELECT
+			r.contract_code as contractCode,
+		    r.income_Account as incomeAccount,
+		    r.income_Name as incomeName, 
+		    ROUND(r.refund_money,2) as refundMoney,
+		    (r.contract_code||'退款') as remark,
+		    r.income_Bank as incomeBank,
+		    r.income_Branch as incomeBranch,
+		    (select area_name from t_gl_province_city pc where pc.id=r.income_City) as incomeCity,
+		    (select area_name from t_gl_province_city pc where pc.id=r.income_County) as incomeCounty,
+		    r.money,
+		    c.contract_Months as contractMonths,
+		    ROUND(c.contract_Amount,2) as contractAmount,
+		    c.contract_Version as contractVersion,
+		    ROUND(f.fee_urged_service,2) AS urgeMoeny,
+		    co.customer_telesales_flag as customerFlag,
+			r.id as refundId,
+			li.dict_loan_status as loanStatus
+		FROM
+	    	jk.t_jk_loan_payback_refund r 
+	    	LEFT JOIN jk.t_jk_contract c ON r.contract_code = c.contract_code
+	    	JOIN T_JK_contract_fee f ON r.contract_code = f.contract_code
+	    	LEFT JOIN jk.t_jk_loan_customer co ON co.loan_code = c.loan_code
+	    	LEFT JOIN jk.t_gl_org o ON r.mendian_id = o.id
+	    	LEFT JOIN jk.t_jk_loan_info li ON c.loan_code=li.loan_code
+		WHERE 1=1
+		<include refid="refundCondition"/>
+	</select>
+	<!-- 已退款导出Excel -->
+	<select id="alreadyRefundDataExcel" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund" resultType="com.creditharmony.loan.borrow.refund.entity.AlreadyRefundExportExcel">
+		SELECT
+		    r.contract_code AS contractCode,
+		    ROUND( c.contract_Amount, 2 ) AS contractAmount,
+		    ROUND( r.refund_money, 2 ) AS refundMoney,
+		    (
+		        SELECT
+		            o2.name
+		        FROM
+		            jk.t_gl_org o2
+		        WHERE
+		            o2.id = o.parent_id
+		    ) AS menDianName,
+		    r.income_Bank AS incomeBank,
+		    to_char(
+		        r.back_date,
+		        'yyyy-MM-dd'
+		    ) AS backDate,
+		    li.dict_loan_status AS loanStatus
+		FROM
+	    	jk.t_jk_loan_payback_refund r 
+	    	LEFT JOIN jk.t_gl_org o  ON r.mendian_id = o.id
+	    	LEFT JOIN jk.t_jk_contract c ON c.contract_code = r.contract_code 
+	    	LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+		WHERE 1=1
+		<include refid="refundCondition"/>  
+	</select>
+	
+	<select id="examineExportExcelList" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund" resultType="com.creditharmony.loan.borrow.refund.entity.ExamineExportExcel">
+		SELECT rownum num,
+			(select o2.name from jk.t_gl_org o2 where o2.id=o.parent_id) mendianName,
+			r.contract_code as contractCode,
+			r.customer_name as customerName,
+			li.dict_loan_status as loanStatus,
+			ROUND(r.refund_money,2) as refundMoney,
+			to_char(r.create_time,'yyyy-mm-dd') as createTimes,
+			r.app_type as appType,
+			(CASE r.fk_reason WHEN '1' THEN '系统原因' WHEN '2' THEN '门店操作错误' WHEN '3' THEN '客户自身原因' ELSE '' END) as fkReason,
+			r.bank_code as bankName,
+			r.income_branch as incomeBranch,
+			(select area_name from t_gl_province_city pc where pc.id=r.income_City) as incomeCity,
+		    (select area_name from t_gl_province_city pc where pc.id=r.income_County) as incomeCounty,
+ 			r.app_status as appStatus
+		FROM
+	    	jk.t_jk_loan_payback_refund r 
+	    	LEFT JOIN jk.t_gl_org o ON r.mendian_id = o.id
+	    	LEFT JOIN jk.t_jk_contract c ON c.contract_code = r.contract_code 
+	    	LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+		WHERE 1=1
+		<include refid="refundCondition"/>
+	</select>
+	
+	<update id="updateRefundTicket" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund">
+		update jk.t_jk_loan_payback_refund
+			set app_status = #{appStatus},
+				modify_time = #{modifyTime},
+				modify_by = #{modifyBy}
+				<if test="refundBank != null and refundBank != ''">
+					,refund_Bank = #{refundBank}
+				</if>
+				<if test="backDate != null and backDate != ''">
+					,back_date = #{backDate}
+				</if>
+				<if test="money != null and money != ''">
+					,money = #{money}
+				</if>
+		where id = #{id}
+	</update>
+	
+	<update id="updatePaybackBule" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund">
+		update t_jk_payback set payback_bule_amount = payback_bule_amount + #{refundMoney}
+		where contract_code = #{contractCode}
+	</update>
+	
+	<select id="getPaybackBule" parameterType="string" resultType="java.math.BigDecimal">
+		select payback_bule_amount from t_jk_payback 
+		where contract_code = #{contractCode}
+	</select>
+	
+	<select id="selectMiddlePerson" parameterType="string"  resultType="string">
+		select mid_bank_name  
+    		from t_jk_middle_person a
+    	where   a.middle_name = #{middleName}
+	</select>
+	
+	<select id="selectRefundById" parameterType="com.creditharmony.loan.borrow.refund.entity.Refund" resultMap="BaseRefundMap">
+		SELECT
+			r.id,
+		    r.contract_code as contractCode,
+		    r.customer_name as customerName,
+		    r.loan_money as loanMoney,
+	    	r.loan_status as loanStatus,
+		    r.refund_money as refundMoney,
+		    r.money as money,
+		    r.create_time as createTimes,
+		    r.app_type as appType,
+		    r.bank_code as bankCode,
+		    r.refund_bank as refundBank,
+		    r.app_status as appStatus,
+		    r.remark as remark,
+		    r.fk_result as fkResult,
+			r.fk_reason as fkReason,
+			r.fk_remark as fkRemark,
+			r.zc_result as zcResult,
+			r.zc_reason as zcReason,
+			r.zc_remark as zcRemark,
+			r.income_account as incomeAccount,
+			r.income_name as incomeName,
+			r.income_bank as incomeBank,
+			r.income_branch as incomeBranch,
+			r.income_city as incomeCity,
+			r.income_county as incomeCounty,
+			(select area_name from t_gl_province_city pc where pc.id=r.income_City) as incomeCityName,
+		    (select area_name from t_gl_province_city pc where pc.id=r.income_County) as incomeCountyName,
+			r.urgeid as urgeid,
+			r.charge_id as chargeId
+		FROM
+	    	jk.t_jk_loan_payback_refund r
+		WHERE 1=1 
+		<if test="idArray != null and idArray.length > 0">
+		and r.id in 
+  		<foreach item="item" index="index" collection="idArray" open="(" separator="," close=")">
+				#{item}
+		</foreach>
+		</if>
+		<if test="appStatus != null and appStatus != ''">
+			and r.app_status = #{appStatus}
+		</if>
+		<if test="channelFlag != null and channelFlag != ''">
+			and not exists (select id from jk.t_jk_contract c where c.contract_code=r.contract_code and c.channel_flag=#{channelFlag})
+		</if>
+	</select>
+	
+	<select id="getRfundServiceFeeList"  resultType="com.creditharmony.loan.borrow.refund.entity.RefundServiceFee">
+    select distinct
+    n.r_charge_id as id, <!-- 催收主表id -->
+    n.r_charge_id,
+    n.id as urgeId,
+    n.contract_code as contractCode,
+    o.name as name,
+    b.customer_name as customerName,
+    b.customer_cert_num as customerCertNum,
+    a.class_type as classType,
+    j.product_name as productName,
+    round(d.contract_amount,2) as contractAmount,
+    round(c.grant_amount,2) as grantAmount,
+    e.urge_moeny as urgeMoeny,
+    round(n.return_amount,2) as returnAmount,
+    d.contract_months as contractMonths,
+    r.app_status as appStatus,
+    (SELECT label FROM t_gl_dict WHERE type = 'jk_app_status' AND VALUE = r.app_status) AS appStatusTmp,
+    (select label from t_gl_dict where type='jk_deduct_plat' and value=e.dict_deal_type) as dictDealType,
+	to_char(e.urge_decute_date,'yyyy-mm-dd') as urgeDecuteDate,
+    c.lending_time as lendingTime,
+    c.check_time as checkTime,
+    to_char(r.create_time,'yyyy-mm-dd') as backTime,
+    r.id AS refundId,
+    a.loan_flag as loanFlag,
+    e.audit_amount as auditAmount
+    from 
+        t_jk_service_charge_return n
+    	LEFT JOIN  t_jk_urge_services_amount e ON e.id=n.r_charge_id
+    	LEFT JOIN  t_jk_loan_grant c ON c.id=e.r_grant_id
+    	LEFT JOIN  t_jk_contract d ON d.contract_code=c.contract_code
+		LEFT JOIN  t_jk_loan_info a ON a.loan_code=d.loan_code
+		LEFT JOIN  t_jk_loan_customer b ON  b.loan_code=a.loan_code
+		LEFT JOIN  t_gl_jk_product j ON  j.product_code=d.product_type
+		LEFT JOIN jk.t_gl_org o ON o.id = a.loan_store_orgid
+		LEFT JOIN jk.t_jk_loan_payback_refund r ON r.urgeId = n.id
+	where 1=1 
+		<if test="customerName != null and customerName != ''">
+			and b.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<!-- 合同编号 -->
+		<if test="contractCode != null and contractCode != ''">
+			and d.contract_code LIKE CONCAT('%', #{contractCode}, '%')
+		</if>
+		<!-- 证件号码 -->
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and b.customer_cert_num LIKE CONCAT('%', #{customerCertNum}, '%')
+		</if>
+		<if test="appStatus != null and appStatus != ''">
+			<if test="appStatus != '-1'">
+				and r.app_status = #{appStatus}
+			</if>
+			<if test="appStatus == '-1'">
+				and r.app_status is null
+			</if>
+		</if>
+		   ${queryRight} 
+		order by r.app_status desc
+  </select>
+  
+  <update id="deleteRfundServiceFee">
+  	delete from jk.t_jk_service_charge_return where id=#{id}
+  </update>
+  
+  <update id="udateRfundServiceFee">
+  	update jk.t_jk_service_charge_return set return_status=#{returnStatus} , return_time=#{returnTime} where id=#{id}
+  </update>
+  
+	<sql id="refundCondition">
+		<if test="idArray != null and idArray.length > 0">
+			and r.id in 
+  		<foreach item="item" index="index" collection="idArray" open="(" separator="," close=")">
+				#{item}
+		</foreach>
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and r.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and r.contract_code = #{contractCode}
+		</if>
+		<if test="storeId != null and storeId != ''">
+			and o.parent_id in (#{storeId})
+		</if>
+		<if test="loanStatus != null and loanStatus != '' and loanStatus != '-1'">
+			and li.dict_loan_status = #{loanStatus}
+		</if>
+		<if test="fkReason != null and fkReason != ''">
+			and r.fk_reason = #{fkReason}
+		</if>
+		<if test="appStatus != null and appStatus != ''">
+			<!-- <if test="appStatus == '-1'">
+			and (r.app_status = '4' or r.app_status = '5' or r.app_status = '6' or r.app_status = '7') 
+			</if>
+			<if test="appStatus == '-2'">
+			and (r.app_status = '2' or r.app_status = '3' or r.app_status = '4' or r.app_status = '5' or r.app_status = '6' or r.app_status = '7') 
+			</if> -->
+			<if test="appStatus != '-1' and appStatus != '-2'">
+			and r.app_status = #{appStatus}
+			</if>
+		</if>
+		<if test="appType != null and appType != '' and appType != '-1'">
+			and r.app_type = #{appType}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			AND to_char(r.create_time,'yyyy-mm-dd') &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND to_char(r.create_time,'yyyy-mm-dd') &lt;= #{endTime}
+		</if>
+		<if test="backStartDate != null and backStartDate != ''">
+			AND to_char(r.back_date,'yyyy-mm-dd') &gt;= #{backStartDate}
+		</if>
+		<if test="backEndDate != null and backEndDate != ''">
+			AND to_char(r.back_date,'yyyy-mm-dd') &lt;= #{backEndDate}
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			AND li.loan_flag = #{loanFlag}
+		</if>
+		<if test="model != null and model != ''">
+			AND li.model = #{model}
+		</if>
+		<if test="channelFlag != null and channelFlag != ''">
+			AND c.channel_flag != #{channelFlag}
+		</if>
+		<if test="queryRight != null and !queryRight.equals('')">
+		      ${queryRight} 	
+	    </if>
+	    	
+	</sql>
+	<select id="findByContractCode"
+		parameterType="com.creditharmony.loan.borrow.payback.entity.Payback"
+		resultType="com.creditharmony.loan.borrow.payback.entity.Payback">
+		select
+		payback_bule_amount as paybackBuleAmount
+		from jk.t_jk_payback where contract_code =
+		#{contractCode,jdbcType=VARCHAR}
+	</select>
+	<select id="findPayback" parameterType="String" resultType="Map">
+	SELECT
+	p.id AS id,
+	p.contract_code as contractCode,
+	to_char(p.modify_time,'yyyy-mm-dd hh24:mi:ss') as modifyTime,
+	lc.customer_name as customerName,
+	lc.customer_cert_num as customerCertNum,
+	(select label from t_gl_dict where type='jk_loan_apply_status' and value=li.dict_loan_status) as dictLoanStatus,
+	ROUND(lg.grant_amount,2) as grantAmount,
+	ROUND(usa.urge_moeny,2) as urgeMoeny,
+	ROUND(p.payback_month_amount,2) as paybackMonthAmount,
+    ROUND(p.payback_bule_amount,2) as paybackBuleAmount,
+    b.bank_name as bankName,
+    b.bank_branch as bankBranch,
+    b.bank_account_name as bankAccountName,
+    b.bank_account as bankAccount,
+    b.bank_province as bankProvince,
+    b.bank_city as bankCity,
+    (select area_name from t_gl_province_city pc where pc.id=b.bank_province) as bankProvinceName,
+    (select area_name from t_gl_province_city pc where pc.id=b.bank_city) as bankCityName,
+    p.payback_day as paybackDay,
+    (SELECT 
+		CASE 
+			WHEN cast(MIN(BB.CONTRACT_VERSION) as integer) >=4 THEN
+				SUM(COALESCE(AA.MONTH_INTEREST_PUNISHSHOULD,0)+COALESCE(AA.MONTH_LATE_FEE,0)
+				-COALESCE(AA.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(AA.MONTH_PUNISH_REDUCTION,0)
+				-COALESCE(AA.ACTUAL_MONTH_LATE_FEE,0)-COALESCE(AA.MONTH_LATE_FEE_REDUCTION,0))
+			ELSE
+				SUM(COALESCE(AA.MONTH_PENALTY_SHOULD,0)+COALESCE(AA.MONTH_INTEREST_PUNISHSHOULD,0)
+				-COALESCE(AA.MONTH_PENALTY_ACTUAL,0)-COALESCE(AA.MONTH_PENALTY_REDUCTION,0)
+				-COALESCE(AA.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(AA.MONTH_PUNISH_REDUCTION,0))
+			END
+		FROM JK.T_JK_PAYBACK_MONTH AA
+			LEFT JOIN JK.T_JK_CONTRACT BB ON AA.CONTRACT_CODE = BB.CONTRACT_CODE
+		WHERE AA.CONTRACT_CODE = p.contract_code
+		GROUP BY AA.CONTRACT_CODE) as NOTPENALTYPUNISHSHOULDSUM
+	FROM
+	jk.t_jk_payback p LEFT JOIN jk.t_jk_contract c 
+	ON p.contract_code = c.contract_code LEFT JOIN jk.t_jk_loan_customer lc
+	ON c.loan_code = lc.loan_code LEFT JOIN jk.t_jk_loan_info li
+	ON c.loan_code = li.loan_code LEFT JOIN jk.t_jk_loan_grant lg
+	ON lg.contract_code = p.contract_code LEFT JOIN
+	jk.t_jk_urge_services_amount usa
+	ON usa.r_grant_id = lg.id LEFT JOIN jk.t_jk_loan_bank b 
+	ON b.loan_code = c.loan_code
+	AND  b.repayment_flag = '1' AND b.bank_top_flag ='1'
+	WHERE
+	p.contract_code = #{contractCode}
+	<if test="modifyTime != null and modifyTime != ''">
+			AND to_char(p.modify_time,'yyyy-mm-dd hh24:mi:ss') = #{modifyTime}
+	</if>
+</select>
+
+<select id="getInfoByModifyTime" parameterType="String" resultType="Map">
+		SELECT
+			r.id
+		FROM
+	    	jk.t_jk_loan_payback_refund r
+		WHERE r.id = #{id} 
+		<if test="modifyTime != null and modifyTime != ''">
+			AND to_char(r.modify_time,'yyyy-mm-dd hh24:mi:ss') = #{modifyTime}
+		</if>
+	</select>
+	
+	<select id="getServiceFeeInfo" parameterType="String" resultType="Map">
+		SELECT id FROM
+		jk.t_jk_loan_payback_refund
+		WHERE
+		app_type = #{appType} 
+		AND contract_code = #{contractCode} 
+		AND app_status = #{appStatus} 
+</select>
+
+<select id="getTkMoney" parameterType="String" resultType="java.math.BigDecimal">
+	select p.payback_bule_amount -  
+		round((COALESCE(p.payback_month_amount,0)-
+			COALESCE(A.MONTH_CAPITAL_PAYACTUAL,0)-
+			COALESCE(A.MONTH_INTEREST_PAYACTUAL,0)-
+			COALESCE(A.ACTUAL_MONTH_FEE_SERVICE,0)),2) -
+		(SELECT 
+			CASE 
+			WHEN cast(MIN(BB.CONTRACT_VERSION) as integer) >=4 THEN
+				SUM(COALESCE(AA.MONTH_INTEREST_PUNISHSHOULD,0)+COALESCE(AA.MONTH_LATE_FEE,0)
+				-COALESCE(AA.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(AA.MONTH_PUNISH_REDUCTION,0)
+				-COALESCE(AA.ACTUAL_MONTH_LATE_FEE,0)-COALESCE(AA.MONTH_LATE_FEE_REDUCTION,0))
+			ELSE
+				SUM(COALESCE(AA.MONTH_PENALTY_SHOULD,0)+COALESCE(AA.MONTH_INTEREST_PUNISHSHOULD,0)
+				-COALESCE(AA.MONTH_PENALTY_ACTUAL,0)-COALESCE(AA.MONTH_PENALTY_REDUCTION,0)
+				-COALESCE(AA.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(AA.MONTH_PUNISH_REDUCTION,0))
+			END	NOTPENALTYPUNISHSHOULDSUM
+		FROM JK.T_JK_PAYBACK_MONTH AA
+			LEFT JOIN JK.T_JK_CONTRACT BB ON AA.CONTRACT_CODE = BB.CONTRACT_CODE
+		WHERE AA.CONTRACT_CODE = A.contract_code
+		GROUP BY AA.CONTRACT_CODE)
+	from JK.T_JK_PAYBACK_MONTH A ,jk.t_jk_payback p
+	where A.contract_code = p.contract_code  
+	and to_char(A.month_pay_day,'yyyyMMdd') = to_char(sysdate,'yyyyMMdd')
+	and p.contract_code = #{contractCode} 
+</select>
+
+<select id="getTkMoney2" parameterType="String" resultType="java.math.BigDecimal">
+	select p.payback_bule_amount - 
+		(SELECT COALESCE(
+	        	SUM(COALESCE(AA.month_pay_amount,0) + 
+	        	COALESCE(AA.month_interest_backshould,0) + 
+	        	COALESCE(AA.month_fee_service,0) + 
+	        	COALESCE(AA.MONTH_CAPITAL_PAYACTUAL,0) - 
+	        	COALESCE(AA.MONTH_INTEREST_PAYACTUAL,0) - 
+	        	COALESCE(AA.ACTUAL_MONTH_FEE_SERVICE,0)),0)
+			FROM JK.T_JK_PAYBACK_MONTH AA WHERE AA.CONTRACT_CODE = p.contract_code AND aa.dict_month_status = '1' ) -
+		(SELECT 
+			CASE 
+			WHEN cast(MIN(BB.CONTRACT_VERSION) as integer) >=4 THEN
+				SUM(COALESCE(AA.MONTH_INTEREST_PUNISHSHOULD,0)+COALESCE(AA.MONTH_LATE_FEE,0)
+				-COALESCE(AA.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(AA.MONTH_PUNISH_REDUCTION,0)
+				-COALESCE(AA.ACTUAL_MONTH_LATE_FEE,0)-COALESCE(AA.MONTH_LATE_FEE_REDUCTION,0))
+			ELSE
+				SUM(COALESCE(AA.MONTH_PENALTY_SHOULD,0)+COALESCE(AA.MONTH_INTEREST_PUNISHSHOULD,0)
+				-COALESCE(AA.MONTH_PENALTY_ACTUAL,0)-COALESCE(AA.MONTH_PENALTY_REDUCTION,0)
+				-COALESCE(AA.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(AA.MONTH_PUNISH_REDUCTION,0))
+			END	NOTPENALTYPUNISHSHOULDSUM
+		FROM JK.T_JK_PAYBACK_MONTH AA
+			LEFT JOIN JK.T_JK_CONTRACT BB ON AA.CONTRACT_CODE = BB.CONTRACT_CODE
+		WHERE AA.CONTRACT_CODE = p.contract_code
+		GROUP BY AA.CONTRACT_CODE)
+	from  jk.t_jk_payback p
+	where p.contract_code = #{contractCode}
+</select>
+  </mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.dict.dao.DictInfoDao">
+    
+    <resultMap id="DictMap" type="com.creditharmony.loan.dict.entity.DictInfo">
+		 <id column="ID" property="id" jdbcType="VARCHAR" />
+		 <result column="VALUE" property="value" jdbcType="VARCHAR" />
+		 <result column="LABEL" property="label" jdbcType="VARCHAR" />
+		 <result column="TYPE" property="type" jdbcType="VARCHAR" />
+		 <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+		 <result column="SORT" property="sort" jdbcType="DECIMAL" />
+		 <result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		 <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		 <result column="MODIFY_BY" property="modifyBy" jdbcType="VARCHAR" />
+		 <result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+		 <result column="DEL_FLAG" property="delFlag" jdbcType="VARCHAR" />
+		 <result column="SYSTEM_FLAG" property="systemFlag" jdbcType="INTEGER" />
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+      ID, VALUE, LABEL, TYPE, DESCRIPTION, SORT, CREATE_BY, CREATE_TIME, MODIFY_BY, MODIFY_TIME, DEL_FLAG,SYSTEM_FLAG
+    </sql>
+    
+	<select id="get" resultMap="DictMap">
+		SELECT * 
+		FROM jk.t_gl_dict 
+		WHERE id = #{id}
+	</select>
+	
+	<!-- 根据type查询字典表 -->
+	<select id="getByType" resultMap="DictMap">
+		SELECT *
+		FROM JK.T_GL_DICT 
+		WHERE TYPE = #{type}
+		order by sort
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO jk.t_gl_dict (
+			id, 
+			value, 
+			label, 
+			type, 
+			description, 
+			sort, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			del_flag,
+			SYSTEM_FLAG
+		) VALUES (
+			#{id}, 
+			#{value}, 
+			#{label}, 
+			#{type}, 
+			#{description}, 
+			#{sort}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{delFlag},
+			#{systemFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE jk.t_gl_dict
+		SET value = #{value}, 
+			label = #{label}, 
+			type = #{type}, 
+			description = #{description}, 
+			sort = #{sort}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			SYSTEM_FLAG = #{systemFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE jk.t_gl_dict 
+		SET del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

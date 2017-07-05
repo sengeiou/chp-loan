@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.reconsider.dao.ReconsiderExDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.reconsider.entity.ex.ReconsiderEx">
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId"/>
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="customerName"/>
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="identityCode"/>
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion"/>
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode"/>
+    <result column="province_code" jdbcType="VARCHAR" property="provinceCode"/>
+    <result column="province_name" jdbcType="VARCHAR" property="provinceName"/>
+    <result column="city_code" jdbcType="VARCHAR" property="cityCode"/>
+    <result column="city_Name" jdbcType="VARCHAR" property="cityName"/>
+    <result column="loan_store_orgid" jdbcType="VARCHAR" property="storeOrgId"/>
+    <result column="store_code" jdbcType="VARCHAR" property="storeCode"/>
+    <result column="store_name" jdbcType="VARCHAR" property="storeName"/>
+    <result column="product_type" jdbcType="VARCHAR" property="applyProductCode"/>
+    <result column="product_name" jdbcType="VARCHAR" property="applyProductName"/>
+    <result column="loan_apply_amount" jdbcType="NUMERIC" property="applyMoney"/>
+    <result column="loan_months" jdbcType="INTEGER" property="applyMonth"/>
+    <result column="loan_audit_product" jdbcType="VARCHAR" property="replyProductCode"/>
+    <result column="loan_audit_amount" jdbcType="NUMERIC" property="replyMoney"/>
+    <result column="loan_audit_months" jdbcType="INTEGER" property="replyMonth"/>
+    <result column="loan_team_managercode" jdbcType="VARCHAR" property="teamManagerCode"/>
+    <result column="loan_managercode" jdbcType="VARCHAR" property="customerManagerCode"/>
+    <result column="loan_customer_service" jdbcType="VARCHAR" property="agentCode"/>
+    <result column="customer_into_time" jdbcType="DATE" property="intoLoanTime"/>
+    <result column="loan_raise_flag" jdbcType="VARCHAR" property="raiseFlag"/>
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="urgentFlag"/>
+    <result column="model" jdbcType="VARCHAR" property="model"/>
+    <result column="loan_flag" jdbcType="VARCHAR" property="channelCode"/>
+    <result column="dict_loan_status" jdbcType="VARCHAR" property="loanStatusCode"/>
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="telesalesFlag"/>
+    <result column="bank_signing_platform" jdbcType="VARCHAR" property="signPlatform"/>
+    <result column="dict_loana_type" jdbcType="VARCHAR" property="dictLoanType"/>
+    <result column="reply_product_name" jdbcType="VARCHAR" property="replyProductName"/>
+    <result column="cons_telesales_orgcode" jdbcType="VARCHAR" property="consTelesalesOrgcode"/>
+    <result property="loanInfoOldOrNewFlag" column="loaninfo_oldornew_flag"/>
+    <result column="outto_loan_time" property="outtoLoanTime"/>
+    <result column="bestCoborrower" property ="bestCoborrower"/>
+  </resultMap> 
+   <select id="findList" parameterType="com.creditharmony.loan.borrow.reconsider.entity.ex.ReconsiderEx" resultMap="BaseResultMap">
+       select a.apply_id,
+              a.loan_code,
+              a.loan_customer_name,
+              b.customer_cert_num,
+              bank.bank_signing_platform,
+              c.contract_code,
+              c.contract_version,
+              province.id as province_code,
+              province.area_name as province_name,
+              city.id as city_code,
+              city.area_name as city_Name,
+              a.loan_store_orgid,
+              a.store_code,
+              org.name as store_name,
+              a.product_type,
+              a.loan_apply_amount,
+              a.loan_months,
+              a.loan_audit_product,
+              a.loan_audit_amount,
+              a.loan_audit_months,
+              a.loan_team_managercode,
+              a.loan_managercode,
+              a.loan_customer_service,
+              a.customer_into_time,
+              a.loan_raise_flag,
+              a.loan_urgent_flag,
+              a.model,
+              a.loan_flag,
+              a.cons_telesales_orgcode,
+              a.dict_loan_status,
+              a.dict_loana_type,
+              b.customer_telesales_flag,
+              a.loaninfo_oldornew_flag,
+              a.outto_loan_time,
+              (select lb.cobo_name from jk.t_jk_audit_result re left join jk.t_jk_loan_coborrower lb on re.best_coborrower_id = lb.id where re.loan_code  = b.loan_code order by re.create_time desc limit 1) as bestCoborrower <!-- 最优自然保证人 -->
+         from t_jk_loan_info a 
+         left join t_jk_loan_customer b on a.loan_code = b.loan_code 
+         left join t_jk_customer_consultation consul on consul.id=a.r_id
+         left join t_jk_contract c on c.loan_code = a.loan_code 
+         left join t_jk_loan_bank bank on a.loan_code = bank.loan_code 
+         left join t_gl_org org on org.id = a.loan_store_orgid 
+         left join t_gl_province_city province on province.area_code = org.province_id 
+         left join t_gl_province_city city on city.area_code = org.city_id 
+         where  
+          <if test="queryType=='1'.toString()">  
+            (( a.dict_loan_status in 
+	       <foreach item="item" index="index" collection="queryDictStatus" open="(" separator="," close=")">  
+	        #{item}  
+	       </foreach> 
+           and a.modify_time &gt;= #{queryDay,jdbcType=DATE}
+           ) or (
+             a.dict_loan_status = #{confirmCode,jdbcType = VARCHAR} 
+             and c.create_time &gt;= #{confirmQueryDay,jdbcType=DATE} 
+            <!--剔除确认签署可能发起的二次复议  -->
+            and not exists(select e.loan_code from jk.t_jk_reconsider_apply e where e.loan_code=a.loan_code)
+            <!--剔除二次确认签署（合同操作记录表，确认签署提交之后, 才会记录一条确认签署的记录, 所以第一次到达确认签署状态时没有记录）  --> 
+            and not exists(select g.loan_code from jk.t_jk_contract_operate_info g where g.loan_code=a.loan_code and g.dict_operate_type = #{confirmCode,jdbcType = VARCHAR})
+           ))
+         </if> 
+         <if test="queryType=='2'.toString()">
+        	 a.dict_loan_status in 
+       		<foreach item="item" index="index" collection="queryDictStatus" open="(" separator="," close=")">  
+       			 #{item}  
+      		 </foreach> 
+         	  and a.modify_time &gt;= #{queryDay,jdbcType=DATE}
+         </if>
+         <if test="queryType=='3'.toString()">
+         	a.dict_loan_status = #{confirmCode,jdbcType = VARCHAR} 
+         	and c.create_time &gt;= #{confirmQueryDay,jdbcType=DATE} 
+         	and not exists(select e.loan_code from jk.t_jk_reconsider_apply e where e.loan_code=a.loan_code) 
+         	and not exists(select f.loan_code from jk.t_jk_contract_operate_info f where f.loan_code=a.loan_code and f.dict_operate_type = #{confirmCode,jdbcType = VARCHAR})
+         </if>
+         <if test="customerName!=null and customerName!=''">
+           and a.loan_customer_name =#{customerName,jdbcType=VARCHAR}
+         </if>
+         <if test="storeOrgId!=null and storeOrgId!=''">
+           and a.loan_store_orgid =#{storeOrgId,jdbcType=VARCHAR}
+         </if>
+         <if test="replyProductCode!=null and replyProductCode!=''">
+           and  a.loan_audit_product = #{replyProductCode,jdbcType=VARCHAR}
+         </if>
+         <if test="teamManagerCode!=null and teamManagerCode!=''">
+           and  a.loan_team_managercode =#{teamManagerCode,jdbcType=VARCHAR}
+         </if> 
+         <if test="customerManagerCode!=null and customerManagerCode!=''">
+           and  a.loan_managercode =#{customerManagerCode,jdbcType=VARCHAR}
+         </if>
+         <if test="urgentFlag!=null and urgentFlag!=''">
+           and  a.loan_urgent_flag =#{urgentFlag,jdbcType=VARCHAR}
+         </if>
+         <if test="identityCode!=null and identityCode!=''">
+           and  b.customer_cert_num =#{identityCode,jdbcType=VARCHAR}
+         </if>
+         <if test="contractCode!=null and contractCode!=''">
+           and  c.contract_code =#{contractCode,jdbcType=VARCHAR}
+         </if>
+         <if test="applyId!=null and applyId!=''">
+           and a.apply_id = #{applyId,jdbcType=VARCHAR}
+         </if>
+         <if test="model!=null and model!=''">
+           and a.model=#{model,jdbcType=VARCHAR} 
+         </if>
+         <if test="channelCode!=null and channelCode!=''">
+           and a.loan_flag=#{channelCode,jdbcType=VARCHAR}
+         </if>
+         <if test="telesalesFlag!=null and telesalesFlag=='0'.toString()">
+           and b.customer_telesales_flag = #{telesalesFlag,jdbcType=VARCHAR}
+         </if>
+         <if test="telesalesFlag!=null and telesalesFlag=='1'.toString()">
+           and b.customer_telesales_flag = #{telesalesFlag,jdbcType=VARCHAR}
+         </if>
+         <if test="consServiceUserCode!=null and consServiceUserCode!=''">
+		    and consul.cons_service_user_code = #{consServiceUserCode,jdbcType=VARCHAR} 
+		 </if>
+   </select>
+  </mapper>

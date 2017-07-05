@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.RepaymentDateDao">
+	
+	
+	<select id="getRepaymentDate"  resultType="com.creditharmony.loan.common.entity.GlBill">
+		select bill_day as billDay  from jk.t_gl_bill  group by  bill_day  order by bill_day
+	</select>
+</mapper>

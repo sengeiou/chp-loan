@@ -1,0 +1,906 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.LoanGrantDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.LoanGrantEx">
+  	<result column="SEQUENCENUMBER" property="sequenceNumber" /><!-- 序号 -->
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="id" jdbcType="VARCHAR" property="loanInfoId" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <result column="mid_id" jdbcType="VARCHAR" property="midId" />
+    <result column="dict_loan_type" jdbcType="VARCHAR" property="dictLoanType" />
+    <result column="submit_deduct_time" jdbcType="VARCHAR" property="submitDeductTime" />
+    <result column="dict_loan_way" jdbcType="VARCHAR" property="dictLoanWay" />
+    <result column="grant_amount" jdbcType="NUMERIC" property="grantAmount" />
+    <result column="lending_time" jdbcType="DATE" property="lendingTime" />
+    <result column="grant_back_date" jdbcType="DATE" property="grantBackDate" />
+    <result column="lending_user_id" jdbcType="VARCHAR" property="lendingUserId" /><!-- 放款操作人员，放款操作的过程中要再次进行更新 -->
+    <result column="grant_recepic_result" jdbcType="VARCHAR" property="grantRecepicResult" />
+    <result column="grant_fail_result" jdbcType="VARCHAR" property="grantFailResult" />
+    <result column="grant_back_mes" jdbcType="VARCHAR" property="grantBackMes" />
+    <result column="check_emp_id" jdbcType="VARCHAR" property="checkEmpId" />
+    <result column="check_result" jdbcType="VARCHAR" property="checkResult" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coboName" />
+    <result column="middle_name" jdbcType="VARCHAR" property="middleName" />
+    <result column="mid_bank_name" jdbcType="VARCHAR" property="midBankName" />
+    <result column ="bank_account_name" jdbcType="VARCHAR" property="bankAccountName" />
+    <result column="bank_card_no" jdbcType="VARCHAR" property="bankCardNo" />
+    <result column="urge_moeny" jdbcType="VARCHAR" property="urgeMoney" />
+    <result column="urge_decute_money" jdbcType="VARCHAR" property="urgeDecuteMoney" />
+    <result column="name" jdbcType="VARCHAR" property="loanTeamManagerName" /> <!-- 团队经理名称 -->
+    <result column="loan_teamManager_code" jdbcType="VARCHAR" property="loanTeamManagercode" /><!--团队经理编号 -->
+    <result column="name" jdbcType="VARCHAR" property="loanManagerName" />  <!-- 客户经理名称 -->
+    <result column="loan_managercode" jdbcType="VARCHAR" property="loanManagercode" /><!-- 客户经理编号-->
+    <result column="product_name" jdbcType="VARCHAR" property="productType" /><!-- 产品类型 -->
+    <result column="audit_amount" jdbcType="NUMERIC" property="auditAmount" /><!-- 批借金额 -->
+    <result column="fee_petition" jdbcType="NUMERIC" property="feePetition" /><!-- 信访金额 -->
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="customerTelesalesFlag" />
+    <result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+    <result column="frozen_code" jdbcType="VARCHAR" property="frozenCode" />
+    <result column="frozen_reason" jdbcType="VARCHAR" property="frozenReason" />
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="urgentFlag"/>
+    <result column="grant_batch" jdbcType="VARCHAR" property="grantPch"/><!-- 放款批次 -->
+    <result column="contract_replay_day" jdbcType="DATE" property="contractReplayDay"/>
+    <result column="contract_fact_day" jdbcType="DATE" property="contractFactDay"/><!-- 合同签订日期 -->
+    <result column="bank_name" jdbcType="VARCHAR" property="bankName"/>
+    <!-- 门店名称 -->
+    <result column="name" jdbcType="VARCHAR" property="storesCode" />
+    <result column="contract_months" jdbcType="VARCHAR" property="contractMonths" />
+    <result column="product_type_name" jdbcType="VARCHAR" property="classType" /><!-- 借款类型 -->
+    <result column="dict_is_additional" jdbcType="VARCHAR" property="dictIsAdditional" />
+    <result column="enterprise_serialno" jdbcType="VARCHAR" property="enterpriseSerialno" /><!-- 企业流水号 -->
+    <result column="grant_pch" jdbcType="VARCHAR" property="submissionBatch"/>  <!-- 提交批次 -->
+    <result column="submissiondate" jdbcType="TIMESTAMP" property="submissionsDate"/>
+    <result column="check_time" jdbcType="VARCHAR" property="checkTime" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="modify_id" jdbcType="VARCHAR" property="modifyId" />
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+  </resultMap>
+  <!-- 查找放款确认办理页面中的字段信息,根据ID查找,返回为借款实体 -->
+  <select id="queryReconsiderGrantDeal" resultType="com.creditharmony.loan.borrow.grant.entity.ex.LoanGrantEx">
+       select
+         b.customer_name,         <!-- 借款客户表.客户姓名 -->
+         b.customer_cert_num,     <!-- 借款客户表.证件号码-->
+         a.contract_code,         <!-- 合同编号 -->
+         c.loan_flag              <!-- 标识 -->
+       from
+        jk.t_jk_loan_info c
+        LEFT JOIN jk.t_jk_loan_customer b ON b.loan_code=c.loan_code
+        LEFT JOIN jk.t_jk_contract a ON a.loan_code=c.loan_code 
+        LEFT JOIN jk.t_jk_reconsider_apply d on d.loan_code = c.loan_code 
+       where 
+       d.apply_id=#{applyId}<!-- 根据applyId去查询，是连接业务表和流程表的-->
+  </select>
+    <!-- 根据applyId查询分配卡号办理页面中的字段 -->
+  <select id="queryDisCardDeal" resultType="com.creditharmony.loan.borrow.grant.entity.ex.LoanGrantEx">
+       select 
+         a.contract_code contractCode,         <!-- 合同编号 -->
+         b.customer_name customerName,         <!-- 借款客户表.客户姓名 -->
+         a.grant_amount grantAmount,          <!-- 放款金额-->       
+         c.loan_flag loanFlag,             <!-- 标识 -->
+         c.loaninfo_oldornew_flag,
+         b.customer_cert_num customerCertNum,
+         c.loan_urgent_flag urgentFlag,
+         c.loan_code loanCode
+       from 
+        jk.t_jk_loan_info c
+        LEFT JOIN jk.t_jk_loan_customer b ON b.loan_code=c.loan_code
+        LEFT JOIN jk.t_jk_loan_grant a ON c.loan_code=a.loan_code
+       where 
+        c.loan_code=#{loanCode}<!-- 根据借款编号去查询，是连接业务表和流程表的-->
+  </select>
+  
+  <!--根据applyId查询loanCode，插入历史的时候要求传送loanCode -->
+  <select id="selLoanCode" resultType="String">
+  select loan_code from t_jk_contract where apply_id = #{applyId}
+  </select>
+  
+  <!-- 根据loanCode查询初始签约平台 -->
+  <select id="selPlat" resultType="String">
+  select bank_signing_platform 
+  from t_jk_loan_bank b
+  left join t_jk_loan_info a on a.loan_code=b.loan_code and b.bank_top_flag='1' and repayment_flag = '0'
+  where a.loan_code = #{loanCode}
+  </select>
+  
+  <!-- 更新单子的标识,获得列表中单子的applyID-->
+    <update id="updateFlag">
+      update jk.t_jk_loan_info 
+      <set>
+      <if test="loanFlag !=null">
+      	loan_flag=#{loanFlag},
+      </if>
+      <if test="frozenReason !=null">
+      	frozen_reason=#{frozenReason},
+      </if>
+      <if test="frozenCode !=null">
+      	frozen_code=#{frozenCode},
+      </if>
+      <if test="frozenLastApplyTime != null">
+      	frozen_last_apply_time=#{frozenLastApplyTime},
+      </if>
+      </set>
+      where 
+        <trim prefixOverrides="AND | OR">  
+      		<if test="loanCode!=null">
+      			and loan_code=#{loanCode}
+      		</if>
+      		<if test="applyId!=null">
+      			and apply_id=#{applyId}
+      		</if>
+      </trim>
+    </update>
+    
+  <!-- 更新单子的状态 ,根据applyId-->
+  <update id="updateStatus">
+	update jk.t_jk_loan_info a
+	<set>
+		<if test="dictLoanStatus !=null">
+			dict_loan_status=#{dictLoanStatus}
+		</if>
+		<if test="loanSurveyEmpId !=null and loanSurveyEmpId!=''">
+			,loan_survey_emp_id=#{loanSurveyEmpId}
+		</if>
+		<if test="modifyTime !=null and modifyTime != ''">
+			,modify_time = #{modifyTime}
+		</if>
+		<if test="modifyBy !=null and modifyBy != ''">
+			,modify_by = #{modifyBy}
+		</if>
+	</set>
+	where a.loan_code=#{loanCode}
+</update>
+   
+   <!-- 更新单子的状态 ,根据applyId-->
+  <update id="updateStatusByLoanCode">
+      update jk.t_jk_loan_info a
+        <if test="dictLoanStatus !=null">
+          set dict_loan_status=#{dictLoanStatus}
+        </if>
+        <if test="visitFlag !=null">
+           ,visit_flag=#{visitFlag}
+        </if>
+      where a.loan_code=#{loanCode}
+   </update>
+   
+   <!-- 更新还款主表中的是否有效标识 ，根据还款主表中的合同编号-->
+   <update id="updFlag" parameterType="com.creditharmony.loan.borrow.grant.entity.LoanGrant">
+   update t_jk_payback set
+   effective_flag='1',
+   dict_pay_status = '0'
+   where contract_code=#{contractCode}
+   </update>
+   
+   <!-- 插入放款记录表 -->
+   <insert id="insertGrant" parameterType="com.creditharmony.loan.borrow.grant.entity.LoanGrant">
+    insert into jk.t_jk_loan_grant(id,contract_code,loan_code,dict_loan_type,dict_loan_way,mid_id,grant_amount,grant_fail_amount,lending_time,
+    lending_user_id,grant_recepic_result,grant_fail_result,grant_back_mes,check_emp_id,check_result,submissiondate,grant_back_date,check_time,create_by,create_time
+    ) 
+    values(#{id},#{contractCode},#{loanCode},#{dictLoanType},#{dictLoanWay},#{midId},#{grantAmount},#{grantFailAmount},#{lendingTime},#{lendingUserId}
+    ,#{grantRecepicResult},#{grantFailResult},#{grantBackMes},#{checkEmpId},#{checkResult},#{submissionsDate},#{grantBackDate},#{checkTime},#{createBy},#{createTime}
+    )
+   </insert>
+   <!-- 更新放款记录表，根据合同编号 -->
+     <update id="updateLoanGrant" parameterType="com.creditharmony.loan.borrow.grant.entity.LoanGrant">
+    	update jk.t_jk_loan_grant
+      <set>
+      <if test="loanCode != null">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="midId != null">
+        mid_id = #{midId,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLoanType != null">
+        dict_loan_type = #{dictLoanType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLoanWay != null">
+        dict_loan_way = #{dictLoanWay,jdbcType=VARCHAR},
+      </if>
+      <if test="grantAmount != null">
+        grant_amount = #{grantAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="grantPch !=null and grantPch!=''">
+      	grant_pch = #{grantPch,jdbcType=VARCHAR},
+      </if>
+      <if test="grantBatch !=null and grantBatch!=''">
+      	grant_batch = #{grantBatch,jdbcType=VARCHAR},
+      </if>
+      <if test="submissionsDate!=null">
+       	submissiondate = #{submissionsDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="grantFailAmount != null">
+        grant_fail_amount = #{grantFailAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="lendingTime != null">
+        lending_time = #{lendingTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lendingUserId != null">
+        lending_user_id = #{lendingUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="grantRecepicResult != null">
+        grant_recepic_result = #{grantRecepicResult,jdbcType=VARCHAR},
+      </if>
+      <if test="grantFailResult != null">
+        grant_fail_result = #{grantFailResult,jdbcType=VARCHAR},
+      </if>
+      <if test="grantBackMes != null">
+        grant_back_mes = #{grantBackMes,jdbcType=VARCHAR},
+      </if>
+      <if test="checkEmpId != null">
+        check_emp_id = #{checkEmpId,jdbcType=VARCHAR},
+      </if>
+      <if test="enterpriseSerialno != null">
+        enterprise_serialno = #{enterpriseSerialno,jdbcType=VARCHAR},
+      </if>
+      <if test="grantCount != null">
+        grant_count = #{grantCount,jdbcType=NUMERIC},
+      </if>
+      <if test="checkResult != null">
+        check_result = #{checkResult,jdbcType=VARCHAR},
+      </if>
+      <if test="checkTime != null">
+        check_time = #{checkTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="submitDeductTime != null">
+        submit_deduct_time = #{submitDeductTime,jdbcType=DATE},
+      </if>
+      <if test="grantBackDate != null">
+        grant_back_date = #{grantBackDate,jdbcType=DATE},
+      </if>
+      <if test="cfSendFlag != null">
+      	cf_send_flag = #{cfSendFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="trustGrantOutputStatus != null and trustGrantOutputStatus != ''">
+      	trust_grant_output_status = #{trustGrantOutputStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="trustCashRtn != null and trustCashRtn != ''">
+      	 trust_cash_rtn= #{trustCashRtn,jdbcType=VARCHAR},
+      </if>
+      <if test="trustCashFailure != null and trustCashFailure != ''">
+      	trust_cash_failure = #{trustCashFailure,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyId != null">
+        modify_id = #{modifyId,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=VARCHAR},
+      </if>
+      <if test="goldCreditStatus != null">
+        gold_credit_status = #{goldCreditStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="zcjRejectFlag != null">
+      	zcj_reject_flag = #{zcjRejectFlag,jdbcType=VARCHAR},
+      </if>
+       <if test="grantFlag != null">
+      	grant_flag = #{grantFlag,jdbcType=VARCHAR},
+      	</if>
+    </set>
+    where
+    <trim prefixOverrides="AND | OR">  
+      		<if test="contractCode !=null">
+      			and contract_code=#{contractCode,jdbcType=VARCHAR}
+      		</if>
+      		<if test="loanCode !=null">
+      			and loan_code=#{loanCode,jdbcType=VARCHAR}
+      		</if>
+      </trim>
+  </update>
+  
+	<!-- 查询放款已办列表,放款id和借款主表id都包含在内(导出) -->
+	<select id="findGrantDone" resultMap="BaseResultMap">
+		select ROW_NUMBER() OVER() SEQUENCENUMBER,
+		e.id,
+		d.apply_id,
+		a.customer_name,
+		(CASE when w.cobo_name is not null then w.cobo_name else '' end ) as cobo_name,
+		a.customer_cert_num as customerCertNum,
+		manager.name as loanTeamManagerName,-- 团队经理名称 
+		customer.name as loanManagerName,-- 客户经理名称 
+		b.loan_team_managercode, -- 团队经理编号 
+		b.loan_managercode, -- 客户经理
+		t.product_name as productType, -- 产品类型
+		round(d.audit_amount,2) audit_amount,
+		round(f.fee_petition,2) fee_petition,
+		M8.LABEL as customer_telesales_flag,
+		b.dict_is_additional ,  -- 是否追加借 
+		d.contract_code,
+		d.contract_amount,
+		e.grant_amount,
+		round(sum(e.grant_amount) OVER (),2) as totalGrantMoney,--放款总额
+		fee_urged_service as urgeMoney,  -- 催收服务费
+		(s.urge_moeny-s.urge_decute_moeny-s.audit_amount) as urgeDecuteMoeny, 
+		s.AUDIT_AMOUNT as grantAuditAmount, -- 已查账金额
+		fee_credit,--征信费
+		case when d.product_type = 'A021' then
+		 f.fee_urged_service+fee_credit+fee_petition else f.fee_urged_service end as feeSum, --综合费用
+		d.contract_months,
+		g.middle_name,
+		g.mid_bank_name,
+		g.bank_card_no,
+		lb.bank_account_name,
+		e.dict_loan_way,
+		h.name as storesCode, -- 门店名称 
+		b.loan_store_orgid  as storeOrgId, -- 门店id
+		e.lending_time,  -- 放款时间 
+		lending.name as lending_user_id, -- 放款人员,导出时需要进行转换id
+		checks.name as check_emp_id, -- 审核专员 ,导出时需要进行转换id 
+		M7.LABEL as loan_flag,  -- 标识 
+		M6.LABEL as loan_urgent_flag, -- 加急标识 
+		b.trust_cash,
+		e.loan_code,
+		e.submissiondate,
+		e.grant_pch,  -- 提交批次
+		e.grant_batch -- 放款批次 
+		from
+		jk.t_jk_loan_grant e
+		LEFT JOIN jk.t_jk_contract d ON d.contract_code=e.contract_code
+		LEFT JOIN jk.t_jk_loan_customer a ON a.loan_code=e.loan_code
+		LEFT JOIN jk.t_jk_loan_info b ON b.loan_code=e.loan_code
+		LEFT JOIN 
+		(select loan_code,STRING_AGG(cobo_name,';') as cobo_name from jk.t_jk_loan_coborrower group by loan_code) w on w.loan_code = e.loan_code
+		LEFT JOIN jk.t_jk_contract_fee f ON f.contract_code=d.contract_code
+		LEFT JOIN jk.t_jk_loan_bank lb on lb.loan_code = b.loan_code and lb.bank_top_flag = '1' and lb.repayment_flag = '0'
+		LEFT JOIN jk.t_jk_urge_services_amount s ON s.r_grant_id=e.id and s.return_logo ='0'
+		LEFT JOIN jk.t_jk_middle_person g ON g.id=e.mid_id
+		LEFT JOIN jk.t_gl_org h ON h.ID = b.loan_store_orgid
+		LEFT JOIN jk.t_gl_jk_product t ON t.product_code=d.product_type
+		LEFT JOIN jk.t_gl_user manager ON manager.id=b.loan_team_managercode -- 团队经理
+		LEFT JOIN jk.t_gl_user customer ON customer.id=b.loan_managercode  -- 客户经理 
+		LEFT JOIN jk.t_gl_user lending ON lending.id=e.lending_user_id
+		LEFT JOIN jk.t_gl_user checks ON checks.id=e.check_emp_id
+		
+		LEFT JOIN (select value,LABEL from JK.T_GL_DICT where TYPE = 'jk_urgent_flag') M6 ON M6.VALUE = b.loan_urgent_flag
+		LEFT JOIN (select value,LABEL from JK.T_GL_DICT where TYPE = 'jk_channel_flag') M7 ON M7.VALUE = b.loan_flag 
+		LEFT JOIN (select value,LABEL from JK.T_GL_DICT where TYPE = 'jk_telemarketing') M8 ON M8.VALUE = a.customer_telesales_flag
+		where b.dict_loan_status in(
+		'70','87','88','89','90','91','92'
+		) 
+		<if test="loanGrant.tGFlag != null and loanGrant.tGFlag != ''">
+			and b.model = #{loanGrant.model}
+		</if>
+		<if test="loanGrant.tGFlag == null">
+			and (b.loan_flag is null or b.loan_flag  in ('1','2','4')) and (b.model = '0' or b.model is null)
+		</if>
+		<if test="loanGrant.customerName != null and loanGrant.customerName != ''">
+			and a.customer_name LIKE CONCAT('%', #{loanGrant.customerName}, '%')
+		</if>
+		<if test="loanGrant.trustCash != null and loanGrant.trustCash != ''">
+			and b.trust_cash= #{loanGrant.trustCash}
+		</if>
+		<!-- 借款类型,借款类型 -->
+		<if test="loanGrant.classType != null and loanGrant.classType != ''">
+			and d.class_type = #{loanGrant.classType}
+		</if>
+		<!-- 借款产品 -->
+		<if test="loanGrant.productName != null and loanGrant.productName != ''">
+			and d.product_type = #{loanGrant.productName}
+		</if>
+		<!-- 放款途径 -->
+		<if test="loanGrant.dictLoanWay != null and loanGrant.dictLoanWay != ''">
+			and e.dict_loan_way =#{loanGrant.dictLoanWay}
+		</if>
+		<if test="loanGrant.midBankName != null and loanGrant.midBankName != ''">
+			and g.mid_bank_name LIKE CONCAT('%',#{loanGrant.midBankName},'%')
+		</if>
+		  <if test="loanGrant.loanFlag != null and loanGrant.loanFlag != ''">
+			and b.loan_flag = #{loanGrant.loanFlag}
+		</if>
+		<!-- 放款时间 to_date(to_char(e.submissiondate,'yyyy-mm-dd')) --> 
+		<if test="loanGrant.startDate != null and loanGrant.startDate != ''">
+			and to_date(to_char(e.lending_time,'yyyy-mm-dd')) &gt;= #{loanGrant.startDate}
+		</if>
+		<if test="loanGrant.endDate != null and loanGrant.endDate != ''">
+			and to_date(to_char(e.lending_time,'yyyy-mm-dd')) &lt;= #{loanGrant.endDate}
+		</if>
+		<!-- 提交时间 -->
+		<if test="loanGrant.subStartDate != null and loanGrant.subStartDate != ''">
+			and to_date(to_char(e.submissiondate,'yyyy-mm-dd')) &gt;= #{loanGrant.subStartDate}
+		</if>
+		<if test="loanGrant.subEndDate != null and loanGrant.subEndDate != ''">
+			and to_date(to_char(e.submissiondate,'yyyy-mm-dd')) &lt;= #{loanGrant.subEndDate}
+		</if>
+		<if test="loanGrant.contractCode != null and loanGrant.contractCode != ''">
+			and e.contract_code = #{loanGrant.contractCode} <!-- 根据合同编号进行查询 -->
+		</if>
+		<if test="loanGrant.lendingUserId != null and loanGrant.lendingUserId != ''">
+			and e.lending_user_id = #{loanGrant.lendingUserId}
+		</if>
+		<if test="loanGrant.grantPch!=null and loanGrant.grantPch!=''">  <!-- 放款批次 -->
+			and e.grant_batch = #{loanGrant.grantPch,jdbcType=VARCHAR}
+		</if>
+		<if test="loanGrant.customerCertNum != null and loanGrant.customerCertNum != ''">
+			and a.customer_cert_num like '%'||#{loanGrant.customerCertNum}||'%'
+		</if>
+		<if test="loanGrant.submissionBatch != null and loanGrant.submissionBatch != ''"> <!-- 提交批次 -->
+			and e.grant_pch = #{loanGrant.submissionBatch}
+		</if>
+		<if test="loanGrant.storeOrgId !=null"> <!-- 门店id -->
+			and b.loan_store_orgid in
+		<foreach item="item" index="index" collection="loanGrant.storeOrgId" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+		</if>
+		<if test="contractCodes !=null"> <!-- 门店id -->
+			and e.contract_code in
+		<foreach item="item" index="index" collection="contractCodes" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+		</if>
+		order by lending_time DESC 
+	</select>
+
+	<!--根据合同编号， 查询applyId，用于在已办页面中查看历史 -->
+	<select id="selApplyId" resultType="String">
+		select a.apply_id
+		from jk.t_jk_contract a
+		where a.contract_code=#{contractCode}
+	</select>
+	
+	<!-- 根据借款编码查询标识 -->
+	<select id = "selLoanFlag" resultType="java.lang.String">
+	select loan_flag from t_jk_loan_info where loan_code = #{loanCode}
+	</select>
+	<!-- 根据applyID查询 门店冻结的单子的合同编号-->
+	<select id="selFrozenContract"
+	 resultType="java.lang.String">
+	select contract_code from  t_jk_loan_info a 
+	LEFT JOIN t_jk_contract b ON b.loan_code = a.loan_code 
+	where trim(a.frozen_code) != '' and b.contract_code = #{contractCode}
+	</select>
+
+	<select id="getFrozenByLoanCodes" resultType="java.lang.Integer">
+		select count(*) from jk.t_jk_loan_info where frozen_flag = '1' and loan_code in
+			<foreach collection="list" index="index" item="loanCodes" open="(" close=")" separator=",">
+					#{loanCodes} 
+			</foreach>
+	</select>
+	<delete id="deleteGrant"
+		parameterType="com.creditharmony.loan.borrow.grant.entity.LoanGrant">
+		delete from jk.t_jk_loan_grant a
+		where a.loan_code=#{loanCode}
+	</delete>
+
+	<!-- 根据合同编号查找放款表 -->
+	<select id="findGrant"
+		parameterType="com.creditharmony.loan.borrow.grant.entity.LoanGrant"
+		resultType="com.creditharmony.loan.borrow.grant.entity.ex.LoanGrantEx">
+		select contract_code,loan_code,dict_loan_type,mid_id,grant_fail_amount,
+		dict_loan_way,grant_amount,lending_time,lending_user_id,grant_recepic_result,
+		grant_fail_result,grant_back_mes,check_emp_id,check_result,check_time
+		from jk.t_jk_loan_grant
+		where contract_code = #{contractCode}
+	</select>
+
+	<!-- 查询所有的产品名称 -->
+	<select id="findProduct" resultMap="BaseResultMap">
+		select distinct product_name as productName, product_code as productCode
+		from jk.t_gl_jk_product
+	</select>
+
+	<!-- 以下 车借新增 -->
+
+	<!-- 查询要放款的数据 发送给批处理 -->
+	<select id="queryDeductReq" parameterType="java.util.HashMap"
+		resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+		select
+		d.apply_id as batId,
+		a.contract_code as businessId,
+		a.grant_amount as amount,
+		b.apply_bank_name as bankName,
+		b.bank_card_no as accountNo,
+		b.bank_account_name as accountName,
+		y.area_name as bankCity,
+		t.area_name as bankProv,
+		b.card_bank as bankId,
+		c.dict_cert_type as idType,
+		c.customer_cert_num as idNo,
+		c.customer_phone_first as mobile
+
+		from jk.t_jk_loan_grant a
+		left join jk.t_cj_customer_bank_info b on b.loan_code = a.loan_code
+		LEFT JOIN jk.t_gl_province_city t ON t.area_code = b.bank_province
+		LEFT JOIN jk.t_gl_province_city y ON y.area_code = b.bank_city
+		LEFT JOIN jk.t_jk_loan_customer c ON c.loan_code = a.loan_code
+		LEFT JOIN jk.t_cj_loan_info d ON d.loan_code = a.loan_code
+
+		where a.contract_code=#{contractCode}
+
+		<if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and d.dict_loan_status = #{dictLoanStatus}
+		</if>
+		<if test="dictLoanWay != null and dictLoanWay != ''">
+			and a.dict_loan_way = #{dictLoanWay}
+		</if>
+
+	</select>
+	<!-- 根据applyId查询分配卡号办理页面中的字段 -->
+	<select id="queryDisDeal"
+		resultType="com.creditharmony.loan.borrow.grant.entity.ex.LoanGrantEx">
+		select
+		a.contract_code,         <!-- 合同编号 -->
+		c.loan_customer_name as customer_name,         <!-- 借款客户表.客户姓名 -->
+		a.grant_amount,          <!-- 放款金额 -->
+		c.dict_loan_flag,             <!-- 标识 -->
+		d.card_bank,      			<!-- 客户开卡行 -->
+		c.loan_code    			<!-- 借款编码 -->
+		from
+		jk.t_cj_loan_info c
+		LEFT JOIN jk.t_jk_loan_grant a ON a.loan_code=c.loan_code
+		LEFT JOIN jk.t_cj_customer_bank_info d ON d.loan_code=c.loan_code
+		where
+		c.apply_id=#{applyId}<!-- 根据applyId去查询，是连接业务表和流程表的 -->
+	</select>
+	<!-- 更新单子的状态、退回原因类型、备注 ,根据applyId -->
+	<update id="updateCarStatus">
+		update jk.t_cj_loan_info a
+		<set>
+			<if test="dictLoanStatus !=null">
+				dict_loan_status=#{dictLoanStatus},
+			</if>
+			<if test="dictBackMestype !=null">
+				dict_back_mestype=#{dictBackMestype},
+			</if>
+			<if test="remark !=null">
+				remark=#{remark}
+			</if>
+		</set>
+		where a.apply_id=#{applyId}
+	</update>
+	<!--根据合同编号， 查询applyId -->
+	<select id="selectCarApplyId" resultType="String">
+		select a.apply_id
+		from jk.t_cj_loan_info a
+		LEFT JOIN jk.t_cj_contract c ON c.loan_code=a.loan_code
+		where c.contract_code=#{contractCode}
+	</select>
+
+	<!-- 根据用户id获取用户姓名 -->
+	<select id="selUserName" resultType="String">
+		select id from jk.t_gl_user where id = #{userCode} and del_flag = '0' and status = '1'
+	</select>
+
+	<!-- 查询要传送给批处理的list,根据applyId查询 -->
+	<select id="selSendList" resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+		select
+		e.apply_id as batId,<!-- 请求批次id,applyId -->
+		a.contract_code as businessId, <!-- 请求id -->
+		(CASE when a.grant_fail_amount = 0 then a.grant_amount else a.grant_fail_amount end ) as amount,  <!-- 金额 -->
+		d.bank_name as bankId, <!-- 银行id -->
+		province.area_name as bankProv, <!-- 支行省 -->
+        city.area_name as bankCity, <!-- 支行市 -->
+		d.bank_branch as bankName,  <!-- 支行名 -->
+		d.bank_account as accountNo, <!-- 账号 -->
+		d.bank_account_name as accountName, <!-- 账户名称 -->
+		c.dict_cert_type as idType, <!-- 证件类型 -->
+		c.customer_cert_num as idNo,<!-- 证件编号 -->
+		c.customer_phone_first as mobile, <!-- 联系方式 -->
+		'00' as accountType              <!-- 账户类型 -->
+		from t_jk_loan_grant a
+		left join t_jk_loan_info b on b.loan_code = a.loan_code
+		left join t_jk_contract e on e.loan_code = b.loan_code
+		left join t_jk_loan_customer c on c.loan_code = a.loan_code
+		left join t_jk_loan_bank d on a.loan_code = d.loan_code and
+		d.bank_top_flag='1' and d.repayment_flag = '0'
+		left join jk.t_gl_province_city_cmb  province on bank_province = province.id 
+  		left join jk.t_gl_province_city_cmb  city on bank_city = city.id
+		where a.dict_loan_way!='0' 
+		<if test="contractCode != null and ! contractCode.equals('')">
+			and e.contract_code in( ${contractCode} ) <!-- 根据合同编号进行查询，因为复议流程中的单子的applyId不在loan_info表中 -->
+		</if>
+		<if test="dictLoanStatus != null and ! dictLoanStatus.equals('')">
+			and b.dict_loan_status != #{dictLoanStatus}
+		</if>
+		<if test="dictLoanWay != null and ! dictLoanWay.equals('')">
+			and a.dict_loan_way = #{dictLoanWay}
+		</if>
+	</select>
+	<select id="findMaxJINXINGrantPch" parameterType="map" resultMap="BaseResultMap">
+		select grant_pch from( select grant_pch,loan_code from (
+		select grant_pch,loan_code from t_jk_loan_grant where grant_pch like
+		'%'||#{letter,jdbcType=VARCHAR}||'%'  and to_char(create_time,'yyyy-MM-dd') = #{queryTime}
+		 order by grant_pch desc limit 1
+		)
+		UNION
+		select grant_pch,loan_code from t_jk_loan_grant where grant_pch like
+		'%'||#{urgentFlag,jdbcType=VARCHAR}||'%'  and to_char(create_time,'yyyy-MM-dd') like #{queryTime}
+		 order by grant_pch desc limit 1) a left join jk.t_jk_loan_info info on a.loan_code = info.loan_code and info.DICT_LOAN_STATUS = #{loanStatus}
+	</select>
+	<!-- 金信已放款列表数据信息（包含导出excel中的数据） -->
+	<select id="findGrantDoneList"
+		resultType="com.creditharmony.loan.channel.goldcredit.view.GCGrantDoneView">
+		select  b.apply_id applyId,b.loan_code loanCode,e.id,
+		b.loaninfo_oldornew_flag loanInfoOldOrNewFlag,
+		d.loan_name customerName,
+		d.loan_cert_num as customerCertNum,
+		d.cobo_name coBorrowing,
+		round(sum(e.grant_amount) OVER (),2) as totalGrantMoney,  <!-- 放款总金额 -->
+		b.loan_team_managercode as loanTeamManagerCode,<!-- 团队经理 -->
+		b.loan_managercode as loanManagerCode,  <!-- 客户经理 -->
+		b.loan_customer_service as loanCustomerServiceName,<!-- 客户经理 -->
+		b.loan_survey_emp_id,<!-- 外访人员 -->
+		'信借' as classType,           <!-- 借款类型 -->
+		t.product_name as productType,        <!-- 产品类型 -->
+		round(d.audit_amount,2) auditAmount, <!-- 批复金额 -->
+		round(f.fee_petition,2) feePetition,
+		b.loan_urgent_flag urgentFlag,  <!-- 是否加急 -->
+		d.contract_code contractCode ,
+		round(d.contract_amount,2) contractAmount,
+		round(e.grant_amount,2) grantAmount ,
+		round(s.urge_moeny,2) urgeMoney,  <!-- 催收服务费 -->
+		round(s.urge_moeny - (COALESCE(s.urge_decute_moeny, 0) + COALESCE(s.audit_amount, 0)),2)urgeDecuteMoeny,<!-- 未划金额 -->
+		d.contract_months contractMonths,
+		mp.middle_name middleName, --开户姓名
+		mp.mid_bank_name midBankName, --开户行
+		mp.bank_card_no bankCardNo, --账户
+		h.name as storesCode,     <!-- 门店名称 -->
+		TO_CHAR(E.LENDING_TIME,'yyyy-MM-dd') lendingTime,    <!-- 放款时间 -->
+		e.lending_user_id loanOfficerName, <!-- 放款人员 -->
+		e.check_emp_id  checkEmpName,    <!-- 审核专员  -->
+		b.loan_flag loanFlag,        <!-- 标识 -->
+		e.loan_code,
+		e.grant_pch grantPch,
+		e.grant_batch submissionBatch,
+		e.submissiondate submissionDate,
+		
+		M6.LABEL,M7.LABEL CHANNEL_NAME,CHECKS.NAME CHECKNAME,SURVEY_EMP.NAME SURVEYNAME,SERVICE.NAME SERVICENAME,
+		TEAM.NAME TEAMNAME,MANAGER.NAME MANAGERNAME,
+		(select cobo_name from jk.t_jk_loan_coborrower w where id=(select best_coborrower_id from( 
+		select best_coborrower_id from jk.t_jk_audit_result t where loan_code=e.loan_code  order by create_time desc 
+		limit 1))) as sercurityNames
+		
+		FROM
+		JK.T_JK_LOAN_GRANT e
+	    LEFT JOIN jk.t_jk_loan_info b ON e.loan_code = b.loan_code
+		LEFT JOIN jk.t_jk_contract d ON e.contract_code = d.contract_code
+		LEFT JOIN JK.T_GL_USER TEAM ON B.LOAN_TEAM_MANAGERCODE = TEAM.ID
+		LEFT JOIN JK.T_GL_USER MANAGER ON B.LOAN_MANAGERCODE = MANAGER.ID
+		LEFT JOIN JK.T_GL_USER SERVICE ON B.LOAN_CUSTOMER_SERVICE = SERVICE.ID
+		LEFT JOIN JK.T_GL_USER SURVEY_EMP ON B.LOAN_SURVEY_EMP_ID = SURVEY_EMP.ID
+		LEFT JOIN JK.T_GL_USER CHECKS ON E.CHECK_EMP_ID = CHECKS.ID
+		
+		LEFT JOIN jk.t_jk_contract_fee f ON d.contract_code = f.contract_code
+		LEFT JOIN jk.t_jk_middle_person mp ON mp.id=e.mid_id
+		LEFT JOIN jk.t_jk_urge_services_amount s ON e.id = s.r_grant_id and s.return_logo ='0'
+		LEFT JOIN jk.t_jk_loan_bank g ON b.loan_code = g.loan_code and g.bank_top_flag=1 and g.repayment_flag='1'
+		LEFT JOIN JK.T_GL_DICT M8 ON g.bank_name = M8.VALUE AND M8.TYPE = 'jk_open_bank'
+		LEFT JOIN jk.t_gl_org h ON b.loan_store_orgid = h.ID
+		LEFT JOIN jk.t_gl_jk_product t ON d.product_type = t.product_code
+		LEFT JOIN jk.t_gl_jk_product_type p ON b.class_type = p.class_type
+		LEFT JOIN JK.T_GL_DICT M6 ON B.LOAN_URGENT_FLAG = M6.VALUE AND M6.TYPE = 'jk_urgent_flag'
+		LEFT JOIN JK.T_GL_DICT M7 ON B.LOAN_FLAG = M7.VALUE AND M7.TYPE = 'jk_channel_flag'
+		WHERE 1=1 AND b.LOAN_FLAG = #{param.loanFlag} AND e.lending_time IS NOT NULL
+		and b.dict_loan_status in('70','87','88','89','90','91','92') and d.product_type != 'A020'
+		<if test="param.customerName != null and param.customerName != ''">
+			and d.loan_name LIKE '%${param.customerName}%'
+		</if>
+		<!-- 借款类型,借款类型 -->
+		<if test="param.classType != null and param.classType != ''">
+			and d.class_type = #{param.classType}
+		</if>
+		
+		<if test="param.contractCode != null and param.contractCode != ''">
+			and e.contract_code = #{param.contractCode} <!-- 根据合同编号进行查询 -->
+		</if>
+		
+		<if test="param.grantPch!=null and param.grantPch!=''">
+			and e.grant_pch = #{param.grantPch,jdbcType=VARCHAR}
+		</if>
+		<!-- 放款日期 -->
+		<if test="param.lendingTimeStrat != null and param.lendingTimeStrat != ''">
+			and e.lending_time &gt;= to_timestamp(#{param.lendingTimeStrat}||' 00:00:00','YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="param.lendingTimeEnd != null and param.lendingTimeEnd != ''">
+			and e.lending_time &lt;=  to_timestamp(#{param.lendingTimeEnd}||' 23:59:59','YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<!-- 证件号码 -->
+		<if test="param.customerCertNum != null and param.customerCertNum != ''">
+			and d.loan_cert_num LIKE '%${param.customerCertNum}%'
+		</if>
+		<!-- 放款批次 -->
+		<if test="param.grantPch != null and param.grantPch != ''">
+			and e.grant_pch LIKE '%${param.grantPch}%'
+		</if>
+		<!-- 提交批次 -->
+		<if test="param.submissionBatch != null and param.submissionBatch != ''">
+			and e.grant_batch LIKE '%${param.submissionBatch}%'
+		</if>
+		<!-- 提交日期 -->
+		<if test="param.submissionDate != null and param.submissionDate != ''">
+			and to_date(to_char(e.submissiondate,'yyyy-mm-dd')) = #{param.submissionDate}
+		</if>
+		<!-- 是否加急 -->
+		<if test="param.urgentFlag != null and param.urgentFlag != ''">
+				and b.loan_urgent_flag = #{param.urgentFlag}
+			</if>
+			<!-- 门店编码 -->
+			<if test="param.storeCode != null and param.storeCode !=''">
+				and b.loan_store_orgid IN
+				<foreach collection="storeCodes" index="index" item="storeCode" open="(" close=")" separator=",">
+					#{storeCode} 
+				</foreach>
+			</if>
+			<if test="param.loanCode != null and param.loanCode != ''">
+				and b.loan_code IN
+				<foreach collection="loanCodes" index="index" item="item" open="(" close=")" separator=",">
+					#{item} 
+				</foreach>
+			</if>
+		 order by e.lending_time desc 
+	</select>
+	
+	<select id="selGrantPch" resultType="com.creditharmony.loan.borrow.grant.entity.LoanGrant">
+	select distinct grant_batch as grantBatch from t_jk_loan_grant where grant_batch is not null
+	</select>
+	
+	<select id="wthkList" parameterType="com.creditharmony.loan.borrow.grant.entity.ex.LoanGrantEx" resultMap="BaseResultMap">
+		select ROW_NUMBER() OVER() SEQUENCENUMBER,
+		e.id,
+		d.apply_id,
+		a.customer_name,
+		a.customer_cert_num as customerCertNum,
+		t.product_name as productType,        	
+		d.contract_code,
+		d.contract_amount,
+		g.middle_name,
+		(select d.label from jk.t_gl_dict d where d.value=lb.bank_name and d.type='jk_open_bank') AS bank_name,
+		lb.bank_account AS bank_card_no,
+		lb.bank_account_name,
+		e.dict_loan_way,
+		h.name as storesCode, 
+		b.loan_store_orgid  as storeOrgId,
+		e.lending_time,  
+		M7.LABEL as loan_flag, 
+		e.loan_code,
+		d.contract_fact_day,
+		b.dict_loan_status,
+		(select label from jk.t_gl_dict where type='jk_loan_model' and value=b.model) AS model
+		from
+		jk.t_jk_loan_grant e
+		LEFT JOIN jk.t_jk_contract d ON d.contract_code=e.contract_code
+		LEFT JOIN jk.t_jk_loan_customer a ON a.loan_code=e.loan_code
+		LEFT JOIN jk.t_jk_loan_info b ON b.loan_code=e.loan_code
+		LEFT JOIN jk.t_jk_loan_bank lb on lb.loan_code = b.loan_code and lb.bank_top_flag = '1' and lb.repayment_flag = '1'
+		LEFT JOIN jk.t_jk_middle_person g ON g.id=e.mid_id
+		LEFT JOIN jk.t_gl_org h ON h.ID = b.loan_store_orgid
+		LEFT JOIN jk.t_gl_jk_product t ON t.product_code=d.product_type
+		LEFT JOIN (select value,LABEL from JK.T_GL_DICT where TYPE = 'jk_channel_flag') M7 ON M7.VALUE = b.loan_flag 
+		where b.dict_loan_status in(
+		'70','87','88','89','90','91','92'
+		) 
+		<if test="model != null and model != ''">
+			and b.model = #{model}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and a.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="bankIds != null and bankIds.length != 0">
+			and lb.bank_name in
+			<foreach item="item" index="index" collection="bankIds" open="(" separator="," close=")">  
+        	 	#{item}  
+       		</foreach>
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and b.loan_flag = #{loanFlag}
+		</if>
+		<if test="loanFlag == null or loanFlag == ''">
+			and (b.loan_flag is null or b.loan_flag in ('0','1','2','4'))
+		</if>
+		<if test="bankCardNo != null and bankCardNo != ''">
+			and lb.bank_account = #{bankCardNo}
+		</if>
+		<if test="productCode != null and productCode != ''">
+			and d.product_type = #{productCode}
+		</if>
+		<!-- 放款时间 to_date(to_char(e.submissiondate,'yyyy-mm-dd')) --> 
+		<if test="startDate != null and startDate != ''">
+			and to_date(to_char(e.lending_time,'yyyy-mm-dd')) &gt;= #{startDate}
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and to_date(to_char(e.lending_time,'yyyy-mm-dd')) &lt;= #{endDate}
+		</if>
+		<!-- 提交时间 -->
+		<if test="htStartDate != null and htStartDate != ''">
+			and to_date(to_char(d.contract_fact_day,'yyyy-mm-dd')) &gt;= #{htStartDate}
+		</if>
+		<if test="htEndDate != null and htEndDate != ''">
+			and to_date(to_char(d.contract_fact_day,'yyyy-mm-dd')) &lt;= #{htEndDate}
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and e.contract_code LIKE CONCAT('%', #{contractCode}, '%') <!-- 根据合同编号进行查询 -->
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and a.customer_cert_num like '%'||#{customerCertNum}||'%'
+		</if>
+		<if test="storeOrgId !=null and storeOrgId.length != 0"> <!-- 门店id -->
+			and b.loan_store_orgid in
+		<foreach item="item" index="index" collection="storeOrgId" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+		</if>
+		<!-- <if test="storeOrgId != null and storeOrgId !=''" > 门店id
+	      and b.loan_store_orgid=#{storeOrgId}
+	    </if> -->
+		order by lending_time DESC 
+	</select>
+	
+	<select id="getLoanCode" parameterType="com.creditharmony.loan.borrow.grant.entity.ex.LoanGrantEx" resultType="Map">
+		select to_char(b.customer_into_time,'yyyyMMdd') AS customer_into_time,d.contract_code,d.loan_code
+		from
+		jk.t_jk_loan_grant e
+		LEFT JOIN jk.t_jk_contract d ON d.contract_code=e.contract_code
+		LEFT JOIN jk.t_jk_loan_customer a ON a.loan_code=e.loan_code
+		LEFT JOIN jk.t_jk_loan_info b ON b.loan_code=e.loan_code
+		LEFT JOIN jk.t_jk_loan_bank lb on lb.loan_code = b.loan_code and lb.bank_top_flag = '1' and lb.repayment_flag = '1'
+		LEFT JOIN jk.t_jk_middle_person g ON g.id=e.mid_id
+		where b.dict_loan_status in(
+		'70','87','88','89','90','91','92'
+		) 
+		<if test="model != null and model != ''">
+			and b.model = #{model}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and a.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="bankIds != null and bankIds.length != 0">
+			and lb.bank_name in
+			<foreach item="item" index="index" collection="bankIds" open="(" separator="," close=")">  
+        	 	#{item}  
+       		</foreach>
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and b.loan_flag = #{loanFlag}
+		</if>
+		<if test="bankCardNo != null and bankCardNo != ''">
+			and lb.bank_account = #{bankCardNo}
+		</if>
+		<if test="productCode != null and productCode != ''">
+			and d.product_type = #{productCode}
+		</if>
+		<!-- 放款时间 to_date(to_char(e.submissiondate,'yyyy-mm-dd')) --> 
+		<if test="startDate != null and startDate != ''">
+			and to_date(to_char(e.lending_time,'yyyy-mm-dd')) &gt;= #{startDate}
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and to_date(to_char(e.lending_time,'yyyy-mm-dd')) &lt;= #{endDate}
+		</if>
+		<!-- 提交时间 -->
+		<if test="htStartDate != null and htStartDate != ''">
+			and to_date(to_char(d.contract_replay_day,'yyyy-mm-dd')) &gt;= #{htStartDate}
+		</if>
+		<if test="htEndDate != null and htEndDate != ''">
+			and to_date(to_char(d.contract_replay_day,'yyyy-mm-dd')) &lt;= #{htEndDate}
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and e.contract_code LIKE CONCAT('%', #{contractCode}, '%') <!-- 根据合同编号进行查询 -->
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and a.customer_cert_num like '%'||#{customerCertNum}||'%'
+		</if>
+		<if test="storeOrgIds !=null and storeOrgIds.length != 0"> <!-- 门店id -->
+			and b.loan_store_orgid in
+		<foreach item="item" index="index" collection="storeOrgIds" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+		</if>
+		<if test="storeOrgId != null and storeOrgId !=''" > <!-- 门店id -->
+	      	and b.loan_store_orgid=#{storeOrgId}
+	      </if>
+		order by lending_time DESC 
+	</select>
+	
+	<select id="findStartDate" resultType="Map">
+		select to_char(i.customer_into_time,'yyyyMMdd') AS customer_into_time,c.contract_code,c.loan_code,i.loan_flag from jk.t_jk_loan_info i left join jk.t_jk_contract c on c.loan_code=i.loan_code where 
+		<if test="loanCode !=null and loanCode.length !=0 "> <!-- 门店id -->
+			i.loan_code in
+		<foreach item="item" index="index" collection="loanCode" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+		</if>
+	</select>
+	
+</mapper>

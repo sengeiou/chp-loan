@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.telesales.dao.TelesalesConsultDAO">
+  <resultMap id="telesalesConsultInfoMap" type="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo">
+    <result property="id" column="id" jdbcType="VARCHAR"/>
+    <result property="customerCode" column="customer_code" jdbcType="VARCHAR"/>
+    <result property="managerCode" column="manager_code" jdbcType="VARCHAR"/>
+    <result property="loanApplyMoney" column="cons_loan_amount" jdbcType="NUMERIC"/>
+    <result property="dictLoanUse" column="dict_loan_use" jdbcType="VARCHAR"/>
+    <result property="dictLoanType" column="dict_loan_type" jdbcType="VARCHAR"/>
+    <result property="consLoanRecord" column="cons_loan_record" jdbcType="VARCHAR"/>
+    <result property="consOperStatus" column="dict_oper_status" jdbcType="VARCHAR"/>
+    <result property="consCommunicateDate" column="cons_communicate_date" jdbcType="DATE"/>
+    <result property="loanTeamEmpcode" column="cons_team_managercode" jdbcType="VARCHAR"/>
+    <result property="consTeamEmpName" column="name" jdbcType="VARCHAR"/>
+    <result property="loanTeamOrgId" column="cons_team_orgcode" jdbcType="VARCHAR"/>
+    <result property="teleSalesOrgid" column="cons_telesales_orgcode" jdbcType="VARCHAR"/>
+    <result property="consPhoneSource" column="cons_up_user_code" jdbcType="VARCHAR"/>
+    <result property="consTelesalesFlag" column="cons_telesales_flag" jdbcType="VARCHAR"/>
+    <result property="consCustomerService" column="cons_service_user_code" jdbcType="VARCHAR"/>
+    <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+    <result property="createTime" column="create_time" jdbcType="DATE"/>
+    <result property="modifyBy" column="modify_by" jdbcType="VARCHAR"/>
+    <result property="modifyTime" column="modify_time" jdbcType="DATE"/>
+    <result property="storeCode"  column="store_orgid"  jdbcType="VARCHAR" />
+    <result property="storeName"  column="name"  jdbcType="VARCHAR" />
+    <result property="consTelesalesSource" column="cons_telesales_source"  jdbcType="VARCHAR" />
+    <result property="sceneManagerCode" column="scene_manager" jdbcType="VARCHAR"/>
+    <result property="dictLoanUseRemark" column="dict_loan_use_remark" jdbcType="VARCHAR"/>
+  </resultMap>
+  <sql id="baseColumn">
+     id,customer_code,manager_code,cons_loan_amount,
+     dict_loan_use,dict_loan_type,cons_loan_record,
+     dict_oper_status,cons_communicate_date,cons_team_managercode,
+     cons_team_orgcode,cons_telesales_orgcode,cons_up_user_code,
+     cons_telesales_flag,cons_service_user_code,create_by,create_time,
+     modify_by,modify_time,store_orgid,cons_telesales_source,scene_manager,dict_loan_use_remark
+  </sql>
+	<!-- 插入数据 -->
+	<insert id="insert">
+		INSERT INTO jk.t_jk_customer_consultation(
+			id,
+			customer_code,
+			cons_loan_record,  
+			dict_oper_status,
+			cons_communicate_date,
+			cons_team_managercode,
+			manager_code,
+			dict_loan_type,
+			cons_loan_amount,
+			dict_loan_use,
+			cons_telesales_orgcode,
+			cons_telesales_flag,
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time,
+			store_orgid,
+			cons_telesales_source,
+			scene_manager,
+			cons_team_orgcode,
+			isBorrow,
+			dict_loan_use_remark
+		) VALUES (
+			#{id},
+			#{customerCode}, 
+			#{consultRecord.consLoanRecord}, 
+			#{consultRecord.consOperStatus}, 
+			#{consultRecord.consCommunicateDate}, 
+			#{loanTeamEmpcode}, 
+			#{managerCode}, 
+			#{dictLoanType}, 
+			#{loanApplyMoney}, 
+			#{dictLoanUse}, 
+			#{teleSalesOrgid},
+			#{consTelesalesFlag},
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy},
+			#{modifyTime},
+			#{storeCode},
+			#{consTelesalesSource},
+			#{sceneManagerCode},
+			#{loanTeamOrgId},
+			#{isBorrow},	
+			#{dictLoanUseRemark}
+		)
+	</insert>
+	
+	<!-- 插入客户沟通日志-->
+	<insert id="insertConsultRecord">
+		INSERT INTO jk.t_jk_consultation_log(
+			id,
+			cons_id, 
+			cons_loan_record,
+		    cons_oper_status ,
+	        cons_communicate_date,
+			create_by,
+			create_time, 
+			modify_by, 
+			modify_time			
+		) VALUES (
+			#{consultRecord.id},
+			#{id}, 
+			#{consultRecord.consLoanRecord}, 
+			#{consultRecord.consOperStatus}, 
+			#{consultRecord.consCommunicateDate}, 
+			#{consultRecord.createBy}, 
+			#{consultRecord.createTime}, 
+			#{consultRecord.modifyBy}, 
+			#{consultRecord.modifyTime} 
+		)
+	</insert>
+	
+	
+	<!-- 更新客户咨询信息  -->
+	<update id="update">
+		UPDATE jk.t_jk_customer_consultation 
+		<trim prefix="SET" suffixOverrides=",">
+	     <if test="consTelesalesFlag != null and consTelesalesFlag != ''"> 
+		 	cons_telesales_flag = #{consTelesalesFlag},
+		 </if>
+		 <if test="managerCode != null and managerCode != ''"> 
+		 	manager_code = #{managerCode},
+		 </if>
+		 <if test="loanApplyMoney != null and loanApplyMoney != ''"> 
+		 	cons_loan_amount = #{loanApplyMoney},
+		 </if>
+		 <if test="dictLoanUse != null and dictLoanUse != ''"> 
+		 	dict_loan_use = #{dictLoanUse},
+		 </if>
+		 <if test="dictLoanType != null and dictLoanType != ''"> 
+		 	dict_loan_type = #{dictLoanType},
+		 </if>
+		 <if test="consultRecord.consLoanRecord != null and consultRecord.consLoanRecord != ''"> 
+		 	cons_loan_record = #{consultRecord.consLoanRecord},
+		 </if>
+		 <if test="consultRecord.consOperStatus != null and consultRecord.consOperStatus != ''"> 
+		 	dict_oper_status = #{consultRecord.consOperStatus},
+		 </if>
+		 <if test="consultRecord.consCommunicateDate != null and consultRecord.consCommunicateDate != ''"> 
+		 	cons_communicate_date = #{consultRecord.consCommunicateDate},
+		 </if>
+		 <if test="loanTeamEmpcode != null and loanTeamEmpcode != ''"> 
+		 	cons_team_managercode = #{loanTeamEmpcode},
+		 </if>
+		 <if test="loanTeamOrgId != null and loanTeamOrgId != ''"> 
+		 	cons_team_orgcode = #{loanTeamOrgId},
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+		 	modify_by = #{modifyBy},
+		 </if>
+		 <if test="modifyTime != null and modifyTime != ''"> 
+		 	modify_time = #{modifyTime},
+		 </if>
+		 <if test="storeCode != null and storeCode != ''"> 
+		 	store_orgid = #{storeCode},
+		 </if>
+		 <if test="consTelesalesSource != null and consTelesalesSource != ''"> 
+		 	cons_telesales_source = #{consTelesalesSource},
+		 </if>
+		 <if test="teleSalesOrgid != null and teleSalesOrgid != ''"> 
+		 	cons_telesales_orgcode = #{teleSalesOrgid},
+		 </if>
+		 <if test="sceneManagerCode != null and sceneManagerCode != ''"> 
+		 	scene_manager =#{sceneManagerCode},	
+		 </if>
+		 <if test="dictLoanUseRemark != null and dictLoanUseRemark != ''"> 
+		 	dict_loan_use_remark =#{dictLoanUseRemark}	
+		 </if>
+		 </trim>
+			WHERE id = #{id}
+	</update>
+    
+    <!-- 更新取单信息  -->
+	<update id="updateConsultOrderStatus" parameterType="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo" >
+		UPDATE jk.t_jk_customer_consultation 
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="consultRecord.consOperStatus != null and consultRecord.consOperStatus != ''"> 
+		 		dict_oper_status = #{consultRecord.consOperStatus},
+		 	</if>
+		    <if test="storeCode != null and storeCode != ''"> 
+		 	   store_orgid = #{storeCode},
+		    </if>	
+		    <if test="consCustomerService != null and consCustomerService != ''"> 
+		 	   cons_service_user_code = #{consCustomerService}
+		    </if>		
+		 </trim>
+			WHERE id = #{id}
+	</update>
+	
+	<!-- 根据ID查询客户咨询信息 -->
+	<select id="findSingleTelesalesConsultInfo" parameterType="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo" resultType="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo">
+		   SELECT 
+		     con.id as id, 
+		     con.customer_code as customerCode, 
+		     round(con.cons_loan_amount,2) as loanApplyMoney, 
+		     con.dict_loan_use as dictLoanUse, 
+	         con.dict_loan_type as dictLoanType, 
+	         con.cons_loan_record as consLoanRecord,
+	         con.dict_oper_status as consOperStatus, 
+	         con.cons_team_managercode as loanTeamEmpcode,
+	         con.manager_code,
+	        (SELECT jk.fn_getcodetoname( con.manager_code,null,'user')) as managerName,
+	        con.cons_telesales_orgcode as teleSalesOrgid, 
+	        con.store_orgid as storeCode,
+	        (SELECT jk.fn_getcodetoname(con.store_orgid,null,'org'))  as storeName,	
+	        con.cons_telesales_source as consTelesalesSource,
+	        con.scene_manager,con.isBorrow,
+	        con.dict_loan_use_remark as dictLoanUseRemark
+	      FROM  jk.t_jk_customer_consultation con
+	   		where con.id=#{id}
+	</select>
+	
+	<!-- 根据客户编号咨询信息 -->
+	<select id="findTelesalesConsultList" parameterType="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo" resultType="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo">
+		   SELECT 
+		     con.id as id, 
+		     con.customer_code as customerCode, 
+		     con.cons_loan_amount as loanApplyMoney, 
+		     con.dict_loan_use as dictLoanUse, 
+	         con.dict_loan_type as dictLoanType, 
+	         con.cons_loan_record as consLoanRecord,
+	         con.dict_oper_status as consOperStatus, 
+	         con.cons_team_managercode as loanTeamEmpcode,
+	         con.manager_code,
+	        (SELECT jk.fn_getcodetoname( con.manager_code,null,'user')) as managerName,
+	        con.cons_telesales_orgcode as teleSalesOrgid, 
+	        con.store_orgid as storeCode,
+	        (SELECT jk.fn_getcodetoname(con.store_orgid,null,'org'))  as storeName,	
+	        con.cons_telesales_source as consTelesalesSource,
+	        con.scene_manager,
+	        con.cons_communicate_date as consCommunicateDate,
+	        con.dict_loan_use_remark as dictLoanUseRemark
+	      FROM  jk.t_jk_customer_consultation con
+	   		where con.customer_code=#{customerCode}
+	</select>
+	
+    <!-- 更新门店放弃状态  -->
+	<update id="updateStoreGiveUpStatus" >
+		update jk.t_jk_customer_consultation set dict_oper_status='4' where  age(current_date,modify_time) > 7 and cons_telesales_flag='1' and dict_oper_status='6'
+	</update>
+	
+	<!-- 根据组织机构ID、角色ID查询上级用户ID  -->
+	<select id="findUserIdByOrgIdAndRoleId" parameterType="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo" resultType="com.creditharmony.loan.telesales.entity.TelesalesConsultInfo">
+		  select user_id as id from  jk.t_gl_user_role_org where  org_id=#{teleSalesOrgid} and  role_id=#{roleId} limit 1
+	</select>
+	
+</mapper>

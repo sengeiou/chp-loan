@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.common.dao.PlatformRuleDao">
+	<sql id="platformColumns">
+		id,
+		dict_deduct_platform_id,
+		dict_bank_id,
+		dict_deduct_interface_type,
+		single_limit_money,
+		day_limit_money,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time
+	</sql>
+
+	<insert id="insert">
+		insert into t_jk_platform_rule
+		(
+		<include refid="platformColumns" />
+		)
+		values
+		(
+		#{id},
+		#{dictDeductPlatformId},
+		#{dictBankId },
+		#{dictDeductInterfaceType},
+		#{singleLimitMoney},
+		#{dayLimitMoney},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime}
+		)
+	</insert>
+
+	<!-- 查询平台银行规则 -->
+	<select id="get" resultType="com.creditharmony.loan.common.entity.PlatformRule">
+		select
+		<include refid="platformColumns" />
+		from t_jk_platform_rule
+		where 1=1
+		<if test="dictDeductPlatformId != null and dictDeductPlatformId!=''">
+			and dict_deduct_platform_id = #{dictDeductPlatformId}
+		</if>
+		<if test="dictBankNo != null and dictBankNo!=''">
+			and dict_bank_id = #{dictBankId}
+		</if>
+	</select>
+
+	<!-- 查询全部规则 -->
+	<select id="findAllList" resultType="com.creditharmony.loan.common.entity.PlatformRule">
+		select
+		<include refid="platformColumns" />
+		from t_jk_platform_rule
+		order by dict_deduct_platform_id
+	</select>
+	<!-- 根据划扣平台，银行，查询规则 -->
+	<select id="findRuleByBank" resultType="com.creditharmony.loan.common.entity.PlatformRule">
+		select
+		<include refid="platformColumns" />
+		from t_jk_platform_rule
+		where 1 = 1
+		<if test="dictDeductPlatformId != null and dictDeductPlatformId !=''">
+			and dict_deduct_platform_id = #{dictDeductPlatformId}
+		</if>
+		<if test="dictBankId != null and dictBankId !=''">
+			and dict_bank_id = #{dictBankId}
+		</if>
+		<if test="dictDeductInterfaceType != null and dictDeductInterfaceType !=''">
+			and dict_deduct_interface_type = #{dictDeductInterfaceType}
+		</if>
+		order by dict_deduct_platform_id
+	</select>
+</mapper>

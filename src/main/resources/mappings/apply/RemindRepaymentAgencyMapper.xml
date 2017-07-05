@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.RemindRepaymentAgencyDao">
+	<!-- 还款提醒代办 所需要查询出的数据 -->
+	<sql id="RemindRepaymentAgencyColumns">
+		a.id,<!-- 代还款列表id -->
+		a.contract_code as contractCode, <!-- 合同编号 -->
+		a.customer_name as 
+		customerName, <!-- 客户名称 -->
+		a.stores_name as stroeName, <!-- 门店名称 -->
+		a.apply_bank_name as
+		applyBankName, <!-- 开户行名称 -->
+		a.tel as offendTel, <!-- 手机号码 -->
+		a.month_pay_day as monthPayDate, <!-- 还款日 -->
+		a.months as months, <!-- 期数 -->
+		a.month_repay_amount as payMoney, <!-- 应还金额 -->
+		a.complete_amount as
+		completeMoney, <!-- 应还金额 -->
+		a.bule_amount as buleAmont, <!-- 蓝补金额 -->
+		a.mark as logo, <!-- 标识 -->
+		a.stores_mark as storeRemark,<!-- 门店备注 -->
+		a.dict_deal_type as dictDealType, <!-- 划扣平台 -->
+		jc.contract_end_day as contractEndTimestamp, <!-- 合同到期日 -->
+		jli.dict_loan_status as dictLoanStatus, <!-- 借款状态 -->
+		jpm.dict_month_status as dictMonthStatus, <!-- 期供状态 -->
+		 jli.loan_managercode as loanManagerName,
+        jli.loan_team_managercode as loanTeamManagerName,
+        jli.loan_survey_emp_id as loanSurveyEmpName,
+        jli.loan_customer_service as loanCustomerService
+	</sql>
+	<!-- 查询还款提醒代办列表数据 -->
+	<select id="allRemindRepaymentAgencyList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.RepaymentReminderEx">
+		SELECT
+		<include refid="RemindRepaymentAgencyColumns" />
+		FROM t_jk_services_remind a
+			left join t_jk_contract jc on jc.contract_code = a.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.contract_code
+			left join t_jk_payback jp on jp.contract_code = a.contract_code
+			left join t_jk_payback_month jpm on jp.contract_code = jpm.contract_code and jp.payback_current_month = jpm.months
+		where 1=1
+		<if test="customerName != null and customerName != ''">
+			and a.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and a.contract_code = #{contractCode}
+		</if>
+		<if test="paybackMonthMoneyDate != null and paybackMonthMoneyDate != ''">
+			and a.month_pay_day = #{paybackMonthMoneyDate} <!-- 期供还款日期 -->
+		</if>
+		<if test="dictDealType != null and dictDealType != ''">
+			and a.dict_deal_type = #{dictDealType} <!-- 划扣平台 -->
+		</if>
+		<if test="repaymentDate !=null and repaymentDate != ''">
+			and cast(to_char(a.month_pay_day,'dd') as integer) = cast(#{repaymentDate} as integer) 
+		</if>
+		 ${queryRight} 
+		ORDER BY a.id
+	</select>
+	
+	<!-- 添加门店备注 -->
+	<update id="addRemark" parameterType="com.creditharmony.loan.borrow.payback.entity.ex.RepaymentReminderEx">
+		<if test="id != null and id != '' ">
+			update t_jk_services_remind set stores_mark = #{storeRemark},stores_mark_entry_by = #{storeRemarkUserid} where id = #{id}		
+		</if>
+	</update>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+

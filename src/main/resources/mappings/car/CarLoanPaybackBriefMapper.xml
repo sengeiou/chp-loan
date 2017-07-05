@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarLoanPaybackBriefDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.carContract.ex.CarLoanPaybackBrief" >
+    <id column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="plate_numbers" property="plateNumbers" jdbcType="VARCHAR" />
+    <result column="suggest_loan_amount" property="suggestLoanAmount" jdbcType="NUMERIC" />
+    <result column="appraiser_name" property="appraiserName" jdbcType="VARCHAR" />
+    <result column="store_assess_amount" property="storeAssessAmount" jdbcType="NUMERIC" />
+    <result column="commercial_maturity_date" property="commercialMaturityDate" jdbcType="DATE" />
+    <result column="similar_market_price" property="similarMarketPrice" jdbcType="NUMERIC" />
+    <result column="factory_date" property="factoryDate" jdbcType="DATE" />
+    <result column="strong_risk_maturity_date" property="strongRiskMaturityDate" jdbcType="DATE" />
+    <result column="annual_check_date" property="annualCheckDate" jdbcType="DATE" />
+    <result column="frame_number" property="frameNumber" jdbcType="VARCHAR" />
+    <result column="vehicle_plant_model" property="vehiclePlantModel" jdbcType="VARCHAR" />
+    <result column="vehicle_brand_model" property="vehicleBrandModel" jdbcType="VARCHAR" />
+    <result column="mileage" property="mileage" jdbcType="NUMERIC" />
+    <result column="first_registration_date" property="firstRegistrationDate" jdbcType="DATE" />
+    <result column="displacemint" property="displacemint" jdbcType="NUMERIC" />
+    <result column="car_body_color" property="carBodyColor" jdbcType="VARCHAR" />
+    <result column="variator" property="variator" jdbcType="VARCHAR" />
+    <result column="engine_number" property="engineNumber" jdbcType="VARCHAR" />
+    <result column="change_num" property="changeNum" jdbcType="VARCHAR" />
+    <result column="ownership_certificate_number" property="ownershipCertificateNumber" jdbcType="VARCHAR" />
+    <result column="modified_situation" property="modifiedSituation" jdbcType="VARCHAR" />
+    <result column="outer_inspection" property="outerInspection" jdbcType="VARCHAR" />
+    <result column="illegal_accident" property="illegalAccident" jdbcType="VARCHAR" />
+    <result column="vehicle_assessment" property="vehicleAssessment" jdbcType="VARCHAR" />
+    <result column="clivta_company" property="clivtaCompany" jdbcType="VARCHAR" />
+    <result column="clivta_num" property="clivtaNum" jdbcType="VARCHAR" />
+    <result column="commericial_company" property="commericialCompany" jdbcType="VARCHAR" />
+    <result column="commericial_num" property="commericialNum" jdbcType="VARCHAR" />
+    <result column="dict_oper_status" property="dictOperStatus" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="extension_assess_amount" property="extensionAssessAmount" jdbcType="NUMERIC" />
+    <result column="extension_suggest_amount" property="extensionSuggestAmount" jdbcType="NUMERIC" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    loan_payback_brief_id, loan_payback_id, current_limit_timme, repayment_date, repayment_actual_date,
+    real_interest, current_interest, real_rate, current_rate, interestl_relief, rate_relief, real_fee, current_management_rate,
+    fee_relief, curretn_late_charge, real_late_charge, late_charge_relief, real_overdue_fine, current_overdue_fine,
+    overdue_fine_relief, current_default_fine, real_default_fine, default_fine_relief, repayment_flag, create_by,
+    create_time, lastmodify_by, lastmodify_time, prepayment, pay_type, current_total_interest, period_type,
+    yqts, jianmianren, status, yihuanqigongjin, tingchefei, xiaoji
+    
+  </sql>
+  <insert id="insertPaybackBrief" parameterType="com.creditharmony.loan.car.carContract.ex.CarLoanPaybackBrief" >
+    insert into jk.t_cj_loan_payback_brief (loan_payback_brief_id, 
+    loan_payback_id, current_limit_timme, repayment_date,
+     repayment_actual_date, real_interest, current_interest, 
+    real_rate, current_rate, interestl_relief, rate_relief, real_fee, 
+    current_management_rate,
+    fee_relief, curretn_late_charge, real_late_charge,
+     late_charge_relief, real_overdue_fine, current_overdue_fine,
+    overdue_fine_relief, current_default_fine, real_default_fine,
+     default_fine_relief, repayment_flag, create_by,
+    create_time, lastmodify_by, lastmodify_time,
+     prepayment, pay_type, current_total_interest,
+      period_type, yqts, jianmianren, status, yihuanqigongjin, tingchefei, xiaoji)
+    values (#{loanPaybackBriefId,jdbcType=VARCHAR},#{loanPaybackId,jdbcType=VARCHAR}, 
+    #{currentLimitTimme,jdbcType=NUMERIC}, #{repaymentDate,jdbcType=DATE},
+    #{repaymentActualDate,jdbcType=DATE},#{realInterest,jdbcType=NUMERIC},#{currentInterest,jdbcType=NUMERIC},
+    #{realRate,jdbcType=NUMERIC},#{currentRate,jdbcType=NUMERIC},#{interestlRelief,jdbcType=NUMERIC},
+    #{rateRelief,jdbcType=NUMERIC},#{realFee,jdbcType=NUMERIC},#{currentManagementRate,jdbcType=NUMERIC},
+    #{feeRelief,jdbcType=NUMERIC},#{curretnLateCharge,jdbcType=NUMERIC},
+    #{realLateCharge,jdbcType=NUMERIC},#{lateChargeRelief,jdbcType=NUMERIC},
+    #{realOverdueFine,jdbcType=NUMERIC},#{currentOverdueFine,jdbcType=NUMERIC},
+    #{overdueFineRelief,jdbcType=NUMERIC},#{currentDefaultFine,jdbcType=NUMERIC},
+    #{realDefaultFine,jdbcType=NUMERIC},#{defaultFineRelief,jdbcType=NUMERIC},
+    #{repaymentFlag,jdbcType=VARCHAR},#{createBy,jdbcType=VARCHAR},
+    #{createTime,jdbcType=DATE},#{lastmodifyBy,jdbcType=VARCHAR},
+    #{lastmodifyTime,jdbcType=DATE},#{prepayment,jdbcType=NUMERIC},
+    #{payType,jdbcType=VARCHAR}, #{currentTotalInterest,jdbcType=NUMERIC},
+    #{periodType,jdbcType=VARCHAR}, #{yqts,jdbcType=NUMERIC},
+    #{jianmianren,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR},
+    #{yihuanqigongjin,jdbcType=NUMERIC}, #{tingchefei,jdbcType=NUMERIC},
+    #{xiaoji,jdbcType=NUMERIC})
+  </insert>
+  <delete id="deletePaybackBrief">
+  delete from jk.t_cj_loan_payback_brief  lpb where lpb.loan_payback_id=#{loanPaybackId}
+  
+  </delete>
+  
+</mapper>

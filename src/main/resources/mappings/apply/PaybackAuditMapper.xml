@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.PaybackAuditDao">
+	<sql id="allPaybackAuditHavaTodoList">
+		pa.id as payBackId,<!-- 还款申请ID -->
+		pa.contract_code as contractCode, <!-- 合同编号 -->
+		pa.apply_really_amount as reallyAmount, <!--实际到账金额-->
+		pa.create_time as createTime, <!--还款日-->
+		pa.modify_time as modifyTime, <!--修改时间-->
+		jmp.mid_bank_name as storesInAccountname,<!-- 存入银行名称 -->
+		pa.dict_repay_method as dictRepayMethod, <!--还款方式-->
+		pa.apply_amount as applyMoneyPayback, <!-- 申请还款金额 -->
+		pa.dict_pay_use as dictPayUse, <!--还款类型-->
+		pa.split_back_result as dictPayResult, <!--回盘结果-->
+		pa.apply_back_mes as applyBackMes, <!--失败原因-->
+		pa.dict_payback_status as dictPayStatus,<!-- 还款申请状态 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		gos.name as orgName, <!--门店名称-->
+		jc.contract_months as contractMonths,<!--批借期数-->
+		jc.contract_replay_day as contractReplayDay, <!--首期还款日-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jp.payback_bule_amount as paybackBuleAmount, <!--蓝补金额-->
+		jp.id as rPaybackId <!-- 还款主表ID -->
+	</sql>
+	<!-- 还款查账已办列表 -->
+	<select id="allPaybackAuditHavaTodoList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackAuditEx">
+		select
+			<include refid="allPaybackAuditHavaTodoList" />
+		from jk.t_jk_payback_apply pa 
+			left join jk.t_jk_payback jp on pa.contract_code = jp.contract_code
+			left join jk.t_jk_contract jc on jc.contract_code = jp.contract_code
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_middle_person jmp on jmp.bank_card_no = pa.dict_deposit_account
+		where pa.dict_repay_method = '1' and pa.dict_payback_status in (${dictPayStatus})<!-- 还款申请状态为‘待冲抵’和‘还款退回’ -->
+		<if test="dictRepayMethod !=null and dictRepayMethod !='' ">
+			and pa.dict_repay_method =  #{dictRepayMethod} <!-- 还款方式 -->
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name = #{customerName}
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and pa.contract_code =  #{contractCode}
+		</if>
+		<if test="storeId != null and storeId != ''">
+			 and jli.loan_store_orgid in (${storeId})   <!-- 门店名称 -->
+		</if>
+		<if test="storesInAccount != null and storesInAccount != ''">
+			and pa.dict_deposit_account = #{storesInAccount}  <!-- 存入银行 -->
+		</if>
+		<if test="dictPayResult != null and dictPayResult != ''">
+			and pa.split_back_result = #{dictPayResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag = #{loanMark} <!-- 标识 -->
+		</if>
+		
+		<!-- 下面两条 ： 查账日期 -->
+		<if test="beginDate!=null and endDate==null">
+            <![CDATA[ and pa.modify_time >= to_date(#{beginDate},'yyyy-MM-dd HH24:mi:ss')]]>
+        </if>
+        <if test="beginDate==null and endDate!=null">
+            <![CDATA[ and pa.modify_time <= to_date(#{endDate},'yyyy-MM-dd HH24:mi:ss')]]>
+        </if>
+        
+        <if test="beginDate!=null and endDate!=null">
+             and to_date(to_char(pa.modify_time,'yyyy-mm-dd')) between #{beginDate} and #{endDate}
+        </if>
+		<if test="beginOutReallyAmount !=null and beginOutReallyAmount != '' and (endOutReallyAmount == null or endOutReallyAmount == '')">
+            <![CDATA[ and pa.apply_really_amount >= #{beginOutReallyAmount}]]>
+        </if>
+        <if test="endOutReallyAmount != null and endOutReallyAmount != '' and (beginOutReallyAmount == null or beginOutReallyAmount == '')">
+            <![CDATA[ and pa.apply_really_amount <= #{endOutReallyAmount}]]>
+        </if>
+		<if test="beginOutReallyAmount != null and beginOutReallyAmount != '' and endOutReallyAmount != null and endOutReallyAmount != ''">
+			and pa.apply_really_amount  between #{beginOutReallyAmount}  and #{endOutReallyAmount} <!-- 实还金额 -->
+		</if>
+		<if test="repaymentDate !=null and repaymentDate != ''">
+			and cast(to_char(jc.contract_replay_day,'dd') as integer) = cast(#{repaymentDate} as integer) <!-- 还款日 -->
+		</if>
+	
+		<if test="ids!=null and ids!=''">
+			and pa.id in (${ids})
+		</if>
+		<if test="operateRole!=null and operateRole!=''">
+			and pa.operate_role=#{operateRole} and jmp.way_flag ='Y'
+		</if>
+		<if test="operateRole==null or operateRole==''">
+			and jmp.way_flag !='Y'
+		</if>
+	</select>
+	<!-- 还款查账已办 查看 -->
+	<select id="seePaybackAuditHavaTodo" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackAuditEx">
+		select 
+			jpa.contract_code as contractCode, <!--合同编号-->
+			jpa.apply_amount as sunReallyAmount, <!--实际到账总额-->
+			jmp.mid_bank_name as storesInAccountname,<!--存入银行(存入户名)-->
+			jlc.customer_name as customerName, <!--客户名称-->
+			jlc.customer_cert_num as customerCertNum, <!--证件号码-->
+			jc.product_type as productType, <!--产品类型-->
+			jc.contract_amount as contractAmount, <!--合同金额-->
+			jc.contract_month_repay_amount as contractMonthRepayAmount, <!--期供金额-->
+			jc.contract_months as contractMonths, <!--借款期限-->
+			jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+			jli.loan_flag as loanMark, <!--标识-->
+			jp.payback_bule_amount as paybackBuleAmount, <!--蓝补金额-->
+			jpa.dict_repay_method as dictRepayMethod, <!--还款方式-->
+			jpa.apply_pay_day as applyPayDay, <!--还款申请日期-->
+			jpa.dict_deal_type as dictDealType, <!--划扣平台-->
+			
+			jpa.apply_account_name as applyAccountName,  <!-- 账号姓名 -->
+			jpa.apply_deduct_account  as  applyDeductAccount,    <!-- 划扣账号 -->
+			jpa.apply_bank_name as   applyBankName,      <!-- 开户行全称 -->
+			jpa.dict_pos_type as   dictPosType,      <!--POS平台 -->
+			jpa.pos_account as   posAccount      <!--POS账户 -->
+		from t_jk_payback_apply jpa
+			left join t_jk_payback jp on jpa.contract_code = jp.contract_code
+			left join t_jk_contract jc on jc.contract_code = jp.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_jk_middle_person jmp on jmp.bank_card_no = jpa.dict_deposit_account
+	    where jpa.id = #{payBackId}
+	</select>
+	<select id="seePaybackAuditHavaListPos" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackAuditEx">
+			select a.contract_code as contractCode,    <!-- 合同号 -->
+			a.refer_code as referCode,              <!-- 参考号 -->
+			a.pos_order_number as posOrderNumber,        <!-- POS订单号 -->
+			a.dict_deposit as dictDepositPosCard,            <!-- 存款方式  -->
+			a.payback_date as paybackDate,            <!-- 到账日期 -->
+			a.apply_really_amount as applyReallyAmountPosCard,     <!-- 实际到账金额  -->
+			a.upload_name as uploadNamePosCard,             <!-- 上传人 -->
+			a.upload_date as uploadDatePosCard,           <!-- 上传时间 -->
+			a.upload_path as uploadPathPosCard              <!-- 上传路径 -->
+			from t_jk_pos_record a  where   a.r_payback_apply_id  =#{payBackId}
+	</select>
+		<!--pos数据列表 -->
+		<select id="seePaybackAuditHavaList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackAuditEx">
+		select
+			a.dict_deposit as dictDeposit, <!--存款方式-->
+			a.tran_deposit_time as tranDepositTime, <!--存款时间-->
+			a.really_amount as reallyAmount, <!-- 实际到账金额 -->
+			a.deposit_name as depositName, <!--实际存款人-->
+			a.upload_filename as uploadFileName, <!-- 上传文件名称 -->
+			a.upload_path as uploadPath, <!-- JPG(上传文件路径)-->
+			a.upload_name as uploadName, <!--上传人-->
+			a.upload_date as uploadDate  <!--上传时间-->
+		from t_jk_payback_transfer_info a
+		where a.r_payback_apply_id = #{payBackId}
+	</select>
+	<!-- 导出还款查账已办数据表 -->
+	<select id="exportExcel" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackAuditEx">
+		select
+			<include refid="allPaybackAuditHavaTodoList" />
+		from jk.t_jk_payback_apply pa 
+			left join jk.t_jk_payback jp on pa.contract_code = jp.contract_code
+			left join jk.t_jk_contract jc on jc.contract_code = jp.contract_code
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_middle_person jmp on jmp.bank_card_no = pa.dict_deposit_account
+		where 
+		pa.id = #{payBackId} 
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name = #{customerName}
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and pa.contract_code =  #{contractCode}
+		</if>
+		<if test="storeId != null and storeId != ''">
+			 and jli.loan_store_orgid in (${storeId})   <!-- 门店名称 -->
+		</if>
+		<if test="storesInAccount != null and storesInAccount != ''">
+			and pa.dict_deposit_account = #{storesInAccount}  <!-- 存入银行 -->
+		</if>
+		<if test="dictPayResult != null and dictPayResult != ''">
+			and pa.split_back_result = #{dictPayResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag = #{loanMark} <!-- 标识 -->
+		</if>
+		<if test="beginOutReallyAmount != null and beginOutReallyAmount != '' and endOutReallyAmount != null and endOutReallyAmount != ''">
+			and pa.apply_really_amount between #{beginOutReallyAmount} and #{endOutReallyAmount} <!-- 实还金额 -->
+		</if>
+		<if test="repaymentDate !=null and repaymentDate != ''">
+			and cast(to_char(pa.create_time,'dd') as integer) = cast(#{repaymentDate} as integer) <!-- 还款日 -->
+		</if>
+	</select>
+	
+	<!-- 查询存入账户信息 -->
+	<select id="selectAllMiddle" resultType="com.creditharmony.loan.common.entity.MiddlePerson">
+	  select id,mid_bank_name,bank_card_no from t_jk_middle_person where deposit_flag = #{depositFlag}
+	</select>
+</mapper>

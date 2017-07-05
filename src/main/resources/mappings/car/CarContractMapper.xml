@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarContractDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarContract" >
+    <id column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+    <result column="contract_due_day" property="contractDueDay" jdbcType="DATE" />
+    <result column="contract_fact_day" property="contractFactDay" jdbcType="DATE" />
+    <result column="contract_replay_day" property="contractReplayDay" jdbcType="DATE" />
+    <result column="contract_end_day" property="contractEndDay" jdbcType="DATE" />
+    <result column="product_type" property="productType" jdbcType="VARCHAR" />
+    <result column="product_type_name" property="productTypeName" jdbcType="VARCHAR" />
+    <result column="audit_amount" property="auditAmount" jdbcType="NUMERIC" />
+    <result column="contract_months" property="contractMonths" jdbcType="INTEGER" />
+    <result column="mid_id" property="midId" jdbcType="VARCHAR" />
+    <result column="dict_repay_method" property="dictRepayMethod" jdbcType="VARCHAR" />
+    <result column="dict_fee_method" property="dictFeeMethod" jdbcType="VARCHAR" />
+    <result column="contract_amount" property="contractAmount" jdbcType="NUMERIC" />
+    <result column="contract_expect_amount" property="contractExpectAmount" jdbcType="NUMERIC" />
+    <result column="contract_month_repay_amount" property="contractMonthRepayAmount" jdbcType="NUMERIC" />
+    <result column="dict_check_status" property="dictCheckStatus" jdbcType="VARCHAR" />
+    <result column="contract_back_result" property="contractBackResult" jdbcType="VARCHAR" />
+    <result column="contract_version" property="contractVersion" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="gross_rate" property="grossRate" jdbcType="TIMESTAMP" />
+    <result column="extension_fee" property="extensionFee" jdbcType="NUMERIC" />
+    <result column="derate" property="derate" jdbcType="NUMERIC" />
+    <result column="mid_id_name" property="midIdName" jdbcType="VARCHAR" />
+    <result column="doc_id" property="docId" jdbcType="VARCHAR" />
+    <result column="loanInfoId" property="loanInfoId" jdbcType="VARCHAR" />
+    <result column="loan_apply_amount" property="loanApplyAmount" jdbcType="VARCHAR" />
+    <result column="paperless_flag" jdbcType="VARCHAR" property="paperLessFlag"/>
+    <result column="channel_flag" jdbcType="VARCHAR" property="channelFlag"/>
+  </resultMap>
+  <resultMap type="com.creditharmony.loan.car.carContract.ex.CarFirstDeferEx" id="deferListMap">
+  	<result column="STORE_NAME" property="storeName" jdbcType="VARCHAR" />
+  	<result column="customer_cert_num" property="customerCertNum" jdbcType="VARCHAR" />
+  	<result column="label" property="telesalesFlag" jdbcType="VARCHAR" />
+  	<result column="conditional_through_flag" property="conditionalThroughFlag" jdbcType="VARCHAR" />
+  	<result column="plate_numbers" property="plateNumbers" jdbcType="VARCHAR" />
+  	<result column="contract_end_day" property="contractEndDay" jdbcType="TIMESTAMP" />
+  	<result column="dict_loan_status" property="dictLoanStatus" jdbcType="VARCHAR" />
+  	<result column="review_meet" property="reviewMeet" jdbcType="VARCHAR" />
+  	<result column="kehuName" property="managerName" jdbcType="VARCHAR" />
+  	<result column="tuanName" property="consTeamManagerName" jdbcType="VARCHAR" />
+  	<result column="loan_apply_time" property="loanApplyTime" jdbcType="TIMESTAMP" />
+  	<result column="store_assess_amount" property="storeAssessAmount" jdbcType="NUMERIC" />
+  	<result column="product_type" property="productType" jdbcType="VARCHAR" />
+  	<result column="contract_months" property="contractMonths" jdbcType="VARCHAR" />
+  	<result column="loan_apply_amount" property="loanApplyAmount" jdbcType="NUMERIC" />
+  	<result column="customer_name" property="customerName" jdbcType="VARCHAR" />
+  	<result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+  	<result column="audit_amount" property="auditAmount" jdbcType="NUMERIC" />
+  	<result column="apply_id" property="applyId" jdbcType="VARCHAR" />
+  	<result column="extend_Num" property="extendNum" jdbcType="NUMERIC" />
+  	<result column="loan_flag" property="loanFlag" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    c.loan_code, c.id, doc_id, contract_code, contract_due_day, contract_fact_day, contract_replay_day, 
+    contract_end_day, c.product_type, audit_amount, contract_months, mid_id, c.dict_repay_method, c.dict_fee_method,
+    contract_amount, contract_expect_amount, contract_month_repay_amount, dict_check_status, 
+    contract_back_result, contract_version, c.create_by, c.create_time, c.modify_by, c.modify_time, gross_rate, extension_fee, derate,c.paperless_flag,
+    c.channel_flag
+  </sql>
+  <sql id="commonSql">
+  	li.apply_id,
+  	li.id,
+  	li.loan_flag,
+	c.contract_code,
+	lc.customer_name,
+	li.loan_apply_amount,
+	c.contract_months,
+	c.product_type,
+	vi.store_assess_amount,
+	c.audit_amount,
+	li.loan_apply_time,
+	li.review_meet,
+	li.dict_loan_status,
+	c.contract_end_day,
+	vi.plate_numbers,
+	d1.label,
+	lc.customer_cert_num,
+	li.STORE_NAME
+  </sql>
+  <select id="selectByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select p.middle_name mid_id_name, jp.product_name product_type_name, d1.label dict_repay_method, d2.label dict_fee_method, 
+    <include refid="Base_Column_List" />
+    from t_cj_contract c
+    left join t_jk_middle_person p on p.id = c.mid_id
+    left join t_gl_jk_product jp on jp.product_code = c.product_type
+    left join t_gl_dict d1 on d1.value = c.dict_repay_method and d1.type = 'jk_car_repay_interest_way'
+    left join t_gl_dict d2 on d2.value = c.dict_fee_method and d2.type = 'jk_car_fee_way'
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <delete id="delete" parameterType="com.creditharmony.loan.car.common.entity.CarContract" >
+    delete from t_cj_contract
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.CarContract" >
+    insert into t_cj_contract (loan_code, id, contract_code, 
+      contract_due_day, contract_fact_day, contract_replay_day, 
+      contract_end_day, product_type, audit_amount, 
+      contract_months, mid_id, dict_repay_method, dict_fee_method,
+      contract_amount, contract_expect_amount, contract_month_repay_amount, 
+      dict_check_status, contract_back_result, contract_version, 
+      create_by, create_time, modify_by, 
+      modify_time, gross_rate, extension_fee, derate, paperless_flag, channel_flag,sign_flag)
+    values (#{loanCode,jdbcType=VARCHAR}, #{id,jdbcType=VARCHAR}, #{contractCode,jdbcType=VARCHAR}, 
+      #{contractDueDay,jdbcType=DATE}, #{contractFactDay,jdbcType=DATE}, #{contractReplayDay,jdbcType=DATE}, 
+      #{contractEndDay,jdbcType=DATE}, #{productType,jdbcType=VARCHAR}, #{auditAmount,jdbcType=NUMERIC}, 
+      #{contractMonths,jdbcType=INTEGER}, #{midId,jdbcType=VARCHAR}, #{dictRepayMethod,jdbcType=VARCHAR}, #{dictFeeMethod,jdbcType=VARCHAR}, 
+      #{contractAmount,jdbcType=NUMERIC}, #{contractExpectAmount,jdbcType=NUMERIC}, #{contractMonthRepayAmount,jdbcType=NUMERIC}, 
+      #{dictCheckStatus,jdbcType=VARCHAR}, #{contractBackResult,jdbcType=VARCHAR}, #{contractVersion,jdbcType=VARCHAR}, 
+      #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP}, #{grossRate,jdbcType=NUMERIC}, #{extensionFee,jdbcType=NUMERIC}, #{derate,jdbcType=NUMERIC},
+      #{paperLessFlag,jdbcType=VARCHAR}, #{channelFlag,jdbcType=VARCHAR}, #{signFlag,jdbcType=VARCHAR})
+  </insert>
+  
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarContract" >
+    update t_cj_contract
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="docId != null" >
+        doc_id = #{docId,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        contract_code = #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="contractDueDay != null" >
+        contract_due_day = #{contractDueDay,jdbcType=DATE},
+      </if>
+      <if test="contractFactDay != null" >
+        contract_fact_day = #{contractFactDay,jdbcType=DATE},
+      </if>
+      <if test="contractReplayDay != null" >
+        contract_replay_day = #{contractReplayDay,jdbcType=DATE},
+      </if>
+      <if test="contractEndDay != null" >
+        contract_end_day = #{contractEndDay,jdbcType=DATE},
+      </if>
+      <if test="productType != null" >
+        product_type = #{productType,jdbcType=VARCHAR},
+      </if>
+      <if test="auditAmount != null" >
+        audit_amount = #{auditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="contractMonths != null" >
+        contract_months = #{contractMonths,jdbcType=INTEGER},
+      </if>
+      <if test="midId != null" >
+        mid_id = #{midId,jdbcType=VARCHAR},
+      </if>
+      <if test="dictRepayMethod != null" >
+        dict_repay_method = #{dictRepayMethod,jdbcType=VARCHAR},
+      </if>
+      <if test="dictFeeMethod != null" >
+        dict_fee_method = #{dictFeeMethod,jdbcType=VARCHAR},
+      </if>
+      <if test="contractAmount != null" >
+        contract_amount = #{contractAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="contractExpectAmount != null" >
+        contract_expect_amount = #{contractExpectAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="contractMonthRepayAmount != null" >
+        contract_month_repay_amount = #{contractMonthRepayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="dictCheckStatus != null" >
+        dict_check_status = #{dictCheckStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="contractBackResult != null" >
+        contract_back_result = #{contractBackResult,jdbcType=VARCHAR},
+      </if>
+      <if test="contractVersion != null" >
+        contract_version = #{contractVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="grossRate != null" >
+        gross_rate = #{grossRate,jdbcType=NUMERIC},
+      </if>
+      <if test="extensionFee != null" >
+        extension_fee = #{extensionFee,jdbcType=NUMERIC},
+      </if>
+      <if test="derate != null" >
+        derate = #{derate,jdbcType=NUMERIC},
+      </if>
+      <if test="paperLessFlag != null" >
+        paperless_flag = #{paperLessFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="channelFlag != null" >
+        channel_flag = #{channelFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="signFlag != null and signFlag != ''">
+      		sign_flag = #{signFlag}
+      </if>
+    </set>
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+   <!-- 展期列表 -->
+   <select id="selectDefer" resultMap="deferListMap"  parameterType="com.creditharmony.loan.car.carContract.ex.CarFirstDeferEx">
+   	select
+   	kehu.name kehuName,
+	tuan.name tuanName, 0 extend_Num,
+   	<include refid="commonSql"></include>
+	from t_cj_loan_info li 
+	left join t_cj_contract c on c.loan_code = li.loan_code
+	left join T_CJ_VEHICLE_INFO vi on vi.loan_code = c.loan_code
+	left join T_CJ_CUSTOMER_CONSULTATION cc on cc.loan_code = li.loan_code
+	left join t_jk_loan_customer lc on lc.loan_code = li.loan_code
+	left join t_gl_user tuan on tuan.LOGIN_NAME = li.CONS_TEAM_MANAGERCODE
+	left join t_gl_user kehu on kehu.LOGIN_NAME = cc.MANAGER_CODE
+	LEFT JOIN t_gl_dict d1 ON d1.value = cc.CONS_TELESALES_FLAG and d1.type = 'jk_telemarketing'
+	where ((0 &lt;= date_part('day', sysdate::timestamp - c.contract_end_day::timestamp) and date_part('day', sysdate::timestamp - c.contract_end_day::timestamp) &lt;= 3 and li.DICT_LOAN_STATUS = '33'<!--  and li.DICT_LOAN_STATUS = '51' -->)
+	or (0 &lt;= date_part('day', c.contract_end_day::timestamp - sysdate::timestamp) and date_part('day', c.contract_end_day::timestamp - sysdate::timestamp)  &lt;= 20 and li.DICT_LOAN_STATUS = '33'))
+	and li.loan_rawcode is null AND c.sign_flag = '1' and li.dict_loan_status not in ('1','35')
+	and c.CONTRACT_MONTHS in ('30','90')
+	and not exists (select ctt.* from T_CJ_LOAN_INFO ctt where ctt.loan_rawcode = li.loan_code and ctt.dict_loan_status &lt;&gt; '0' and ctt.dict_loan_status &lt;&gt; '43')
+	AND NOT EXISTS (select ctt.* 
+                       FROM T_CJ_LOAN_INFO ctt 
+                      WHERE ctt.loan_additional_applyid = li.id 
+                        AND ctt.dict_loan_status = '0'
+                        AND li.loan_apply_amount IS null)
+	and not exists (select tcli.loan_rawcode 
+		from t_cj_loan_info tcli 
+		where tcli.loan_rawcode = li.loan_code and tcli.isextension = '1' and tcli.dict_loan_status = '43' 
+		group by tcli.loan_rawcode 
+		having count(tcli.loan_rawcode) >= 3)
+	<if test="customerName != null and customerName != ''">
+		and lc.customer_name LIKE concat('%', #{customerName}, '%')
+	</if>
+	<if test="productType != null and productType != ''">
+		and c.product_type = #{productType}
+	</if>
+	<if test="customerCertNum != null and customerCertNum != ''">
+		and lc.customer_cert_num = #{customerCertNum}
+	</if>
+	<if test="consTeamManagerName != null and consTeamManagerName != ''">
+		and tuan.name LIKE concat('%', #{consTeamManagerName}, '%')
+	</if>
+	<if test="managerName != null and managerName != ''">
+		and kehu.name like concat('%', #{managerName}, '%')
+	</if>
+	<if test="storeName != null and storeName != ''">
+		and li.STORE_NAME LIKE concat('%', #{storeName}, '%')
+	</if>
+	<if test="dictLoanStatus != null and dictLoanStatus != ''">
+		and li.dict_loan_status = #{dictLoanStatus}
+	</if>
+	<if test="telesalesFlag != null and telesalesFlag != ''">
+		and d1.label = #{telesalesFlag}
+	</if>
+	<if test="loanFlag != null and loanFlag != ''">
+		and li.loan_flag = #{loanFlag}
+	</if>
+	<if test="storeCode != null and storeCode != ''">
+		and li.store_code = #{storeCode}
+	</if>
+	group by 
+		kehu.name,
+		tuan.name,
+   		<include refid="commonSql"></include>
+	union all
+	   	SELECT kehu.name kehuName,
+		tuan.name tuanName, count(c3.*) extend_Num,
+	   	<include refid="commonSql"></include>
+	   	from (
+			select tt.* 
+			from (
+				select h.*, ROW_NUMBER() OVER(PARTITION BY h.loan_rawcode ORDER BY h.modify_time DESC) rn
+				from t_cj_loan_info h
+				where h.isextension = '1' AND h.dict_loan_status = '40' and h.loan_rawcode IS NOT null
+			) tt where tt.rn &lt;= 1) li
+		left join t_cj_contract c on c.loan_code = li.loan_code
+		left join t_cj_loan_info li2 on li2.loan_code = li.loan_rawcode
+		left join t_cj_contract c2 on c2.loan_code = li2.loan_code
+		left join t_cj_loan_info li3 on li3.loan_rawcode = li2.loan_code and li3.dict_loan_status = '40'
+		left join t_cj_contract c3 on c3.loan_code = li3.loan_Code and c3.sign_flag = '1'
+		left join T_CJ_VEHICLE_INFO vi on vi.loan_code = c.loan_code
+		left join T_CJ_CUSTOMER_CONSULTATION cc on cc.loan_code = li.loan_code
+		left join t_jk_loan_customer lc on lc.loan_code = li.loan_code
+		left join t_gl_user tuan on tuan.LOGIN_NAME = li.CONS_TEAM_MANAGERCODE
+		left join t_gl_user kehu on kehu.LOGIN_NAME = li.MANAGER_CODE
+		left join t_gl_dict d1 on d1.value = cc.CONS_TELESALES_FLAG and d1.type = 'jk_telemarketing'
+		where c2.CONTRACT_MONTHS = '30' and c.sign_flag = '1'
+		and ((0 &lt;= date_part('day', sysdate::timestamp - c.contract_end_day::timestamp) and date_part('day', sysdate::timestamp - c.contract_end_day::timestamp) &lt;= 3 <!-- and li.DICT_LOAN_STATUS = '51' -->)
+		or (0 &lt;= date_part('day', c.contract_end_day::timestamp - sysdate::timestamp) and date_part('day', c.contract_end_day::timestamp - sysdate::timestamp) &lt;= 20 and li.DICT_LOAN_STATUS = '40'))
+		AND NOT EXISTS (select tcli.loan_additional_applyid 
+	          FROM t_cj_loan_info tcli
+	        WHERE tcli.loan_additional_applyid = li.id 
+	           AND tcli.isextension = '1'
+	           AND tcli.dict_loan_status = '43'
+	         GROUP BY tcli.loan_additional_applyid 
+	        HAVING count(tcli.loan_additional_applyid) >= 3)
+	    and not exists (select ctt.*
+				from T_CJ_LOAN_INFO ctt 
+				where ctt.loan_additional_applyid = li.id and ctt.dict_loan_status &lt;&gt; '0' and ctt.dict_loan_status &lt;&gt; '43')
+		AND NOT EXISTS (select ctt.*
+                     FROM T_CJ_LOAN_INFO ctt
+                    WHERE ctt.loan_additional_applyid = li.id
+                      AND ctt.dict_loan_status = '0' and li.loan_apply_amount is null)
+	    <if test="customerName != null and customerName != ''">
+			and lc.customer_name LIKE concat('%', #{customerName}, '%')
+		</if>
+		<if test="productType != null and productType != ''">
+			and c.product_type = #{productType}
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and lc.customer_cert_num = #{customerCertNum}
+		</if>
+		<if test="consTeamManagerName != null and consTeamManagerName != ''">
+			and tuan.name LIKE concat('%', #{consTeamManagerName}, '%')
+		</if>
+		<if test="managerName != null and managerName != ''">
+			and kehu.name like concat('%', #{managerName}, '%')
+		</if>
+		<if test="storeName != null and storeName != ''">
+			and li.STORE_NAME LIKE concat('%', #{storeName}, '%')
+		</if>
+		<if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and li.dict_loan_status = #{dictLoanStatus}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			and d1.label = #{telesalesFlag}
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and li.loan_flag = #{loanFlag}
+		</if>
+		<if test="storeCode != null and storeCode != ''">
+			and li.store_code = #{storeCode}
+		</if>
+		group by 
+			kehu.name,
+			tuan.name,
+	   		<include refid="commonSql"></include>
+	   	having count(li.loan_rawcode) &lt; 5
+   	union all
+	   	SELECT kehu.name kehuName,
+		tuan.name tuanName, count(c3.*) extend_Num,
+	   	<include refid="commonSql"></include>
+	   	from (
+			select tt.* 
+			from (
+				select h.*, ROW_NUMBER() OVER(PARTITION BY h.loan_rawcode ORDER BY h.modify_time DESC) rn
+				from t_cj_loan_info h
+				where h.isextension = '1' AND h.dict_loan_status = '40' and h.loan_rawcode IS NOT null
+			) tt where tt.rn &lt;= 1) li
+		left join t_cj_contract c on c.loan_code = li.loan_code
+		left join t_cj_loan_info li2 on li2.loan_code = li.loan_rawcode
+		left join t_cj_contract c2 on c2.loan_code = li2.loan_code
+		left join t_cj_loan_info li3 on li3.loan_rawcode = li2.loan_code and li3.dict_loan_status = '40'
+		left join t_cj_contract c3 on c3.loan_code = li3.loan_Code and c3.sign_flag = '1'
+		left join T_CJ_VEHICLE_INFO vi on vi.loan_code = c.loan_code
+		left join T_CJ_CUSTOMER_CONSULTATION cc on cc.loan_code = li.loan_code
+		left join t_jk_loan_customer lc on lc.loan_code = li.loan_code
+		left join t_gl_user tuan on tuan.LOGIN_NAME = li.CONS_TEAM_MANAGERCODE
+		left join t_gl_user kehu on kehu.LOGIN_NAME = li.MANAGER_CODE
+		left join t_gl_dict d1 on d1.value = cc.CONS_TELESALES_FLAG and d1.type = 'jk_telemarketing'
+		where c2.CONTRACT_MONTHS = '90' and c.sign_flag = '1'
+		and ((0 &lt;= date_part('day', sysdate::timestamp - c.contract_end_day::timestamp) and date_part('day', sysdate::timestamp - c.contract_end_day::timestamp) &lt;= 3<!--  and li.DICT_LOAN_STATUS = '51' -->)
+		or (0 &lt;= date_part('day', c.contract_end_day::timestamp - sysdate::timestamp) and date_part('day', c.contract_end_day::timestamp - sysdate::timestamp) &lt;= 20 and li.DICT_LOAN_STATUS = '40'))
+		AND NOT EXISTS (select tcli.loan_additional_applyid 
+	          FROM t_cj_loan_info tcli
+	        WHERE tcli.loan_additional_applyid = li.id 
+	           AND tcli.isextension = '1'
+	           AND tcli.dict_loan_status = '43'
+	         GROUP BY tcli.loan_additional_applyid 
+	        HAVING count(tcli.loan_additional_applyid) >= 3)
+	    and not exists (select ctt.*
+				from T_CJ_LOAN_INFO ctt 
+				where ctt.loan_additional_applyid = li.id and ctt.dict_loan_status &lt;&gt; '0' and ctt.dict_loan_status &lt;&gt; '43')
+		AND NOT EXISTS (select ctt.*
+                   FROM T_CJ_LOAN_INFO ctt
+                  WHERE ctt.loan_additional_applyid = li.id
+                    AND ctt.dict_loan_status = '0' and li.loan_apply_amount is null)
+	    <if test="customerName != null and customerName != ''">
+			and lc.customer_name LIKE concat('%', #{customerName}, '%')
+		</if>
+		<if test="productType != null and productType != ''">
+			and c.product_type = #{productType}
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and lc.customer_cert_num = #{customerCertNum}
+		</if>
+		<if test="consTeamManagerName != null and consTeamManagerName != ''">
+			and tuan.name LIKE concat('%', #{consTeamManagerName}, '%')
+		</if>
+		<if test="managerName != null and managerName != ''">
+			and kehu.name like concat('%', #{managerName}, '%')
+		</if>
+		<if test="storeName != null and storeName != ''">
+			and li.STORE_NAME LIKE concat('%', #{storeName}, '%')
+		</if>
+		<if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and li.dict_loan_status = #{dictLoanStatus}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			and d1.label = #{telesalesFlag}
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and li.loan_flag = #{loanFlag}
+		</if>
+		<if test="storeCode != null and storeCode != ''">
+			and li.store_code = #{storeCode}
+		</if>
+		group by 
+			kehu.name,
+			tuan.name,
+	   		<include refid="commonSql"></include>
+	   	having count(li.loan_rawcode) &lt; 3
+   </select>
+   <!-- 通过借款编码生成车借展期合同编号 created by 申诗阔 date 2016.03.09，注意：carLoanCode为车借借款编码，extendLoanCode为展期借款编码 -->
+	<select id="getExtendContractCode" resultType="java.lang.String" parameterType="java.util.Map">
+		with thisLoanInfo as(select count(*) eq from t_cj_loan_info where loan_code = #{extendLoanCode})
+		SELECT CONCAT(cc.contract_code, '-', CASE WHEN cli.eq > 0 THEN COUNT(li.*) OVER() ELSE (COUNT(li.*) OVER() + 1) END) contractCode
+		FROM t_cj_contract cc
+		LEFT JOIN t_cj_loan_info li ON li.loan_rawcode = cc.loan_code and li.dict_loan_status &lt;&gt; '43'
+		LEFT JOIN thisLoanInfo cli ON 1 = 1
+		WHERE cc.loan_code = #{carLoanCode}
+		LIMIT 1
+	</select>
+	<!-- 通过合同编号查询合同 -->
+	<select id="getExtendByContractCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+		with loanCodeAs as (
+			SELECT c.loan_code 
+			FROM t_cj_contract c 
+			WHERE c.contract_code = #{contractCode})
+		select cc.*, l.id loanInfoId, l.loan_apply_amount
+		from t_cj_contract cc
+		left join t_cj_loan_info l on l.loan_code = cc.loan_code
+		where cc.loan_code in (
+			SELECT li.loan_code 
+			FROM t_cj_loan_info li
+			left join loanCodeAs lc on 1 = 1
+			WHERE (li.loan_rawcode = lc.loan_code or li.loan_code = lc.loan_code) and li.dict_loan_status &lt;&gt; '43')
+		order by cc.create_time asc
+	</select>
+	<!-- 获取历史展期信息 -->
+	<select id="getExtendContractByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+		SELECT cc.* 
+		FROM t_cj_contract cc 
+		WHERE cc.loan_code IN ( 
+			<!-- 传入的是 车借借款编码 -->
+			SELECT li1.loan_code 
+			FROM t_cj_loan_info li1 
+			LEFT JOIN t_cj_contract c1 ON c1.loan_code = li1.loan_code 
+			WHERE li1.loan_code = #{loanCode,jdbcType=VARCHAR} 
+			AND li1.loan_rawcode is null and li1.isextension is null AND li1.dict_loan_status not in ('1','35','43') and c1.sign_flag = '1'
+			UNION ALL 
+			<!-- 传入的是 展期借款编码 --> 
+			SELECT l.loan_code 
+			FROM t_cj_loan_info l 
+			WHERE l.loan_code in ( 
+				WITH carLoanCode AS( 
+					SELECT t1.loan_rawcode 
+					FROM t_cj_loan_info t1 
+					WHERE t1.loan_code = #{loanCode,jdbcType=VARCHAR} 
+				) 
+				SELECT li2.loan_code 
+				FROM t_cj_loan_info li2 
+				LEFT JOIN carLoanCode c2 ON 1 = 1
+				left join t_cj_contract cc2 on cc2.loan_code = li2.loan_code
+				WHERE (
+					(li2.loan_rawcode = c2.loan_rawcode AND li2.isextension = '1' AND li2.loan_rawcode is not null and li2.dict_loan_status in ('40','51')) 
+						OR (li2.loan_code = c2.loan_rawcode AND li2.loan_rawcode is null AND li2.isextension is null)
+					)
+					AND li2.dict_loan_status not in ('1','35','43') and cc2.sign_flag = '1'
+			) 
+		) ORDER BY cc.create_time ASC 
+	</select>
+	<!-- 通过展期loanCode获取上一次和本次展期的合同金额之差，即降额 -->
+	<select id="calculateSubContractAmount" resultType="java.lang.Double" parameterType="java.lang.String">
+  	SELECT (c2.contract_amount - c.contract_amount) subAmount
+	FROM t_cj_contract c
+	LEFT JOIN t_cj_loan_info li ON li.loan_code = c.loan_code
+	LEFT JOIN t_cj_loan_info li2 ON li2.id = li.loan_additional_applyid
+	LEFT JOIN t_cj_contract c2 ON c2.loan_code = li2.loan_code
+	WHERE c.loan_code = #{loanCode,jdbcType=VARCHAR} and c2.sign_flag = '1'
+  </select>
+  <!-- 通过展期loanCode获取紧邻上一次合同金额 -->
+	<select id="calculateLastContractAmount" resultMap="BaseResultMap" parameterType="java.lang.String">
+  	SELECT 
+	<include refid="Base_Column_List" />
+	FROM t_cj_loan_info li
+	LEFT JOIN t_cj_loan_info li2 ON li2.id = li.loan_additional_applyid
+	LEFT JOIN t_cj_contract c ON c.loan_code = li2.loan_code
+	WHERE li.loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectOriginalGrossRate" resultType="java.lang.Double" parameterType="java.lang.String">
+  	select c.gross_rate
+	from t_cj_contract c
+	where c.loan_code = (select li.loan_rawcode 
+		from t_cj_loan_info li
+		where li.loan_code = #{loanCode,jdbcType=VARCHAR})
+  </select>
+  
+    <select id="getContractAmountByLoanCode" resultType="java.lang.Double" parameterType="java.lang.String">
+  	select c.contract_amount
+	from t_cj_contract c
+	where c.loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByContractCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_contract c
+    where c.contract_code = #{contractCode,jdbcType=VARCHAR}
+  </select>
+  <select id="selectExtendNumByContractCode" resultType="java.lang.Integer" parameterType="java.lang.String" >
+    select count(1) from t_cj_contract c where c.contract_code like #{contractCode,jdbcType=VARCHAR}||'-%' and sign_flag='1'
+  </select>
+  
+  <select id="getContractCustomList" resultType="com.creditharmony.loan.car.carExtend.ex.CarExportCustomerDataExColumn" parameterType="java.util.List">
+	select a.loan_customer_name, 
+	(select string_agg(cobo_name,',') from jk.t_cj_loan_coborrower where loan_code=a.loan_code group by loan_code) coborrowerName,
+	b.contract_code,a.store_name,d.customer_cert_num,p.product_name as "productType",dict.label cardBank,c.bank_card_no,b.contract_amount,rate.fee_payment_amount auditAmount,
+	rate.month_repay_amount contractMonthRepayAmount,b.contract_months,b.gross_rate,case when a.parking_fee is null then 0 else a.parking_fee end parking_fee, a.facility_charge,a.flow_fee,
+	b.contract_fact_day,b.contract_end_day,b.contract_replay_day
+	from jk.t_cj_loan_info a 
+	left join jk.t_cj_contract b on a.loan_code=b.loan_code
+	left join jk.t_cj_customer_bank_info c on a.loan_code=c.loan_code 
+	left join jk.t_jk_loan_customer d on a.loan_code=d.loan_code 
+	LEFT JOIN jk.t_gl_jk_product p ON b.product_type = p.product_code
+	LEFT JOIN jk.t_gl_dict dict ON dict.value = c.card_bank and dict.type='jk_open_bank'
+	LEFT JOIN jk.t_cj_check_rate rate ON rate.loan_code = a.loan_code
+	where b.contract_code in
+	<foreach collection="list" item="item" open="(" separator="," close=")">
+		#{item}
+	</foreach>
+	</select>
+	
+	<select id="selectExByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_contract c
+    left join t_cj_loan_info i on i.loan_code = c.loan_code 
+    left join t_cj_loan_info li on li.loan_code = i.loan_rawcode and i.loan_additional_applyid = li.id
+    where c.loan_code = #{loanCode,jdbcType=VARCHAR} 
+    	and i.isextension = '1' and li.loan_additional_applyid is null and li.loan_rawcode is null
+  </select>
+  
+  <select id="getContractCustomColumnByContractCode" resultType="com.creditharmony.loan.car.carExtend.ex.CarExportCustomerDataExColumn" parameterType="java.lang.String">
+	select b.contract_code, c.bank_card_no, rate.month_repay_amount contractMonthRepayAmount, rate.comprehensive_service_fee, rate.out_visit_fee, rate.first_service_tariffing,
+	case when a.parking_fee is null then 0 else a.parking_fee end parking_fee, a.facility_charge, a.flow_fee, a.device_used_fee,
+	b.contract_replay_day, b.contract_end_day, b.contract_fact_day,dict.label cardBank
+	from jk.t_cj_loan_info a 
+	left join jk.t_cj_contract b on a.loan_code=b.loan_code
+	left join jk.t_cj_customer_bank_info c on a.loan_code=c.loan_code 
+	LEFT JOIN jk.t_cj_check_rate rate ON rate.loan_code = a.loan_code
+	LEFT JOIN jk.t_gl_dict dict ON dict.value = c.card_bank and dict.type='jk_open_bank'
+	LEFT JOIN jk.t_cj_first_service_charge ser ON a.first_service_charge_id = ser.id
+	where b.contract_code = #{contractCode,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 获取历史展期信息 -->
+	<select id="getExtendCountByLoanCode" resultType="java.lang.Integer" parameterType="java.lang.String">
+	
+		select count(*) from t_cj_contract where sign_flag='1' and contract_code like (
+			select contract_code from t_cj_contract where loan_code=(
+			 select loan_rawcode from t_cj_loan_info where loan_code= #{loanCode})
+		)||'-%'
+
+	</select>
+	
+	<!-- 获取历史展期信息 -->
+	<select id="getExtendCountByLoanCodeSign" resultType="java.lang.Integer" parameterType="java.lang.String">
+	
+		select count(*) from t_cj_contract where contract_code like (
+			select contract_code from t_cj_contract where loan_code=(
+			 select loan_rawcode from t_cj_loan_info where loan_code= #{loanCode})
+		)||'-%'
+
+	</select>
+	
+	<!-- 历史展期补录，删除历史展期时，删除合同信息 -->
+	<delete id="deleteCarContractBatchByIds" parameterType="java.util.List">
+		DELETE FROM t_cj_contract
+		WHERE id in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+</mapper>

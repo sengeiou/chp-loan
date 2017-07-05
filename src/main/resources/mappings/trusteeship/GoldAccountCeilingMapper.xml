@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.borrow.trusteeship.dao.GoldAccountCeilingDao">
+	<resultMap id="ceilingMap"
+		type="com.creditharmony.loan.borrow.trusteeship.view.GoldAccountCeiling">
+		<result property="applyId" column="id"></result><!--apply_id -->
+		<result property="storesName" column="name"></result><!-- 门店名称 -->
+		<result property="referralsDate" column="introduction_time"></result><!-- 推荐日期 -->
+		<result property="customerName" column="customer_name"></result><!-- 客户姓名 -->
+		<result property="customerNum" column="customer_cert_num"></result><!-- 身份证号 -->
+		<result property="bankName" column="BANK_NAME"></result><!-- 开户行 -->
+		<result property="bankAccount" column="bank_account"></result><!-- 银行账号 -->
+		<result property="loanAuditAmount" column="LOAN_AUDIT_AMOUNT"></result><!-- 批借金额 -->
+		<result property="feePetition" column="FEE_CONSULT"></result><!-- 外访费 -->
+		<result property="feeExpedited" column="FEE_EXPEDITED"></result><!-- 加急费 -->
+		<result property="grantAmount" column="grant_amount"></result><!-- 放款金额 -->
+		<result property="loanMonths" column="loan_months"></result><!-- 期限 -->
+		<result property="loanStatus" column="dict_loan_status"></result><!-- 放款状态 -->
+		<result property="grantDate" column="lending_time"></result><!-- 放款日期 -->
+		<result property="dataStatus" column="state"></result><!-- 数据状态 -->
+		<result property="logo" column="loan_flag"></result><!-- 标识 -->
+	</resultMap>
+	<sql id="ceilingColumns">
+		loan_info.apply_id as id,
+		org.name as name,
+		to_date(to_char(
+		channel_business.introduction_time,'yyyy-MM-dd'),'yyyy-MM-dd')introduction_time,
+		loan_customer.customer_name,loan_customer.customer_cert_num,
+		open_bank.label BANK_NAME,loan_bank.bank_account,
+		round(loan_info.LOAN_AUDIT_AMOUNT,2)loan_audit_amount,
+		round(contract_fee.FEE_CONSULT,2)fee_consult,
+		round(contract_fee.FEE_EXPEDITED,2)fee_expedited,
+		loan_info.LOAN_MONTHS,gl_dicts.label DICT_LOAN_STATUS,
+		round(loan_grant.grant_amount,2)grant_amount,
+		to_date(to_char(
+		loan_grant.LENDING_TIME,'yyyy-MM-dd'),'yyyy-MM-dd')lending_time,
+		CASE
+		channel_business.state
+		WHEN '0' THEN '在用'
+		else '历史' end
+		state,
+		gl_dict.label LOAN_FLAG
+	</sql>
+	<sql id="selectCondition">
+		<if test="params.referralsDate != null and params.referralsDate != ''">
+			and channel_business.introduction_time =
+			#{params.referralsDate}
+		</if>
+		<if test="params.customerName != null and params.customerName !=''">
+			and loan_customer.customer_name like '%' ||
+			#{params.customerName} || '%'
+		</if>
+		<if test="params.loanStatus != null and params.loanStatus != ''">
+			and loan_info.DICT_LOAN_STATUS = #{params.loanStatus}
+		</if>
+		<if test="params.grantDate != null and params.grantDate != ''">
+			and loan_grant.LENDING_TIME &gt;=#{params.grantDate}
+		</if>
+		<if test="params.gtantEndDate!= null and params.gtantEndDate != ''">
+			and loan_grant.LENDING_TIME &lt;=#{params.gtantEndDate}
+		</if>
+		<if test="params.logo != null and params.logo != ''">
+			and loan_info.LOAN_FLAG = #{params.logo}
+		</if>
+		<if test="params.applyId != null and params.applyId != ''">
+			and loan_info.apply_id = #{params.applyId}
+		</if>
+		<if test="params.dataStatus != null and params.dataStatus != ''">
+			and channel_business.state = #{params.dataStatus}
+		</if>
+		<if test="params.storeOrgId != null and params.storeOrgId != ''">
+			and org.id in
+			<foreach item="item" index="index" collection="storeOrgIds"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="params.applyIds != null and params.applyIds != ''">
+			and loan_info.apply_id IN 
+			<foreach collection="applyIds" close=")" open="(" item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	<select id="getCeilingList" resultMap="ceilingMap">
+		select
+		<include refid="ceilingColumns" />
+		from jk.T_JK_TRUSTEESHIP_BUSINESS channel_business
+		left join jk.T_JK_LOAN_INFO loan_info
+		on channel_business.loan_code =
+		loan_info.loan_code
+		left join jk.t_gl_org org
+		on loan_info.STORE_CODE = org.STORE_CODE
+		left join jk.T_JK_LOAN_CUSTOMER
+		loan_customer
+		on loan_info.loan_code = loan_customer.loan_code
+		left join
+		jk.T_JK_LOAN_BANK loan_bank
+		on loan_customer.loan_code =
+		loan_bank.loan_code
+		left join jk.T_GL_DICT open_bank on
+		loan_bank.BANK_NAME = open_bank.value
+		left join jk.T_JK_CONTRACT
+		contract
+		on loan_bank.loan_code = contract.loan_code
+		left join jk.T_JK_CONTRACT_FEE contract_fee
+		on contract.CONTRACT_CODE =
+		contract_fee.CONTRACT_CODE
+		left join jk.T_JK_LOAN_GRANT loan_grant
+		on
+		loan_bank.loan_code = loan_grant.loan_code
+
+		left join jk.T_GL_DICT gl_dict
+		on loan_info.loan_flag = gl_dict.value
+		left join jk.T_GL_DICT gl_dicts
+		on loan_info.dict_loan_status = gl_dicts
+		.value
+		where
+		gl_dict.type = 'jk_channel_flag'
+		and gl_dicts.type =
+		'jk_loan_apply_status'
+		and open_bank.type = 'jk_open_bank'
+
+
+		<include refid="selectCondition" />
+	</select>
+	<select id="getCeilingSum" resultType="String">
+		select
+		COALESCE(sum(loan_info.LOAN_AUDIT_AMOUNT), '0') ceilingSum
+		from
+		jk.T_JK_TRUSTEESHIP_BUSINESS channel_business
+		left join jk.T_JK_LOAN_INFO loan_info
+		on channel_business.loan_code =
+		loan_info.loan_code
+		left join jk.t_gl_org org
+		on loan_info.STORE_CODE = org.STORE_CODE
+		left join jk.T_JK_LOAN_CUSTOMER
+		loan_customer
+		on loan_info.loan_code = loan_customer.loan_code
+		left join
+		jk.T_JK_LOAN_BANK loan_bank
+		on loan_customer.loan_code =
+		loan_bank.loan_code
+		left join jk.T_GL_DICT open_bank on
+		loan_bank.BANK_NAME = open_bank.value
+		left join jk.T_JK_CONTRACT
+		contract
+		on loan_bank.loan_code = contract.loan_code
+		left join jk.T_JK_CONTRACT_FEE contract_fee
+		on contract.CONTRACT_CODE =
+		contract_fee.CONTRACT_CODE
+		left join jk.T_JK_LOAN_GRANT loan_grant
+		on
+		loan_bank.loan_code = loan_grant.loan_code
+
+		left join jk.T_GL_DICT gl_dict
+		on loan_info.loan_flag = gl_dict.value
+		left join jk.T_GL_DICT gl_dicts
+		on loan_info.dict_loan_status = gl_dicts
+		.value
+		where
+		gl_dict.type = 'jk_channel_flag'
+		and gl_dicts.type =
+		'jk_loan_apply_status'
+		and open_bank.type = 'jk_open_bank'
+
+		<include refid="selectCondition" />
+	</select>
+	<select id="findUserInfo" resultType="java.util.HashMap">
+
+		select
+		loan_customer.customer_code,loan_customer.customer_name,loan_customer.dict_marry_status,
+		loan_customer.dict_cert_type,
+		loan_customer.customer_cert_num,loan_customer.dict_education,loan_company.dict_comp_type,
+		loan_customer.customer_sex,loan_customer.customer_birthday,
+
+		loan_mate.mate_name,loan_mate.mate_cert_num,loan_mate.mate_tel,
+		loan_mate.mate_age,mate_company.comp_name
+		mate_comp_name,mate_company.comp_post_code mate_comp_post_code,
+		mate_company.comp_address mate_comp_address,mate_company.comp_tel
+		mate_comp_tel,mate_company.comp_website mate_comp_website,
+		mate_company.dict_comp_type mate_dict_comp_type,mate_company.comp_post
+		mate_comp_post,mate_company.comp_department mate_comp_department,
+		mate_company.comp_salary mate_comp_salary,
+		mate_company.comp_work_experience
+		mate_comp_work_experience,mate_company.comp_other_amount
+		mate_comp_other_amount,
+
+		product.product_name product_type,loan_info.loan_apply_amount,loan_info.loan_months,loan_info.loan_apply_time,
+		loan_customer.dict_customer_source,
+		loan_info.dict_loan_use,loan_info.realy_use,loan_info.loan_urgent_flag,loan_info.dict_repay_method,loan_info.loan_common_repayment_flag,
+		org.province_id,org.city_id,
+
+		loan_company.comp_name,loan_company.comp_post_code,loan_company.comp_address,loan_company.dict_comp_type,loan_company.comp_tel,loan_company.comp_website
+		,loan_company.comp_post,loan_company.comp_department,loan_company.comp_salary,loan_company.comp_salary_day,
+		loan_company.dict_salary_pay,loan_company.comp_work_experience,loan_company.comp_other_amount,
+
+		loan_house.house_base_info,loan_house.house_address,loan_house.house_buyway,loan_house.house_buyday,loan_house.house_create_day,
+		loan_house.house_builing_area,loan_house.house_amount,
+		loan_house.dict_house_bank,loan_house.house_loan_amount,loan_house.house_loan_year,loan_house.house_less_amount,
+		loan_house.house_month_repay_amount,
+
+		users.name,userss.name loan_customer_service,c1.name as check_id,<!-- 审核人 -->
+		loan_bank.bank_authorizer,loan_bank.bank_account_name,loan_bank.bank_name,loan_bank.bank_branch,loan_bank.bank_account
+		,loan_remark.remark,open_bank.label
+		from
+		jk.T_JK_TRUSTEESHIP_BUSINESS channel_business left join jk.T_JK_LOAN_INFO
+		loan_info on channel_business.loan_code = loan_info.loan_code
+		left join jk.T_GL_JK_PRODUCT product on loan_info.PRODUCT_TYPE = product.product_code
+		left join
+		jk.T_JK_LONG_REMARK loan_remark on loan_info.loan_code =
+		loan_remark.loan_code
+		left join
+		jk.T_JK_LOAN_CUSTOMER loan_customer on
+		loan_info.loan_code =
+		loan_customer.loan_code
+		left join
+		jk.T_JK_LOAN_MATE loan_mate on
+		loan_customer.loan_code =
+		loan_mate.loan_code
+		left join
+		jk.T_JK_LOAN_COMPANY loan_company on
+		loan_customer.id =
+		loan_company.r_id
+		left join jk.T_JK_LOAN_HOUSE
+		loan_house on
+		loan_customer.loan_code =
+		loan_house.loan_code
+		left join jk.T_JK_LOAN_COMPANY mate_company on loan_mate.id =
+		mate_company.R_ID
+		left join jk.T_JK_CONTRACT contract on loan_info.loan_code =
+		contract.loan_code
+		left join jk.T_JK_LOAN_BANK
+		loan_bank on
+		loan_customer.loan_code =
+		loan_bank.loan_code
+		left join jk.t_gl_org org
+		on loan_info.STORE_CODE = org.id
+
+		left join jk.t_gl_user users on loan_info.LOAN_TEAM_MANAGERCODE = users.id
+		left join jk.t_gl_user userss on loan_info.LOAN_CUSTOMER_SERVICE =
+		userss.id
+		left join jk.T_GL_DICT open_bank on loan_bank.bank_name =open_bank.value
+		LEFT JOIN jk.t_gl_user c1 ON c1.id = contract.modify_by
+		where
+		open_bank.type = 'jk_open_bank'
+		and
+		loan_info.apply_id = #{applyId}
+	</select>
+	<select id="findCreditList" resultType="java.util.HashMap">
+		select * from
+		jk.T_JK_LOAN_INFO loan_info left join jk.T_JK_LOAN_CREDIT_INFO
+		credit_info on
+		loan_info.loan_code = credit_info.loan_code
+		where
+		loan_info.apply_id =
+		#{applyId}
+	</select>
+	<select id="findContactList" resultType="java.util.HashMap">
+		select * from
+		jk.T_JK_LOAN_INFO loan_info left join
+		jk.T_JK_CONTACT contract on
+		loan_info.loan_code = contract.loan_code
+		where loan_info.apply_id =
+		#{applyId}
+	</select>
+	<insert id="setCeilingMoney">
+		insert into jk.T_JK_TRUSTEESHIP_QUOTA_LIMIT 
+		(id,trusteeship_quota_limit,version,create_time,create_by,modify_by,modify_time,trusteeship_using_flag,use_money)
+		values (#{id},#{kinnobuQuotaLimit},#{version},
+		current_timestamp(0)::timestamp without time zone,#{createBy},
+		#{modifyBy},current_timestamp(0)::timestamp without time
+		zone,#{kinnobuUsingFlag},#{useMoney})
+	</insert>
+
+	<update id="updateCeilingMoney">
+		update jk.T_JK_TRUSTEESHIP_QUOTA_LIMIT set
+		trusteeship_quota_limit = #{kinnobuQuotaLimit},version = #{version}
+		,modify_by =#{modifyBy} ,modify_time = current_timestamp(0)::timestamp
+		without time zone,trusteeship_using_flag=#{kinnobuUsingFlag}
+		where id =
+		#{id}
+	</update>
+	<select id="selectCeilingMoney" resultType="java.util.HashMap">
+		select
+		round(trusteeship_quota_limit,2)trusteeshipQuotaLlimit,round(use_money,2)useMoney ,
+		round(trusteeship_quota_limit-use_money,2) surplusMoney
+		from jk.T_JK_TRUSTEESHIP_QUOTA_LIMIT where
+		trusteeship_using_flag = '0'
+	</select>
+	<!-- 归档数据 -->
+	<update id="updateGoldAccount">
+		update jk.T_JK_TRUSTEESHIP_QUOTA_LIMIT set
+		trusteeship_using_flag = '1' where trusteeship_using_flag = '0'
+	</update>
+	<update id="updateData">
+		update jk.T_JK_TRUSTEESHIP_BUSINESS set state =
+		'1' where state = '0'
+	</update>
+	<!-- 插入金账户数据 -->
+	<insert id="insertGoldAccountData">
+		insert into
+		jk.T_JK_TRUSTEESHIP_BUSINESS(id,loan_code,state,introduction_time,create_by,create_time,modify_by,modify_time)
+		values(GETUUID32(),#{loanCode},'0',current_date,'sys',
+		current_timestamp(0)::timestamp without time zone,
+		'sys',current_timestamp(0)::timestamp without time zone)
+	</insert>
+	<select id="selectLoanCode" resultType="String">
+		select loan_code from
+		jk.T_JK_TRUSTEESHIP_BUSINESS where loan_code = #{loanCode}
+	</select>
+</mapper>

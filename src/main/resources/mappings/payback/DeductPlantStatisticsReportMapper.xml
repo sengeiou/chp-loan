@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.DeductPlantStatisticsReportDao">
+
+     <!--  查询划扣统计统计信息 -->
+     <select id="queryDeductStatistics" resultType="com.creditharmony.loan.borrow.payback.entity.DeductStatistics">
+      <!--  select plant_code as plantCode,
+              ROUND(not_Enough_Proportion,2)  as notEnoughProportion,
+              not_Enough_Number  as notEnoughNumber,
+              ROUND(failure_Rate,2)   as failureRate,
+              deduct_success_Number  as deductSuccessNumber,
+              deduct_Number   as deductNumber, 
+              failure_Number   as failureNumber,
+              create_date     as createDate,
+              deduct_number as deductNumber   
+              from   jk.t_jk_deduct_plant_Statistics 
+              where  create_date = to_char(now(),'yyyy-mm-dd')
+               -->
+              
+         select  plantCode,
+              ROUND(notEnoughProportion,2)  as notEnoughProportion,
+              notEnoughNumber,
+              ROUND(failureRate,2)   as failureRate,
+               deductSuccessNumber,
+                  deductNumber, 
+                 failureNumber
+                    from (    
+              
+    select a.dict_deal_type as plantCode,a.cnum as deductSuccessNumber,a.fnum as failureNumber, 
+    round(cast(a.fnum as  numeric)/cast(a.num as numeric),4)*100 as failureRate,a.num as  deductNumber,
+    (case when b.notEnoughNumber is null then 0 else  b.notEnoughNumber end) as  notEnoughNumber,
+     round(cast((case when b.notEnoughNumber is null then 0 else b.notEnoughNumber  end) as  numeric)/cast(a.num as numeric),4)*100 as notEnoughProportion from 
+    (select sum(case when split_back_result ='1' then 1 else 0 end) fnum,
+            sum(case when split_back_result ='2' then 1 else 0 end) cnum,
+	       (case when count(*) =0 then 1 else count(*) end )num,
+	dict_deal_type from jk.t_jk_payback_split  where  to_char(create_time,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd')
+	group by dict_deal_type
+	) a left join 
+    (
+    select count(*) as notEnoughNumber,dict_deal_type from jk.t_jk_payback_split where  to_char(create_time,'yyyy-mm-dd') = to_char(now(),'yyyy-mm-dd')
+      and  ((split_fail_result like '%不足%') or (split_fail_result like '%没有足够可用资金%')  
+             or (split_fail_result like '%交易透支%')
+             or(split_fail_result like '%金额不能为零%')
+             or (split_fail_result like '%不够支付%'))  
+        group by dict_deal_type
+    )b  on a.dict_deal_type = b.dict_deal_type
+    ) 
+     </select>
+     
+       <!--  查询划扣统计统计信息 -->
+     <select id="queryList" resultType="com.creditharmony.loan.borrow.payback.entity.DeductStatistics">
+       select 
+              a.id,
+              b.label as plantCode,
+              ROUND(a.not_Enough_Proportion,2)  as notEnoughProportion,
+              a.not_Enough_Number  as notEnoughNumber,
+              ROUND(a.failure_Rate,2)   as failureRate,
+              a.deduct_success_Number  as deductSuccessNumber,
+              a.deduct_Number   as deductNumber, 
+              a.failure_Number   as failureNumber,
+              a.create_date     as createDate   
+              from   jk.t_jk_deduct_plant_Statistics  a
+              left join (   select  value,label from   jk.t_gl_dict where type ='jk_deduct_plat' ) b 
+              on a.plant_code = b.value
+              where  1=1
+		        <if test="beginDate != null and beginDate != ''">
+					and to_date(a.create_date,'yyyy-mm-dd') &gt;= #{beginDate} <!-- 划扣日期 -->
+				</if>
+				<if test="endDate != null and endDate != ''">
+					and to_date(a.create_date,'yyyy-mm-dd') &lt;=  #{endDate} <!-- 划扣日期 -->
+				</if>
+			    <if test="createDate != null and createDate != ''">
+					and a.create_date = #{createDate} <!-- 划扣日期 -->
+				</if>
+				<if test="plantCode != null and plantCode != ''">
+					and a.plant_code = #{plantCode} <!-- 划扣日期 -->
+				</if>
+				order by a.create_time desc
+     </select>
+	
+	<!--  如果该数据的所有平台没有通过业务配置的规则，则给这个数据一个标志 -->
+	<update id="updateLimitFlag">
+	    update jk.t_jk_payback_apply    set limit_flag  = '1'  where id = #{batId}
+	</update>
+	
+	
+	  <!--  查询一段时间的划扣统计统计信息 -->
+     <select id="periodStatistics" resultType="com.creditharmony.loan.borrow.payback.entity.DeductStatistics">
+	 select  
+     round(cast(a.failureNumber as  numeric)/cast(a.deductNumber as numeric)*100,2) as failureRate,
+     round(cast(a.notEnoughNumber as  numeric)/cast(a.deductNumber as numeric)*100,2) as notEnoughProportion,
+     a.id,
+     b.label as plantCode
+      from    
+
+        ( select 
+              '1' as id,
+              plant_code as plantCode,
+              sum(a.not_Enough_Number) as notEnoughNumber,
+              sum(a.deduct_success_Number) as deductSuccessNumber,
+              sum(a.deduct_Number) as deductNumber, 
+             case  when  sum(a.failure_Number) is null  then 0 else 
+             sum(a.failure_Number) end  as failureNumber
+              from   jk.t_jk_deduct_plant_Statistics  a
+              where  1=1
+                <if test="beginDate != null and beginDate != ''">
+					and to_date(a.create_date,'yyyy-mm-dd') &gt;= #{beginDate} <!-- 划扣日期 -->
+			    </if>
+				<if test="endDate != null and endDate != ''">
+					and to_date(a.create_date,'yyyy-mm-dd') &lt;=  #{endDate} <!-- 划扣日期 -->
+				</if>
+              group by plant_code) a 
+               left join (   select  value,label from   jk.t_gl_dict where type ='jk_deduct_plat' ) b 
+              on a.plantCode = b.value
+              where  1=1
+              	<if test="plantCode != null and plantCode != ''">
+					and a.plantCode = #{plantCode} <!-- 划扣平台 -->
+				</if>
+     </select>
+</mapper>
+	

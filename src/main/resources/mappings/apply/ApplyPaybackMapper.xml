@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.ApplyPaybackDao">
+
+	<!--查询客户账户信息 -->
+	<select id="findCustomerByLoanCode" resultType="com.creditharmony.loan.common.entity.LoanBank">
+		SELECT 
+			id,
+			loan_code,
+			bank_name,
+			bank_branch,
+			bank_account_name,
+			bank_account
+			FROM jk.t_jk_loan_bank lb 
+		where lb.loan_code = #{loanCode,jdbcType=VARCHAR} and lb.id != #{id,jdbcType=VARCHAR} AND lb.repayment_flag='1'
+	</select>
+
+	<!--保存还款转账记录信息 -->
+	<insert id="savePayBackTransferInfo">
+		INSERT INTO jk.t_jk_payback_transfer_info (
+			id,
+			r_payback_apply_id,
+			contract_code,
+			dict_deposit,
+			account_branch,
+			tran_deposit_time,
+			apply_time,
+			stores_in_account,
+			stores_in_accountname,
+			really_amount,
+			deposit_name,
+			audit_status,
+			upload_name,
+			upload_date,
+			upload_filename,
+			upload_path,
+			relation_type,
+			create_by, 
+			create_time)
+			VALUES(
+			#{id},
+			#{rPaybackApplyId},
+			#{contractCode},
+			#{dictDeposit},
+			#{accountBranch},
+			#{tranDepositTime},
+			#{applyTime},
+			#{storesInAccount},
+			#{storesInAccountname},
+			#{reallyAmount},
+			#{depositName},
+			#{auditStatus},
+			#{uploadName},
+			#{uploadDate},
+			#{uploadFilename},
+			#{uploadPath},
+			#{relationType},
+			#{createBy},
+			#{createTime})
+	</insert>
+
+	<!--保存还款申请信息 -->
+	<insert id="saveApplyPayback">
+		INSERT INTO jk.t_jk_payback_apply (
+			id,
+			dict_payback_status,
+			dict_deposit_account,
+			contract_code,
+			dict_repay_method,
+			apply_amount,
+			dict_deal_type,
+			dict_deduct_type,
+			apply_pay_day,
+			apply_account_name,
+			apply_deduct_account,
+			apply_bank_name,
+			apply_really_amount,
+			split_flag,
+			effective_flag,
+			dict_pay_result,
+			dict_pay_use,
+			apply_back_mes,
+			lanuch_by,
+			org_code,
+			create_by,
+			create_time,
+			pos_bill_code,
+			urge_manage,
+			dict_pos_type,
+			split_back_result,
+			operate_role
+			)
+			VALUES (
+			#{id},
+			#{dictPaybackStatus},
+			#{dictDepositAccount},
+			#{contractCode},
+			#{dictRepayMethod},
+			#{applyAmount},
+			#{dictDealType},
+			#{dictDeductType},
+			#{applyPayDay},
+			#{applyAccountName},
+			#{applyDeductAccount},
+			#{applyBankName},
+			#{applyReallyAmount},
+			#{splitFlag},
+			#{effectiveFlag},
+			#{dictPayResult},
+			#{dictPayUse},
+			#{applyBackMes},
+			#{lanuchBy},
+			#{orgCode},
+			#{createBy},
+			#{createTime},
+			#{posBillCode},
+			#{urgeManage},
+			#{dictPosType},
+			#{splitBackResult},
+			#{operateRole}
+			)
+	</insert>
+	
+		<!--查询POS机订单号  -->
+	<select id="selectPosOrder"   resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		SELECT
+		   max(p. pos_bill_code)  posBillCode
+	          ,
+			 p.contract_code   contractCode
+		from 
+       t_jk_payback_apply   p
+		where 1=1
+	     <!--合同编号  -->
+		<if test="contractCode!= null and !contractCode.equals('')">
+			AND p.contract_code = #{contractCode}
+		</if>
+		 <!--创建日期 -->
+		<if test="dateCre!= null and !dateCre.equals('')">
+			AND to_char(p.create_time,'yyyy-MM-dd') = #{dateCre}
+		</if>
+		  <!--还款方式 -->
+		<if test="dictRepayMethod!= null and !dictRepayMethod.equals('')">
+			AND p.dict_repay_method = #{dictRepayMethod}
+		</if>
+		 group by contract_code
+	</select>
+	
+	
+	<!--保存POS还款申请信息 -->
+	<insert id="savePayPosCardInfo">
+	INSERT INTO t_jk_pos_record(
+            id, 
+            contract_code,
+            refer_code, 
+            pos_order_number, 
+            pos_receipts_credentials, 
+            dict_deposit, 
+            payback_date, 
+            apply_really_amount, 
+            create_by, 
+            create_time, 
+            modify_by, 
+            modify_time, 
+            r_payback_apply_id, 
+            upload_name, 
+            upload_date, 
+            upload_filename, 
+            upload_path)
+    VALUES (#{posCardInfo.id}, 
+            #{contractCode}, 
+            #{posCardInfo.referCode}, 
+            #{posCardInfo.posOrderNumber}, 
+            #{posCardInfo.posReceiptsCredentials}, 
+            #{posCardInfo.dictDepositPosCard}, 
+            #{posCardInfo.paybackDate}, 
+            #{posCardInfo.applyReallyAmount}, 
+           	#{posCardInfo.createBy},
+			#{posCardInfo.createTime},
+            #{posCardInfo.modifyBy}, 
+            #{posCardInfo.modifyTime}, 
+            #{paybackApply.id}, 
+            #{posCardInfo.uploadNamePosCard}, 
+            #{posCardInfo.uploadDatePosCard}, 
+            #{posCardInfo.uploadFilename}, 
+            #{posCardInfo.uploadPath});
+	</insert>
+	
+	  <!--更新蓝补充金额 -->
+     <update id="updatePosMaching">
+		UPDATE  t_jk_payback  set             <!-- 还款申请主表 -->
+		 <if test="paybackBuleAmount != null and paybackBuleAmount != ''"> 
+		payback_bule_amount =payback_bule_amount+#{paybackBuleAmount},
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+		 modify_by = #{modifyBy}, 
+		 </if>
+		 <if test="modifyTime != null and modifyTime != ''"> 
+		 modify_time = #{modifyTime} 
+		 </if>
+		 <!-- 蓝补充金额增加 -->      
+		where1=1 and  contract_code  =#{contractCode}     <!-- 合同编号 -->      
+	  </update>
+	  
+	  
+	  <select id="queryDeductCondition"  resultType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit">
+	  select
+	  not_Enough_Proportion as notEnoughProportion,
+	  failure_Rate  as failureRate,
+	  base_Number  as baseNumber,
+	  put_date as putDate  
+	  from jk.t_jk_org_deduct_limit where org_id = #{id}
+	  
+	  </select>
+	  
+	  <select id="queryDeductStatistics" resultType="com.creditharmony.loan.borrow.payback.entity.DeductStatistics">
+	  select 
+	  not_Enough_Proportion  as notEnoughProportion,
+	  not_Enough_Number  as notEnoughNumber,
+	  failure_Rate   as failureRate,
+	  failure_Number   as failureNumber,
+	  deduct_Number as deductNumber     
+	  from jk.t_jk_org_deduct_Statistics where  org_id = #{id}
+	  and create_date = #{createDate}
+	  
+	  </select>
+</mapper>

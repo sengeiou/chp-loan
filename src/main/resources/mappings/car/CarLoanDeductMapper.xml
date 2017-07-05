@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarDeductUpdateDao">
+	<insert id="insert"
+		parameterType="com.creditharmony.core.deduct.bean.out.LoanDeductEntity">
+		INSERT INTO t_cj_batch_return_result_log(
+		id, remarks, sys_id, request_id, business_id, bat_id, ref_id,
+		apply_amount, deduct_succeed_money, deduct_fail_money, deduct_time,
+		deduct_sysid_type, fail_reason, create_by, create_time, modify_by,
+		modify_time)
+		VALUES
+		(#{id},#{remarks},#{sysId},#{requestId},#{businessId},#{batId},#{refId},
+		#{applyAmount},#{deductSucceedMoney},#{deductFailMoney},now(),
+		#{deductSysIdType}, #{failReason},'FinanceBatch',now(),'FinanceBatch',
+		now())
+	</insert>
+</mapper>

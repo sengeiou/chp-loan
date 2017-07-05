@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.AppointmentDudctDao">
+	<!--查询申请数据 -->
+	<select id="queryList" resultType = "com.creditharmony.loan.borrow.payback.entity.Appointment">
+	
+	SELECT id, sign_plat as signPlat, 
+     bank, appointment_day as appointmentDay, 
+    deduct_plat as deductPlat, tl_sign as tlSign, kl_sign as klSign,
+    cj_sign as cjSign, loan_status, over_count as overCount,
+    overdue_days as overdueDays, late_mark as lateMark, deducttype,
+    amount_Mark as amountMark,apply_really_amount as applyReallyAmount,
+   to_char(appointment_day,'yyyy-MM-dd hh24:MI') as appointmentDayLabel,
+    status,rule_code as ruleCode
+  FROM jk.t_jk_loan_appointment
+  where  status !='2'    <!-- appointment_day >=  CURRENT_DATE -->
+	 <if test="signPlat != null and ! signPlat.equals('')">
+	      		AND sign_plat  like '%${signPlat}%' 
+	 </if>
+	 
+	 <if test="bank != null and ! bank.equals('')">
+	      		AND bank  like '%${bank}%' 
+	 </if>
+	 
+	 <if test="appointmentDay != null and ! appointmentDay.equals('')">
+	      		AND  appointment_day = #{appointmentDay}
+	 </if>
+	 
+	 <if test="appointmentDayLabel != null and ! appointmentDayLabel.equals('')">
+	            AND  to_char(appointment_day,'yyyy-mm-dd') = #{appointmentDayLabel}
+	 </if>
+	  <if test="appointmentDayLabel == null or  appointmentDayLabel.equals('')">
+	      		AND  appointment_day >=  CURRENT_DATE
+	 </if>
+	 
+	 <if test="amountMark != null and !  amountMark.equals('')">
+	      		AND  amount_Mark =  #{amountMark}
+	 </if>
+	 
+	  <if test="deductPlat != null and ! deductPlat.equals('')">
+	      		AND deduct_plat  =  #{deductPlat}
+	 </if>
+	 
+	 <if test="tlSign != null and ! tlSign.equals('')">
+	      		AND tl_Sign  =  #{tlSign}
+	 </if>
+	 
+	  <if test="klSign != null and ! klSign.equals('')">
+	             AND kl_Sign    = #{klSign}
+	  </if>
+	 
+	 <if test="loanStatus != null and ! loanStatus.equals('')">
+	      		AND loan_status  like '%${loanStatus}%'
+	 </if>
+	 
+	  <if test="overCount != null and ! overCount.equals('')">
+	      		AND over_Count  like '%${overCount}%'
+	 </if>
+	 
+	 <if test="cjSign != null and ! cjSign.equals('')">
+	             AND cj_Sign  = #{cjSign}
+	 </if>
+	 <if test="overdueDays != null and ! overdueDays.equals('')">
+	      	 and  overdue_days  = to_number(#{overdueDays})
+	 </if>
+	 <if test="lateMark != null and ! lateMark.equals('')">
+	      	 and  late_Mark  = #{lateMark}
+	 </if>
+	 <if test="deducttype != null and ! deducttype.equals('')">
+	      	 and   deducttype =   #{deducttype}
+	 </if>
+	 
+	 <if test="status != null and ! status.equals('')">
+	      	 and   status =   #{status}
+	 </if>
+	 
+	   <if test="ids != null and !ids.equals('')">
+		   AND id in 
+		   	<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	   </if>
+	 
+	  <if test="id != null and ! id.equals('')">
+	      	 and   id =   #{id}
+	 </if>
+	 
+	 <if test="applyReallyAmount != null and ! applyReallyAmount.equals('')">
+	      	 and   apply_really_amount =   to_number(#{applyReallyAmount})
+	 </if>
+	  <if test="ruleCode != null and ! ruleCode.equals('')">
+	      	 and   rule_Code =  #{ruleCode}
+	 </if>
+	 order by appointment_day desc, create_time desc
+	</select>
+	
+	
+	
+	<!--查询申请数据 -->
+	<select id="queryParamList" resultType = "com.creditharmony.loan.borrow.payback.entity.Appointment">
+	
+	SELECT id, sign_plat as signPlat, 
+     bank, appointment_day as appointmentDay, 
+    deduct_plat as deductPlat, tl_sign as tlSign, kl_sign as klSign,
+    cj_sign as cjSign, loan_status, over_count as overCount,
+    overdue_days as overdueDays, late_mark as lateMark, deducttype,
+    amount_Mark as amountMark,apply_really_amount as applyReallyAmount,
+   to_char(appointment_day,'yyyy-MM-dd hh24:MI') as appointmentDayLabel,
+    status
+  FROM jk.t_jk_loan_appointment
+  where  status !='2'    <!-- appointment_day >=  CURRENT_DATE -->
+	      		AND  sign_plat  = #{signPlat}
+	      		AND  bank = #{bank} 
+	      		AND  appointment_day = #{appointmentDay}
+	      		AND  deduct_plat  = #{deductPlat}
+	      		AND  loan_status  = #{loanStatus}
+	      	    and  deducttype =   #{deducttype}
+	      	    <if test="applyReallyAmount != null and ! applyReallyAmount.equals('')">
+	      	    and   apply_really_amount =   to_number(#{applyReallyAmount})
+	      	    </if>
+	      	    <if test="applyReallyAmount == null or  applyReallyAmount.equals('')">
+	      	    and   COALESCE(apply_really_amount,0) =   to_number(COALESCE(#{applyReallyAmount},0))
+	      	    </if>
+	      	    <if test="overdueDays != null and ! overdueDays.equals('')">
+	      	     and   overdue_days  = to_number(#{overdueDays})
+	      	    </if>
+	      	    <if test="overdueDays == null or  overdueDays.equals('')">
+	      	    and   COALESCE(overdue_days,0)  = to_number( COALESCE(#{overdueDays},0))
+	      	    </if>
+	      	    <if test="lateMark != null and ! lateMark.equals('')">
+	      	       and   late_Mark  = #{lateMark}
+	      	    </if>
+	      	    <if test="lateMark == null or  lateMark.equals('')">
+	      	     and    COALESCE(late_Mark,'')  = COALESCE(#{lateMark},'')
+	      	    </if>
+	      	     <if test="amountMark != null and ! amountMark.equals('')">
+	      		  AND  amount_Mark =  #{amountMark}
+	             </if>
+	              <if test="amountMark == null or  amountMark.equals('')">
+	      		  AND   COALESCE(amount_Mark,'') =  COALESCE(#{amountMark},'')
+	             </if>
+	             
+	             <if test="overCount != null and ! overCount.equals('')">
+	      		  AND  over_Count =  #{overCount}
+	             </if>
+	              <if test="overCount == null or  overCount.equals('')">
+	      		  AND   COALESCE(over_Count,'0') =  COALESCE(#{overCount},'0')
+	             </if>
+	             <if test="tlSign != null and ! tlSign.equals('')">
+	      		  AND  tl_Sign =  #{tlSign}
+	             </if>
+	              <if test="tlSign == null or  tlSign.equals('')">
+	      		  AND   COALESCE(tl_Sign,'') =  COALESCE(#{tlSign},'')
+	             </if>
+	             
+	              <if test="klSign != null and ! klSign.equals('')">
+	      		  AND  kl_Sign =  #{tlSign}
+	             </if>
+	              <if test="klSign == null or  klSign.equals('')">
+	      		  AND   COALESCE(kl_Sign,'') =  COALESCE(#{klSign},'')
+	             </if>
+	             
+	              <if test="cjSign != null and ! cjSign.equals('')">
+	      		  AND  cj_Sign =  #{cjSign}
+	             </if>
+	              <if test="cjSign == null or  cjSign.equals('')">
+	      		  AND   COALESCE(cj_Sign,'') =  COALESCE(#{cjSign},'')
+	             </if>
+	             
+	            order by appointment_day desc, create_time desc
+	</select>
+	
+	
+	
+<insert id="insert">
+	INSERT INTO jk.t_jk_loan_appointment
+      (id, sign_plat, bank, appointment_day,
+      deduct_plat, tl_sign, kl_sign, cj_sign, 
+      loan_status, over_count, overdue_days, 
+      late_mark, deducttype, status, create_by,
+      create_time, modify_by, modify_time,apply_really_amount,amount_mark, rule_code)
+VALUES(#{id},#{signPlat}, #{bank},#{appointmentDay,jdbcType=TIMESTAMP},
+       #{deductPlat},#{tlSign},#{klSign},#{cjSign},
+       #{loanStatus},#{overCount,jdbcType=VARCHAR},#{overdueDays,jdbcType=INTEGER},
+       #{lateMark},#{deducttype},#{status}, #{createBy}, 
+       #{createTime}, #{modifyBy}, #{modifyTime},#{applyReallyAmount},#{amountMark},#{ruleCode});
+	
+</insert>
+
+<update id="update">
+UPDATE jk.t_jk_loan_appointment set
+        sign_plat = #{signPlat,jdbcType=VARCHAR},
+        bank = #{bank,jdbcType=VARCHAR},
+        appointment_day = #{appointmentDay,jdbcType=TIMESTAMP},
+        deduct_plat = #{deductPlat},
+        tl_Sign = #{tlSign},
+        kl_sign = #{klSign},
+        cj_Sign = #{cjSign},
+        loan_Status = #{loanStatus},
+        over_Count = #{overCount,jdbcType=VARCHAR},
+        overdue_days = #{overdueDays,jdbcType=INTEGER},
+        late_Mark = #{lateMark},
+        deducttype = #{deducttype},
+        status = #{status},
+        create_By = #{createBy},
+        modify_by = #{modifyBy},
+        modify_Time = #{modifyTime},
+        apply_really_amount = #{applyReallyAmount},
+        amount_Mark = #{amountMark}
+      where id = #{id}
+</update>
+
+<update id="updateOrDelete">
+UPDATE jk.t_jk_loan_appointment
+<set>
+   <if  test="signPlat != null and ! signPlat.equals('')">
+        sign_plat = #{signPlat,jdbcType=VARCHAR},
+   </if>
+   <if  test="bank != null and ! bank.equals('')">
+        bank = #{bank,jdbcType=VARCHAR},
+   </if>
+   <if  test="appointmentDay != null and ! appointmentDay.equals('')">
+        appointment_day = #{appointmentDay,jdbcType=TIMESTAMP},
+   </if>
+   <if  test="deductPlat != null and ! deductPlat.equals('')">
+        deduct_plat = #{deductPlat},
+   </if>
+   <if  test="tlSign != null and ! tlSign.equals('')">
+        tl_Sign = #{tlSign},
+   </if>
+   <if  test="klSign != null and ! klSign.equals('')">
+        kl_sign = #{klSign},
+    </if>
+    <if  test="cjSign != null and ! cjSign.equals('')">
+        cj_Sign = #{cjSign},
+    </if>
+     <if  test="loanStatus != null and ! loanStatus.equals('')">
+        loan_Status = #{loanStatus},
+    </if>
+    <if  test="overCount != null and ! overCount.equals('')">
+        over_Count = #{overCount,jdbcType=VARCHAR},
+    </if>
+     <if  test="overdueDays != null and ! overdueDays.equals('')">
+        overdue_days = #{overdueDays,jdbcType=INTEGER},
+    </if>
+    <if  test="lateMark != null and ! lateMark.equals('')">
+        late_Mark = #{lateMark},
+    </if>
+    <if  test="deducttype != null and ! deducttype.equals('')">
+        deducttype = #{deducttype},
+    </if>
+    <if  test="status != null and ! status.equals('')">
+        status = #{status},
+    </if>
+     <if  test="createBy != null and ! createBy.equals('')">
+        create_By = #{createBy},
+    </if>
+     <if  test="createTime != null and ! createTime.equals('')">
+        create_Time = #{createTime},
+    </if>
+     <if  test="modifyBy != null and ! modifyBy.equals('')">
+        modify_by = #{modifyBy},
+    </if>
+     <if  test="modifyTime != null and ! modifyTime.equals('')">
+        modify_Time = #{modifyTime},
+    </if>
+     <if  test="applyReallyAmount != null and ! applyReallyAmount.equals('')">
+        apply_really_amount = #{applyReallyAmount},
+    </if>
+     <if  test="amountMark != null and ! amountMark.equals('')">
+        amount_Mark = #{amountMark},
+    </if>
+ </set>
+      where id = #{id}
+</update>
+
+
+ <select id="queryOverCount" resultType = "java.lang.String">
+   SELECT regexp_split_to_table('0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
+   19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36',',') 
+ </select>
+ 
+ <delete id="delete">
+    update jk.t_jk_loan_appointment set status ='2'  where id = #{id}
+ 
+ </delete>
+ 
+ 
+ <!--查询规则数据-->
+	<select id="queryRuleDataList" resultType = "com.creditharmony.loan.borrow.payback.entity.Appointment">
+	SELECT id, sign_plat as signPlat, 
+	     bank, appointment_day as appointmentDay, 
+	    deduct_plat as deductPlat, tl_sign as tlSign, kl_sign as klSign,
+	    cj_sign as cjSign, loan_status, over_count as overCount,
+	    overdue_days as overdueDays, late_mark as lateMark, deducttype,
+	    amount_Mark as amountMark,apply_really_amount as applyReallyAmount,
+	   appointment_day as appointmentDay,
+	    status,rule_code as ruleCode
+	  FROM jk.t_jk_loan_appointment_Template
+	  
+	  where status !='2' and  rule_Code = #{ruleCode}
+	</select>
+ 
+ <!--查询同一规则数据是否存在了 -->
+	<select id="queryRuleList" resultType = "com.creditharmony.loan.borrow.payback.entity.Appointment">
+	
+	SELECT id, sign_plat as signPlat, 
+     bank, appointment_day as appointmentDay, 
+    deduct_plat as deductPlat, tl_sign as tlSign, kl_sign as klSign,
+    cj_sign as cjSign, loan_status, over_count as overCount,
+    overdue_days as overdueDays, late_mark as lateMark, deducttype,
+    amount_Mark as amountMark,apply_really_amount as applyReallyAmount,
+   to_char(appointment_day,'yyyy-MM-dd hh24:MI') as appointmentDayLabel,
+    status
+  FROM jk.t_jk_loan_appointment
+  where  status !='2'   
+	      		AND  to_char(appointment_day,'yyyy-MM-dd') = #{appointmentDayLabel} 
+	</select>
+</mapper>
+	

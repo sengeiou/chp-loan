@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.poscard.dao.PosCodMsInterDao">
+	<select id="getPosLoginList" resultType="com.creditharmony.loan.borrow.poscard.entity.PosInterLogin">
+		select
+				u.id,u.user_code,u.name,u.company_id,
+				o.name companyName,o.address,o.phone
+			from jk.t_gl_user u
+				left join jk.t_gl_user_role_org ur on ur.user_id = u.id
+				left join jk.t_gl_role r on r.id = ur.role_id
+				left join jk.t_gl_org o on o.id = u.company_id
+			where r.id in (#{teamManager},#{customerServ},#{visitPerson},#{storeAssistant},#{storeManager})
+				and u.user_code=#{loginName} and u.pospwd = #{pospwd}
+				and u.status = #{status}  and u.has_login = #{hasLogin}
+	</select>
+	
+	<select id="getPosSelectParam" resultType="com.creditharmony.loan.borrow.poscard.entity.PosInterSelect">
+		SELECT
+				pa.id,pa.apply_id as applyId,
+				gu.company_id as companyCode,
+				gu.user_code as loginName,
+			    go.phone as companyTel,
+				go.address as companyAddr,
+				pa.pos_bill_code as orderNo,
+				pa.pos_bill_code as receiverOrderNo,
+				pa.apply_amount as amount,
+				pa.dict_pay_result as payResult,
+				lc.customer_name as  receiverName,
+				lc.customer_address as rceiverAddr,
+				lc.customer_phone_first as rceiverTel
+			from jk.t_jk_payback_apply pa 
+				LEFT JOIN jk.t_jk_contract c ON c.contract_code = pa.contract_code 
+				LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+				LEFT JOIN jk.t_jk_loan_customer lc ON c.loan_code = lc.loan_code
+				LEFT JOIN jk.t_gl_org go ON go.id = li.loan_store_orgid
+				LEFT JOIN jk.t_gl_user gu ON gu.department_id = go.id
+			where 1=1
+		       AND pa.dict_payback_status = #{dictPaybackStatus}
+		       and pa.dict_repay_method = #{dictRepayMethod}
+		       and pa.pos_bill_code=#{orderNo} and gu.user_code=#{loginName}
+	</select>
+	
+	<select id="getPosPayParam" resultType="PosInterPay">
+		SELECT  pa.id as id, <!-- 还款申请ID -->
+			    pa.apply_id as applyId,<!-- 主表ID -->
+				pa.contract_code as contractCode, <!-- 合同编号 -->
+				pb.payback_bule_amount as paybackBuleAmount <!-- 蓝补金额 -->
+			from t_jk_payback pb
+			left join jk.t_jk_payback_apply pa on pa.contract_code = pb.contract_code
+			where pa.apply_amount=#{amount} and pa.pos_bill_code=#{orderNo} 
+	</select>
+	
+	<select id="getUserId" resultType="String" parameterType="String">
+		SELECT t.id 
+		from t_gl_user t where t.user_code=#{userCode}
+	</select>
+	
+	<update id="updatePosPay">
+		UPDATE  jk.t_jk_payback_apply  set 
+			dict_payback_status=#{dictPaybackStatus} ,split_back_result=#{splitBackResult} ,
+			apply_really_amount=#{amount}
+		where apply_amount=#{amount} and pos_bill_code=#{orderNo} 
+	 </update>
+	
+	<update id="updateBuleAmont">
+		UPDATE  jk.t_jk_payback  set 
+			payback_bule_amount = payback_bule_amount + #{amount}
+		where contract_code = #{contractCode} 
+	 </update>
+	
+	<insert id="savePosBackList">
+		INSERT INTO jk.t_jk_pos_back_list (
+			id,
+			contract_code,
+			refer_code,
+			pos_order_number,
+			audit_date,
+			payback_date,
+			deposited_account,
+			matching_state,
+			apply_Really_amount,
+			create_by,
+			payback_apply_id
+			)
+			VALUES(
+			#{id},
+			#{contractCode},
+			#{referCode},
+			#{posOrderNumber},
+			#{auditDate},
+			#{paybackDate},
+			#{depositedAccount},
+			#{matchingState},
+			#{applyReallyAmount},
+			#{createBy},
+			#{payBackApplyId})
+	</insert>
+	
+	<!--增加还款蓝补交易明细 -->
+	<insert id="addBackBuleAmont" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackBuleAmont">
+		insert into
+		jk.T_JK_PAYBACK_BULE_AMONT(
+		id,R_MONTH_ID,DEAL_TIME,TRADE_TYPE,OPERATOR,
+		DICT_DEAL_USE,TRADE_AMOUNT,SURPLUS_BULE_AMOUNT,
+		CREATE_BY,CREATE_TIME,MODIFY_BY,MODIFY_TIME,CONTRACT_CODE
+		) values(
+		#{id},
+		#{rMonthId},
+		#{dealTime},
+		#{tradeType},
+		#{operator},
+		#{dictDealUse},
+		#{tradeAmount},
+		#{surplusBuleAmount},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime},
+		#{contractCode}
+		)
+	</insert>
+	
+</mapper>

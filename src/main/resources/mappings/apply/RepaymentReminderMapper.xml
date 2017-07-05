@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.RepaymentReminderDao">
+	<!-- 发起还款提醒 所需要查询出的数据 -->
+	<sql id="repaymentReminderColumns">
+		pm.id as id,<!-- 期供ID -->
+		pm.contract_code as contractCode, <!-- 合同编号 -->
+		pm.month_pay_day as monthPaybackDate,<!-- 期供还款日 -->
+		pm.dict_month_status as dictMonthStatus, <!-- 期供状态 -->
+		pm.month_capital_payactual as monthCapitalPayactual,
+		pm.month_interest_payactual as monthInterestPayactual,
+		pm.actual_month_fee_service as actualMonthFeeService,
+		pm.month_pay_amount as monthPayAmount,
+		pm.month_interest_backshould as monthInterestBackshould,
+		pm.month_fee_service as monthFeeService,
+		pm.remind_logo as remindLogo, <!-- 提醒标识 -->
+		jlc.customer_name as customerName, <!-- 客户姓名 -->
+		gos.name as stroeName,  <!-- 门店名称 -->
+		lb.bank_name as applyBankName, <!-- 开户行名称 -->
+		jlc.customer_phone_first as offendTel, <!-- 手机号码 -->
+		p.payback_current_month as months, <!-- 期数 -->
+		p.payback_bule_amount as buleAmont, <!-- 蓝补金额 -->
+		p.payback_day as monthPayDay,<!-- 还款日 -->
+		p.payback_month_amount as completeMoney,<!-- 月还期供金额 -->
+		lb.bank_signing_platform as dictDealType, <!-- 划扣平台 -->
+		jc.contract_end_day as contractEndTimestamp, <!-- 合同到期日 -->
+		jc.contract_amount as contractMoney, <!-- 合同金额 -->
+		jc.contract_version as contractVersion,<!-- 合同版本号 -->
+		jlg.grant_amount as grantAmount, <!-- 放款金额 -->
+		jlc.customer_code as customerCode, <!-- 客户编码 -->
+		jlc.customer_sex as customerSex, <!-- 性别 -->
+		tji.dict_loan_status as dictLoanStatus, <!-- 借款状态 -->
+		tji.loan_flag as logo,<!-- 标识 -->
+		tji.loan_store_orgid as loanStoreOrgId, <!--门店所在组织机构Id -->
+		tji.model,
+		lb.bank_account as bankAccount,<!-- 划扣账号 -->
+       	lb.id as dictBankId
+	</sql>
+	<!-- 查询发起还款提醒列表数据 -->
+	<select id="allRepaymentReminderList"
+		resultType="com.creditharmony.loan.borrow.payback.entity.ex.RepaymentReminderEx">
+		SELECT 
+		<include refid="repaymentReminderColumns" />
+		
+		FROM jk.t_jk_payback_month pm
+		INNER JOIN jk.t_jk_contract jc ON pm.contract_code = jc.contract_code
+		INNER JOIN jk.t_jk_loan_grant jlg ON pm.contract_code = jlg.contract_code
+		INNER JOIN
+		(SELECT
+		customer_name,loan_code,customer_phone_first,customer_code,customer_sex
+		FROM jk.t_jk_loan_customer
+		WHERE 1=1
+		 <if test="customerName != null and customerName != ''">
+			and customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if> 
+		) jlc ON jlc.loan_code = jc.loan_code
+		INNER JOIN
+		(SELECT bank_signing_platform,loan_code,bank_name,bank_account,id
+		FROM jk.t_jk_loan_bank
+		WHERE bank_top_flag = '1' AND repayment_flag = '1' 
+		 <if test="dictDealType != null and dictDealType != ''">
+			AND bank_signing_platform = #{dictDealType} 
+		</if>
+		) lb ON lb.loan_code = jlc.loan_code
+		inner JOIN(select loan_code,model,loan_flag,loan_store_orgid,dict_loan_status from   jk.t_jk_loan_info
+		 where 1=1
+		 <if test="model != null and model != ''">
+			and model= #{model,jdbcType=VARCHAR}
+		 </if>
+		 <if test="logo != null and logo != ''">
+			and loan_flag= #{logo,jdbcType=VARCHAR}
+		 </if>
+		
+		) tji ON tji.loan_code = jc.loan_code
+		LEFT JOIN jk.t_jk_payback p ON pm.contract_code = p.contract_code
+		LEFT JOIN jk.t_gl_org gos ON gos.id = tji.loan_store_orgid
+		WHERE pm.dict_month_status = '0'  and (p.dict_pay_status = '0' or p.dict_pay_status = '1')
+		AND (pm.remind_logo='0' OR pm.remind_logo IS NULL) and  jc.channel_flag != '5'
+		 <if test="contractCode != null and contractCode != ''">
+			and pm.contract_code= #{contractCode,jdbcType=VARCHAR}
+		</if>
+		<if test="paybackMonthMoneyDate != null and paybackMonthMoneyDate != ''">
+			and pm.month_pay_day = to_date(#{paybackMonthMoneyDate},'yyyy-mm-dd')
+		</if> 
+		<if test="id != null and !id.equals('')">
+			and pm.id in (${id})
+		</if>
+		   ${queryRight} 
+		order by pm.id desc
+	</select>
+    <select id="selectSumAmount" resultType="map">
+     select 
+     sum(a.pay_amount)  as pay_amount
+     from (
+     select 
+     CASE  WHEN (jc.contract_version = '4'OR jc.contract_version = '5') THEN
+     (COALESCE(pm.month_fee_service,0) + COALESCE(pm.month_pay_amount,0) +COALESCE(pm.month_interest_backshould,0))-(
+     COALESCE( pm.actual_month_fee_service,0) + COALESCE(pm.month_interest_payactual,0) + COALESCE(pm.month_capital_payactual,0)) 
+     else 
+     (COALESCE(pm.month_pay_amount,0) +  COALESCE(pm.month_interest_backshould,0))-
+      (COALESCE(pm.month_interest_payactual,0)+COALESCE(pm.month_capital_payactual,0))
+      end as  pay_amount
+	FROM (
+        select  pm.contract_code,
+        ROUND(month_fee_service,2) as month_fee_service,
+        ROUND(month_pay_amount,2) as month_pay_amount,
+        ROUND(month_interest_backshould,2) as month_interest_backshould,
+        ROUND(actual_month_fee_service,2) as actual_month_fee_service,
+        ROUND(month_interest_payactual,2) as month_interest_payactual,
+        ROUND(month_capital_payactual,2) as month_capital_payactual
+       FROM jk.t_jk_payback_month pm  inner join jk.t_jk_payback p  
+       on pm.contract_code  = p.contract_code 
+       WHERE pm.dict_month_status = '0'  and (p.dict_pay_status = '0' or p.dict_pay_status = '1')
+       AND (pm.remind_logo='0' OR pm.remind_logo IS NULL) 
+  		 <if test="contractCode != null and contractCode != ''">
+			and pm.contract_code= #{contractCode,jdbcType=VARCHAR}
+		</if>
+		<if test="paybackMonthMoneyDate != null and paybackMonthMoneyDate != ''">
+			and pm.month_pay_day = to_date(#{paybackMonthMoneyDate},'yyyy-mm-dd')
+		</if> 
+        ) as pm 
+		INNER JOIN jk.t_jk_contract jc ON pm.contract_code = jc.contract_code
+		INNER JOIN jk.t_jk_loan_grant jlg ON pm.contract_code = jlg.contract_code
+		INNER JOIN
+		(SELECT
+		customer_name,loan_code,customer_phone_first,customer_code,customer_sex
+		FROM jk.t_jk_loan_customer
+		WHERE 1=1
+		 <if test="customerName != null and customerName != ''">
+			and customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if> 
+		) jlc ON jlc.loan_code = jc.loan_code
+		INNER JOIN
+		(SELECT bank_signing_platform,loan_code,bank_name
+		FROM jk.t_jk_loan_bank
+		WHERE bank_top_flag = '1' AND repayment_flag = '1' 
+		 <if test="dictDealType != null and dictDealType != ''">
+			AND bank_signing_platform = #{dictDealType} 
+		</if>
+		) lb ON lb.loan_code = jlc.loan_code
+		inner JOIN (
+		select loan_code,model,loan_flag,loan_store_orgid,dict_loan_status  from jk.t_jk_loan_info
+		 where 1=1
+		 <if test="model != null and model != ''">
+			and model= #{model,jdbcType=VARCHAR}
+		 </if>
+		 <if test="logo != null and logo != ''">
+			and loan_flag= #{logo,jdbcType=VARCHAR}
+		 </if>
+		) tji ON tji.loan_code = jc.loan_code
+		LEFT JOIN jk.t_jk_payback p ON pm.contract_code = p.contract_code
+		LEFT JOIN jk.t_gl_org gos ON gos.id = tji.loan_store_orgid
+		where 1=1  and  jc.channel_flag != '5'
+ 	    ${queryRight} 
+ 	    ) a
+    </select>
+	<!-- 查询短信推送所需要的数据 -->
+	<select id="queryRepaymentReminderList"
+		resultType="com.creditharmony.loan.borrow.payback.entity.ex.RepaymentReminderEx">
+		SELECT
+		pm.id as id,
+		pm.contract_code as contractCode, 
+		pm.month_pay_day as monthPaybackDate,
+		pm.month_capital_payactual as monthCapitalPayactual,
+		pm.month_interest_payactual as monthInterestPayactual,
+		pm.actual_month_fee_service as actualMonthFeeService,
+		pm.month_pay_amount as monthPayAmount,
+		pm.month_interest_backshould as monthInterestBackshould,
+		pm.month_fee_service as monthFeeService,
+		pm.month_pay_total as payMoney,
+		jlc.customer_name as customerName, 
+		gos.name as stroeName,  
+		lb.bank_name as applyBankName, 
+		jlc.customer_phone_first as offendTel, 
+		p.payback_day as months, 
+		pm.month_pay_total as completeMoney, 
+		p.payback_bule_amount as buleAmont, 
+		p.payback_day as monthPayDay,
+		pm.dict_month_status as dictMonthStatus, 
+		pm.remind_logo as remindLogo, 
+		lb.bank_signing_platform as dictDealType, 
+		lb.id as dictBankId,
+		lb.bank_account as bankAccount,
+		jc.contract_end_day as contractEndTimestamp, 
+		jc.contract_amount as contractMoney,
+		jc.contract_version as contractVersion, 
+		jlg.grant_amount as grantAmount, 
+		jlc.customer_code as customerCode, 
+		jlc.customer_sex as customerSex, 
+		tji.dict_loan_status as dictLoanStatus, 
+		tji.loan_store_orgid as loanStoreOrgId 
+
+		FROM jk.t_jk_payback_month pm
+		left join jk.t_jk_contract jc on pm.contract_code = jc.contract_code
+		left join jk.t_jk_loan_grant jlg on pm.contract_code = jlg.contract_code
+		left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+		left join jk.t_jk_loan_bank lb on lb.loan_code = jlc.loan_code
+		AND lb.bank_top_flag = '1' AND lb.repayment_flag = '1' 
+		left join jk.t_jk_loan_info tji on tji.loan_code = jc.loan_code
+		left join jk.t_jk_payback p on pm.contract_code = p.contract_code
+		LEFT JOIN jk.t_gl_org gos ON gos.id = tji.loan_store_orgid
+		where pm.id
+		= #{id}  and  jc.channel_flag != '5'  order by id desc
+	</select>
+
+	<!-- 将短信推送的数据添加到表(汇金短信提醒_还款表) -->
+	<select id="insertShortMessagePayback" resultType="String">
+		INSERT INTO
+		t_gl_sms_jk_payback(
+		id, period_id, customer_code, customer_name, sex, phone, loan_amount,
+		month_repay_amount, contract_amount, repay_day, contract_code,
+		stores_name, send_status,create_by,dict_bank_id,bank_name,account_num)
+		VALUES (#{id}, #{monthId}, #{customerCode}, #{customerName}, #{customerSex},
+		#{offendTel}, #{grantAmount},
+		#{completeMoney}, #{contractMoney}, #{monthPaybackDate},#{contractCode},
+		#{stroeName}, #{remindLogo},#{createBy},#{dictBankId},#{applyBankName},#{bankAccount});
+
+	</select>
+
+	<!-- 将短信推送的数据添加到表(借款人服务部提醒信息) -->
+	<select id="insertShortMessageServicesRemind" resultType="String">
+		INSERT INTO t_jk_services_remind(
+		id, contract_code, contract_end_day, bule_amount, month_pay_day,
+		customer_name, stores_name, tel, apply_bank_name, complete_amount,
+		months, dict_loan_status, mark, month_repay_amount,
+		stores_mark_entry_by,
+		stores_mark, dict_deal_type,
+		riskcontrol_mark_entry_by, riskcontrol_mark,create_by)
+		VALUES (
+		#{id},
+		#{contractCode},
+		#{contractEndTimestamp},
+		#{buleAmont},
+		#{monthPayDay},
+		#{customerName},
+		#{stroeName},
+		#{offendTel},
+		#{applyBankName},
+		#{completeMoney},
+		#{months},
+		#{dictLoanStatus},
+		#{logo},
+		#{payMoney},
+		#{storeRemarkUserid}, <!-- 
+			门店备注录入人 -->
+		#{storeRemark}, <!-- 门店备注 -->
+		<!-- '', 风控备注录入时间 -->
+		<!-- '', 审核人 -->
+		#{dictDealType},
+		#{riskcontrolRemarkUserid}, <!-- 风控备注录入人 -->
+		#{orgId},<!-- 风控备注 -->
+		<!-- '', 审核时间 -->
+		<!-- '' 门店备注录入时间 -->
+		#{createBy});
+	</select>
+	<!-- 推送成功后把待还款的 提醒标识变成已提醒 -->
+	<select id="updateRepaymentReminder" resultType="String">
+		UPDATE
+		t_jk_payback_month
+		SET remind_logo = #{remindLogo}
+		WHERE
+		id = #{id};
+	</select>
+
+	<select id="exportRemindExcel"
+		resultType="com.creditharmony.loan.borrow.payback.entity.ex.RepaymentReminderEx">
+		
+		select
+		pm.id as monthID,<!-- 期供ID -->
+		pm.contract_code as contractCode,
+		jlc.customer_name as customerName,
+		gos.name as stroeName,
+		da.label as applyBankName,
+		p.payback_day as monthPayDay,<!-- 还款日 -->
+		jc.contract_amount as contractMoney, <!-- 合同金额 -->
+		jc.contract_version as contractVersion,<!-- 合同版本号 -->
+		p.payback_month_amount as completeMoney, <!-- 月还款额 -->
+		lb.bank_account as bankAccount,<!-- 划扣账号 -->
+		pm.month_pay_day as monthPaybackDate,<!-- 期供还款日 -->
+		pm.month_capital_payactual as monthCapitalPayactual,
+		pm.month_interest_payactual as monthInterestPayactual,
+		pm.actual_month_fee_service as actualMonthFeeService,
+		pm.month_pay_amount as monthPayAmount,
+		pm.month_interest_backshould as monthInterestBackshould,
+		pm.month_fee_service as monthFeeService,
+		db.label as logo,
+		dc.label as modelLabel
+		FROM jk.t_jk_payback_month pm
+		LEFT JOIN jk.t_jk_contract jc ON pm.contract_code = jc.contract_code
+		INNER JOIN jk.t_jk_loan_grant jlg ON pm.contract_code = jlg.contract_code
+		INNER JOIN
+		(SELECT
+		customer_name,loan_code,customer_phone_first,customer_code,customer_sex
+		FROM jk.t_jk_loan_customer
+		WHERE 1=1
+		 <if test="customerName != null and customerName != ''">
+			and customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if> 
+		) jlc ON jlc.loan_code = jc.loan_code
+		INNER JOIN
+		(SELECT bank_signing_platform,loan_code,bank_name,bank_account
+		FROM jk.t_jk_loan_bank
+		WHERE bank_top_flag = '1' AND repayment_flag = '1' 
+		 <if test="dictDealType != null and dictDealType != ''">
+			and dict_deal_type = #{dictDealType} 
+		</if>
+		<if test="bankTopFlag != null and !bankTopFlag.equals('')">
+			and bank_top_flag = #{bankTopFlag}
+		</if>
+		) lb ON lb.loan_code = jlc.loan_code
+		inner JOIN (select loan_code,model,loan_flag,loan_store_orgid,dict_loan_status from jk.t_jk_loan_info
+		 where 1=1
+		 <if test="model != null and model != ''">
+			and model= #{model,jdbcType=VARCHAR}
+		 </if>
+		 <if test="logo != null and logo != ''">
+			and loan_flag= #{logo,jdbcType=VARCHAR}
+		 </if>)
+		  tji ON tji.loan_code = jc.loan_code
+		LEFT JOIN jk.t_jk_payback p ON pm.contract_code = p.contract_code
+		LEFT JOIN jk.t_gl_org gos ON gos.id = tji.loan_store_orgid
+		left join  (select  value,label from  jk.t_gl_dict where type ='jk_open_bank') da on da.value = lb.bank_name
+		left join  (select  value,label from  jk.t_gl_dict where type ='jk_channel_flag') db on db.value = tji.loan_flag
+		left join  (select  value,label from  jk.t_gl_dict where type ='jk_loan_model') dc on dc.value = tji.model
+		where pm.dict_month_status = '0'  and  (p.dict_pay_status = '0' or p.dict_pay_status = '1')
+        AND (pm.remind_logo='0' OR pm.remind_logo IS NULL)   and  jc.channel_flag != '5'
+		<if test="id != null and !id.equals('')">
+			and pm.id in (${id})
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and pm.contract_code= #{contractCode,jdbcType=VARCHAR}
+		</if>
+		<if test="paybackMonthMoneyDate != null and paybackMonthMoneyDate != ''">
+			and pm.month_pay_day = to_date(#{paybackMonthMoneyDate},'yyyy-mm-dd')
+		</if>
+		 ${queryRight} 
+		order by pm.id desc
+	</select>
+	
+	<select id="fingAllId"
+		resultType="String">
+		SELECT 
+		pm.id as id <!-- 期供ID -->
+		FROM jk.t_jk_payback_month pm
+		INNER JOIN jk.t_jk_contract jc ON pm.contract_code = jc.contract_code
+		INNER JOIN jk.t_jk_loan_grant jlg ON pm.contract_code = jlg.contract_code
+		INNER JOIN
+		(SELECT
+		customer_name,loan_code,customer_phone_first,customer_code,customer_sex
+		FROM jk.t_jk_loan_customer
+		WHERE 1=1
+		) jlc ON jlc.loan_code = jc.loan_code
+		INNER JOIN
+		(SELECT bank_signing_platform,loan_code,bank_name
+		FROM jk.t_jk_loan_bank
+		WHERE bank_top_flag = '1' AND repayment_flag = '1' 
+		) lb ON lb.loan_code = jlc.loan_code
+		LEFT JOIN jk.t_jk_loan_info tji ON tji.loan_code = jc.loan_code
+		LEFT JOIN jk.t_jk_payback p ON pm.contract_code = p.contract_code
+		LEFT JOIN jk.t_gl_org gos ON gos.id = tji.loan_store_orgid
+		WHERE pm.dict_month_status = '0'  and  jc.channel_flag != '5'
+		AND (pm.remind_logo='0' OR pm.remind_logo IS NULL)
+		<if test="paybackMonthMoneyDate != null and paybackMonthMoneyDate != ''">
+			AND pm.month_pay_day = to_date(#{paybackMonthMoneyDate},'yyyy-mm-dd')
+		</if> 
+	</select>
+
+</mapper>
+
+
+
+
+

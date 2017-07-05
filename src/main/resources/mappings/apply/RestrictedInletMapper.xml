@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.restrictedInlet.dao.RestrictedInletDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.restrictedInlet.entity.RestrictedInlet">
+    <id column="id"  property="id" />
+    <result column="province_code" jdbcType="VARCHAR" property="provinceCode" />
+    <result column="province_name" jdbcType="VARCHAR" property="provinceName" />
+    <result column="lgare_code" jdbcType="VARCHAR" property="lgareCode" />
+    <result column="lgare_name" jdbcType="VARCHAR" property="lgareName" />
+    <result column="customer_num" jdbcType="NUMERIC" property="customerNum" />
+    <result column="term_num" jdbcType="NUMERIC" property="termNum" />
+    <result column="store_num" jdbcType="NUMERIC" property="storeNum" />
+ </resultMap>
+   
+  <resultMap id="selectBaseResult" type="com.creditharmony.loan.borrow.restrictedInlet.entity.RestrictedInlet">
+    <id column="id"  property="id" />
+    <result column="org_code" jdbcType="VARCHAR" property="orgCode" />
+    <result column="org_name" jdbcType="VARCHAR" property="orgName" />
+    <result column="province_name" jdbcType="VARCHAR" property="provinceName" />
+    <result column="area_name" jdbcType="VARCHAR" property="areaName" />
+    <result column="m1_yql_current" jdbcType="NUMERIC" property="m1YqlCurrent" />
+    <result column="high_standard" jdbcType="NUMERIC" property="highStandard" />
+    <result column="store_num" jdbcType="NUMERIC" property="storeNum" />
+    <result column="sf_jj" jdbcType="NUMERIC" property="sfJj" />
+ </resultMap> 
+ 
+    
+  <resultMap id="BaseResultMapStrore" type="com.creditharmony.loan.borrow.restrictedInlet.entity.RestrictedInlet">
+    <id column="id"  property="id" />
+    <result column="zkbj_type" jdbcType="VARCHAR" property="zkbjType" />
+    <result column="team_name" jdbcType="VARCHAR" property="teamName" />
+    <result column="m1_yql" jdbcType="NUMERIC" property="m1YqlCurrent" />
+    <result column="m1_yql_current" jdbcType="NUMERIC" property="m1YqlCurrent" />
+    <result column="sf_jj" jdbcType="NUMERIC" property="sfJj" />
+ </resultMap> 
+  <!--修改门店高危线设置列表 -->
+  	<update id="updateStoreRestrict">
+		UPDATE jk.t_jk_overdue_rate_md  
+		 <trim prefix="SET" suffixOverrides=",">
+		  <if test="m1Yql != null and m1Yql != ''">     
+		  m1_yql = #{m1Yql}, 
+         </if>
+		<if test="highStandard != null and highStandard != ''">  
+		   high_standard = #{highStandard},    
+		 </if>
+	</trim>
+		WHERE 
+	  <if test="id != null and id != ''">
+		    id in (${id})
+		 </if>
+	</update>
+ 
+    <!-- 高危险设置列表 -->
+   <select id="selectStroreList"  resultMap="BaseResultMapStrore">
+    select f.id,
+           f.team_name,          <!-- 姓名 -->
+           f.zkbj_type,           <!-- 岗位 -->
+           t.m1_yql,   <!-- M1逾期率高危线 -->
+           f.m1_yql_current,            <!-- 当前M1逾期率 -->
+           f.sf_jj         <!-- 是否限制进件 -->
+    from t_jk_overdue_rate_tt_ff  f 
+    left  join t_jk_overdue_rate_md  t   on  f.org_code = t.org_code
+    <!-- 员工类别 --> where 1=1
+   		<if test="zkbjType!=null and zkbjType!=''"> and  f.zkbj_type =  #{zkbjType}  </if>
+   		<if test="orgCode!=null and orgCode!=''"> and  t.org_code =  #{orgCode}  </if>
+  </select>
+  <sql id="Base_Column_List">
+        a.id,             <!--id  -->
+        a.province_code,  <!--省分公司编码  -->
+        a.province_name,  <!--省分公司名称  -->
+        a.lgare_code,     <!--业务大区编码  -->
+        a.lgare_name,     <!--业务大区名称  -->
+        a.customer_num,   <!--客户逾期高危线  -->
+        a.term_num,       <!--团队经理M1 -->
+        a.store_num       <!--门店M1逾期  -->
+  </sql>
+   <!-- 高危险设置列表 -->
+   <select id="selectRestrictedInletList"  resultMap="BaseResultMap">
+      select
+		<include refid="Base_Column_List"/>
+	  from
+		T_JK_OVERDUE_SET a  <!--高危线设置列表 -->
+	    where 1=1
+	    ORDER BY a.province_code  desc
+  </select>
+  
+    <!-- 修改逾期设置列表 -->
+  	<update id="update">
+		UPDATE jk.T_JK_OVERDUE_SET  
+		 <trim prefix="SET" suffixOverrides=",">
+		  <if test="customerNum != null and customerNum != ''">     
+		  customer_num = #{customerNum}, 
+         </if>
+		<if test="termNum != null and termNum != ''">  
+		   term_num = #{termNum},    
+		 </if>
+		 <if test="storeNum != null and storeNum != ''"> 
+		  store_num = #{storeNum},   
+		 </if>
+	</trim>
+		WHERE 
+	  <if test="id != null and id != ''">
+		    id in (${id})
+		 </if>
+	</update>
+	
+    <!-- 查询门店限制进件情况 -->
+   <select id="selectStoreRestricList"  resultMap="selectBaseResult">
+    select  a.id,
+            a.org_code,                     <!-- 门店编号 -->
+            a.org_name,                     <!-- 门店名称 -->
+            a.province_name,                     <!-- 省分公司名称 -->
+            a.area_name,                     <!-- 业务大区名称 -->
+            a.m1_yql_current,               <!-- 当前M1逾期率 -->
+            a.high_standard,                <!-- 高危线标准 -->
+            t.store_num,                   <!-- M1逾期率高危线 -->
+            a.sf_jj,                       <!-- 是否限制进件 -->
+            a.m1_yql                         <!-- 自定义 -->
+             from t_jk_overdue_rate_md   a  
+    left join  T_JK_OVERDUE_SET   t  on  a.province_code=t.province_code
+    where 1=1
+    <!--门店编号 -->
+    		<if test="orgCode!=null and orgCode!=''"> and a.org_code like '%'||#{orgCode}||'%'</if>
+   <!--门店名称 -->
+    		<if test="orgName!=null and orgName!=''"> and a.org_name like '%'||#{orgName}||'%'</if>	
+   <!--省分公司名称 -->
+    		<if test="provinceName!=null and provinceName!=''"> and a.province_name like '%'||#{provinceName}||'%'</if>
+    <!--业务大区名称-->
+    		<if test="areaName!=null and areaName!=''"> and a.area_name like '%'||#{customName}||'%'</if>
+    <!--高危线标准-->
+    		<if test="highStandard!=null and highStandard!=''"> and a.high_standard =  #{highStandard}</if>
+    <!--是否被限制进件-->
+    		<if test="sfJj!=null and sfJj!=''"> and a.sf_jj =  #{sfJj} </if>
+    		order by org_code desc 
+  </select>
+    <!-- 修改逾期设置列表 -->
+  	<update id="updateStore">
+		 UPDATE jk.t_jk_overdue_rate_md t
+		 set high_standard = #{highStandard},
+          m1_yql =(
+         SELECT u.store_num 
+         FROM jk.t_jk_overdue_set u  where u.province_code=t.province_code)
+	     WHERE
+	     <if test="id != null and id != ''">
+		   t.id in (${id})
+		 </if>
+	</update>
+  
+  
+      <!-- 查询门店限制进件情况 -->
+   <select id="selectStr" resultType="com.creditharmony.loan.borrow.restrictedInlet.entity.RestrictedInlet" >
+    select  a.id,
+            a.org_name orgName,                     <!-- 门店名称 -->
+            a.m1_yql_current m1YqlCurrent,               <!-- 当前M1逾期率 -->
+            t.store_num      storeNum             <!-- M1逾期率高危线 -->
+             from t_jk_overdue_rate_md   a  
+    left join  T_JK_OVERDUE_SET   t  on  a.province_code=t.province_code
+    where 1=1
+    <!--门店编号 -->
+    		<if test="orgCode!=null and orgCode!=''"> and a.org_code   =  #{orgCode}</if>
+  </select>
+</mapper>

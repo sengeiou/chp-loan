@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.SendMoneyDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.SendMoneyEx">
+   <result column="indexs" jdbcType="VARCHAR" property="index" />
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="name" jdbcType="VARCHAR" property="storesName" />
+    <result column="storesId" property="storesId" jdbcType="VARCHAR"/>
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="feeUrgedService" />
+    <result column="grant_amount" jdbcType="NUMERIC" property="grantAmount" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractAmount" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag" />
+    <result column="bank_name" jdbcType="VARCHAR" property="bankName" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccount" />
+    <result column="bank_branch" jdbcType="VARCHAR" property="bankBranch" />
+    <result column="contract_months" jdbcType="NUMERIC" property="contractMonths" />
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion"/>
+    <result column="frozen_code" jdbcType="VARCHAR" property="frozenCode"/>
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="loanUrgentFlag" />
+    
+    <result column="fee_urged_service" property="collectioneServiceFee"/><!-- 催收服务费 -->
+    <result column="fee_consult" property="preConsultationFee"/><!--前期咨询费 -->
+    <result column="fee_audit_amount" property="preAuditFee"/><!--前期审核费 -->
+    <result column="month_mid_fee_service" property="preHouseServiceFee"/><!--前期居间服务费 -->
+    <result column="fee_info_service" property="preInfoServiceFee"/><!--前期信息服务费 -->
+    <result column="month_fee_consult" property="installmentConsultationFee"/><!--分期咨询费 -->
+    <result column="month_fee_service" property="preInfoTotalServiceFee"/><!--前期综合服务费 -->
+    <result column="contract_replay_day" property="paymentDateStart"/><!--还款起止日期开始时间 -->
+    <result column="contract_end_day" property="paymentDateEnd"/><!--还款起止日期结束时间 -->
+ 	<result column="dict_repay_method" property="paymentMode"/><!--还本付息方式 -->
+	<result column="fee_count" property="monthConsultationFee"/><!--分期服务费下:每期支付咨询费 -->
+	<result column="customer_email" property="loanEmail"/><!-- 甲方邮件 -->
+	
+    <result column="company_name" property="guarantorName"/><!-- 丙方保证人姓名 -->
+    <result column="legal_man" property="guarantorPeople"/><!-- 法定代表人 -->
+    <result column="maddress" property="guarantorAddress"/><!-- 法定代表地址 -->
+    <result column="guarantee_mail" property="guarantorEmail"/><!-- 丙方email -->
+    <result column="guarantee_tel" property="guarantorTel"/><!-- 丙方电话 -->
+    <result column="company_registered_no" property="unSociCreditCode"/><!-- 签章标识：统一社会信用代码 -->
+    <result column="companyName" property="companyName"/><!-- 丙方公司名-->
+    <result column="guarantee_idnum" property="guaranteeIdnum"/><!-- 丙方法人身份证-->
+    <result column="fee_petition" property="feePetition"/><!-- 外访费 -->
+    <result column="item_distance" property="itemDistance"/><!-- 外访距离 -->
+    <result column="loan_code" property="loanCode"/><!-- 借款编号-->
+    <result column="naturalPersonName" property="naturalPersonName"/><!-- 自然人姓名 -->
+    <result column="naturalPersonCardNumber" property="naturalPersonCardNumber"/><!-- 自然人身份证号 -->
+    <result column="naturalPersonAddress" property="naturalPersonAddress"/><!-- 自然人现住址-->
+  </resultMap>
+  <!-- 根据放款id查询要导出的打款表列表信息 -->
+  <select id="getMoneyList"  resultMap="BaseResultMap">
+	select
+		ROW_NUMBER() OVER(order by d.order_field) indexs,
+		a.id,
+		e.apply_id,
+		o.name as storesName,
+		a.contract_code,
+		round(e.contract_amount,2) as contractAmount,
+		grant_amount as grantAmount,
+		customer_name,
+		customer_cert_num,
+		b.label as loan_flag,
+    	bank_name,
+		bank_account,
+		bank_branch,
+		contract_months,
+		contract_version,
+		d.loan_urgent_flag,
+    	round(fee_urged_service,2) as feeUrgedService,
+    	fee_month_rate,
+    	e.paperless_flag,
+    	case when e.company_name is not null 
+    	 then '有' else '无' end as ensure_flag,
+    	e.revisit_status   
+    	,(SELECT DICT.LABEL FROM JK.T_GL_DICT DICT WHERE DICT.TYPE= 'jk_telemarketing' AND DICT.VALUE = nvl(m.CUSTOMER_TELESALES_FLAG,0)) CUSTOMER_TELESALES_FLAG_STRING
+	from
+		jk.t_jk_loan_grant a 
+		LEFT JOIN jk.t_jk_loan_info d ON d.loan_code = a.loan_code 
+		LEFT JOIN jk.t_gl_org o ON o.id = d.loan_store_orgid
+		LEFT JOIN jk.t_jk_contract e ON e.contract_code  =a.contract_code
+		LEFT JOIN jk.t_jk_loan_customer m ON m.loan_code = d.loan_code  
+		LEFT JOIN jk.t_jk_loan_bank k ON k.loan_code=a.loan_code and k.bank_top_flag = '1' and k.repayment_flag = '0'
+		LEFT JOIN jk.t_jk_contract_fee r ON r.contract_code=a.contract_code
+		Left join (select label,value from jk.t_gl_dict where type = 'jk_channel_flag') b on loan_flag = b.value
+	where  e.apply_id in
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+       	order by d.order_field asc 
+  </select>
+  <!-- 根据放款id查询要导出的打款表列表信息 -->
+  <select id="getAllMoneyList" parameterType="java.util.List" resultMap="BaseResultMap">
+	select ROW_NUMBER() OVER(order by d.order_field) indexs,
+		a.id,
+		e.apply_id,
+		o.name as storesName,
+		a.contract_code,
+		round(e.contract_amount,2) as contractAmount,
+		grant_amount as grantAmount,
+		customer_name,
+		customer_cert_num,
+		loan_flag,
+    	openBank.label bank_name,
+		k.bank_account,
+		k.bank_branch,
+		contract_months,
+		cv.label as contract_version,
+		loan_urgent_flag,
+    	round(fee_urged_service,2) as feeUrgedService,
+    	b.label CHANELL_FLAG,
+    	q.label,f.label paperless,fee_month_rate monthRate,
+    	case e.is_register when '1' then '是'
+    	     else '否' end as ensureman,
+    	e.revisit_status     
+	from
+		jk.t_jk_loan_grant a 
+		LEFT JOIN jk.t_jk_loan_info d ON d.loan_code = a.loan_code 
+		LEFT JOIN jk.t_gl_org o ON o.id = d.loan_store_orgid
+		LEFT JOIN jk.t_jk_contract e ON e.contract_code  =a.contract_code
+		LEFT JOIN jk.t_jk_loan_customer m ON m.loan_code = d.loan_code  
+		LEFT JOIN jk.t_jk_loan_bank k ON k.loan_code=a.loan_code and k.bank_top_flag = '1' and k.repayment_flag = '0'
+		LEFT JOIN jk.t_jk_contract_fee r ON r.contract_code=a.contract_code
+		LEFT JOIN (select label,value from jk.t_gl_dict WHERE type = 'jk_channel_flag') b on loan_flag = b.value
+		LEFT JOIN (select label,value from jk.t_gl_dict WHERE type = 'jk_urgent_flag') q on loan_urgent_flag = q.value
+		LEFT JOIN (select label,value from jk.t_gl_dict WHERE type = 'yes_no') f on e.paperless_flag = f.value
+		LEFT JOIN (select label,value from jk.t_gl_dict WHERE type = 'yes_no') s on e.is_register = s.value
+		LEFT JOIN (select label,value from jk.t_gl_dict WHERE type = 'jk_contract_ver') contractVersion on e.contract_version = contractVersion.value
+		LEFT JOIN (select label ,value from jk.t_gl_dict where type = 'jk_open_bank') openBank on bank_name = openBank.value
+		LEFT JOIN (select label ,value from jk.t_gl_dict where type = 'jk_contract_ver') cv on cv.value = e.contract_version
+	<where>
+		a.loan_code IN
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+	  		#{item}
+		</foreach>
+  	</where> 
+  	   order by d.order_field
+  </select>
+  <!-- 根据合同编号查找打款表中已申请了门店冻结的列表信息 -->
+  <select id="findStoreFrozenList" resultMap="BaseResultMap">
+	select
+		a.id,
+		e.apply_id,
+		o.store_code as storesId,
+		o.name as storesName,
+		a.contract_code,
+		round(e.contract_amount,2) as contractAmount,
+		round(grant_amount,2) as grantAmount,
+		customer_name,
+		customer_cert_num,
+		loan_flag,
+    	bank_name,
+		bank_account,
+		bank_branch,
+		contract_months,
+		contract_version,
+    	round(fee_urged_service,2) as feeUrgedService,
+    	d.frozen_code,
+    	d.LOAN_URGENT_FLAG loan_urgent_flag,
+    	round(r.fee_urged_service,2) fee_urged_service,<!-- 催收服务费 -->
+    	round(r.fee_consult,2) fee_consult,<!--前期咨询费 -->
+    	round(r.fee_audit_amount,2) fee_audit_amount,<!--前期审核费 -->
+    	round(r.fee_service,2) month_mid_fee_service,<!--前期居间服务费 -->
+    	round(r.fee_info_service,2) fee_info_service,<!--前期信息服务费 -->
+    	round(r.month_fee_service,2) month_fee_consult,<!--分期咨询费 -->
+    	round(r.fee_consult+r.fee_audit_amount+r.fee_service+r.fee_info_service,2)  month_fee_service,<!--前期综合服务费 -->
+    	e.contract_replay_day,<!--还款起止日期开始时间 -->
+    	e.contract_end_day,<!--还款起止日期结束时间 -->
+    	e.dict_repay_method,<!--还本付息方式 -->
+    	round(r.month_fee_service,2) fee_count,<!--分期服务费下:每期支付咨询费 -->
+    	m.customer_email,<!-- 甲方邮件 -->
+    	e.company_name,<!-- 丙方保证人姓名 -->
+    	e.legal_man,<!-- 法定代表人 -->
+    	e.maddress,<!-- 法定代表地址 -->
+    	cgr.guarantee_mail,<!-- 丙方email -->
+    	cgr.guarantee_tel,<!-- 丙方电话 -->
+    	cgr.company_registered_no,<!-- 签章标识：统一社会信用代码 -->
+    	round(r.fee_petition,2) fee_petition,<!-- 外访费 -->
+    	 (select max(item_distance) as item_distance 
+           from jk.t_jk_outside_task_list
+           where loan_code = a.loan_code) item_distance,<!-- 外访距离 -->
+           d.loan_code,
+           cgr.company_name companyName,<!-- 丙方公司名 -->
+           cgr.guarantee_idnum,<!-- 丙方法人身份证 -->
+           (select cobo_name from jk.t_jk_loan_coborrower where id=(  
+  select best_coborrower_id from jk.t_jk_audit_result t where loan_code=d.loan_code order by create_time desc limit 1
+  )) naturalPersonName,<!-- 自然人姓名  自然人三个字段需要确认后再填值,目前设置为空-->
+           (select cobo_cert_num from jk.t_jk_loan_coborrower where id=( 
+  select best_coborrower_id from jk.t_jk_audit_result t where loan_code=d.loan_code order by create_time desc limit 1
+  )) naturalPersonCardNumber,<!-- 自然人省份证号 -->
+           (select cobo_now_address from jk.t_jk_loan_coborrower where id=( 
+  select best_coborrower_id from jk.t_jk_audit_result t where loan_code=d.loan_code order by create_time desc limit 1
+  )) naturalPersonAddress<!-- 自然人现住址-->
+	from
+		jk.t_jk_loan_grant a 
+		LEFT JOIN jk.t_jk_loan_info d ON d.loan_code = a.loan_code 
+		LEFT JOIN jk.t_gl_org o ON o.id = d.loan_store_orgid
+		LEFT JOIN jk.t_jk_contract e ON e.contract_code  =a.contract_code
+		LEFT JOIN jk.t_jk_loan_customer m ON m.loan_code = d.loan_code  
+		LEFT JOIN jk.t_jk_loan_bank k ON k.loan_code=a.loan_code and k.bank_top_flag = '1' and k.repayment_flag = '0'
+		LEFT JOIN jk.t_jk_contract_fee r ON r.contract_code=a.contract_code
+		left join jk.t_jk_ca_guarantee_register cgr on cgr.loan_code=d.loan_code
+	<where>
+		a.CONTRACT_CODE IN
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+	  		#{item}
+		</foreach>
+  	</where>
+  </select>
+</mapper>

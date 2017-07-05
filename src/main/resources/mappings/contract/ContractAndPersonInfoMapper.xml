@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.ContractAndPersonInfoDao">
+<!-- <resultMap type="com.creditharmony.loan.borrow.contract.entity.ContractAndPersonInfo" id="contractPeson">
+     <id column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coboName" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="loanCustomerName" />
+    <result column="store_provice_name" jdbcType="VARCHAR" property="storeProviceName" />
+    <result column="store_city_name" jdbcType="VARCHAR" property="storeCityName" />
+    
+    <result column="store_code" jdbcType="VARCHAR" property="storeCode" />
+    <result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+    <result column="productType" jdbcType="VARCHAR" property="productType" />
+    <result column="loan_audit_amount" jdbcType="NUMERIC" property="loanAuditAmount" />
+    <result column="loan_audit_month" jdbcType="INTEGER" property="loanAuditMonth" />
+    
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="loanUrgentFlag" />
+    <result column="loan_team_manager_name" jdbcType="VARCHAR" property="loanTeamManagerName" />
+    <result column="loan_manager_name" jdbcType="VARCHAR" property="loanManagerName" />
+    <result column="customer_into_time" jdbcType="TIMESTAMP" property="customerIntoTime" />
+    <result column="loan_is_phone" jdbcType="VARCHAR" property="loanIsPhone" />
+</resultMap> -->
+
+  
+  <!-- 已制作合同列表 -->
+  <select id="findList"  resultType="com.creditharmony.loan.borrow.contract.entity.ContractAndPersonInfo">
+      <!-- select a.loan_code as loan_code,a.contract_code as contract_code,a.contract_version as contract_version,
+      a.doc_id as doc_id,
+      p.label as loan_flag,
+      c.cobo_name as cobo_name,d.customer_name as loan_customer_name,
+      g.area_name as store_provice_name,
+      h.area_name as store_city_name,
+      e.name as store_code,j.label as dict_loan_status,
+      f.product_name as product_type,b.loan_audit_amount as loan_audit_amount,
+      b.loan_audit_months as loan_audit_month,b.loan_urgent_flag as loan_urgent_flag,
+      k.name as loan_team_manager_name,
+      m.name as loan_manager_name,b.customer_into_time as customer_into_time,
+      d.customer_telesales_flag as loan_is_phone 
+      from jk.t_jk_contract a 
+      left join jk.t_jk_loan_info b on a.loan_code=b.loan_code
+      left join jk.t_jk_loan_coborrower c on a.loan_code=c.loan_code
+      left join jk.t_jk_loan_customer d on a.loan_code=d.loan_code
+       left join jk.t_gl_org e on b.store_code=e.store_code 
+       left join jk.t_gl_jk_product f on b.product_type=f.product_code
+       left join jk.t_gl_province_city g on e.province_id=g.id
+      left join jk.t_gl_province_city h on e.city_id=h.id
+        left join jk.t_gl_dict j on j.value=b.dict_loan_status
+        left join jk.t_gl_user k on k.id=b.loan_team_managercode
+       left join jk.t_gl_user m on m.id=b.loan_managercode
+       left join jk.t_jk_contract_file n on n.contract_code=a.contract_code
+       left join (select value,label from jk.t_gl_dict where description='渠道标示') p on p.value= b.loan_flag
+       where j.description='借款申请状态'  and a.doc_id is not null and b.dict_loan_status is not null -->
+       
+select
+	t.loan_code as loan_code,
+	t.contract_code as contract_code,
+	t.contract_version as contract_version,
+	(
+		select
+			dd.label
+		from
+			jk.t_gl_dict dd
+		where
+			dd.value = t.contract_version
+			and dd.type = 'jk_contract_ver'
+	) contractVersionLabel,
+	t.doc_id as doc_id,
+	trim( b.frozen_code ) as frozen_code,
+	p.label as loan_flag,
+	t.cobo_name as cobo_name,
+	d.customer_name as loan_customer_name,
+	g.area_name as store_provice_name,
+	h.area_name as store_city_name,
+	file.sign_count,
+	e.name as store_code,
+	j.label as dict_loan_status,
+	b.dict_loan_status as loan_status,
+	f.product_name as product_type,
+	b.loan_audit_amount as loan_audit_amount,
+	b.loan_audit_months as loan_audit_month,
+	b.loan_urgent_flag as loan_urgent_flag,
+	b.loaninfo_oldornew_flag as loaninfo_oldornew_flag,
+	k.name as loan_team_manager_name,
+	m.name as loan_manager_name,
+	b.customer_into_time as customer_into_time,
+	d.customer_telesales_flag as loan_is_phone,
+	b.model as model,
+	lg.lending_time as lendingTime,
+	(
+		case
+			when reconsider_risk_level is null then verify_risk_level
+			else reconsider_risk_level
+		end
+	) as riskLevel,
+	t.revisit_status,
+	(
+		select
+			lb.cobo_name
+		from
+			jk.t_jk_audit_result re left join jk.t_jk_loan_coborrower lb on
+			re.best_coborrower_id = lb.id
+		where
+			re.loan_code = b.old_loan_code
+		order by
+			re.create_time desc limit 1
+	) as best_coborrower
+from
+	(
+		select
+			a.loan_code,
+			a.contract_code contract_code,
+			a.contract_version contract_version,
+			a.doc_id doc_id,
+			a.model as model,
+			string_agg(
+				c.cobo_name,
+				','
+			) cobo_name,
+			a.revisit_status,
+			io.old_loan_code as old_loan_code
+		from
+			jk.t_jk_contract a left join jk.t_jk_loan_info io on
+			io.loan_code = a.loan_code left join jk.t_jk_loan_coborrower c on
+			io.old_loan_code = c.loan_code
+		group by
+			a.loan_code,
+			a.contract_code,
+			a.contract_version,
+			a.doc_id,
+			a.revisit_status,
+			io.old_loan_code
+	) t left join(
+		select
+			contract_code,
+			count( sign_doc_id ) as sign_count
+		from
+			jk.t_jk_contract_file
+		group by
+			contract_code
+	) file on
+	file.contract_code = t.contract_code left join jk.t_jk_loan_info b on
+	t.loan_code = b.loan_code left join jk.t_jk_loan_customer d on
+	t.old_loan_code = d.loan_code left join jk.t_gl_org e on
+	b.loan_store_orgid = e.id left join jk.t_gl_jk_product f on
+	b.loan_audit_product = f.product_code left join jk.t_gl_province_city g on
+	e.province_id = g.id left join jk.t_gl_province_city h on
+	e.city_id = h.id left join jk.t_gl_dict j on
+	j.value = b.dict_loan_status   and  j.description = '借款申请状态' and j.del_flag = '0'  left join jk.t_gl_user k on
+	k.id = b.loan_team_managercode left join jk.t_gl_user m on
+	m.id = b.loan_managercode left join(
+		select
+			value,
+			label
+		from
+			jk.t_gl_dict
+		where
+			type = 'jk_channel_flag'
+	) p on
+	p.value = b.loan_flag left join(
+		select
+			loan_code,
+			max( create_time ) create_time
+		from
+			jk.t_jk_contract_operate_info
+		where
+			dict_operate_type = '62'
+		group by
+			loan_code
+	) his on
+	his.loan_code = b.loan_code left join jk.t_jk_audit_rating rating on
+	rating.loan_code = b.old_loan_code
+	left join jk.t_jk_loan_grant lg on lg.loan_code=b.loan_code
+where
+	t.doc_id is not null
+	and b.dict_loan_status is not null
+	and e.type = '6200000003'
+        <if test="loanCustomerName != null  and loanCustomerName!=''">
+        and d.customer_name LIKE '%${loanCustomerName}%'
+      </if> 
+      <if test="storeOrgId != null">
+        and b.loan_store_orgid in  
+        <foreach item="item" index="index" collection="storeOrgId" open="(" separator="," close=")">  
+       			 #{item}  
+      		 </foreach> 
+      </if> 
+       <if test="productType != null  and productType!=''">
+        and b.loan_audit_product = #{productType}
+      </if>
+      <if test="loanTeamManagerName != null  and loanTeamManagerName!=''">
+        and k.name LIKE '%${loanTeamManagerName}%'
+      </if> 
+      <if test="loanManagerName != null  and loanManagerName!=''">
+        and m.name LIKE '%${loanManagerName}%'
+      </if>
+      <if test="loanUrgentFlag != null  and loanUrgentFlag!=''">
+        and b.loan_urgent_flag = #{loanUrgentFlag}
+      </if>
+      <if test="contractCode != null  and contractCode!=''">
+        and t.contract_code LIKE '%${contractCode}%'
+      </if>
+      <if test="dictLoanStatus != null  and dictLoanStatus!=''">
+        and j.label = #{dictLoanStatus}
+      </if>
+      <if test="loanFlag != null  and loanFlag!=''">
+        and b.loan_flag = #{loanFlag}
+      </if>
+       <if test="model != null  and model !=''">
+        and b.model = #{model}
+      </if>
+      <if test="customerCertNum != null  and customerCertNum!=''">
+        and d.customer_cert_num = #{customerCertNum}
+      </if>
+      <if test="dictIsAdditional != null  and dictIsAdditional!=''">
+        and b.dict_is_additional = #{dictIsAdditional}
+      </if>
+      <if test="dictSourceType != null  and dictSourceType!=''">
+        and b.dict_source_type = #{dictSourceType}
+      </if>
+      <if test="loanIsPhone != null  and loanIsPhone!=''">
+        and d.customer_telesales_flag = #{loanIsPhone}
+      </if>
+      <if test="contractVersion != null  and contractVersion!=''">
+        and t.contract_version = #{contractVersion}
+      </if> 
+      <if test="riskLevel != null  and riskLevel!=''">
+        and rating.verify_risk_level = #{riskLevel}
+      </if> 
+       <if test="loanFrozenFlag != null  and loanFrozenFlag!=''">
+	      <if test="loanFrozenFlag ==1">
+	     	 and trim(b.frozen_code) != ''       	 
+	      </if>
+	      <if test="loanFrozenFlag ==0">
+	          and (trim(b.frozen_code) = '' or frozen_code is null)   
+	      </if>
+      </if>
+      <if test="revisitStatuss != null">
+       ${revisitStatussParm}
+      </if>
+      order by his.create_time desc,b.frozen_code desc
+  </select>
+ 
+    <select id="findLabel" resultType="string">
+       select label from jk.t_gl_dict where description='借款申请状态'
+    </select>
+    <!-- 文件查找 -->
+  	<select id="findDocIdByContractCode" resultType="string">
+       select doc_id from jk.t_jk_contract_file where contract_code = #{contractCode} and contract_file_name=#{contractFileName}
+    </select>
+</mapper>
+	

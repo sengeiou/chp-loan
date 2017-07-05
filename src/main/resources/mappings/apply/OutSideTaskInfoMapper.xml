@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanOutsideInfoDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.outvisit.enity.LoanOutsideTaskList" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="survey_emp_id" property="surveyEmpId" jdbcType="VARCHAR" />
+    <result column="item_distance" property="itemDistance" jdbcType="NUMERIC" />
+    <result column="survey_start_time" property="surveyStartTime" jdbcType="VARCHAR" />
+    <result column="survey_end_time" property="surveyEndTime" jdbcType="VARCHAR" />
+    <result column="dict_survey_status" property="dictSurveyStatus" jdbcType="VARCHAR" />
+    <result column="dict_check_type" property="dictCheckType" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+  </resultMap>
+   
+  <update id="updateLoanOutsideTaskListByLoanCode" parameterType="com.creditharmony.loan.borrow.outvisit.enity.LoanOutsideTaskList" >
+    update jk.t_jk_outside_task_list
+    <set >
+      <if test="surveyEmpId != null" >
+        survey_emp_id = #{surveyEmpId,jdbcType=VARCHAR},
+      </if>
+      <if test="itemDistance != null" >
+        item_distance = #{itemDistance,jdbcType=NUMERIC},
+      </if>
+      <if test="surveyStartTime != null" >
+        survey_start_time = #{surveyStartTime,jdbcType=VARCHAR},
+      </if>
+      <if test="surveyEndTime != null" >
+        survey_end_time = #{surveyEndTime,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSurveyStatus != null" >
+        dict_survey_status = #{dictSurveyStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckType != null" >
+        dict_check_type = #{dictCheckType,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR}
+      </if>
+    </set>
+        where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+  
+  <select id="getLoanOutsideTaskInfoList"  parameterType="com.creditharmony.loan.borrow.outvisit.enity.LoanOutsideTaskList" resultType="com.creditharmony.loan.borrow.outvisit.enity.LoanOutsideTaskInfo" >
+  	select  
+     	info.* 
+     from  jk.T_JK_OUTSIDE_TASK_INFO info 
+     left join jk.T_JK_OUTSIDE_TASK_LIST list on list.id = info.TASK_ID
+     where  list.loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+   
+</mapper>

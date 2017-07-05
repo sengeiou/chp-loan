@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.CentralizedListDao">
+	<!-- 集中划扣已办列表 -->
+	<select id="centerDeductionList"
+		resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		select 
+		a.id as id
+		,a.contract_code as contractCode
+		,a.loan_customer_name as customerName
+		,m1.name as orgName
+		,c.contract_months as contractMonths
+		,m9.label as applyBankName
+		,c.contract_replay_day as contractReplayDay
+		,b.payback_month_amount as paybackMonthAmount
+		,a.apply_deduct_amount as applyAmount
+		,COALESCE(a.apply_really_amount,0) as applyReallyAmount
+		,ROUND(COALESCE(b.payback_month_amount,0),2)-COALESCE(e.month_capital_payactual,0)-COALESCE(e.month_interest_payactual,0)-COALESCE(e.actual_month_fee_service,0)
+		as notPaybackMonthAmount
+		,COALESCE(e.month_capital_payactual,0)+COALESCE(e.month_interest_payactual,0)+COALESCE(e.actual_month_fee_service,0)
+		as alsoPaybackMonthAmount
+		,a.modify_time
+		,b.payback_day as billDay
+		,e.month_pay_day as monthPayDay
+		,m2.label as dictLoanStatus
+		,a.dict_back_result as splitBackResult
+		,fail_reason as failReason
+		,m3.name as loanTeamManagerName
+		,m4.name as loanManagerName
+		,m5.name as loanSurveyEmpName
+		,m6.name as loanCustomerService
+		,m7.label as loanMark
+		,b.payback_bule_amount as paybackBuleAmount
+		,a.dict_deal_type as dictDealType
+		,m8.label as dictDealTypeLabel
+		,d.model
+		from
+		(
+			select id, contract_code
+			,loan_customer_name
+			,apply_bank_name
+			,apply_deduct_amount
+			,COALESCE(apply_really_amount,0) apply_really_amount
+			,month_id
+			,modify_time
+			,dict_back_result
+			,fail_reason
+			,dict_deal_type
+			,bank_code
+			from jk.t_jk_deducts_payback_apply
+			UNION ALL
+			select id, contract_code
+			,loan_customer_name
+			,apply_bank_name
+			,COALESCE(apply_deduct_amount,0) apply_really_amount
+			,apply_really_amount
+			,month_id
+			,modify_time
+			,dict_back_result
+			,fail_reason
+			,dict_deal_type
+			,bank_code
+			from jk.t_jk_deducts_payback_apply_his  
+		) a left join jk.t_jk_payback b on a.contract_code=b.contract_code
+		left join jk.t_jk_contract c on a.contract_code=c.contract_code
+		left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+		left join jk.t_jk_payback_month e on a.contract_code=e.contract_code and
+		a.month_id=e.id
+		left join jk.t_jk_loan_customer f on c.loan_code = f.loan_code
+		left join jk.t_gl_org m1 on d.loan_store_orgid=m1.id
+		left join jk.t_gl_dict m2 on m2.type='jk_loan_apply_status' and
+		m2.value=d.dict_loan_status
+		left join jk.t_gl_user m3 on m3.id=d.loan_team_managercode
+		left join jk.t_gl_user m4 on m4.id=d.loan_managercode
+		left join jk.t_gl_user m5 on m5.id=d.loan_survey_emp_id
+		left join jk.t_gl_user m6 on m6.id=d.loan_customer_service
+		left join jk.t_gl_dict m7 on m7.type='jk_channel_flag' and
+		m7.value=d.loan_flag
+		left join jk.t_gl_dict m8 on m8.type='jk_deduct_plat' and
+		m8.value=a.dict_deal_type
+		left join jk.t_gl_dict m9 on m9.type='jk_open_bank' and
+		m9.value=a.bank_code 
+		<where>
+			b.effective_flag='1'
+			<if test="contractCode != null and contractCode != ''">
+				and c.contract_code = #{contractCode}
+			</if>
+			<if test="customerName != null and customerName != ''">
+				and a.loan_customer_name = #{customerName}
+			</if>
+			<if test="splitBackResult != null and splitBackResult != ''">
+				<if test="splitBackResult == 1 ">
+					and a.dict_back_result in ('1','5','6') 				<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 3 ">
+					and a.dict_back_result in ('3','4','7') 				<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 2 ">
+					and a.dict_back_result = #{splitBackResult} 				<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 0 ">
+					and a.dict_back_result = #{splitBackResult} 				<!-- 回盘结果 -->
+				</if>
+			</if>
+			<if test="bankId != null and bankId != ''">
+				and a.bank_code in(${bankId}) 							<!-- 开户行名称 -->
+			</if>
+			<if test="paybackDay !=null and ! paybackDay.equals('')">
+				and b.payback_day in(${paybackDay})<!-- 还款日 -->
+			</if>
+			<if test="loanMark != null and loanMark != ''">
+				and d.loan_flag = #{loanMark} <!-- 标识 -->
+			</if>
+			<if test="model != null and model != ''">
+				and c.model = #{model}  <!-- 模式 -->
+			</if>
+			<if test="monthPayDay != null and monthPayDay != '' ">
+				and e.month_pay_day = #{monthPayDay}
+			</if>
+			<if
+				test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				and a.modify_time between #{beginDate} and #{endDate} 	<!-- 划扣日期 -->
+			</if>
+			<if test="storesId != null and storesId != ''">
+				and d.loan_store_orgid  in  (${storesId})  <!-- 门店id -->
+			</if>
+			<if test="phoneSaleSign != null and phoneSaleSign != ''">
+				and f.customer_telesales_flag=#{phoneSaleSign}
+			</if>
+			<!-- <if test="loanManagerName != null and loanManagerName != ''">
+				m4.name =#{loanManagerName}
+			</if>
+			<if test="loanTeamManagerName != null and loanTeamManagerName != ''">
+				m3.name=#{loanTeamManagerName}
+			</if>
+			<if test="loanSurveyEmpName != null and loanSurveyEmpName != ''">
+				m5.name=#{loanSurveyEmpName}
+			</if>
+			<if test="loanCustomerService != null and loanCustomerService != ''">
+				m3.name=#{loanCustomerService}
+			</if> -->
+		</where>
+		order by e.month_pay_day desc, a.modify_time desc nulls last
+		<if test="limit != null and offset != null">
+				limit #{limit} offset #{offset}
+		</if>
+	</select>
+
+	<!-- 集中划扣已办列表Count -->
+	<select id="centerDeductionListCnt" resultType="java.lang.Integer">
+		select
+		count(0) as cnt
+		from
+		(select a.contract_code as contractCode
+		,a.loan_customer_name as customerName
+		,m1.name as orgName
+		,c.contract_months as contractMonths
+		,m9.label as applyBankName
+		,c.contract_replay_day as contractReplayDay
+		,b.payback_month_amount as paybackMonthAmount
+		,a.apply_deduct_amount as applyAmount
+		,COALESCE(a.apply_really_amount,0) as applyReallyAmount
+		,ROUND(COALESCE(b.payback_month_amount,0),2)-COALESCE(e.month_capital_payactual,0)-COALESCE(e.month_interest_payactual,0)-COALESCE(e.actual_month_fee_service,0)
+		as notPaybackMonthAmount
+		,COALESCE(e.month_capital_payactual,0)+COALESCE(e.month_interest_payactual,0)+COALESCE(e.actual_month_fee_service,0)
+		as alsoPaybackMonthAmount
+		,a.modify_time
+		,b.payback_day as billDay
+		,e.month_pay_day as monthPayDay
+		,m2.label as dictLoanStatus
+		,a.dict_back_result as splitBackResult
+		,fail_reason as failReason
+		,m3.name as loanTeamManagerName
+		,m4.name as loanManagerName
+		,m5.name as loanSurveyEmpName
+		,m6.name as loanCustomerService
+		,m7.label as loanMark
+		,b.payback_bule_amount as paybackBuleAmount
+		,a.dict_deal_type as dictDealType
+		,m8.label as dictDealTypeLabel
+		,d.model
+		from
+		(
+			select contract_code
+			,loan_customer_name
+			,apply_bank_name
+			,apply_deduct_amount
+			,COALESCE(apply_really_amount,0) apply_really_amount
+			,month_id
+			,modify_time
+			,dict_back_result
+			,fail_reason
+			,dict_deal_type
+			,bank_code
+			from jk.t_jk_deducts_payback_apply
+			UNION ALL
+			select contract_code
+			,loan_customer_name
+			,apply_bank_name
+			,COALESCE(apply_deduct_amount,0) apply_really_amount
+			,apply_really_amount
+			,month_id
+			,modify_time
+			,dict_back_result
+			,fail_reason
+			,dict_deal_type
+			,bank_code
+			from jk.t_jk_deducts_payback_apply_his  
+		) a left join jk.t_jk_payback b on a.contract_code=b.contract_code
+		left join jk.t_jk_contract c on a.contract_code=c.contract_code
+		left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+		left join jk.t_jk_payback_month e on a.contract_code=e.contract_code and
+		a.month_id=e.id
+		left join jk.t_jk_loan_customer f on c.loan_code = f.loan_code
+		left join jk.t_gl_org m1 on d.loan_store_orgid=m1.id
+		left join jk.t_gl_dict m2 on m2.type='jk_loan_apply_status' and
+		m2.value=d.dict_loan_status
+		left join jk.t_gl_user m3 on m3.id=d.loan_team_managercode
+		left join jk.t_gl_user m4 on m4.id=d.loan_managercode
+		left join jk.t_gl_user m5 on m5.id=d.loan_survey_emp_id
+		left join jk.t_gl_user m6 on m6.id=d.loan_customer_service
+		left join jk.t_gl_dict m7 on m7.type='jk_channel_flag' and
+		m7.value=d.loan_flag
+		left join jk.t_gl_dict m8 on m8.type='jk_deduct_plat' and
+		m8.value=a.dict_deal_type
+		left join jk.t_gl_dict m9 on m9.type='jk_open_bank' and
+		m9.value=a.bank_code
+		<where>
+			b.effective_flag='1'
+			<if test="contractCode != null and contractCode != ''">
+				and c.contract_code = #{contractCode}
+			</if>
+			<if test="customerName != null and customerName != ''">
+				and a.loan_customer_name = #{customerName}
+			</if>
+			<if test="splitBackResult != null and splitBackResult != ''">
+				<if test="splitBackResult == 1 ">
+					and a.dict_back_result in ('1','5','6') 					<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 3 ">
+					and a.dict_back_result in ('3','4','7') 				<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 2 ">
+					and a.dict_back_result = #{splitBackResult} 				<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 0 ">
+					and a.dict_back_result = #{splitBackResult} 				<!-- 回盘结果 -->
+				</if>
+			</if>
+			<if test="bankId != null and bankId != ''">
+				and a.bank_code in(${bankId}) 							<!-- 开户行名称 -->
+			</if>
+			<if test="paybackDay !=null and ! paybackDay.equals('')">
+				and b.payback_day in(${paybackDay})<!-- 还款日 -->
+			</if>
+			<if test="loanMark != null and loanMark != ''">
+				and d.loan_flag = #{loanMark} <!-- 标识 -->
+			</if>
+			<if test="model != null and model != ''">
+				and c.model = #{model}  <!-- 模式 -->
+			</if>
+			<if test="monthPayDay != null and monthPayDay != '' ">
+				and e.month_pay_day = #{monthPayDay}
+			</if>
+			<if
+				test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				and a.modify_time between #{beginDate} and #{endDate} 	<!-- 划扣日期 -->
+			</if>
+			<if test="storesId != null and storesId != ''">
+				and d.loan_store_orgid  in  (${storesId})  <!-- 门店id -->
+			</if>
+			<if test="phoneSaleSign != null and phoneSaleSign != ''">
+				and f.customer_telesales_flag=#{phoneSaleSign}
+			</if>
+			
+			<!-- <if test="loanManagerName != null and loanManagerName != ''">
+				m4.name =#{loanManagerName}
+			</if>
+			<if test="loanTeamManagerName != null and loanTeamManagerName != ''">
+				m3.name=#{loanTeamManagerName}
+			</if>
+			<if test="loanSurveyEmpName != null and loanSurveyEmpName != ''">
+				m5.name=#{loanSurveyEmpName}
+			</if>
+			<if test="loanCustomerService != null and loanCustomerService != ''">
+				m3.name=#{loanCustomerService}
+			</if> -->
+		</where>
+		) t
+	</select>
+
+	<!-- 导出集中划扣已办数据列表 -->
+	<select id="centerDeductionAgencyList"
+		resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		select  a.id as id, a.contract_code as contractCode
+		,a.loan_customer_name as customerName
+		,m1.name as orgName
+		,c.contract_months as contractMonths
+		,m9.label as applyBankName
+		,c.contract_replay_day as contractReplayDay
+		,ROUND(b.payback_month_amount,2) as paybackMonthAmount
+		,ROUND(a.apply_deduct_amount,2) as applyAmount
+		,ROUND(COALESCE(a.apply_really_amount,0),2) as applyReallyAmount
+		,ROUND(ROUND(COALESCE(b.payback_month_amount,0),2)-COALESCE(e.month_capital_payactual,0)-COALESCE(e.month_interest_payactual,0)-COALESCE(e.actual_month_fee_service,0),2)
+		as notPaybackMonthAmount
+		,ROUND(COALESCE(e.month_capital_payactual,0)+COALESCE(e.month_interest_payactual,0)+COALESCE(e.actual_month_fee_service,0),2)
+		as alsoPaybackMonthAmount
+		,a.modify_time
+		,b.payback_day as billDay
+		,e.month_pay_day as monthPayDay
+		,m2.label as dictLoanStatus
+		,a.dict_back_result as splitBackResult
+		,fail_reason as failReason
+		,m3.name as loanTeamManagerName
+		,m4.name as loanManagerName
+		,m5.name as loanSurveyEmpName
+		,m6.name as loanCustomerService
+		,m7.label as loanMark
+		,ROUND(b.payback_bule_amount,2) as paybackBuleAmount
+		,a.dict_deal_type as dictDealType
+		,m8.label as dictDealTypeLabel
+		,d.model
+		,b.payback_max_overduedays as paybackMaxOverduedays
+		,bank.bank_account as bankAccount
+		,c.model as model
+		from
+		(
+			select id, contract_code
+			,loan_customer_name
+			,apply_bank_name
+			,apply_deduct_amount
+			,COALESCE(apply_really_amount,0) apply_really_amount
+			,month_id
+			,null as modify_time
+			,dict_back_result
+			,fail_reason
+			,dict_deal_type
+			,bank_code
+			from jk.t_jk_deducts_payback_apply
+			UNION ALL
+			select id, contract_code
+			,loan_customer_name
+			,apply_bank_name
+			,COALESCE(apply_deduct_amount,0) apply_really_amount
+			,apply_really_amount
+			,month_id
+			,modify_time
+			,dict_back_result
+			,fail_reason
+			,dict_deal_type
+			,bank_code
+			from jk.t_jk_deducts_payback_apply_his  
+		) a left join jk.t_jk_payback b on a.contract_code=b.contract_code
+		left join jk.t_jk_contract c on a.contract_code=c.contract_code
+		left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+		left join jk.t_jk_payback_month e on a.contract_code=e.contract_code and
+		a.month_id=e.id
+		left join jk.t_jk_loan_customer f on c.loan_code = f.loan_code
+		left join jk.t_gl_org m1 on d.loan_store_orgid=m1.id
+		left join jk.t_gl_dict m2 on m2.type='jk_loan_apply_status' and
+		m2.value=d.dict_loan_status
+		left join jk.t_gl_user m3 on m3.id=d.loan_team_managercode
+		left join jk.t_gl_user m4 on m4.id=d.loan_managercode
+		left join jk.t_gl_user m5 on m5.id=d.loan_survey_emp_id
+		left join jk.t_gl_user m6 on m6.id=d.loan_customer_service
+		left join jk.t_gl_dict m7 on m7.type='jk_channel_flag' and
+		m7.value=d.loan_flag
+		left join jk.t_gl_dict m8 on m8.type='jk_deduct_plat' and
+		m8.value=a.dict_deal_type
+		left join jk.t_gl_dict m9 on m9.type='jk_open_bank' and
+		m9.value=a.bank_code 
+		left join jk.t_jk_loan_bank bank on bank.loan_code=c.loan_code
+		<where>
+			b.effective_flag='1' and bank.bank_top_flag ='1' and repayment_flag='1'
+			<if test="contractCode != null and contractCode != ''">
+				and c.contract_code = #{contractCode}
+			</if>
+			<if test="customerName != null and customerName != ''">
+				and a.loan_customer_name = #{customerName}
+			</if>
+			<if test="splitBackResult != null and splitBackResult != ''">
+				<if test="splitBackResult == 1 ">
+					and a.dict_back_result in ('1','5','6') 			<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 3 ">
+					and a.dict_back_result in ('3','4','7') 				<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 2 ">
+					and a.dict_back_result = #{splitBackResult} 				<!-- 回盘结果 -->
+				</if>
+				<if test="splitBackResult == 0 ">
+					and a.dict_back_result = #{splitBackResult} 				<!-- 回盘结果 -->
+				</if>
+			</if>
+			<if test="bankId != null and bankId != ''">
+				and a.bank_code in(${bankId}) 							<!-- 开户行名称 -->
+			</if>
+			<if test="paybackDay !=null and ! paybackDay.equals('')">
+				and b.payback_day in(${paybackDay})<!-- 还款日 -->
+			</if>
+			<if test="loanMark != null and loanMark != ''">
+				and d.loan_flag = #{loanMark} <!-- 标识 -->
+			</if>
+			<if test="model != null and model != ''">
+				and c.model = #{model}  <!-- 模式 -->
+			</if>
+			<if test="monthPayDay != null and monthPayDay != '' ">
+				and e.month_pay_day = #{monthPayDay}
+			</if>
+			<if
+				test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				and a.modify_time between #{beginDate} and #{endDate} 	<!-- 划扣日期 -->
+			</if>
+			<if test="storesId != null and storesId != ''">
+				and d.loan_store_orgid  in  (${storesId})  <!-- 门店id -->
+			</if>
+			<if test="id!=null and id!=''">
+				and a.id in(${id})
+			</if>
+			<if test="phoneSaleSign != null and phoneSaleSign != ''">
+				and f.customer_telesales_flag=#{phoneSaleSign}
+			</if>
+		</where>
+		order by e.month_pay_day desc, a.modify_time desc nulls last
+	</select>
+</mapper>

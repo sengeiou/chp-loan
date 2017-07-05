@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarLoanGrantDao">
+  <!-- 根据合同编号查找放款表 --> 
+  <select id="findGrant" parameterType="com.creditharmony.loan.car.common.entity.CarLoanGrant" resultType="com.creditharmony.loan.car.carGrant.ex.CarLoanGrantEx">
+     select  contract_code,loan_code,dict_loan_type,mid_id,
+     dict_loan_way,grant_amount,lending_time,lending_user_id,grant_recepic_result,
+     grant_fail_result,grant_back_mes,check_emp_id,check_result,check_time
+     from jk.t_cj_loan_grant 
+     where contract_code = #{contractCode}
+  </select>
+  
+  <!-- 根据借款编码查找放款信息--> 
+  <select id="findGrantByLoanCode" parameterType="com.creditharmony.loan.car.common.entity.CarLoanGrant" resultType="com.creditharmony.loan.car.common.entity.CarLoanGrant">
+	SELECT id, contract_code, loan_code, mid_id, dict_loan_type, dict_loan_way,
+	grant_amount, lending_time, lending_user_id, grant_recepic_result,
+	grant_fail_result, grant_back_mes, check_emp_id, check_result,
+	check_time, create_by, create_time, modify_id, modify_time,
+	grant_count, grant_pch, enterprise_serialno, grant_fail_amount
+	FROM
+	jk.t_cj_loan_grant
+	where LOAN_CODE = #{loanCode}
+  </select>
+  
+  <!-- 插入放款记录表 -->
+   <insert id="insertGrant" parameterType="com.creditharmony.loan.car.common.entity.CarLoanGrant">
+    insert into jk.t_cj_loan_grant(id,contract_code,loan_code,dict_loan_type,dict_loan_way,mid_id,grant_amount,grant_fail_amount,lending_time,
+    lending_user_id,grant_recepic_result,grant_fail_result,grant_back_mes,check_emp_id,check_result,check_time,create_by,create_time
+    ) 
+    values(#{id},#{contractCode},#{loanCode},#{dictLoanType},#{dictLoanWay},#{midId},#{grantAmount},#{grantFailAmount},#{lendingTime},#{lendingUserId}
+    ,#{grantRecepicResult},#{grantFailResult},#{grantBackMes},#{checkEmpId},#{checkResult},#{checkTime},#{createBy},#{createTime}
+    )
+   </insert>
+   
+    <!-- 更新放款记录表，根据合同编号 -->
+    <update id="updateLoanGrant" parameterType="com.creditharmony.loan.car.common.entity.CarLoanGrant">
+		update jk.t_cj_loan_grant
+    <set>
+      <if test="loanCode != null">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="midId != null">
+        mid_id = #{midId,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLoanType != null">
+        dict_loan_type = #{dictLoanType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLoanWay != null">
+        dict_loan_way = #{dictLoanWay,jdbcType=VARCHAR},
+      </if>
+      <if test="grantAmount != null">
+        grant_amount = #{grantAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="grantPch !=null and grantPch!=''">
+      grant_pch = #{grantPch,jdbcType=VARCHAR},
+      </if>
+      <if test="grantFailAmount != null">
+        grant_fail_amount = #{grantFailAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="lendingTime != null">
+        lending_time = #{lendingTime,jdbcType=DATE},
+      </if>
+      <if test="lendingUserId != null">
+        lending_user_id = #{lendingUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="grantRecepicResult != null">
+        grant_recepic_result = #{grantRecepicResult,jdbcType=VARCHAR},
+      </if>
+      <if test="grantFailResult != null">
+        grant_fail_result = #{grantFailResult,jdbcType=VARCHAR},
+      </if>
+      <if test="grantBackMes != null">
+        grant_back_mes = #{grantBackMes,jdbcType=VARCHAR},
+      </if>
+      <if test="checkEmpId != null">
+        check_emp_id = #{checkEmpId,jdbcType=VARCHAR},
+      </if>
+      <if test="enterpriseSerialno != null">
+        enterprise_serialno = #{enterpriseSerialno,jdbcType=VARCHAR},
+      </if>
+      <if test="grantCount != null">
+        grant_count = #{grantCount,jdbcType=NUMERIC},
+      </if>
+      <if test="checkResult != null">
+        check_result = #{checkResult,jdbcType=VARCHAR},
+      </if>
+      <if test="checkTime != null">
+        check_time = #{checkTime,jdbcType=DATE}
+      </if>
+    </set>
+    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </update>
+  
+   <!-- 更新单子的状态、退回原因类型、备注 ,根据applyId-->
+  <update id="updateCarStatus">
+      update jk.t_cj_loan_info a
+      <set>
+        <if test="dictLoanStatus !=null">
+           dict_loan_status=#{dictLoanStatus},
+        </if>
+           <if test="dictBackMestype !=null">
+           dict_back_mestype=#{dictBackMestype},
+        </if>
+           <if test="remark !=null">
+           remark=#{remark}
+        </if>
+      </set>
+      where a.apply_id=#{applyId}
+   </update>
+   
+  <!-- 根据合同编号查询划扣信息     车借-->
+  <select id="selectUrgeMoney" resultType="com.creditharmony.loan.car.carGrant.ex.CarUrgeMoneyInfoEx">
+       select 
+       	g.id as r_grant_id,			<!-- 放款id -->
+        d.deduct_amount				<!-- 划扣金额 -->
+       from 
+        jk.t_cj_contract c
+        LEFT JOIN jk.t_cj_loan_grant g ON g.loan_code=c.loan_code
+        LEFT JOIN jk.t_cj_check_rate d ON d.loan_code=c.loan_code
+       where 
+        c.contract_code=#{contractCode}   <!-- 根据合同编号去查询-->
+  </select>
+  	    <!-- 根据applyId查询分配卡号办理页面中的字段 -->
+  <select id="queryDisDeal" resultType="com.creditharmony.loan.car.carGrant.ex.CarLoanGrantEx">
+       select 
+         a.contract_code,         <!-- 合同编号 -->
+         c.loan_customer_name as customer_name,         <!-- 借款客户表.客户姓名 -->
+         b.contract_amount as grantAmount,          <!-- 放款金额-->       
+         c.loan_flag,             <!-- 标识 -->
+         d.card_bank,      			<!-- 客户开卡行 -->
+         c.loan_code,    			<!-- 借款编码 -->
+         b.contract_version         <!-- 合同版本 -->
+       from 
+        jk.t_cj_loan_info c
+        LEFT JOIN jk.t_cj_loan_grant a ON a.loan_code=c.loan_code
+        LEFT JOIN jk.t_cj_customer_bank_info d ON d.loan_code=c.loan_code
+        LEFT JOIN jk.t_cj_contract b ON b.loan_code=c.loan_code
+       where 
+        c.apply_id=#{applyId}<!-- 根据applyId去查询，是连接业务表和流程表的-->
+  </select>
+        	<!-- 查询要放款的数据 发送给批处理-->
+   <select id="queryDeductReq" parameterType="java.util.HashMap" resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+      select 
+   		d.apply_id as batId,
+   		a.contract_code as businessId,
+   		f.contract_amount as amount,
+   		(case when d.dict_loan_status='28' then f.contract_amount else a.grant_fail_amount end) as amount, 
+   		b.apply_bank_name as bankName,
+   		b.bank_card_no as accountNo,
+   		b.bank_account_name as accountName,
+    	y.area_name as bankCity,
+	    t.area_name as bankProv,
+	    b.card_bank as bankId,
+	    c.dict_cert_type as idType,
+	    c.customer_cert_num as idNo,
+	    c.customer_phone_first as mobile
+	    
+      from  jk.t_cj_loan_grant a  
+	  left join jk.t_cj_customer_bank_info b on b.loan_code = a.loan_code
+	  LEFT JOIN jk.t_gl_province_city t ON t.area_code = b.bank_province
+	  LEFT JOIN jk.t_gl_province_city y ON y.area_code = b.bank_city    
+	  LEFT JOIN jk.t_jk_loan_customer c ON c.loan_code = a.loan_code 
+	  LEFT JOIN jk.t_cj_contract f ON f.loan_code=a.loan_code 
+	  LEFT JOIN jk.t_cj_loan_info d ON d.loan_code = a.loan_code 
+	  
+	  where a.contract_code=#{contractCode}
+			and (d.dict_loan_status = #{dictLoanStatus} or d.dict_loan_status = #{dictLoanStatusFail})
+	   <if test="dictLoanWay != null and dictLoanWay != ''">
+			and a.dict_loan_way = #{dictLoanWay} 
+	   </if>	
+
+	</select>
+     <!--根据合同编号， 查询applyId-->
+  <select id="selectCarApplyId" resultType="String">
+  select a.apply_id
+  from jk.t_cj_loan_info a
+  LEFT JOIN jk.t_cj_contract c ON c.loan_code=a.loan_code
+  where c.contract_code=#{contractCode}
+  </select>
+  
+  <!-- 查询车借债权信息  -->
+  
+    <select id="selectCreditorRights" resultType="com.creditharmony.loan.car.creditorRights.entity.CreditorRights">
+       select 
+       	 c.loan_code,								<!-- 借款编码 -->
+         b.contract_code,         					<!-- 合同编号 -->
+         c.loan_customer_name,						<!-- 借款人姓名 -->
+         a.dict_cert_type as certType,				<!-- 证件类型 -->
+         a.customer_cert_num,						<!-- 证件号码 -->
+         d.plate_numbers,							<!-- 车牌号码 -->
+         b.product_type,							<!-- 产品类型 -->
+         b.contract_amount as loanAmount,			<!-- 借款金额 -->
+         c.dict_loan_use as usageOfLoan,			<!-- 借款用途 -->
+         e.interest_rate as monthlyInterestRate,	<!-- 月利率 -->
+         b.contract_fact_day as contractDay,		<!-- 实际签署日期 -->
+         b.contract_replay_day as downPaymentDay,	<!-- 首期还款日期 -->
+         b.contract_end_day as contractEndDay,		<!-- 合同到期日期 -->
+         c.dict_loan_status as loanStatus,			<!-- 借款状态 -->
+         b.contract_months as loanDays,				<!-- 借款天数 -->
+         b.contract_amount as primevalWorth,		<!-- 原始债权价值 -->
+         e.month_repay_amount as contractReplayAmount,
+         b.dict_repay_method as contractReplayWay,
+         g.middle_name as creditor,
+         b.contract_months/30 as loanMonths,
+         c.loan_flag as channelType
+       from 
+        jk.t_cj_loan_info c
+        LEFT JOIN jk.t_cj_contract b ON b.loan_code=c.loan_code
+        LEFT JOIN jk.t_jk_loan_customer a ON a.loan_code=c.loan_code
+        LEFT JOIN jk.t_cj_vehicle_info d ON d.loan_code=c.loan_code
+        LEFT JOIN jk.t_cj_check_rate e ON e.loan_code=c.loan_code
+        LEFT JOIN jk.t_cj_loan_grant f ON f.loan_code=c.loan_code
+        LEFT JOIN jk.t_jk_middle_person g ON g.id=b.mid_id
+       where 
+        c.apply_id=#{applyId}
+  </select>
+ 
+</mapper>

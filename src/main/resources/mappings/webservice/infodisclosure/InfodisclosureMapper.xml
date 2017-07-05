@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.creditharmony.loan.webservice.infodisclosure.dao.InfoDisclosureDao">
+
+	<insert id="saveRiskLevel" parameterType="map">
+		insert into jk.t_jk_disclosure_risklevel(id,loan_code,score) 
+		values(#{id},#{loanCode},#{score})
+	</insert>
+
+	<select id="getBatchDetailInfo" parameterType="java.util.List"
+		resultType="com.creditharmony.loan.webservice.infodisclosure.entity.InfoDisclosure">
+		select  
+		    x.loanCode,
+		    x.contractAmount,
+		    x.contractMonths,
+		    x.contractCode,
+		    x.annualIncome,
+			x.loanApplyAmount,
+			x.customerName,
+			x.customerBirthday,
+			x.customerAddress,
+			x.compAddress,
+			x.compWorkExperience,
+			x.feeAllRaio,
+			x.riskLevel,
+			x.identityAuthentication,
+			x.creditReport,
+			x.bankCardInfo,
+			x.incomeCertification,
+			x.contactInfo,
+			x.fieldCertification,
+			x.dictCustomerDiff,
+			x.realyUse,
+			x. dictRepayMethod,
+			x.zczmPledgeFlag,
+			x.pledgeFlag,
+			x.customerSex,
+			x.dictEducation,
+			x.loanApplicationCount,
+			x.successfulLoanCount,
+			x.overduePrincipal,
+			x.overdueCount,
+			x.dictCompIndustry,
+			x.compPost,
+			x.dictMarry,
+			x.loanDescription  
+		from (
+			select 
+			distinct
+			nvl(li.loan_code,'') as loanCode,nvl(lg.grant_amount,0) as
+			contractAmount,nvl(cont.contract_months,'') as
+			contractMonths,nvl(cont.contract_code,'') as
+			contractCode,nvl(db.brhs_month_repay_amount * 24,cont.audit_amount *
+			2) as annualIncome,
+			nvl(li.loan_apply_amount,0) as loanApplyAmount,
+			rpad(substr(lc.customer_name,1,1),length(lc.customer_name),'*') as
+			customerName,substr(lc.customer_cert_num,7,4) || '年' ||
+			substr(lc.customer_cert_num,11,2) || '月' ||
+			substr(lc.customer_cert_num,13,2) || '日' as customerBirthday,
+			nvl(
+			case
+			nvl(pc.pname,'')
+			when nvl(pc.cname,'')
+			then nvl(pc.pname,'')
+			else
+			nvl(pc.pname,'')||nvl(pc.cname,'')
+			end,
+			case nvl(gppc.area_name,'')
+			when
+			nvl(gcpc.area_name,'')
+			then nvl(gppc.area_name,'')
+			else
+			nvl(gppc.area_name,'')||nvl(gcpc.area_name,'')
+			end
+			)
+			as customerAddress,
+			nvl(
+			nvl(
+			case nvl(lcpc.pname,'')
+			when nvl(lcpc.cname,'')
+			then
+			nvl(lcpc.pname,'')
+			else nvl(lcpc.pname,'')||nvl(lcpc.cname,'')
+			end,
+			case
+			nvl(pc.pname,'')
+			when nvl(pc.cname,'')
+			then nvl(pc.pname,'')
+			else
+			nvl(pc.pname,'')||nvl(pc.cname,'')
+			end),
+			case nvl(gppc.area_name,'')
+			when nvl(gcpc.area_name,'')
+			then nvl(gppc.area_name,'')
+			else
+			nvl(gppc.area_name,'')||nvl(gcpc.area_name,'')
+			end
+			)
+			as compAddress,
+			nvl(db.hire_month || '个月',
+			nvl(
+			case
+			when lc.dict_customer_diff is null
+			then null
+			when lc.dict_customer_diff = '1' then '6个月以上'
+			else '12个月以上'
+			end,
+			case
+			when li.product_type = 'A005' or li.product_type = 'A006'
+			then
+			'12个月以上'
+			else '6个月以上' end
+			))
+			as compWorkExperience,
+			nvl(cf.fee_month_rate
+			* 12,0) as feeAllRaio,
+			nvl(case
+			when ar.reconsider_rate_score is not null then ar.reconsider_rate_score
+			when ar.verify_rate_score is not null then ar.verify_rate_score
+			when ar.rating_score is not null then ar.rating_score
+			else dr.score end,'')
+			as riskLevel,
+			case when lg.grant_recepic_result
+			=
+			'0' then '已认证' else '未认证' end as
+			identityAuthentication,
+			case when
+			lg.grant_recepic_result = '0' then '已认证' else '未认证' end as
+			creditReport,
+			case when lg.grant_recepic_result = '0' then '已认证' else
+			'未认证' end as
+			bankCardInfo,
+			case when lg.grant_recepic_result = '0' then
+			'已认证' else '未认证' end as
+			incomeCertification,
+			case when
+			lg.grant_recepic_result = '0' then '已认证' else '未认证' end as
+			contactInfo,
+			case when lg.grant_recepic_result = '0' then '已认证' else
+			'未认证' end as
+			fieldCertification,
+			nvl(
+			case
+			when lc.dict_customer_diff is
+			null
+			then null
+			when lc.dict_customer_diff = '1'
+			then '工薪收入'
+			else '经营收入'
+			end,
+			case
+			when li.product_type = 'A005' or li.product_type = 'A006'
+			then
+			'经营收入'
+			else '工薪收入' end)
+			as dictCustomerDiff,
+			nvl((select label from
+			jk.t_gl_dict where type = 'jk_loan_use' and value =
+			li.dict_loan_use),'') as realyUse,
+			nvl((select label from jk.t_gl_dict
+			where type = 'jk_repay_interest_way' and
+			value =
+			cont.dict_repay_method),'等额本息') as dictRepayMethod,
+			case when (select
+			count(1) from jk.t_jk_zlsh_zczm zc where zc.loan_code =
+			li.loan_code) =
+			0 then '无房产' when (select count(1) from
+			jk.t_jk_zlsh_zczm zc where
+			zc.zczm_pledge_flag = '0' and zc.loan_code
+			= li.loan_code) <![CDATA[>]]>
+			0 then '有房产已抵押' else '有房产未抵押' end as zczmPledgeFlag,
+			case when (select
+			count(1) from jk.T_JK_ZLSH_CCZM cc where
+			cc.loan_code = li.loan_code) =
+			0 then '无车产' when (select count(1) from
+			jk.T_JK_ZLSH_CCZM cc where
+			cc.pledge_flag = '0' and cc.loan_code =
+			li.loan_code) <![CDATA[>]]>
+			0 then '有车产已抵押' else '有车产未抵押' end as pledgeFlag,
+			nvl((select label from
+			jk.t_gl_dict where type = 'jk_sex' and value =
+			lc.customer_sex),'') as
+			customerSex,
+			nvl((select label from jk.t_gl_dict where type =
+			'jk_degree' and value =
+			lc.dict_education),'') as dictEducation,
+			(select count(1) from jk.T_JK_LOAN_CUSTOMER where customer_code = (
+			select a.customer_code from jk.T_JK_LOAN_CUSTOMER a,jk.T_JK_CONTRACT b
+			where a.loan_code = b.loan_code and b.contract_code =
+			cont.contract_code))
+			as loanApplicationCount,
+			(select count(1) from
+			jk.T_JK_PAYBACK where customer_code = (
+			select a.customer_code from
+			jk.T_JK_PAYBACK a
+			where a.contract_code = cont.contract_code)
+			and
+			effective_flag = '1') as successfulLoanCount,
+			(select
+			nvl(sum(MONTH_PAY_AMOUNT)-sum(MONTH_CAPITAL_PAYACTUAL),0) from
+			jk.T_JK_PAYBACK_MONTH a where a.is_overdue = '1' and a.contract_code =
+			cont.contract_code) as overduePrincipal,
+			(select count(1) from
+			jk.T_JK_PAYBACK_MONTH a where a.is_overdue = '1' and
+			a.contract_code =
+			cont.contract_code) as overdueCount,
+			case
+			when db.industry_remark is not
+			null and db.industry_remark != ''
+			then db.industry_remark
+			when
+			db.industry_label is not null and db.industry_label != ''
+			then
+			db.industry_label
+			else '保密'
+			end
+			as dictCompIndustry,
+			nvl((select label
+			from jk.t_gl_dict where type = 'jk_job_type' and value =
+			lco.comp_post),'') as compPost,
+			nvl((select label from jk.t_gl_dict
+			where type = 'jk_marriage' and value =
+			lc.dict_marry_status),'') as
+			dictMarry,
+			'借款人 现居' ||
+			nvl(
+			case nvl(pc.pname,'')
+			when nvl(pc.cname,'')
+			then nvl(pc.pname,'')
+			else nvl(pc.pname,'')||nvl(pc.cname,'')
+			end,
+			case
+			nvl(gppc.area_name,'')
+			when nvl(gcpc.area_name,'')
+			then
+			nvl(gppc.area_name,'')
+			else
+			nvl(gppc.area_name,'')||nvl(gcpc.area_name,'')
+			end
+			)
+			||
+			case
+			when
+			db.industry_remark is not null and db.industry_remark != ''
+			then '，从事'
+			|| db.industry_remark
+			when db.industry_label is not null and
+			db.industry_label != ''
+			then '，从事' || db.industry_label
+			else ''
+			end
+			||
+			'，工作收入稳定。上述信息已经实地认证。同时，经审核借款人所提供资料真实有效，符合信和的借款审核标准。' as
+			loanDescription,
+			lco.modify_time company_modify_time,
+			(ROW_NUMBER() over(PARTITION by cont.loan_code,lco.modify_time order by lco.comp_post desc)) as  rown
+			from jk.T_JK_CONTRACT cont
+			left join jk.T_JK_LOAN_INFO
+			li on li.loan_code = cont.loan_code
+			left join jk.T_JK_LOAN_CUSTOMER lc
+			on li.loan_code = lc.loan_code
+			left join jk.mview_province_city pc on
+			lc.customer_live_province=pc.pid
+			and lc.customer_live_city = pc.cid
+			and
+			lc.customer_live_area=pc.aid
+			left join jk.T_JK_LOAN_COMPANY lco on
+			lco.loan_code = li.loan_code and
+			lc.id=lco.r_id
+			left join
+			jk.mview_province_city lcpc on lco.comp_province=lcpc.pid
+			and
+			lco.comp_city = lcpc.cid
+			and lco.comp_arer = lcpc.aid
+			left join
+			jk.T_JK_CONTRACT_FEE cf on cf.contract_code = cont.contract_code
+			left
+			join jk.T_JK_LOAN_GRANT lg on lg.contract_code =
+			cont.contract_code
+			left join jk.t_jk_audit_rating ar on ar.loan_code = li.loan_code
+			left
+			join jk.t_jk_dhzh_brhs db on db.loan_code = li.loan_code and db.dict_customer_type = '0'
+			left join
+			jk.t_gl_org org on org.id = li.loan_store_orgid
+			left join
+			jk.t_gl_province_city gppc on gppc.id = org.province_id
+			left join
+			jk.t_gl_province_city gcpc on gcpc.id = org.city_id
+			left join
+			jk.t_jk_disclosure_risklevel dr on dr.loan_code = li.loan_code
+			where
+			cont.contract_code in
+			<foreach item="item" index="index" collection="contractCodeList"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		) x
+		inner join (
+			select max(modify_time) max_modify_time,loan_code from jk.T_JK_LOAN_COMPANY group by loan_code,r_id
+		) max_company on max_company.max_modify_time = x.company_modify_time and max_company.loan_code = x.loanCode
+		where   2 > x.rown
+		 
+	</select>
+
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarGrantDao">
+  
+  <!-- 以下是  车借新增 -->
+  
+  <resultMap id="baseCarResultMap" type="com.creditharmony.loan.car.carGrant.ex.CarGrantEx">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="grant_amount" jdbcType="NUMERIC" property="grantAmount" />
+    <result column="loanGrantAmount" jdbcType="NUMERIC" property="loanGrantAmount" />
+    <result column="card_bank" jdbcType="VARCHAR" property="cardBank" />
+    <result column="bank_account_name" jdbcType="VARCHAR" property="bankAccountName" />
+    <result column="bank_card_no" jdbcType="VARCHAR" property="bankCardNo" />
+    <result column="dict_product_type" jdbcType="VARCHAR" property="auditBorrowProductName" />
+    <result column="plate_numbers" jdbcType="VARCHAR" property="plateNumbers" />
+    <!-- 门店名称 -->
+    <result column="store_name" jdbcType="VARCHAR" property="storeName" />
+    <result column="apply_bank_name" jdbcType="VARCHAR" property="applyBankName" />
+    <result column="contract_months" jdbcType="VARCHAR" property="contractMonths" />
+    <result column="bankCity" jdbcType="VARCHAR" property="bankCity" />
+    <result column="bankProvince" jdbcType="VARCHAR" property="bankProvince" />
+    <result column="vehicle_brand_model" jdbcType="VARCHAR" property="vehicleBrandModel" />
+  </resultMap>
+  
+  <!-- 根据applyId查询线下放款列表， 车借-->
+  <select id="getCarGrantList"  parameterType="java.util.HashMap" resultMap="baseCarResultMap" >
+  	select
+		 a.id,
+		 d.apply_id,
+		 a.contract_code,
+		 round(e.contract_amount,2) as grantAmount,
+		 round(e.contract_amount,2) as contractAmount,
+		 round(e.contract_amount,2) as loanGrantAmount,
+	     contract_months,
+	     d.loan_customer_name,
+	     k.bank_account_name,
+	     k.bank_card_no,
+	     k.card_bank,
+	     k.apply_bank_name,
+	     y.area_name as bankCity,
+	     t.area_name as bankProvince,
+	     h.vehicle_brand_model,
+	     h.plate_numbers,
+	     d.dict_product_type,
+	     d.store_name
+
+	from
+		jk.t_cj_loan_grant a
+		LEFT JOIN jk.t_cj_loan_info d ON d.loan_code=a.loan_code
+		LEFT JOIN jk.t_cj_contract e ON e.loan_code=a.loan_code
+		LEFT JOIN jk.t_cj_customer_bank_info k ON k.loan_code=a.loan_code and k.top='1'
+		LEFT JOIN jk.t_gl_province_city t ON t.area_code = k.bank_province
+		LEFT JOIN jk.t_gl_province_city y ON y.area_code = k.bank_city               
+		LEFT JOIN jk.t_cj_vehicle_info h ON h.loan_code = a.loan_code 
+	where 
+
+			   d.apply_id=#{applyId}
+
+	   <if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and d.dict_loan_status = #{dictLoanStatus} 
+	   </if>	
+	   <if test="dictLoanWay != null and dictLoanWay != ''">
+			and a.dict_loan_way = #{dictLoanWay} 
+	   </if>	
+
+  </select>
+  
+</mapper>

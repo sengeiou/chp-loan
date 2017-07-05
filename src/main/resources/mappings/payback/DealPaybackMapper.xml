@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.DealPaybackDao">
+	<!--查询查账账款列表   -->
+	<select id="findTransfer" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferInfo">
+		SELECT id, 
+		   r_payback_apply_id, 
+		   contract_code, 
+		   dict_deposit,
+		   tran_deposit_time, 
+	       stores_in_account, 
+	       stores_in_accountname, 
+	       really_amount, 
+	       deposit_name, 
+	       audit_status, 
+	       upload_name, 
+	       upload_date, 
+	       upload_filename, 
+	       upload_path, 
+	       create_by, 
+	       create_time, 
+	       modify_by, 
+	       modify_time,
+	       apply_time,
+	       account_branch
+	  FROM t_jk_payback_transfer_info 
+		 where  1=1
+	 	<if test="id != null and !id.equals('')">
+			AND id = #{id}
+		</if>
+		<if test="rPaybackApplyId != null and !rPaybackApplyId.equals('')">
+			AND r_payback_apply_id = #{rPaybackApplyId}
+		</if>
+		<if test="auditStatus != null and !auditStatus.equals('')">
+			AND audit_status in (${auditStatus})
+		</if>
+		<if test="relationType != null and !relationType.equals('')">
+			AND relation_type = #{relationType}
+		</if>
+		order by upload_date desc
+	</select>
+     
+      <!--匹配更新汇款查账状态   -->
+	<update id="updateInfoStatus">
+		UPDATE jk.t_jk_payback_transfer_info 
+		<set>
+		 <if test="auditStatus != null and auditStatus != ''"> 
+		 	audit_status=#{auditStatus},
+		 </if>
+		 <if test="modifyTime != null">
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </set>
+		WHERE  id = #{id}
+	</update>
+	
+	
+	<update id="updateInfoStatusReq">
+		UPDATE jk.t_jk_payback_transfer_info 
+		<set>
+		 <if test="auditStatus != null and auditStatus != ''"> 
+		 	audit_status=#{auditStatus},
+		 </if>
+		 <if test="modifyTime != null">
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </set>
+		WHERE  id = #{id} and cast(extract(epoch from modify_time) as varchar) = #{reqTime}
+	</update>
+	
+	<!-- 手动匹配加锁-->
+	<select id="getstransferInfoReq"  resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackTransferInfo">
+	   select id, cast (extract(epoch from modify_time) as varchar) as reqTime,audit_status,really_amount from t_jk_payback_transfer_info
+	   where 
+	   id = #{reqId} 
+	   <if test="reqStatus != null and reqStatus!=''">
+	   and audit_status = #{reqStatus}  
+	   </if>
+	   for update
+	</select>
+</mapper>
+

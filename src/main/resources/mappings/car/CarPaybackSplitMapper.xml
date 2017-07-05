@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarPaybackSplitDao">
+	<sql id="topflag">'1'</sql>
+	<!-- 查询申请数据 -->
+	<select id="getAllList" resultMap="PaybackSplitList" resultType="PaybackSplit">
+	select 
+       pa.id,
+       p.contract_code,
+       lc.customer_name,
+       lb.bank_name,
+       lb.bank_branch,
+       con.contract_months,
+       con.contract_replay_day,
+       pa.APPLY_AMOUNT  as split_amount,
+       p.payback_month_amount,
+       p.payback_current_month,
+       p.dict_pay_status,
+       p.payback_day,
+       men.name,
+       loin.loan_flag,
+       loin.dict_loan_status,
+       loin.loan_team_orgid,
+       pm.month_pay_day,
+       pm.month_capital_payactual,
+       pm.month_interest_payactual,
+       pa.split_back_result
+  from  jk.t_jk_payback_apply pa
+  left join jk.t_jk_payback p
+    on p.contract_code = pa.contract_code
+  left join jk.t_jk_contract con
+    on con.contract_code = p.contract_code
+  left join jk.t_jk_loan_info loin
+    on loin.loan_code = con.loan_code
+  left join jk.t_jk_loan_bank lb
+    on loin.loan_code = lb.loan_code
+   and lb.bank_top_flag = '1'
+  left join jk.t_jk_loan_customer lc
+    on lc.customer_code = p.customer_code
+  left join jk.t_jk_payback_month pm
+    on pm.months = p.payback_current_month and pm.contract_code = p.contract_code
+  left join jk.t_jk_customer_consultation consult
+    on p.customer_code = consult.customer_code
+  left join jk.t_gl_org org
+    on consult.cons_team_orgcode = org.id
+  left join JK.t_gl_org men
+    ON men.id = org.parent_id
+    where  pa.DICT_DEDUCT_TYPE = #{dictOptType} and (pa.split_back_result ='0' or pa.split_back_result ='3'  or pa.split_back_result ='4')
+           and pa.dict_payback_status != '7' 
+ 
+		<if test="customerName != null and !customerName.equals('')">
+			AND lc .customer_name LIKE CONCAT('%', #{customerName},
+			'%')
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND p.contract_code LIKE #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND ps.dict_deal_type LIKE #{dictDealType}
+		</if>
+
+		<if test="storesName !=null and !storesName.equals('')">
+			AND loin.loan_team_orgid LIKE #{storesName}
+		</if>
+
+		<if test="splitBackResult !=null and !splitBackResult.equals('')">
+			AND pa.split_back_result LIKE #{splitBackResult}
+		</if>
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.APPLY_AMOUNT &gt;= cast(#{minsplitAmount} as numeric)
+		</if>
+
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+
+			AND pa.APPLY_AMOUNT &lt;= cast(#{maxsplitAmount} as numeric)
+
+		</if>
+
+		<if test="bankName != null and !bankName.equals('')">
+			AND lb.bank_name LIKE #{bankName}
+		</if>
+
+
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type LIKE #{dictSourceType}
+		</if>
+
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag LIKE #{mark}
+		</if>
+
+		<if test="monthPayDay!= null and !monthPayDay.equals('')">
+			and cast(to_char(pm.month_pay_day,'dd') as integer) =
+			cast(#{monthPayDay} as integer)
+		</if>
+	</select>
+	<!-- 导出富有 -->
+   <select id="getPaybackSplitList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackSplitFyEx">
+	   select 
+	      ps.id as id,
+         ps.remark  as enterpriseSerialno,
+         lb.bank_name as bankName, 
+         lb.bank_account as bankAccount,
+         lb.bank_account_name as bankAccountName,
+         ROUND(ps.split_amount, 2) as splitAmount,
+         lc.customer_phone_first as customerPhoneFirst,
+         lc.dict_cert_type as dictertType,
+         lc.customer_cert_num as customerCertNum
+	  from jk.t_jk_payback_split ps left join jk.t_jk_payback_apply pa on ps.r_payback_apply_id = pa.id
+	  left join jk.t_jk_payback p on p.contract_code = pa.contract_code
+	  left join jk.t_jk_contract con on con.contract_code = p.contract_code
+	  left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+	  left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and  lb.bank_top_flag='1'
+	  left join jk.t_jk_loan_customer lc on lc.customer_code = p.customer_code     
+	 where   pa.id = #{id}   order by  ps.create_time desc
+	</select>
+		<!-- 导出好易联 -->
+	<select id="getPaybackSplitListHyl" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackSplitHylEx">
+	  
+   select 
+         ps.id as id,
+         ps.remark as enterpriseSerialno,
+         lb.bank_name as bankName, 
+         lb.bank_account as bankAccount,
+         lb.bank_account_name as bankAccountName,
+         ROUND(ps.split_amount, 2) as splitAmount,
+         lc.customer_phone_first as customerPhoneFirst,
+         lc.dict_cert_type as dictertType,
+         lc.customer_cert_num as customerCertNum,
+         men.name  as bankProvince,
+         lb.bank_city as bankCity
+  
+	  from jk.t_jk_payback_split ps left join jk.t_jk_payback_apply pa on ps.r_payback_apply_id = pa.id
+	  left join jk.t_jk_payback p on p.contract_code = pa.contract_code
+	  left join jk.t_jk_contract con on con.contract_code = p.contract_code
+	  left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+	  left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and  lb.bank_top_flag='1'
+	  left join jk.t_jk_loan_customer lc on lc.customer_code = p.customer_code     
+          left join jk.t_jk_customer_consultation consult on  p.customer_code = consult.customer_code 
+          left join jk.t_gl_org org on consult.cons_team_orgcode = org.id
+          LEFT JOIN JK.t_gl_org men ON men.id = org.parent_id
+	 where     pa.id = #{id}  order by  ps.create_time desc
+
+	</select>
+	<!-- 映射 -->
+	<resultMap type="PaybackSplit" id="PaybackSplitList">
+		<id column="id" property="id" />
+		<result column="r_payback_apply_id" property="rId" />
+		<result column="split_amount" property="splitAmount" />
+		<result column="splitback_date" property="splitBackDate" />
+		<result column="split_back_result" property="splitBackResult" />
+		<result column="split_fail_result" property="splitFailResult" />
+		<result column="batch_flag" property="batchFlag" />
+		<result column="time_flag" property="timeFlag" />
+		<association property="payback"
+			javaType="com.creditharmony.loan.borrow.payback.entity.Payback">
+			<id column="contract_code" property="contractCode" />
+			<result column="dict_pay_status" property="dictPayStatus" />
+			<result column="payback_day" property="paybackDay" />
+			<result column="payback_current_month" property="paybackCurrentMonth" />
+			<result column="payback_month_amount" property="paybackMonthAmount" />
+		</association>
+		<association property="contract"
+			javaType="com.creditharmony.loan.borrow.contract.entity.Contract">
+			<id column="contract_code" property="contractCode" />
+			<result column="contract_replay_day" property="contractReplayDay" />
+			<result column="contract_months" property="contractMonths" />
+		</association>
+		<association property="loanInfo"
+			javaType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+			<id column="loan_code" property="loanCode"></id>
+			<result column="dict_loan_status" property="dictLoanStatus"></result>
+			 
+			<result column="loan_team_orgid" property="loanTeamOrgId"></result>
+		</association>
+		<association property="loanCustomer"
+			javaType="com.creditharmony.loan.common.entity.LoanCustomer">
+			<id column="customer_code" property="customerCode"></id>
+			<result column="customer_name" property="customerName"></result>
+		</association>
+		<association property="loanBank"
+			javaType="com.creditharmony.loan.common.entity.LoanBank">
+			<id column="loan_code" property="loanCode"></id>
+			<result column="bank_name" property="bankName"></result>
+			<result column="bank_branch" property="bankBranch"></result>
+		</association>
+
+		<association property="paybackMonth"
+			javaType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+			<id column="customer_code" property="contractCode"></id>
+			<result column="month_pay_day" property="monthPayDay"></result>
+			<result column="month_capital_payactual" property="monthCapitalPayactual"></result>
+			<result column="month_interest_payactual" property="monthInterestPayactual"></result>
+		</association>
+		<association property="org"
+			javaType="com.creditharmony.core.users.entity.Org">
+			<id column="org_name" property="name"></id>
+		</association>
+
+	</resultMap>
+
+	<!-- 修改划扣平台 -->
+	<update id="updatePlat">
+		update jk.t_jk_payback_split set dict_deal_type
+		=#{plat} where id=#{id}
+	</update>
+
+	<!-- 集中划扣已拆分列表中的批量退回 -->
+	<update id="backApply">
+		update jk.t_jk_payback_apply set
+		DICT_PAYBACK_STATUS= #{dictPaybackStatus},
+		apply_back_mes=#{backResult}
+		where id=#{id}
+	</update>
+
+	<!-- 获取合同编号 -->
+	<select id="getContractCode" resultType="java.lang.String">
+		select contract_code
+		from jk.t_jk_payback_apply where id=#{id}
+	</select>
+
+	<!-- 更改还款主表中的还款状态为还款退回 -->
+	<update id="updateStatus">
+		update jk.T_JK_PAYBACK_LIST set STATUS= #{dictPaybackStatus}
+		where id = (select r_payback_id from t_jk_payback_apply  where  id = #{id})
+	</update>
+	
+	<!--将申请表置为 划扣中 （线上）-->
+	<update id="updatePaybackStatus"  parameterType="java.util.List">
+		 <foreach collection="list" item="item" index="index" open="" close="" separator=";" >
+		   update jk.T_JK_PAYBACK_APPLY 
+		   set split_back_result='3'
+		   where id = #{item.batId}
+	      </foreach>
+
+	</update>
+	
+	<!--将申请表置为 划扣中 （线下）-->
+	<update id="updateApplyStatus"  parameterType="java.util.List">
+
+		 <foreach collection="list" item="item" index="index" open="" close="" separator=";" >
+		   update jk.T_JK_PAYBACK_APPLY 
+		   set split_back_result='4'
+		   where id = #{item.id}
+	      </foreach>
+
+	</update>
+
+	<!-- 根据还款拆分ID,获取该借款人的账户ID -->
+	<select id="getPaybackDeducts" resultType="PaybackDeducts">
+		select a.id as
+		rId2,d.id as rId,d.split_amount as
+		deductAmount,c.contract_code as
+		contractCode from jk.t_jk_loan_bank a
+		,jk.t_jk_contract
+		b,jk.t_jk_payback_apply c,jk.t_jk_payback_split d
+		where
+		a.loan_code=b.loan_code and c.contract_code=b.contract_code and
+		c.id=d.r_payback_apply_id and d.id=#{id}
+		and a.bank_top_flag='1' limit 1
+	</select>
+	<!-- 根据还款申请id,查询还款主表ID -->
+	<select id="getMainId" resultType="java.lang.String">
+		select b.id from
+		jk.t_jk_payback b,jk.t_jk_payback_apply a
+		where a.contract_code
+		=b.contract_code and a.id=#{id}
+	</select>
+	<!-- 读取还款操作流水表中的记录 -->
+	<select id="getAllHirstory" resultType="PaybackOpe">
+		select * from
+		jk.t_jk_payback_ope where r_payback_id =#{mainId}
+	</select>
+	<!--查询 拆分表 用来保存 划扣表 -->
+	<select id="queryPaybackDeductsBean" resultType="PaybackDeducts">
+		select
+		a.id as rId,--还款拆分表,
+		f.id as rId2,--关联ID2(账户表)
+		c.CONTRACT_CODE as
+		contractCode, --合同编号
+		a.SPLIT_AMOUNT as deductAmount, -- 划扣 金额
+		a.DICT_R_DEDUCT_TYPE as dictRDeductType --关联类型
+		from t_jk_payback_split
+		a left join jk.t_jk_payback_apply b on
+		a.r_payback_apply_id = b.id
+		left
+		join jk.t_jk_payback c on b.contract_code = c.contract_code
+		left join
+		jk.t_jk_contract d on c.contract_code = d.contract_code
+		left join
+		jk.t_jk_loan_info e on e.loan_code = d.loan_code
+		left join
+		jk.t_jk_loan_bank f on e.loan_code = f.loan_code and
+		f.bank_top_flag =
+		<include refid="topflag"></include>
+		<where>
+		<!-- f.bank_top_flag ='1' and -->
+		<if test="id != null">
+			AND a.id in( #{id} )
+		</if>
+		<if test="splitPch != null">
+			AND a.R_PAYBACK_APPLY_ID = #{splitPch}
+		</if>
+		<if test="enterpriseSerialno != null">
+			AND a.remark = #{enterpriseSerialno}
+		</if>
+        </where>
+	</select>
+	<insert id="addPaybackDeducts" parameterType="PaybackDeducts">
+
+		INSERT INTO
+		T_JK_PAYBACK_DEDUCTS(
+		id,
+		R_SPLIT_URGE_ID,
+		R_BANK_ID,
+		CONTRACT_CODE,
+		DEDUCT_AMOUNT,
+		DICT_R_DEDUCT_TYPE,
+		DEDUCT_ONLINETIME,
+		DICT_DECUCT_FLAG,
+		DICT_DEDUCTS_TYPE,
+		DECUCT_TIME,
+		DECUCT_USER_CODE,
+		DICT_BACK_RESULT,
+		DECUCT_FAIL_RESULT,
+		DICT_DEDUCT_STATUS,
+		CREATE_BY,
+		CREATE_TIME
+		)
+		VALUES
+		(
+		#{id},
+		#{rId},
+		#{rId2},
+		#{contractCode},
+		#{deductAmount},
+		#{dictRDeductType},
+		#{deductOnlinetime},
+		#{dictDecuctFlag},
+		#{dictDeductsType},
+		#{decuctTime},
+		#{decuctUser},
+		#{dictBackResult},
+		#{decuctFailResult},
+		#{dictDeductStatus},
+		#{createBy},
+		#{createTime}
+		)
+	</insert>
+	<insert id="batchInsertSplitData" parameterType="java.util.List">
+		INSERT INTO jk.t_cj_payback_split(
+		id,
+		r_payback_apply_id,
+		split_pch,
+		dict_r_deduct_type,
+		split_amount,
+		split_back_result,
+		splitback_date,
+		split_fail_result,
+		batch_flag,
+		dict_deal_type,
+		dict_deal_status,
+		dict_opt_type,
+		send_flag,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time,
+		split_father_id,
+		enterprise_serialno,
+		loan_code,
+		timeflag,
+		payback_flag
+
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.id },
+			#{item.rId },
+			#{item.splitPch },
+			#{item.dictRDeductType},
+			#{item.applyDeductAmount},
+			#{item.splitBackResult },
+			#{item.splitBackDate },
+			#{item.splitFailResult },
+			#{item.batchFlag },
+			#{item.dictDealType },
+			#{item.dictDealStatus },
+			#{item.dictOptType },
+			#{item.isSend },
+			#{item.createBy },
+			#{item.createTime },
+			#{item.modifyBy },
+			#{item.modifyTime },
+			#{item.splitFatherId },
+			#{item.enterpriseSerialno
+			},
+			#{item.loanCode },
+			#{item.timeFlag },
+			#{item.paybackFlag }
+			)
+		</foreach>
+	</insert>
+	<insert id="insert" parameterType="PaybackSplit">
+		INSERT INTO
+		T_JK_PAYBACK_SPLIT(
+		id,
+		R_PAYBACK_APPLY_ID,
+		split_pch,
+		dict_r_deduct_type,
+		split_amount,
+		split_back_result,
+		splitback_date,
+		split_fail_result,
+		batch_flag,
+		dict_deal_type,
+		dict_deal_status,
+		dict_opt_type,
+		send_flag,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time
+		)
+		VALUES
+		(
+		#{id },
+		#{rId },
+		#{splitPch },
+		#{dictRDeductType},
+		#{applyDeductAmount},
+		#{splitBackResult },
+		#{splitBackDate },
+		#{splitFailResult },
+		#{batchFlag },
+		#{dictDealType },
+		#{dictDealStatus },
+		#{dictOptType },
+		#{isSend },
+		#{createBy },
+		#{createTime },
+		#{modifyBy },
+		#{modifyTime }
+		)
+	</insert>
+	<!-- 更新回盘结果，回盘时间 -->
+	<update id="updateSplitLineStatus">
+		update jk.t_jk_payback_split
+		set     SPLIT_BACK_RESULT= #{splitBackResult}
+		       ,SPLITBACK_DATE = #{splitBackDate}
+		       ,split_amount = #{splitAmount}
+		       ,modify_by = #{modifyBy}
+		       ,modify_time= #{modifyTime}
+		       ,dict_deal_status= #{dictDealStatus}
+		where
+		remark = #{id}
+	</update>
+	<!-- 给批处理要划扣的数据  -->
+	<select id="queryDeductReqList"   resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+	 select 
+       pa.id as batId <!-- 请求批次ID -->,
+       p.contract_code as businessId  <!-- 请求id -->,
+       pm.id as refId  <!-- 关联id -->,
+       lb.bank_name as bankId,
+       lb.bank_province as bankProv,
+       lb.bank_city as bankCity,
+       lb.bank_branch as bankName,  
+       lb.bank_account as accountNo,
+       lb.bank_account_name as accountName,               
+       lc.dict_cert_type as idType,
+       lc.customer_cert_num as idNo,
+       lc.customer_phone_first as mobile,
+       pa.APPLY_AMOUNT as amount
+  from  jk.t_jk_payback_apply pa
+  left join jk.t_jk_payback p
+    on p.contract_code = pa.contract_code
+  left join jk.t_jk_contract con
+    on con.contract_code = p.contract_code
+  left join jk.t_jk_loan_info loin
+    on loin.loan_code = con.loan_code
+  left join jk.t_jk_loan_bank lb
+    on loin.loan_code = lb.loan_code
+   and lb.bank_top_flag = '1'
+  left join jk.t_jk_loan_customer lc
+    on lc.customer_code = p.customer_code
+  left join jk.t_jk_payback_month pm
+    on pm.months = p.payback_current_month and  pm.contract_code = p.contract_code
+  left join jk.t_jk_customer_consultation consult
+    on p.customer_code = consult.customer_code
+  left join jk.t_gl_org org
+    on consult.cons_team_orgcode = org.id
+  left join JK.t_gl_org men
+    ON men.id = org.parent_id
+   where  pa.DICT_DEDUCT_TYPE = #{dictOptType} 
+	    <if test="customerName != null and !customerName.equals('')">
+			AND lc .customer_name LIKE CONCAT('%', #{customerName},
+			'%')
+		</if>
+	    <if test="id != null and !id.equals('')">
+			and pa.id  in  (${id})
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND p.contract_code LIKE #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND ps.dict_deal_type LIKE #{dictDealType}
+		</if>
+
+		<if test="storesName !=null and !storesName.equals('')">
+			AND loin.loan_team_orgid LIKE #{storesName}
+		</if>
+
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.APPLY_AMOUNT &gt;= cast(#{minsplitAmount} as numeric)
+		</if>
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+			AND pa.APPLY_AMOUNT &lt;= cast(#{maxsplitAmount} as numeric)
+		</if>
+		<if test="bankName != null and !bankName.equals('')">
+			AND lb.bank_name LIKE #{bankName}
+		</if>
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type LIKE #{dictSourceType}
+		</if>
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag LIKE #{mark}
+		</if>
+		<if test="monthPayDay!= null and !monthPayDay.equals('')">
+			and cast(to_char(pm.month_pay_day,'dd') as integer) = cast(#{monthPayDay} as integer)
+		</if> 
+		<if test="splitbackResult != null and ! splitbackResult.equals('')">
+		  and pa.split_back_result = #{splitbackResult}
+	</if>
+	<if test="splitbackResult == null or  splitbackResult.equals('')">
+		  and ( pa.split_back_result ='0'  or pa.split_back_result ='4' )
+	</if>
+	</select>
+	
+	<!-- 线下划扣查询要拆分的数据  -->
+	<select id="queryApplyList"   resultType="PaybackApply">
+	  select pa.id,pa.apply_amount as applyAmount,pa.APPLY_BANK_NAME as applyBankName, pa.CONTRACT_CODE as contractCode,
+             pa.DICT_DEDUCT_TYPE as dictDeductType         
+	   from  jk.t_jk_payback_apply pa
+	  left join jk.t_jk_payback p
+	    on p.contract_code = pa.contract_code
+	  left join jk.t_jk_contract con
+	    on con.contract_code = p.contract_code
+	  left join jk.t_jk_loan_info loin
+	    on loin.loan_code = con.loan_code
+	  left join jk.t_jk_loan_bank lb
+	    on loin.loan_code = lb.loan_code
+	   and lb.bank_top_flag = '1'
+	  left join jk.t_jk_loan_customer lc
+	    on lc.customer_code = p.customer_code
+	  left join jk.t_jk_payback_month pm
+	    on pm.months = p.payback_current_month and  pm.contract_code = p.contract_code
+	  left join jk.t_jk_customer_consultation consult
+	    on p.customer_code = consult.customer_code
+	  left join jk.t_gl_org org
+	    on consult.cons_team_orgcode = org.id
+	  left join JK.t_gl_org men
+	    ON men.id = org.parent_id
+	   where  pa.DICT_DEDUCT_TYPE = #{dictOptType}
+	    <if test="customerName != null and !customerName.equals('')">
+			AND lc .customer_name LIKE CONCAT('%', #{customerName},
+			'%')
+		</if>
+	    <if test="id != null and !id.equals('')">
+			and pa.id  in  (${id})
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND p.contract_code LIKE #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND ps.dict_deal_type LIKE #{dictDealType}
+		</if>
+
+		<if test="storesName !=null and !storesName.equals('')">
+			AND loin.loan_team_orgid LIKE #{storesName}
+		</if>
+
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.APPLY_AMOUNT &gt;= cast(#{minsplitAmount} as numeric)
+		</if>
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+			AND pa.APPLY_AMOUNT &lt;= cast(#{maxsplitAmount} as numeric)
+		</if>
+		<if test="bankName != null and !bankName.equals('')">
+			AND lb.bank_name LIKE #{bankName}
+		</if>
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type LIKE #{dictSourceType}
+		</if>
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag LIKE #{mark}
+		</if>
+		<if test="monthPayDay!= null and !monthPayDay.equals('')">
+			and cast(to_char(pm.month_pay_day,'dd') as integer) = cast(#{monthPayDay} as integer)
+		</if> 
+		<if test="splitbackResult != null and ! splitbackResult.equals('')">
+		  and pa.split_back_result = #{splitbackResult}
+		</if>
+		<if test="splitbackResult == null or  splitbackResult.equals('')">
+			  and ( pa.split_back_result ='0' or  pa.split_back_result ='4' )
+		</if>
+
+	</select>
+	<!-- 划扣拆分回盘结果插入拆分表 -->
+	<insert id="batchInsertDeductSplit" parameterType="map">
+		INSERT INTO jk.t_cj_payback_split(
+		id,
+		r_payback_apply_id,
+		split_pch,
+		dict_r_deduct_type,
+		split_amount,
+		split_back_result,
+		splitback_date, 
+		split_fail_result,
+		batch_flag,
+		dict_deal_type,
+		dict_deal_status,
+		dict_opt_type,
+		send_flag,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time,
+		enterprise_serialno,
+		loan_code,
+		payback_flag
+		)
+		
+		select t.*
+		from (
+			<foreach collection="paybackSplitList" separator="union all" item="item">
+				select 
+				#{item.id,jdbcType=VARCHAR},
+				#{item.paybackApplyId,jdbcType=VARCHAR},
+				#{item.splitPch,jdbcType=VARCHAR},
+				#{item.deductType,jdbcType=VARCHAR},
+				#{item.splitAmount,jdbcType=NUMERIC},
+				#{item.splitBackResult,jdbcType=VARCHAR},
+				to_date(#{item.splitbackDate,jdbcType=TIMESTAMP}),
+				#{item.splitFailResult,jdbcType=VARCHAR},
+				#{item.batchFlag,jdbcType=VARCHAR},
+				#{item.dealType,jdbcType=VARCHAR},
+				#{item.dealStatus,jdbcType=VARCHAR},
+				#{item.optType,jdbcType=VARCHAR},
+				#{item.sendFlag,jdbcType=VARCHAR},
+				#{item.createBy,jdbcType=VARCHAR},
+				to_date(#{item.createTime,jdbcType=TIMESTAMP}),
+				#{item.modifyBy,jdbcType=VARCHAR},
+				to_date(#{item.modifyTime,jdbcType=TIMESTAMP}),
+				#{item.enterpriseSerialno,jdbcType=VARCHAR},
+				#{item.loanCode,jdbcType=VARCHAR},
+				#{item.paybackFlag,jdbcType=VARCHAR}
+			</foreach>
+		)t
+
+	</insert>
+	
+	
+
+</mapper>
+	

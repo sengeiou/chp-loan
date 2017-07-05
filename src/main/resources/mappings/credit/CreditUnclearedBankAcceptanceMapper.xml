@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.credit.dao.CreditUnclearedBankAcceptanceDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.credit.entity.CreditUnclearedBankAcceptance" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="loan_org" property="loanOrg" jdbcType="VARCHAR" />
+    <result column="transaction_count" property="transactionCount" jdbcType="INTEGER" />
+    <result column="actual_30day_balance" property="actual30dayBalance" jdbcType="NUMERIC" />
+    <result column="actual_60day_balance" property="actual60dayBalance" jdbcType="NUMERIC" />
+    <result column="actual_90day_balance" property="actual90dayBalance" jdbcType="NUMERIC" />
+    <result column="actual_91day_balance" property="actual91dayBalance" jdbcType="NUMERIC" />
+    <result column="total_balance" property="totalBalance" jdbcType="NUMERIC" />
+    <result column="operation" property="operation" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, loan_code, loan_org, transaction_count, actual_30day_balance, actual_60day_balance, 
+    actual_90day_balance, actual_91day_balance, total_balance, operation, create_by, 
+    create_time, modify_by, modify_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_credit_uncleared_bank_acceptance
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from jk.t_jk_credit_uncleared_bank_acceptance
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertCreditUnclearedBankAcceptance" parameterType="com.creditharmony.loan.credit.entity.CreditUnclearedBankAcceptance" >
+    insert into jk.t_jk_credit_uncleared_bank_acceptance (id, loan_code, loan_org, 
+      transaction_count, actual_30day_balance, actual_60day_balance, 
+      actual_90day_balance, actual_91day_balance, 
+      total_balance, operation, create_by, 
+      create_time, modify_by, modify_time
+      )
+    values (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{loanOrg,jdbcType=VARCHAR}, 
+      #{transactionCount,jdbcType=INTEGER}, #{actual30dayBalance,jdbcType=NUMERIC}, #{actual60dayBalance,jdbcType=NUMERIC}, 
+      #{actual90dayBalance,jdbcType=NUMERIC}, #{actual91dayBalance,jdbcType=NUMERIC}, 
+      #{totalBalance,jdbcType=NUMERIC}, #{operation,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.credit.entity.CreditUnclearedBankAcceptance" >
+    insert into jk.t_jk_credit_uncleared_bank_acceptance
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="loanOrg != null" >
+        loan_org,
+      </if>
+      <if test="transactionCount != null" >
+        transaction_count,
+      </if>
+      <if test="actual30dayBalance != null" >
+        actual_30day_balance,
+      </if>
+      <if test="actual60dayBalance != null" >
+        actual_60day_balance,
+      </if>
+      <if test="actual90dayBalance != null" >
+        actual_90day_balance,
+      </if>
+      <if test="actual91dayBalance != null" >
+        actual_91day_balance,
+      </if>
+      <if test="totalBalance != null" >
+        total_balance,
+      </if>
+      <if test="operation != null" >
+        operation,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="loanOrg != null" >
+        #{loanOrg,jdbcType=VARCHAR},
+      </if>
+      <if test="transactionCount != null" >
+        #{transactionCount,jdbcType=INTEGER},
+      </if>
+      <if test="actual30dayBalance != null" >
+        #{actual30dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="actual60dayBalance != null" >
+        #{actual60dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="actual90dayBalance != null" >
+        #{actual90dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="actual91dayBalance != null" >
+        #{actual91dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="totalBalance != null" >
+        #{totalBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="operation != null" >
+        #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.credit.entity.CreditUnclearedBankAcceptance" >
+    update jk.t_jk_credit_uncleared_bank_acceptance
+    <set >
+      <if test="loanCode != null" >
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="loanOrg != null" >
+        loan_org = #{loanOrg,jdbcType=VARCHAR},
+      </if>
+      <if test="transactionCount != null" >
+        transaction_count = #{transactionCount,jdbcType=INTEGER},
+      </if>
+      <if test="actual30dayBalance != null" >
+        actual_30day_balance = #{actual30dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="actual60dayBalance != null" >
+        actual_60day_balance = #{actual60dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="actual90dayBalance != null" >
+        actual_90day_balance = #{actual90dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="actual91dayBalance != null" >
+        actual_91day_balance = #{actual91dayBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="totalBalance != null" >
+        total_balance = #{totalBalance,jdbcType=NUMERIC},
+      </if>
+      <if test="operation != null" >
+        operation = #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.credit.entity.CreditUnclearedBankAcceptance" >
+    update jk.t_jk_credit_uncleared_bank_acceptance
+    set loan_code = #{loanCode,jdbcType=VARCHAR},
+      loan_org = #{loanOrg,jdbcType=VARCHAR},
+      transaction_count = #{transactionCount,jdbcType=INTEGER},
+      actual_30day_balance = #{actual30dayBalance,jdbcType=NUMERIC},
+      actual_60day_balance = #{actual60dayBalance,jdbcType=NUMERIC},
+      actual_90day_balance = #{actual90dayBalance,jdbcType=NUMERIC},
+      actual_91day_balance = #{actual91dayBalance,jdbcType=NUMERIC},
+      total_balance = #{totalBalance,jdbcType=NUMERIC},
+      operation = #{operation,jdbcType=VARCHAR},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  	<!-- 根据借款编号查询数据 -->
+	<select id="selectByLoanCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+		select
+			<include refid="Base_Column_List" />
+		from 
+			jk.t_jk_credit_uncleared_bank_acceptance
+		where 
+			loan_code = #{loanCode,jdbcType=VARCHAR}
+			order by modify_time desc
+	</select>
+	
+	<!-- 根据借款编码删除信息 -->
+	<delete id="deleteByLoanCode" parameterType="java.lang.String">
+		delete from jk.t_jk_credit_uncleared_bank_acceptance
+		where loan_code = #{loanCode,jdbcType=VARCHAR}
+	</delete>
+</mapper>

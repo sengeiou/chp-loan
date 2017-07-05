@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.creditharmony.loan.common.dao.LoanBankDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.common.entity.LoanBank">
+    <id column="id"  property="id" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="bank_name"  property="bankName" />
+    <result column="bank_province"  property="bankProvince" />
+    <result column="bank_city"  property="bankCity" />
+    <result column="bank_orc"  property="bankOrc" />
+    <result column="dict_crea_type"  property="dictCreaType" />
+    <result column="bank_branch"  property="bankBranch" />
+    <result column="bank_account_name"  property="bankAccountName" />
+    <result column="bank_account"  property="bankAccount" />
+    <result column="bank_signing_platform"  property="bankSigningPlatform" />
+    <result column="dict_maintain_status"  property="dictMaintainStatus" />
+    <result column="bank_top_flag"  property="bankTopFlag" />
+    <result column="dict_maintain_type"  property="dictMaintainType" />
+    <result column="bank_check_result"  property="bankCheckResult" />
+    <result column="bank_check_desc"  property="bankCheckDesc" />
+    <result column="bank_old_account"  property="bankOldAccount" />
+    <result column="bank_is_rareword"  property="bankIsRareword" />
+    <result column="bank_jzh_khhss"  property="bankJzhKhhss" />
+    <result column="bank_jzh_khhqx"  property="bankJzhKhhqx" />
+    <result column="bank_authorizer"  property="bankAuthorizer" />
+    <result column="repayment_flag"  property="repaymentFlag" />
+    <result column="bank_no"  property="bankNo" />
+    <result column="kl_sign"  property="klSign" />
+    <result column="real_authen"  property="realAuthen" />
+    
+    <result column="cj_sm_no"  property="cjSmNo" />
+     <result column="cj_qy_no"  property="cjQyNo" />
+     <result column="protocol_number"  property="protocolNumber" />
+     <result column="cj_authen"  property="cjAuthen" />
+     <result column="cj_sign"  property="cjSign" />
+     <result column="cj_sign_failure"  property="cjSignFailure" />
+     <result column="cj_authen_failure"  property="cjAuthenFailure" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, loan_code, bank_name, bank_province, bank_city, bank_orc, dict_crea_type, bank_branch, 
+    bank_account_name, bank_account, bank_signing_platform, dict_maintain_status, bank_top_flag, dict_maintain_type, 
+    bank_check_result, bank_check_desc, bank_old_account, bank_is_rareword, bank_jzh_khhss, 
+    bank_jzh_khhqx, bank_authorizer, create_time, create_by, modify_by, modify_time,repayment_flag,bank_no,
+    kl_sign,real_authen,cj_sm_no,cj_qy_no,protocol_number,cj_authen,cj_sign,cj_sign_failure,cj_authen_failure
+   
+</sql>
+
+  <select id="selectByLoanCode"  resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_loan_bank
+     where loan_code = #{loanCode} and bank_top_flag = 1 and repayment_flag = '0' 
+  </select>
+   <select id="selectByPrimaryKey" parameterType="string" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_loan_bank 
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="findAllList" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_loan_bank 
+    where loan_code =#{loanCode,jdbcType=VARCHAR} 
+    <if test="bankName!=null and bankName!=''">
+      and bank_name = #{bankName,jdbcType=VARCHAR} 
+    </if>
+    <if test="bankTopFlag!=null">
+      and bank_top_flag = #{bankTopFlag,jdbcType=INTEGER} 
+    </if>
+    <if test="repaymentFlag!=null">
+      and repayment_flag = #{repaymentFlag,jdbcType=VARCHAR}
+    </if>
+  </select>
+  <insert id="insert">
+    insert into jk.t_jk_loan_bank (
+      <include refid="Base_Column_List" />
+      ) values(
+      #{id,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR},
+      #{bankName,jdbcType=VARCHAR},#{bankProvince,jdbcType=VARCHAR},
+      #{bankCity,jdbcType=VARCHAR},#{bankOrc,jdbcType=VARCHAR},
+      #{dictCreaType,jdbcType=VARCHAR},#{bankBranch,jdbcType=VARCHAR},
+      #{bankAccountName,jdbcType=VARCHAR},#{bankAccount,jdbcType=VARCHAR},
+      #{bankSigningPlatform,jdbcType=VARCHAR},#{dictMaintainStatus,jdbcType=VARCHAR},
+      #{bankTopFlag,jdbcType=INTEGER},#{dictMaintainType,jdbcType=VARCHAR},
+      #{bankCheckResult,jdbcType=VARCHAR},#{bankCheckDesc,jdbcType=VARCHAR},
+      #{bankOldAccount,jdbcType=VARCHAR},#{bankIsRareword,jdbcType=VARCHAR},
+      #{bankJzhKhhss,jdbcType=VARCHAR},#{bankJzhKhhqx,jdbcType=VARCHAR},
+      #{bankAuthorizer,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP},
+      #{createBy,jdbcType=VARCHAR},#{modifyBy,jdbcType=VARCHAR},
+      #{modifyTime,jdbcType=TIMESTAMP},#{repaymentFlag,jdbcType=VARCHAR}
+      ,#{bankNo,jdbcType=VARCHAR},#{klSign,jdbcType=VARCHAR},#{realAuthen,jdbcType=VARCHAR},
+      #{cjSmNo,jdbcType=VARCHAR},#{cjQyNo,jdbcType=VARCHAR},#{protocolNumber,jdbcType=VARCHAR}
+      ,#{cjAuthen,jdbcType=VARCHAR},#{cjSign,jdbcType=VARCHAR},#{cjSignFailure,jdbcType=VARCHAR},#{cjAuthenFailure,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="update" parameterType="com.creditharmony.loan.common.entity.LoanBank">
+    update jk.t_jk_loan_bank 
+    <set>
+    <if test="loanCode != null and loanCode!=''">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="bankName != null and bankName!=''">
+        bank_name = #{bankName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankProvince != null and bankProvince!=''">
+        bank_province = #{bankProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCity != null and bankCity!=''">
+        bank_city = #{bankCity,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOrc != null and bankOrc!=''">
+        bank_orc = #{bankOrc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCreaType != null and dictCreaType!=''">
+        dict_crea_type = #{dictCreaType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankBranch != null and bankBranch!=''">
+        bank_branch = #{bankBranch,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccountName != null and bankAccountName!=''">
+        bank_account_name = #{bankAccountName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccount != null and bankAccount!=''">
+        bank_account = #{bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSigningPlatform != null and bankSigningPlatform!=''">
+        bank_signing_platform = #{bankSigningPlatform,jdbcType=VARCHAR},
+      </if>
+      <if test="dictMaintainStatus != null and dictMaintainStatus!=''">
+        bank_maintain_status = #{dictMaintainStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="bankTopFlag != null">
+        bank_top_flag = #{bankTopFlag,jdbcType=INTEGER},
+      </if>
+      <if test="dictMaintainType != null and dictMaintainType!=''">
+        dict_maintain_type = #{dictMaintainType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckResult != null">
+        bank_check_result = #{bankCheckResult,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckDesc != null and bankCheckDesc!=''">
+        bank_check_desc = #{bankCheckDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOldAccount != null and bankOldAccount!=''">
+        bank_old_account = #{bankOldAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankIsRareword!=null">
+        bank_is_rareword = #{bankIsRareword,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhss != null and bankJzhKhhss!=''">
+        bank_jzh_khhss = #{bankJzhKhhss,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhqx != null and bankJzhKhhqx!=''">
+        bank_jzh_khhqx = #{bankJzhKhhqx,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAuthorizer != null and bankAuthorizer!=''">
+        bank_authorizer = #{bankAuthorizer,jdbcType=VARCHAR},
+      </if>
+      <if test="bankNo != null and bankNo!=''">
+        bank_no = #{bankNo,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null and createBy!=''">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null and modifyBy!=''">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  
+  <update id="updateByLoanCode" parameterType="com.creditharmony.loan.common.entity.LoanBank">
+    update jk.t_jk_loan_bank 
+    <set>
+    <if test="loanCode != null and loanCode!=''">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="bankName != null and bankName!=''">
+        bank_name = #{bankName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankProvince != null and bankProvince!=''">
+        bank_province = #{bankProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCity != null and bankCity!=''">
+        bank_city = #{bankCity,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOrc != null and bankOrc!=''">
+        bank_orc = #{bankOrc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCreaType != null and dictCreaType!=''">
+        dict_crea_type = #{dictCreaType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankBranch != null and bankBranch!=''">
+        bank_branch = #{bankBranch,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccountName != null and bankAccountName!=''">
+        bank_account_name = #{bankAccountName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccount != null and bankAccount!=''">
+        bank_account = #{bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSigningPlatform != null and bankSigningPlatform!=''">
+        bank_signing_platform = #{bankSigningPlatform,jdbcType=VARCHAR},
+      </if>
+      <if test="dictMaintainStatus != null and dictMaintainStatus!=''">
+        bank_maintain_status = #{dictMaintainStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="bankTopFlag != null">
+        bank_top_flag = #{bankTopFlag,jdbcType=INTEGER},
+      </if>
+      <if test="dictMaintainType != null and dictMaintainType!=''">
+        dict_maintain_type = #{dictMaintainType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckResult != null">
+        bank_check_result = #{bankCheckResult,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckDesc != null and bankCheckDesc!=''">
+        bank_check_desc = #{bankCheckDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOldAccount != null and bankOldAccount!=''">
+        bank_old_account = #{bankOldAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankIsRareword!=null">
+        bank_is_rareword = #{bankIsRareword,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhss != null and bankJzhKhhss!=''">
+        bank_jzh_khhss = #{bankJzhKhhss,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhqx != null and bankJzhKhhqx!=''">
+        bank_jzh_khhqx = #{bankJzhKhhqx,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAuthorizer != null and bankAuthorizer!=''">
+        bank_authorizer = #{bankAuthorizer,jdbcType=VARCHAR},
+      </if>
+      <if test="bankNo != null and bankNo!=''">
+        bank_no = #{bankNo,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null and createBy!=''">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null and modifyBy!=''">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <where>
+	    <if test="loanCode != null and loanCode != ''">
+	    	loan_code = #{loanCode}
+	    </if>
+	    <if test="repaymentFlag != null and repaymentFlag != ''">
+	    	and repayment_flag = #{repaymentFlag}
+	    </if>
+    </where>
+  </update>
+  
+  <update id="updateAccountNameAndAuthorizer">
+  	update
+  		jk.t_jk_loan_bank 
+  	set
+  		bank_account_name=#{bankAccountName},
+  		bank_authorizer=#{bankAuthorizer}
+  	where
+  		loan_code=#{loanCode}
+  </update>
+  
+  
+  <update id="updateTopFlag">
+  	 UPDATE jk.t_jk_loan_bank 
+    <set>
+      <if test="bankTopFlag != null">
+        bank_top_flag = #{bankTopFlag,jdbcType=INTEGER},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateMaintainType">
+		update jk.t_jk_loan_bank
+		<set>
+			<if test="dictMaintainType != null">
+				dict_maintain_type = #{dictMaintainType,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyBy != null">
+				modify_by = #{modifyBy,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE loan_code = #{loanCode,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="queryCertification"  resultType="com.creditharmony.loan.common.entity.LoanBank">
+	  select   a.bank_name as bankName, a.bank_province as bankProvince, a.bank_city as bankCity,
+	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankBranch, 
+       a.bank_account_name as bankAccountName, a.bank_account as bankAccount,
+       a.bank_signing_platform as bankSigningPlatform, a.bank_no as bankNo,
+       a.bank_top_flag as bankTopFlag,lc.dict_cert_type as idType,
+       lc.customer_cert_num as idNo,
+       lc.customer_phone_first as mobile
+      from jk.t_jk_loan_bank a 
+      left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code
+      where a.loan_code = #{loanCode}
+	</select>
+	
+	  <update id="updateBankByLoanCode">
+		update jk.t_jk_loan_bank set
+	      trans_date = #{transDate},
+	     <if test="realAuthen != null and !realAuthen.equals('')">
+	      real_authen = #{realAuthen},
+	     </if>
+	     <if test="klSign != null and !klSign.equals('')">
+	      kl_sign = #{klSign},
+	     </if>
+	      tr_serial_no = #{trSerialNo}
+		WHERE loan_code = #{loanCode,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="findBanklist"  resultType="com.creditharmony.loan.common.entity.LoanBank">
+	  select id,   bank_code as bankCode,bank_name as bankName from 
+       jk.t_jk_branch_bank_code
+      where 1=1 
+      <if test="bankName != null and !bankName.equals('')">
+       and  bank_name like '%${bankName}%'
+      </if>
+      <if test="bankCode != null and !bankCode.equals('')">
+      and   bank_Code  like '%${bankCode}%'
+      </if>
+	</select>
+	
+	
+	
+	<select id="queryCertificationById"  resultType="com.creditharmony.loan.common.entity.LoanBank">
+	  select   a.bank_name as bankName, a.bank_province as bankProvince, a.bank_city as bankCity,
+	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankBranch, 
+       a.bank_account_name as bankAccountName, a.bank_account as bankAccount,
+       a.bank_signing_platform as bankSigningPlatform, a.bank_no as bankNo,
+       a.bank_top_flag as bankTopFlag,lc.dict_cert_type as idType,
+       lc.customer_cert_num as idNo,
+       lc.customer_phone_first as mobile,
+       a.real_authen as realAuthen
+      from jk.t_jk_loan_bank a 
+      left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code
+      where a.id = #{id}
+	</select>
+	
+	
+	<update id="updateBankById">
+		update jk.t_jk_loan_bank set
+	      trans_date = #{transDate},
+	     <if test="realAuthen != null and !realAuthen.equals('')">
+	      real_authen = #{realAuthen},
+	     </if>
+	     <if test="klSign != null and !klSign.equals('')">
+	      kl_sign = #{klSign},
+	     </if>
+	     <if test="bankNo != null and !bankNo.equals('')">
+	      bank_No = #{bankNo},
+	     </if>
+	      tr_serial_no = #{trSerialNo}
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>

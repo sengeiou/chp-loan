@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanRemarkDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanRemark">
+    <result column="id"  property="id" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="dict_remark_type"  property="dictRemarkType" />
+    <result column="remark"  property="remark" />
+    <result column="remark_time"  property="remarkTime" />
+    <result column="create_by"  property="createBy" />
+    <result column="create_time"  property="createTime" />
+    <result column="modify_by"  property="modifyBy" />
+    <result column="modify_time"  property="modifyTime" />
+   </resultMap>
+   <sql id="baseSql">
+      id,loan_code,dict_remark_type,remark,remark_time,create_by,create_time,
+      modify_by,modify_time
+   </sql>
+  <select id="findByLoanCode" resultMap="BaseResultMap">
+      select 
+        <include refid="baseSql"/>
+      from jk.t_jk_long_remark 
+      where loan_code = #{loanCode}
+      <if test="dictRemarkType != null and dictRemarkType != ''">
+      	and dict_remark_type = #{dictRemarkType}
+      </if>
+  </select>
+  <update id="updateByIdSelective">
+      update jk.t_jk_long_remark 
+    <set>
+      <if test="loanCode!=null and loanCode!=''">
+       loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictRemarkType != null and dictRemarkType!=''">
+        dict_remark_type = #{dictRemarkType,jdbcType=VARCHAR},
+      </if>
+      <if test="remark!=null">
+       remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="remarkTime != null">
+        remark_time = #{remarkTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null and createBy != ''">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null and modifyBy!=''">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+     where id=#{id,jdbcType=VARCHAR}
+     <if test="dictRemarkType != null and dictRemarkType!=''">
+	    and dict_remark_type = #{dictRemarkType}    	
+     </if>
+  </update>
+  <insert id="insertRemark">
+     insert into jk.t_jk_long_remark
+        (<include refid="baseSql"/>) 
+        values(
+          #{id,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR},#{dictRemarkType,jdbcType=VARCHAR},
+          #{remark,jdbcType=VARCHAR},#{remarkTime,jdbcType=TIMESTAMP},#{createBy,jdbcType=VARCHAR},
+          #{createTime,jdbcType=TIMESTAMP},#{modifyBy,jdbcType=VARCHAR},#{modifyTime,jdbcType=TIMESTAMP}
+        )
+   </insert>
+</mapper>

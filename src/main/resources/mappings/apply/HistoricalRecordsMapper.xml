@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.HistoricalRecordsDao">
+	<sql id="paybackOpeList">
+		id as id,
+		operate_time as operateTime, <!-- 操作时间 -->
+		operator as operator, <!-- 操作人 -->
+		dict_loan_status as dictLoanStatus, <!-- 操作步骤 -->
+		operate_result as operateResult, <!-- 操作结果 -->
+		remark as remarks <!-- 备注 -->
+	</sql>
+	<sql id="loanStatusHisList">
+		lsh.id as id,
+		lsh.operate_time as operateTime, <!-- 操作时间 -->
+		lsh.operator as operator, <!-- 操作人 -->
+		lsh.operate_step as dictLoanStatus, <!-- 操作步骤 -->
+		lsh.operate_result as operateResult, <!-- 操作结果 -->
+		lsh.remark as remark <!-- 备注 -->
+	</sql>
+	<!-- 还款历史记录弹框(通用) -->
+	<select id="allHistoricalRecordsList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+	SELECT * FROM (
+		SELECT
+			<include refid="loanStatusHisList" />
+		FROM t_jk_loan_status_his lsh
+		WHERE lsh.dict_sys_flag = 'MODULE_LOAN' and lsh.loan_code = #{loanCode}
+	UNION ALL
+		SELECT 
+			<include refid="paybackOpeList" />
+		FROM t_jk_payback_ope
+ 		WHERE r_payback_id = #{rPaybackId} and dict_loan_status != '4'
+ 		)
+ 		order by operateTime desc
+	</select>
+	
+	<sql id="paybackOpeListColuns">
+		id,
+		operate_time as operateTime, <!-- 操作时间 -->
+		operator as operator, <!-- 操作人 -->
+		dict_loan_status as dictLoanStatus, <!-- 操作步骤 -->
+		operate_result as operateResult, <!-- 操作结果 -->
+		remark as remarks <!-- 备注 -->
+	</sql>
+	<!-- 还款历史记录弹框(逾期管理) -->
+	<select id="allHistoricalRecordsLists" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+		SELECT 
+			<include refid="paybackOpeListColuns" />
+		FROM t_jk_payback_ope
+ 		WHERE r_payback_id = #{rPaybackId}
+ 		order by operate_time desc
+	</select>
+	<!-- 集中划扣已拆分历史记录 -->
+	<select id="allSplitHisList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+		select
+			id,
+			create_by as createBy, <!-- 创建人 -->
+			create_time as createTime, <!-- 创建时间 -->
+			dict_deal_type as dictDealType, <!--划扣平台 -->
+			split_back_result as splitBackResult, <!-- 回盘结果 -->
+			split_fail_result as splitFailResult <!-- 备注 -->
+		from t_jk_payback_split 
+		where r_payback_apply_id = #{rId}
+		order by create_time desc
+	</select>
+	<select id="queryLoanCode" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+		select 
+			jc.loan_code as loanCode <!-- 借款编码 -->
+		from t_jk_payback jp
+			left join t_jk_contract jc on jc.contract_code = jp.contract_code
+		where jp.id = #{rPaybackId}
+	</select>
+</mapper>

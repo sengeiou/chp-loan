@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanMateDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanMate">
+    <id column="id"  property="id" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="mate_name"  property="mateName" />
+    <result column="mate_age"  property="mateAge" />
+    <result column="loan_customter_type"  property="loanCustomterType" />
+    <result column="mate_birthday"  property="mateBirthday" />
+    <result column="dict_cert_type"  property="dictCertType" />
+    <result column="mate_cert_num"  property="mateCertNum" />
+    <result column="mate_tel"  property="mateTel" />
+    <result column="r_customer_coborrower_id"  property="rcustomerCoborrowerId" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="mate_email" jdbcType="VARCHAR" property="mateEmail" />
+    
+    <result column="mate_address_province" jdbcType="VARCHAR" property="mateAddressProvince" />
+    <result column="mate_address_city" jdbcType="VARCHAR" property="mateAddressCity" />
+    <result column="mate_address_area" jdbcType="VARCHAR" property="mateAddressArea" />
+    <result column="mate_address" jdbcType="VARCHAR" property="mateAddress" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, loan_code, mate_name, mate_age, loan_customter_type, mate_birthday, dict_cert_type, mate_cert_num, 
+    mate_tel,r_customer_coborrower_id, create_by, create_time, modify_by, modify_time,mate_email,mate_address_province,mate_address_city,mate_address_area,mate_address
+  </sql>
+  
+  <select id="selectByLoanCode"  resultMap="BaseResultMap">
+   select
+    <include refid="Base_Column_List" />
+    from jk.t_jk_loan_mate
+    where loan_code = #{0} and loan_customter_type = #{1}
+  </select>
+    <delete id="deleteByRId" parameterType="map">
+     delete from jk.t_jk_loan_mate where r_customer_coborrower_id = #{rid,jdbcType=VARCHAR} 
+      and loan_customter_type = #{loanCustomterType,jdbcType=VARCHAR} 
+  </delete>
+  
+   <insert id="insert">
+    insert into jk.t_jk_loan_mate (id, loan_code,mate_name, mate_age, 
+      loan_customter_type, mate_birthday, dict_cert_type, 
+      mate_cert_num, mate_tel,r_customer_coborrower_id,create_by, 
+      create_time, modify_by, modify_time,mate_email,mate_address_province,mate_address_city,mate_address_area,mate_address
+      )
+    values (#{id,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR}, #{mateName,jdbcType=VARCHAR}, #{mateAge,jdbcType=INTEGER}, 
+      #{loanCustomterType,jdbcType=VARCHAR}, #{mateBirthday,jdbcType=TIMESTAMP}, #{dictCertType,jdbcType=VARCHAR}, 
+      #{mateCertNum,jdbcType=VARCHAR}, #{mateTel,jdbcType=VARCHAR},#{rcustomerCoborrowerId,jdbcType=VARCHAR},#{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP},#{mateEmail,jdbcType=VARCHAR},
+      #{mateAddressProvince,jdbcType=VARCHAR},#{mateAddressCity,jdbcType=VARCHAR},#{mateAddressArea,jdbcType=VARCHAR},#{mateAddress,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="update">
+    update jk.t_jk_loan_mate
+    <set>
+      <if test="mateName != null">
+        mate_name = #{mateName,jdbcType=VARCHAR},
+      </if>
+      <if test="mateAge != null">
+        mate_age = #{mateAge,jdbcType=INTEGER},
+      </if>
+      <if test="loanCustomterType != null">
+        loan_customter_type = #{loanCustomterType,jdbcType=VARCHAR},
+      </if>
+      <if test="mateBirthday != null">
+        mate_birthday = #{mateBirthday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dictCertType != null">
+        dict_cert_type = #{dictCertType,jdbcType=VARCHAR},
+      </if>
+      <if test="mateCertNum != null">
+        mate_cert_num = #{mateCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="mateTel != null">
+        mate_tel = #{mateTel,jdbcType=VARCHAR},
+      </if>
+      <if test="rcustomerCoborrowerId!=null and rcustomerCoborrowerId!=''">
+        r_customer_coborrower_id = #{rcustomerCoborrowerId,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="mateEmail != null">
+        mate_email = #{mateEmail,jdbcType=VARCHAR},
+      </if>      
+      <if test="mateAddressProvince != null">
+        mate_address_province = #{mateAddressProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="mateAddressCity != null">
+        mate_address_city = #{mateAddressCity,jdbcType=VARCHAR},
+      </if>
+      <if test="mateAddressArea != null">
+        mate_address_area = #{mateAddressArea,jdbcType=VARCHAR},
+      </if>
+      <if test="mateAddress != null">
+        mate_address = #{mateAddress,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteById" parameterType="map">
+     delete from jk.t_jk_loan_mate where id = #{id,jdbcType=VARCHAR} 
+  </delete>
+</mapper>

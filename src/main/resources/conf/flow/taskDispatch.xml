@@ -1,0 +1,1950 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dispatchRules>
+	<!-- 1个流程对应一个<flow> 1个<flow>内： @<flowConfigName>：1 @<initBeanName>:1 @<dataLoadBeanName>：1 
+		@<directions>：0至1个 @<steps>：1至n个 1个<steps>内： @<stepName>：1至n个 系统定义名称： @default 
+		默认步骤; @launch 发起步骤 @<beanName>：1个 @<exceptionForward>:0至1个 @<event>:0至n个 
+		1个<event> @<type>类型 |before 调用流程处理动作前事件|after 调用流程处理动作后事件|exception 发生异常时 
+		|onOpenForm 打开表单时的事件 | onSelectParticipants 选人时事件 |dispatchCheck 业务上检测是否做流程处理事件 
+		|onDataMigration 数据迁移时调用的事件 @<condition> 条件,只支持 before和after类型 @<eventBeanName>处理事件的事件bean名称 
+		@<forward>：1至n个 1个<forward>内： @<dealType>：1至n个 @<forwardKey>：1个 -->
+	<flow>
+		<flowConfigName>信借流程</flowConfigName>
+		<initBeanName>init_hj_loanFlow</initBeanName>
+		<dataLoadBeanName>load_hj_loanFlow</dataLoadBeanName>
+		<steps>
+			<stepName>@launch</stepName>
+			<updateAttributes>
+				applyId;loanCode;
+				customerName;
+				identityCode;
+				coborrowerName;
+				provinceCode;provinceName;
+				cityCode;cityName;
+				storeCode;storeOrgId;storeName;
+				applyProductCode;
+				applyProductName;
+				teamManagerCode;teamManagerName;
+				customerManagerCode;customerManagerName;
+				intoLoanTime;
+				raiseFlag;
+				urgentFlag;
+				telesalesFlag;
+				additionalFlag;
+				channelName;
+				applyMoney;applyMonth;
+				loanStatusName;loanStatusCode;
+				signPlatform;
+				dealUser;
+				channelCode;
+				channelName;dictLoanType;
+				dictLoanTypeName;
+				bankIsRareword;
+				orderField;
+				consTelesalesOrgcode;
+				loanInfoOldOrNewFlag
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_launch</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/apply/_loanFlowCustomer</forwardKey>
+			</forward>
+			<forward>
+				<dealType>1</dealType>
+				<forwardKey>/borrow/apply/_loanFlowCustomer_new</forwardKey>
+			</forward>
+			<directions>发起默认跳转</directions>
+		</steps>
+		<steps>
+			<stepName>资料上传</stepName>
+			<updateAttributes>loanStatusName;loanStatusCode;agentName;
+				agentCode
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_fileUpload</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/borrowlist/uploadInformation</forwardKey>
+			</forward>
+			<directions>跳转到资料上传的办理页面</directions>
+		</steps>
+		<steps>
+			<stepName>门店复核</stepName>
+			<updateAttributes>
+				applyId;loanCode;
+				customerName;
+				identityCode;
+				coborrowerName;
+				provinceCode;provinceName;
+				cityCode;cityName;
+				storeCode;storeOrgId;storeName;
+				applyProductCode;
+				applyProductName;
+				teamManagerCode;teamManagerName;
+				customerManagerCode;customerManagerName;
+				intoLoanTime;
+				raiseFlag;
+				urgentFlag;
+				telesalesFlag;
+				additionalFlag;
+				channelName;
+				applyMoney;applyMonth;
+				loanStatusName;loanStatusCode;signPlatform;
+				intoApproveTime;
+				bankIsRareword;
+				timeOutFlag
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_fileUpload</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/storereview/loanFlowStoreReview</forwardKey>
+			</forward>
+			<forward>
+				<dealType>1</dealType>
+				<forwardKey>/borrow/storereview/loanFlowStoreReview_new</forwardKey>
+			</forward>
+			<directions>门店复核</directions>
+		</steps>
+		<steps>
+			<stepName>审核利率</stepName>
+			<updateAttributes>
+				loanStatusName;channelName;
+				loanStatusCode;channelCode;
+				timeOutFlag;timeOutPoint;
+				paperLessFlag;monthRate;ensureManFlag;backFlag;contractVersion;backReason
+			</updateAttributes>
+			<updateAttributes></updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_rateAudit_approve_0
+				</forwardKey>
+			</forward>
+			<forward>
+				<dealType>1</dealType>
+				<forwardKey>/borrow/contract/readonly/loanflow_rateAudit_approve_readonly_1
+				</forwardKey>
+			</forward>
+			<directions>处理审核利率节点数据</directions>
+		</steps>
+		<steps>
+			<stepName>确认签署</stepName>
+			<updateAttributes>
+				channelCode;channelName;
+				loanStatusCode;loanStatusName;
+				signPlatform;
+				depositBank;bankBranchName;
+				bankAccountNumber;kingBankProvinceName;
+				kingBankCityName;kingBankProvinceCode;
+				kingBankCityCode;orderField;lastDealTime;
+				mobelPhone;
+				email;
+				custBankAccountName;
+				bankIsRareword;confirmSignDate;backFlag;backReason
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_confirmSign_approve_0
+				</forwardKey>
+			</forward>
+			<directions>处理确认签署节点数据</directions>
+		</steps>
+		<steps>
+			<stepName>合同制作</stepName>
+			<updateAttributes>loanStatusCode;loanStatusName;backFlag;backReason;orderField
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_contractCreate_approve_0
+				</forwardKey>
+			</forward>
+			<forward>
+				<dealType>1</dealType>
+				<forwardKey>/borrow/contract/readonly/loanflow_contractCreate_approve_readonly_1
+				</forwardKey>
+			</forward>
+			<directions>处理合同签订节点的数据</directions>
+		</steps>
+		<steps>
+			<stepName>合同签订</stepName>
+			<updateAttributes>loanStatusCode;loanStatusName;
+			backFlag;signPlatform;orderField;lastDealTime;timeOutFlag;channelCode;
+			channelName;backReason;cjAuthen;cjAuthenFailure
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>li_hj_cj_RealName_Authentication</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_custServiceSign_approve_0
+				</forwardKey>
+			</forward>
+			<directions>处理合同签订节点的数据</directions>
+		</steps>
+		<steps>
+			<stepName>合同审核</stepName>
+			<updateAttributes>urgeServiceFee;
+				unDeductMoney;grantFailAmount;
+				loanStatusName;loanStatusCode;
+				contractMoney;lendingMoney;
+				channelCode;channelName;
+				backFlag;frozenReason;
+				frozenFlag;orderField;
+				backReason;trustCash;
+				trustRecharge;timeOutFlag;
+				kingStatus;backReason;registFlag;signUpFlag;revisitStatus;checkTime
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateAuditing</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_contractAudit_approve_0
+				</forwardKey>
+			</forward>
+			<forward>
+				<dealType>1</dealType>
+				<forwardKey>/borrow/contract/readonly/loanflow_contractAudit_approve_readonly_1
+				</forwardKey>
+			</forward>
+			<directions>处理合同签订节点的数据</directions>
+		</steps>
+		<steps>
+			<stepName>金账户开户</stepName>
+			<updateAttributes>kingStatus;
+				kingOpenRespReason;kingProctolRespReason;
+				loanStatusName;loanStatusCode;trustCash;trustRecharge;orderField
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updKingAccState</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateAuditing</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/trusteeship/king_openAccountList
+				</forwardKey>
+			</forward>
+			<directions>金账户开户</directions>
+		</steps>
+		<steps>
+			<stepName>放款确认</stepName>
+			<updateAttributes>
+				loanStatusName;
+				loanStatusCode;
+				channelName;
+				channelCode;
+				submissionBatch;
+				submissionDate;
+				frozenReason;
+				orderField;
+				frozenFlag;
+				backFlag;
+				backReason;trustCash;trustRecharge;registFlag;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantChangeFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantChangeStatus</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateAuditing</eventBeanName>
+			</event>
+			<directions>放款确认</directions>
+		</steps>
+		<steps>
+			<stepName>金信债权退回</stepName>
+			<updateAttributes>
+				goldCreditStatus;
+				loanStatusName;
+				loanStatusCode;
+				channelName;
+				channelCode;
+				backReason;
+				orderField;
+				backFlag;
+				frozenFlag
+			</updateAttributes>
+
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_jx_loanflow_goldCredit</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_jx_loanflow_bigFinanceCredit</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateAuditing</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/channel/goldcredit/goldCreditBackList</forwardKey>
+			</forward>
+			<directions>金信债权退回</directions>
+		</steps>
+		<steps>
+			<stepName>分配卡号</stepName>
+			<updateAttributes>
+				loanStatusName;loanStatusCode;
+				lendingWayName;lendingWayCode;receiptResult;
+				lendingAccount;cautionerDepositBank;
+				bankAccountName;backReason;
+				channelName;channelCode;
+				frozenReason;frozenFlag;trustCash;trustRecharge;
+				dealUser;
+				orderField;signUpFlag;
+				goldCreditStatus
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantChangeFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantLoanChange</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateAuditing</eventBeanName>
+			</event>
+			<directions>分配卡号</directions>
+		</steps>
+		<steps>
+			<stepName>放款</stepName>
+			<updateAttributes>
+				loanStatusName;
+				loanStatusCode;
+				receiptResult;
+				grantFailAmount;
+				failReason;
+				backReason;
+				orderField;
+				frozenReason;
+				frozenFlag;
+				grantBatchCode;
+				trustGrantOutputStatus;
+				lendingTime;
+				submitDeductTime;
+				trustCash;
+				trustRecharge;
+				goldCreditStatus;
+				grantBackDate
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantInsertUrge</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantLoanChange</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateAuditing</eventBeanName>
+			</event>
+			<directions>放款</directions>
+		</steps>
+		<steps>
+			<stepName>放款明细确认</stepName>
+			<updateAttributes>
+ 	          lendingTime;
+ 	          grantFailAmount;
+			  loanStatusName;
+			  loanStatusCode;
+			  receiptResult;
+			  lendingWayName;
+			  lendingWayCode;
+			  lendingAccount;
+			  cautionerDepositBank;
+			  bankAccountName;
+			  trustCashRtn;
+			  trustCashFailure;
+			  trustCash;
+			  trustRecharge;
+			  failReason;
+			  backFlag;
+			  grantBackDate;
+			  dealUser;
+			  backReason
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantLoanChange</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<directions>放款明细确认</directions>
+		</steps>
+		<steps>
+			<stepName>分派外访任务</stepName>
+			<updateAttributes>visitUserId;loanStatusName;loanStatusCode;visitUserName
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_AllocationOutTask</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey></forwardKey>
+			</forward>
+			<directions>处理分配外访任务数据</directions>
+		</steps>
+		<steps>
+			<stepName>外访</stepName>
+			<updateAttributes>visitUserId;loanStatusName;loanStatusCode;visitUserName;visitFinishTime;timeOutFlag;timeOutPoint
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_AllocationOutTask</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey></forwardKey>
+			</forward>
+			<directions>处理外访任务上传数据</directions>
+		</steps>
+	</flow>
+	<!-- 复议流程 start -->
+	<flow>
+		<flowConfigName>复议流程</flowConfigName>
+		<initBeanName>init_hj_reconsiderApply</initBeanName>
+		<dataLoadBeanName>load_hj_reconsider</dataLoadBeanName>
+		<steps>
+			<stepName>@launch</stepName>
+			<updateAttributes>
+				applyId;
+				loanCode;
+				identityCode;
+				coborrowerName;
+				customerName;
+				provinceCode;
+				provinceName;
+				cityCode;
+				cityName;
+				storeName;
+				storeOrgId;
+				storeCode;
+				storeName;
+				agentName;
+				agentCode;
+				applyMoney;
+				applyMonth;
+				applyProductName;
+				applyProductCode;
+				teamManagerCode;
+				teamManagerName;
+				customerManagerCode;
+				customerManagerName;
+				intoLoanTime;
+				raiseFlag;
+				urgentFlag;
+				telesalesFlag;
+				additionalFlag;
+				loanStatusName;
+				loanStatusCode;
+				channelCode;
+				channelName;
+				dictLoanType;
+				dictLoanTypeName;
+				bankIsRareword;
+				consTelesalesOrgcode;
+				model;
+				loanInfoOldOrNewFlag;
+				nodeFlag;
+				intoApproveTime
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_reconsiderApply_launch</eventBeanName>
+			</event>
+			<forward>
+				<forwardKey>/borrow/reconsider/reconsider_launch</forwardKey>
+			</forward>
+			<directions>发起复议申请</directions>
+		</steps>
+		<steps>
+			<stepName>复议退回</stepName>
+			<updateAttributes>
+				identityCode;
+				coborrowerName;
+				customerName;
+				provinceCode;provinceName;
+				cityCode;cityName;
+				storeCode;storeOrgId;storeName;
+				applyProductCode;
+				applyProductName;
+				teamManagerCode;teamManagerName;
+				customerManagerCode;customerManagerName;
+				intoLoanTime;
+				raiseFlag;
+				urgentFlag;
+				telesalesFlag;
+				additionalFlag;
+				channelName;
+				applyMoney;applyMonth;
+				loanStatusName;loanStatusCode;signPlatform;
+				bankIsRareword;
+				timeOutFlag
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_fileUpload</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/storereview/loanFlowStoreReview</forwardKey>
+			</forward>
+			<forward>
+				<dealType>1</dealType>
+				<forwardKey>/borrow/storereview/loanFlowStoreReview_new</forwardKey>
+			</forward>
+			<directions>门店复核</directions>
+		</steps>
+		<steps>
+			<stepName>审核利率</stepName>
+			<updateAttributes>
+				contractMoney;lendingMoney;
+				loanStatusCode;loanStatusName;
+				channelCode;channelName;
+				timeOutFlag;timeOutPoint;
+				paperLessFlag;monthRate;ensureManFlag;backFlag;contractVersion;backReason
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_rateAudit_approve_0
+				</forwardKey>
+			</forward>
+			<directions>处理审核利率节点数据</directions>
+		</steps>
+		<steps>
+			<stepName>确认签署</stepName>
+			<updateAttributes>
+				channelCode;
+				channelName;
+				loanStatusCode;
+				loanStatusName;
+				signPlatform;
+				depositBank;
+				bankBranchName;
+				bankAccountNumber;
+				kingBankProvinceName;
+				kingBankCityName;
+				kingBankProvinceCode;
+				kingBankCityCode;
+				orderField;
+				lastDealTime;
+				mobelPhone;
+				email;
+				custBankAccountName;
+				bankIsRareword;
+				confirmSignDate;
+				backFlag;backReason
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_confirmSign_approve_0
+				</forwardKey>
+			</forward>
+			<directions>处理确认签署节点数据</directions>
+		</steps>
+		<steps>
+			<stepName>合同制作</stepName>
+			<updateAttributes>loanStatusCode;loanStatusName;backFlag;backReason;orderField
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_contractCreate_approve_0
+				</forwardKey>
+			</forward>
+			<directions>处理合同签订节点的数据</directions>
+		</steps>
+		<steps>
+			<stepName>合同签订</stepName>
+			<updateAttributes>loanStatusCode;loanStatusName;backFlag;signPlatform;orderField;lastDealTime;
+			timeOutFlag;channelCode;channelName;backReason;cjAuthen;cjAuthenFailure
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>li_hj_cj_RealName_Authentication</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_custServiceSign_approve_0
+				</forwardKey>
+			</forward>
+			<directions>处理合同签订节点的数据</directions>
+		</steps>
+		<steps>
+			<stepName>合同审核</stepName>
+			<updateAttributes>
+				urgeServiceFee;
+				unDeductMoney;
+				grantFailAmount;
+				loanStatusName;
+				loanStatusCode;
+				contractMoney;
+				lendingMoney;
+				channelCode;
+				channelName;
+				backFlag;
+				orderField;
+				frozenReason;
+				frozenFlag;
+				backReason;
+				trustCash;
+				trustRecharge;
+				timeOutFlag;
+				kingStatus;
+				backReason;
+				registFlag;
+				signUpFlag;
+				revisitStatus;
+				checkTime
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updateCtrOper</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updContract</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/contract/loanflow_contractAudit_approve_0
+				</forwardKey>
+			</forward>
+			<forward>
+				<dealType>1</dealType>
+				<forwardKey>/borrow/contract/readonly/loanflow_contractAudit_approve_readonly_1
+				</forwardKey>
+			</forward>
+			<directions>处理合同签订节点的数据</directions>
+		</steps>
+		<steps>
+			<stepName>金账户开户</stepName>
+			<updateAttributes>kingStatus;
+				kingOpenRespReason;kingProctolRespReason;
+				loanStatusName;loanStatusCode;trustCash;
+				trustRecharge;orderField
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_updKingAccState</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/borrow/trusteeship/king_openAccountList
+				</forwardKey>
+			</forward>
+			<directions>金账户开户</directions>
+		</steps>
+		<steps>
+			<stepName>放款确认</stepName>
+			<updateAttributes>
+				loanStatusName;
+				loanStatusCode;
+				channelName;
+				channelCode;
+				submissionBatch;
+				submissionDate;
+				frozenReason;
+				frozenFlag;
+				orderField;
+				backReason;
+				trustCash;
+				trustRecharge;
+				registFlag;
+				backFlag;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantChangeFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantChangeStatus</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<directions>放款确认</directions>
+		</steps>
+		<steps>
+			<stepName>金信债权退回</stepName>
+			<updateAttributes>
+				goldCreditStatus;
+				loanStatusName;
+				loanStatusCode;
+				channelName;
+				channelCode;
+				backReason;
+				backFlag;
+				orderField;
+				frozenFlag
+			</updateAttributes>
+
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_jx_loanflow_goldCredit</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_jx_loanflow_bigFinanceCredit</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>/channel/goldcredit/goldCreditBackList</forwardKey>
+			</forward>
+			<directions>金信债权退回</directions>
+		</steps>
+		<steps>
+			<stepName>分配卡号</stepName>
+			<updateAttributes>
+				loanStatusName;loanStatusCode;
+				lendingWayName;lendingWayCode;receiptResult;
+				lendingAccount;cautionerDepositBank;
+				bankAccountName;backReason;
+				channelName;channelCode;
+				frozenReason;frozenFlag;
+				trustCash;trustRecharge;dealUser;
+				orderField;signUpFlag;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantChangeFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantLoanChange</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<directions>分配卡号</directions>
+		</steps>
+		<steps>
+			<stepName>放款</stepName>
+			<updateAttributes>
+				loanStatusName;
+				loanStatusCode;
+				receiptResult;
+				grantFailAmount;
+				failReason;
+				backReason;
+				orderField;
+				frozenReason;
+				frozenFlag;
+				goldCreditStatus;
+				grantBatchCode;
+				trustGrantOutputStatus;
+				lendingTime;
+				submitDeductTime;
+				trustCash;trustRecharge;grantBackDate
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantInsertUrge</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantLoanChange</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_createOrderId</eventBeanName>
+			</event>
+			<directions>放款</directions>
+		</steps>
+		<steps>
+			<stepName>放款明细确认</stepName>
+			<updateAttributes>
+			   lendingTime;
+			   grantFailAmount;
+			   loanStatusName;
+			   loanStatusCode;
+			   receiptResult;
+			   lendingWayName;
+			   lendingWayCode;
+			   lendingAccount;
+			   cautionerDepositBank;
+			   bankAccountName;
+			   trustCashRtn;
+			   trustCashFailure;
+			   trustCash;
+			   trustRecharge;
+			   failReason;
+			   backReason;
+			   backFlag;
+			   grantBackDate;
+			   dealUser
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_grantLoanChange</eventBeanName>
+			</event>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanflow_trustFlag</eventBeanName>
+			</event>
+			<directions>放款明细确认</directions>
+		</steps>
+		<steps>
+			<stepName>分派外访任务</stepName>
+			<updateAttributes>visitUserId;loanStatusName;loanStatusCode;visitUserName
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_AllocationOutTask</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey></forwardKey>
+			</forward>
+			<directions>处理分配外访任务数据</directions>
+		</steps>
+		<steps>
+			<stepName>外访</stepName>
+			<updateAttributes>visitUserId;loanStatusName;loanStatusCode;visitUserName;visitFinishTime;timeOutFlag;timeOutPoint
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_loanFlow_AllocationOutTask</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey></forwardKey>
+			</forward>
+			<directions>处理外访任务上传数据</directions>
+		</steps>
+	</flow>
+	<!-- 车借~车借~车借 -->
+	<flow>
+		<flowConfigName>车借流程</flowConfigName>
+		<initBeanName>init_hj_carLoanFlow</initBeanName>
+
+		<dataLoadBeanName>load_hj_carLoanFlow</dataLoadBeanName>
+		<steps>
+			<stepName>@launch</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				applyId;
+				loanCode;
+				customerName;customerCode;
+				certNum;
+				loanTeamEmpName;loanTeamEmpCode;
+				offendSalesName;offendSalesCode;
+				storeName;storeCode;
+				dictStatus;
+				loanIsPhone;
+				loanApplyAmount;
+				storeAssessAmount;
+				plateNumbers;
+				loanApplyTime;
+				planArrivalTime;
+				vehicleBrandModel;
+				dictOperStatus;
+				customerIntoTime;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_Launch_Car_Loan_Flow</eventBeanName>
+			</event>
+			<forward>
+				<forwardKey>car/carApply/carAppraiserEntry_launch</forwardKey>
+			</forward>
+			<directions>发起复议申请</directions>
+		</steps>
+		<steps>
+			<stepName>申请</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				dictOperStatus;
+				borrowProductCode;
+				borrowProductName;
+				cycleBorrowingFlag;
+				extensionFlag;
+				firstCheckName;
+				loanMonths;
+				bankAccountName;
+				bankCardNo;
+				cardBank;
+				coborrowerName;
+				addrProvince;
+				addrCity;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_reviewMeetApply_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carApply/borrowlist/carLoanFlowCustomer</forwardKey>
+			</forward>
+			<directions>面审申请</directions>
+		</steps>
+		<steps>
+			<stepName>上传资料</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_UploadData_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carApply/uploadData</forwardKey>
+			</forward>
+			<directions>上传资料</directions>
+		</steps>
+		<steps>
+			<stepName>评估报告录入</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				applyId;
+				loanCode;
+				customerName;customerCode;
+				certNum;
+				loanTeamEmpName;loanTeamEmpCode;
+				offendSalesName;offendSalesCode;
+				storeName;storeCode;
+				dictStatus;
+				loanIsPhone;
+				loanApplyAmount;
+				storeAssessAmount;
+				plateNumbers;
+				loanApplyTime;
+				planArrivalTime;
+				vehicleBrandModel;
+				dictOperStatus;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_Launch_Car_Loan_Flow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carApply/carAppraiserEntry_launch</forwardKey>
+			</forward>
+			<directions>评估报告录入</directions>
+		</steps>
+		<steps>
+			<stepName>初审</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				grossRate;
+				auditAmount;
+				auditLoanMonths;
+				auditBorrowProductCode;
+				auditBorrowProductName;
+				auditTime;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_reviewMeet_firstAudit_CarLoanFlow
+				</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carApply/reviewMeet_firstAudit_approve_0
+				</forwardKey>
+			</forward>
+			<directions>初审</directions>
+		</steps>
+		<steps>
+			<stepName>审核费率</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				contractExpirationDate;
+				dictStatus;contractCode;
+				grantAmount;
+				comprehensiveServiceFee;
+				contractVersion;
+				deductsAmount;
+				timeOutFlag;
+				timeOutPoint;
+				timeoutCheckStage;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carInterestRateAudit_CarLoanFlow
+				</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/contract/interestRate/carInterestRateForm
+				</forwardKey>
+			</forward>
+			<directions>审核费率</directions>
+		</steps>
+		<steps>
+			<stepName>签署</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				contractAmount;
+				orderField;
+				contractFactDay;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carSigningCheck_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/contract/interestRate/carSigningCheckForm
+				</forwardKey>
+			</forward>
+			<directions>签署</directions>
+		</steps>
+		<steps>
+			<stepName>合同制作</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carContractPro_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/contract/interestRate/carContractProForm
+				</forwardKey>
+			</forward>
+			<directions>合同制作</directions>
+		</steps>
+		<steps>
+			<stepName>合同签约上传</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				timeOutFlag;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carContractSigning_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/contract/interestRate/carContractSigningUploadForm
+				</forwardKey>
+			</forward>
+			<directions>合同签约上传</directions>
+		</steps>
+		<steps>
+			<stepName>合同审核</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				orderField;
+				firstBackSourceStep;
+				contractVersion;
+				backReason;
+				timeOutFlag;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carContractCheck_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/contract/interestRate/carContractCheckForm
+				</forwardKey>
+			</forward>
+			<directions>合同审核</directions>
+		</steps>
+		<steps>
+			<stepName>款项确认</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				contractBackResultCode;
+				orderField;
+				firstBackSourceStep;
+				loanFlag;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_pendingAudit_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carApply/borrowlist/carLoanFlowCustomer</forwardKey>
+			</forward>
+			<directions>款项确认</directions>
+		</steps>
+		<steps>
+			<stepName>分配卡号</stepName>
+			<!-- <updateAttributes>dictStatus;dictLoanWay;midBankCardNo;midBankName;midBankCardName;grantPersons;signUpFlag -->
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				dictLoanWay;
+				midBankCardNo;
+				midBankName;
+				midBankCardName;
+				grantPersons;
+				orderField;
+				firstBackSourceStep;
+				signUpFlag;
+				canHandle;
+				grantBackResultCode;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_cj_loanflow_carGrantLoanChange</eventBeanName>
+			</event>
+
+			<directions>分配卡号</directions>
+		</steps>
+		<steps>
+			<stepName>放款</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				grantRecepicResult;
+				grantFailResult;
+				orderField;
+				grantBackResultCode;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_cj_loanflow_carGrantLoanChange</eventBeanName>
+			</event>
+			<directions>放款</directions>
+		</steps>
+		<steps>
+			<stepName>放款审核</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass>
+			<updateAttributes>
+				dictStatus;
+				grantRecepicResult;
+				grantBackResultCode;
+				grantFailResult;
+				lendingTime;
+				orderField;
+				firstBackSourceStep;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_cj_loanflow_carGrantLoanChange</eventBeanName>
+			</event>
+			<directions>放款审核</directions>
+		</steps>
+	</flow>
+	<flow>
+		<flowConfigName>车借展期流程</flowConfigName>
+		<initBeanName>init_hj_carExtendFlow</initBeanName>
+		<dataLoadBeanName>load_hj_carExtendFlow</dataLoadBeanName>
+		<steps>
+			<stepName>@launch</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyId;
+				originalContractCode;
+				customerName;
+				customerCode;
+				storeName;
+				storeId;
+				storeCode;
+				loanApplyAmount;
+				loanMonths;
+				borrowProductName;
+				borrowProductCode;
+				loanApplyTime;
+				applyStatusCode;
+				extensionFlag;
+				extendNumber;
+				coborrowerName;
+				addrProvince;
+				loanIsPhone;
+				originalAuditAmount;
+				contractCode;
+				plateNumbers;
+				customerIntoTime;
+				orderField;
+				firstBackSourceStep;  
+				addrCity;
+				contractExpirationDate;
+				loanFlag;
+				offendSalesName;offendSalesCode;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_Launch_Car_Extend_Loan_Flow</eventBeanName>
+			</event>
+			<forward>
+				<forwardKey>car/carExtend/carExtendApply/carExtendApplyData
+				</forwardKey>
+			</forward>
+			<directions>发起展期申请</directions>
+		</steps>
+
+		<steps>
+			<stepName>评估报告录入</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				plateNumbers;
+				storeAssessAmount;
+				orderField;
+				firstBackSourceStep; 
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_Appraiser_LoanExtendFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/carExtendApply/carExtendAppraiserEntry
+				</forwardKey>
+			</forward>
+			<directions>评估报告录入</directions>
+		</steps>
+		<steps>
+			<stepName>上传资料</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				orderField;
+				firstBackSourceStep; 
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_UploadData_LoanExtendFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/carExtendApply/carExtendUploadData
+				</forwardKey>
+			</forward>
+			<directions>上传资料</directions>
+		</steps>
+
+		<steps>
+			<stepName>初审</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				auditAmount;
+				firstCheckName;
+				grossRate;
+				auditBorrowProductCode;
+				auditBorrowProductName;
+				auditLoanMonths;
+				auditTime;
+				orderField;
+				firstBackSourceStep; 
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_FirstAudit_LoanExtendFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/carExtendFirstAudit/carExtendFirstAudit
+				</forwardKey>
+			</forward>
+			<directions>初审</directions>
+		</steps>
+		<steps>
+			<stepName>审核费率</stepName> <!-- grantAmount -->
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				contractCode;
+				contractAmount;
+				extensionFee;
+				derate;
+				contractVersion;
+				orderField;
+				timeOutFlag;
+				timeOutPoint;
+				timeoutCheckStage;
+				firstBackSourceStep; 
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carExtendInterestRateAudit_CarLoanFlow
+				</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/workItems/carContract/carExtendInterestRateForm
+				</forwardKey>
+			</forward>
+			<directions>审核费率</directions>
+		</steps>
+		<steps>
+			<stepName>签署</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				auditAmount;
+				auditBorrowProductCode;
+				auditBorrowProductName;
+				auditLoanMonths;
+				orderField;
+				firstBackSourceStep; 
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carExtendSigning_CarLoanFlow</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/carExtendApply/carExtendSigningCheckForm
+				</forwardKey>
+			</forward>
+			<directions>签署</directions>
+		</steps>
+		<steps>
+			<stepName>合同制作</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				orderField;
+				firstBackSourceStep; 
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carExtendContractPro_CarLoanFlow
+				</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/workItems/carContract/carExtendContractProForm
+				</forwardKey>
+			</forward>
+			<directions>合同制作</directions>
+		</steps>
+		<steps>
+			<stepName>合同签约上传</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				orderField;
+				timeOutFlag;
+				firstBackSourceStep; 
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carExtendContractSigning_CarLoanFlow
+				</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/workItems/carContract/carExtendContractSigningUploadForm
+				</forwardKey>
+			</forward>
+			<directions>合同签约上传</directions>
+		</steps>
+		<steps>
+			<stepName>合同审核</stepName>
+			<flowPropertyClass>com.creditharmony.loan.car.common.view.FlowProperties</flowPropertyClass> 
+			<updateAttributes>
+				applyStatusCode;
+				orderField;
+				firstBackSourceStep; 
+				loanFlag;
+				timeOutFlag;
+			</updateAttributes>
+			<event>
+				<type>before</type>
+				<eventBeanName>ex_hj_carExtendContractCheck_CarLoanFlow
+				</eventBeanName>
+			</event>
+			<forward>
+				<dealType>0</dealType>
+				<forwardKey>car/carExtend/workItems/carContract/carExtendContractCheckForm
+				</forwardKey>
+			</forward>
+			<directions>合同审核</directions>
+		</steps>
+	</flow>
+	<!-- end -->
+
+	<flowAttributeMap>
+		<flows>
+			<flow name="信借流程">
+				<map>applyId:bv.applyId</map>                                   	<!--流程ID -->
+				<map>customerName:bv.loanCustomer.customerName</map>			 	<!--客户姓名 -->
+				<map>consTelesalesOrgcode:bv.consTelesalesOrgcode</map>             <!--电销组织机构ID -->
+				<map>identityCode:bv.loanCustomer.customerCertNum</map>           	<!-- 证件号码 -->
+				<map>coborrowerName:bv.coborrowerNames</map>                     	<!--共借人 -->
+				<map>loanCode:bv.loanInfo.loanCode</map>                         	<!--客户姓名 -->
+				<map>provinceName:bv.orgProvince</map>                           	<!--省 份 -->
+				<map>provinceCode:bv.orgProvinceCode</map>                       	<!--省 份 Code -->
+				<map>cityName:bv.orgCity</map>                                   	<!--城 市 -->
+				<map>cityCode:bv.orgCityCode</map>                               	<!--城 市 -->
+				<map>storeCode:bv.orgCode</map>                                 	<!--门 店编号 -->
+				<map>storeOrgId:bv.storeOrgId</map>								 	<!--门店组织机构ID -->
+				<map>storeName:bv.orgName</map>                                  	<!--门 店名称 -->
+				<map>loanStatusName:bv.dictLoanStatus</map>                      	<!--借款状态Name -->
+				<map>loanStatusCode:bv.dictLoanStatusCode</map>                  	<!--借款状态Code -->
+				<map>applyProductName:bv.productName</map>                      	<!--产 品 -->
+				<map>applyProductCode:bv.productCode</map>
+				<map>signPlatform:bv.signingPlatformName</map>
+				<map>urgentFlag:bv.loanInfo.loanUrgentFlag</map>                 	<!--是否加急 -->
+				<map>telesalesFlag:bv.loanCustomer.customerTelesalesFlag</map>   	<!--是否电销 -->
+				<map>raiseFlag:bv.loanInfo.loanRaiseFlag</map>                   	<!--上调标识 -->
+				<map>additionalFlag:bv.loanInfo.dictIsAdditional</map>
+				<map>teamManagerCode:bv.loanTeamManagerCode</map>               	<!--团队经理 -->
+				<map>teamManagerName:bv.loanTeamManagerName</map>
+				<map>customerManagerCode:bv.loanManagerCode</map>       			<!--销售人员 -->
+				<map>customerManagerName:bv.loanManagerName</map>       			<!--销售人员 -->
+				<map>intoLoanTime:bv.loanInfo.customerIntoTime</map>             	<!--进件时间 -->
+				<map>channelName:bv.loanFlag</map>                               	<!--标 识 -->
+				<map>lendingTime:bv.lendingTime</map>                               <!--提交时间 -->
+				<map>grantBackDate:bv.grantBackDate</map>                           <!-- 回盘时间 -->
+				<map>channelCode:bv.loanFlagCode</map>
+				<map>agentCode:bv.agentCode</map>								 	<!--客服code -->
+				<map>agentName:bv.agentName</map>								 	<!--客服Name -->
+				<map>applyMoney:bv.loanInfo.loanApplyAmountf</map>           		<!--申请金额 -->
+				<map>applyMonth:bv.loanInfo.loanMonths</map>                     	<!--借款期数 -->
+				<map>contractMoney:bv.contractAmount</map>                       	<!-- 合同金额 -->
+				<map>lendingMoney:bv.feePaymentAmount</map>                       	<!-- 放款金额 -->
+				<map>depositBank:bv.applyBankName</map>                        		<!--放款银行名字 -->
+				<map>bankBranchName:bv.applyBankBranch</map>                    	<!--放款银行分支 -->
+				<map>bankAccountNumber:bv.applyBankAccount</map>                  	<!--放款账号 -->
+				<map>lendingWayName:bv.dictLoanWay</map>						    <!-- 放款途径 -->
+				<map>lendingWayCode:bv.dictLoanWayCode</map>
+				<map>receiptResult:bv.grantRecepicResult</map>				 		<!-- 回执结果 -->
+				<map>lendingAccount:bv.bankCardNo</map>							 	<!-- 中间人放款账号 -->
+				<map>cautionerDepositBank:bv.midBankName</map>						<!-- 中间人的开户行 -->
+				<map>bankAccountName:bv.middleName</map>						 	<!-- 中间人姓名 -->
+				<map>visitUserId:bv.outSideUserCode</map>					 		<!--外访人员 -->
+				<map>visitUserName:bv.outSideUserName</map>					 		<!--外访人员 -->
+				<map>visitFinishTime:bv.visitFinishTime</map>					 	<!--外访人员 -->
+				<map>failReason:bv.grantFailResult</map>                   			<!--放款，线上放款失败原因 -->
+				<map>backReason:bv.grantSureBackReason</map> 						<!-- 退回原因，分配卡号的退回原因 -->
+				<map>grantFailAmount:bv.grantFailAmount</map>               		<!-- 放款失败金额 -->
+				<map>unDeductMoney:bv.unUrgeService</map>                     		<!-- 未划金额 -->
+				<map>urgeServiceFee:bv.feeUrgedService</map>                		<!-- 催收服务费 -->
+				<map>submissionBatch:bv.grantPch</map>                      		<!-- 放款批次号 -->
+				<map>submitDeductTime:bv.submitDeductTime</map>                     <!-- 放款提交划扣日期 -->
+				<map>submissionDate:bv.submissionDate</map>                 		<!-- 批次提交时间 -->
+				<map>grantBackDate:bv.grantBackDate</map>                 		    <!-- 线上放款回盘时间 -->
+				<map>grantBatchCode:bv.grantBatchCode</map>                         <!-- 放款时手动输入的放款批次 -->
+				<map>backFlag:bv.backFlag</map>                                     <!-- 退回状态 -->
+				<map>frozenReason:bv.frozenReason</map>                             <!-- 冻结原因 -->
+				<map>frozenFlag:bv.frozenFlag</map>                                 <!-- 冻结标识 -->
+				<map>cjAuthen:bv.cjAuthen</map>
+				<map>cjAuthenFailure:bv.cjAuthenFailure</map>
+				<map>kingBankProvinceName:bv.kingBankProvinceName</map>             <!-- 金账户开户行省市名 -->
+				<map>kingBankCityName:bv.kingBankCityName</map>                     <!-- 金账户开户行区县名 -->
+				<map>kingBankProvinceCode:bv.kingBankProvinceCode</map>             <!-- 金账户开户行省市 -->
+				<map>kingBankCityCode:bv.kingBankCityCode</map>                     <!-- 金账户开户行区县 -->
+				<map>kingStatus:bv.kingStatus</map> 							    <!-- 金账户开户状态 -->
+				<map>kingOpenRespReason:bv.kingBackReason</map>						<!-- 金账户开户返回原因 -->
+				<map>kingProctolRespReason:bv.kingProctolBackReason</map>			<!-- 金账户协议库返回原因 -->
+				<map>dealUser:bv.dealUser</map>
+				<map>lastDealTime:bv.lastDealTime</map>                             <!-- 上一节点处理时间 -->
+				<map>orderField:bv.orderField</map>                                 <!-- 排序字段 -->
+				<map>trustCashRtn:bv.trustCashRtn</map>			 					<!-- 委托提现回盘状态 -->
+				<map>trustCashFailure:bv.trustCashFailure</map>						<!-- 委托提现失败原因 -->
+				<map>trustCash:bv.trustCash</map>									<!-- 委托提现状态 -->
+				<map>trustRecharge:bv.trustRecharge</map>							<!-- 委托充值状态 -->
+				<map>trustGrantOutputStatus:bv.trustGrantOutputStatus</map>			<!-- 资金托管待放款文件导出状态 -->
+				<map>timeOutFlag:bv.timeOutFlag</map>                               <!-- 超时标识 -->
+				<map>timeOutPoint:bv.timeOutPoint</map>                             <!-- 超时截至日期 -->
+				<map>dealUser:bv.dealUser</map>										<!-- 处理人id -->
+				<map>intoApproveTime:bv.outtoLoanTime</map>							<!-- 出汇金时间 -->
+				<map>goldCreditStatus:bv.goldCreditStatus</map>                     <!-- 待金信网确认的数据状态(确认状态) -->
+			    <map>kingStatus:bv.kingStatus</map>                                 <!-- 金账户开户状态 -->
+			    <map>dictLoanType:bv.dictLoanType</map>                             <!-- 结清再贷/首次借款 -->
+			    <map>dictLoanTypeName:bv.dictLoanTypeName</map>                     <!-- 结清再贷/首次借款 -->
+			    <map>custBankAccountName:bv.custBankAccountName</map>               <!-- 客户开户姓名 -->
+			    <map>email:bv.email</map>                                           <!-- 客户邮箱 -->
+			    <map>mobelPhone:bv.mobilePhone</map>                                <!-- 客户电话 -->
+			    <map>paperLessFlag:bv.paperLessFlag</map>                           <!-- 无纸化标识 -->
+			    <map>monthRate:bv.monthRate</map>                                   <!-- 借款利率 -->
+			    <map>ensureManFlag:bv.ensureManFlag</map>                           <!-- 是否有保证人 -->
+			    <map>registFlag:bv.registFlag</map>                                 <!-- 是否注册失败 -->
+			    <map>signUpFlag:bv.signUpFlag</map>                                 <!-- 是否加盖失败 -->
+			    <map>bankIsRareword:bv.bankIsRareword</map>                         <!-- 是否生僻字 -->
+			    <map>confirmSignDate:bv.confirmSignDate</map>                       <!-- 确认签署时间 -->
+			    <map>loanInfoOldOrNewFlag:bv.loanInfo.loanInfoOldOrNewFlag</map>	<!-- 新旧版申请表标识 -->
+			    <map>contractVersion:bv.contractVersion</map>                       <!-- 合同版本号 -->
+			    <map>revisitStatus:bv.contract.revisitStatus</map>  				<!-- 回访状态 -->
+			    <map>checkTime:bv.checkTime</map>  									<!-- 合同审核提交时间 -->
+			</flow>
+			<flow name="复议流程">
+				<map>applyId:bv.applyId</map>
+				<map>loanCode:bv.reconsiderApplyEx.loanCode</map>
+				<map>consTelesalesOrgcode:bv.consTelesalesOrgcode</map>               <!--电销组织机构ID -->
+				<map>customerName:bv.reconsiderApplyEx.customerName</map>
+				<map>coborrowerName:bv.reconsiderApplyEx.coborrowerName</map>
+				<map>identityCode:bv.reconsiderApplyEx.identityCode</map>
+				<map>provinceCode:bv.reconsiderApplyEx.provinceCode</map>
+				<map>provinceName:bv.reconsiderApplyEx.provinceName</map>
+				<map>cityCode:bv.reconsiderApplyEx.cityCode</map>
+				<map>cityName:bv.reconsiderApplyEx.cityName</map>
+				<map>storeOrgId:bv.storeOrgId</map>
+				<map>storeCode:bv.orgCode</map>
+				<map>storeName:bv.orgName</map>                                         <!--门 店名称 -->
+				<map>agentCode:bv.agentCode</map>								 		<!--客服code -->
+				<map>agentName:bv.agentName</map>								 		<!--客服Name -->
+				<map>applyMoney:bv.reconsiderApplyEx.applyMoney</map>                   <!-- 合同金额 -->
+				<map>applyMonth:bv.reconsiderApplyEx.applyMonth</map>        	        <!-- 放款金额 -->
+				<map>channelName:bv.loanFlag</map>                                      <!--标 识 -->
+				<map>channelCode:bv.loanFlagCode</map>
+				<map>lendingTime:bv.lendingTime</map> 
+				<map>signPlatform:bv.signingPlatformName</map>
+				<map>applyProductName:bv.reconsiderApplyEx.applyProductName</map>       <!--产 品 -->
+				<map>applyProductCode:bv.reconsiderApplyEx.applyProductCode</map>
+				<map>teamManagerCode:bv.loanTeamManagerCode</map>       				<!--团队经理 -->
+				<map>teamManagerName:bv.loanTeamManagerName</map>
+				<map>customerManagerCode:bv.loanManagerCode</map>						<!--客户经理 -->
+				<map>customerManagerName:bv.loanManagerName</map>
+				<map>intoLoanTime:bv.reconsiderApplyEx.intoLoanTime</map>
+				<map>raiseFlag:bv.reconsiderApplyEx.raiseFlag</map>
+				<map>additionalFlag:bv.reconsiderApplyEx.additionalFlag</map>
+				<map>urgentFlag:bv.reconsiderApplyEx.urgentFlag</map>
+				<map>telesalesFlag:bv.reconsiderApplyEx.telesalesFlag</map>
+				<map>loanStatusName:bv.dictLoanStatus</map>
+				<map>loanStatusCode:bv.dictLoanStatusCode</map>
+				<map>unDeductMoney:bv.unUrgeService</map>                               <!-- 未划金额 -->
+				<map>urgeServiceFee:bv.feeUrgedService</map>             			    <!-- 催收服务费 -->
+				<map>contractMoney:bv.contractAmount</map>                      	    <!-- 合同金额 -->
+				<map>lendingMoney:bv.feePaymentAmount</map>
+				<map>depositBank:bv.applyBankName</map>                        		    <!--放款银行名字 -->
+				<map>bankBranchName:bv.applyBankBranch</map>                    		<!--放款银行分支 -->
+				<map>bankAccountNumber:bv.applyBankAccount</map>
+				<map>lendingWayName:bv.dictLoanWay</map>								<!-- 放款途径 -->
+				<map>lendingWayCode:bv.dictLoanWayCode</map>
+				<map>receiptResult:bv.grantRecepicResult</map>				 		    <!-- 回执结果 -->
+				<map>grantBackDate:bv.grantBackDate</map>                               <!-- 回盘时间 -->
+				<map>lendingAccount:bv.bankCardNo</map>							        <!-- 中间人放款账号 -->
+				<map>cautionerDepositBank:bv.midBankName</map>							<!-- 中间人的开户行 -->
+				<map>bankAccountName:bv.middleName</map>
+				<map>failReason:bv.grantFailResult</map>                  				<!--放款，线上放款失败原因 -->
+				<map>backReason:bv.grantSureBackReason</map> 							<!-- 退回原因，分配卡号的退回原因 -->
+				<map>grantFailAmount:bv.grantFailAmount</map>               		    <!-- 放款失败金额 -->
+				<map>visitUserId:bv.outSideUserCode</map>								<!--外访人员 -->
+				<map>visitUserName:bv.outSideUserName</map>					 			<!--外访人员 -->
+				<map>visitFinishTime:bv.visitFinishTime</map>							<!--外访人员 -->
+				<map>submissionBatch:bv.grantPch</map>                     				<!-- 放款批次号 -->
+				<map>submitDeductTime:bv.submitDeductTime</map>                      	<!-- 放款提交划扣日期 -->
+				<map>submissionDate:bv.submissionDate</map>                 			<!-- 批次提交时间 -->
+				<map>grantBatchCode:bv.grantBatchCode</map>                             <!-- 放款时手动输入的放款批次 -->
+				<map>backFlag:bv.backFlag</map>                                         <!-- 退回标识 -->
+				<map>frozenReason:bv.frozenReason</map>                                 <!-- 冻结原因 -->
+				<map>frozenFlag:bv.frozenFlag</map>                                     <!-- 冻结标识 -->
+				<map>cjAuthen:bv.cjAuthen</map>
+				<map>cjAuthenFailure:bv.cjAuthenFailure</map>
+				<map>lastDealTime:bv.lastDealTime</map>                                 <!-- 上一节点处理时间 -->
+				<map>orderField:bv.orderField</map>                                     <!-- 排序字段 -->
+				<map>kingOpenRespReason:bv.kingBackReason</map>							<!-- 金账户开户返回原因 -->
+				<map>kingProctolRespReason:bv.kingProctolBackReason</map>				<!-- 金账户协议库返回原因 -->
+				<map>kingBankProvinceName:bv.kingBankProvinceName</map>          		<!-- 金账户开户行省市名 -->
+				<map>kingBankCityName:bv.kingBankCityName</map>                    		<!-- 金账户开户行区县名 -->
+				<map>kingBankProvinceCode:bv.kingBankProvinceCode</map>            		<!-- 金账户开户行省市 -->
+				<map>kingBankCityCode:bv.kingBankCityCode</map>                     	<!-- 金账户开户行区县 -->
+				<map>trustCashRtn:bv.trustCashRtn</map>			 						<!-- 委托提现回盘状态 -->
+				<map>trustCash:bv.trustCash</map>										<!-- 委托提现状态 -->
+				<map>trustRecharge:bv.trustRecharge</map>								<!-- 委托充值状态 -->
+				<map>trustCashFailure:bv.trustCashFailure</map>							<!-- 委托提现失败原因 -->
+				<map>trustGrantOutputStatus:bv.trustGrantOutputStatus</map>				<!-- 资金托管待放款文件导出状态 -->
+				<map>timeOutFlag:bv.timeOutFlag</map>                               	<!-- 超时标识 -->
+				<map>timeOutPoint:bv.timeOutPoint</map>                             	<!-- 超时截至日期 -->
+				<map>dealUser:bv.dealUser</map>											<!-- 处理人id -->
+				<map>kingStatus:bv.kingStatus</map>                                	 	<!-- 金账户开户状态 -->
+				<map>dictLoanType:bv.dictLoanType</map>                             	<!-- 结清再贷/首次借款 -->
+			    <map>dictLoanTypeName:bv.dictLoanTypeName</map>                     	<!-- 结清再贷/首次借款 -->
+			    <map>custBankAccountName:bv.custBankAccountName</map>               	<!-- 客户开户姓名 -->
+			    <map>email:bv.email</map>                                           	<!-- 客户邮箱 -->
+			    <map>mobelPhone:bv.mobilePhone</map>                                    <!-- 客户电话 -->
+			    <map>paperLessFlag:bv.paperLessFlag</map>                           	<!-- 无纸化标识 -->
+			    <map>monthRate:bv.monthRate</map>                                       <!-- 借款利率 -->
+			    <map>ensureManFlag:bv.ensureManFlag</map>                               <!-- 是否有保证人 -->
+			    <map>registFlag:bv.registFlag</map>                                     <!-- 是否注册失败 -->
+			    <map>signUpFlag:bv.signUpFlag</map>                                	    <!-- 是否加盖失败 -->
+			    <map>bankIsRareword:bv.bankIsRareword</map>                             <!-- 是否生僻字 -->
+			    <map>model:bv.model</map>
+			    <map>confirmSignDate:bv.confirmSignDate</map>                           <!-- 确认签署时间 -->
+			    <map>goldCreditStatus:bv.goldCreditStatus</map>                         <!-- 金信状态 -->
+			    <map>loanInfoOldOrNewFlag:bv.reconsiderApplyEx.loanInfoOldOrNewFlag</map>		<!-- 新旧版申请表标识 -->
+			    <map>intoApproveTime:bv.reconsiderApplyEx.outtoLoanTime</map>		<!-- 信借流程的出汇金时间-->
+			    <map>revisitStatus:bv.contract.revisitStatus</map>
+			    <map>contractVersion:bv.contractVersion</map>
+			    <map>nodeFlag:bv.nodeFlag</map>
+			    <map>checkTime:bv.checkTime</map>  									<!-- 合同审核提交时间 -->
+			</flow>
+			<flow name="车借流程">
+				<map>applyId:bv.applyId</map>
+				<map>customerName:bv.customerName</map>									<!-- 用户姓名 -->
+				<map>customerCode:bv.customerCode</map>									<!-- 用户姓名 -->
+				<map>loanCode:bv.loanCode</map>											<!-- 借款编码 -->
+				<map>certNum:bv.customerCertNum</map>            						<!-- 身份证号码 -->
+				<map>planArrivalTime:bv.planArrivalTime</map>            				<!-- 预计到店时间 -->
+				<map>coborrowerName:bv.coborrowerName</map>        						<!-- 共借人姓名（多个使用，隔开） -->
+				
+				<map>timeOutFlag:bv.timeOutFlag</map>        							<!-- 合同超时作废轮询检测标志 -->
+				<map>timeOutPoint:bv.timeOutPoint</map>        							<!-- 合同超时作废日期 -->
+				<map>timeoutCheckStage:bv.timeoutCheckStage</map>        				<!-- 超时检测阶段 -->
+				<map>firstBackSourceStep:bv.firstBackSourceStep</map>        			<!-- 第一次退回的源节点名称 -->
+				<map>orderField:bv.orderField</map>        								<!-- 排序字段 -->
+
+				<map>loanApplyAmount:bv.loanApplyAmount</map>        					<!-- 申请金额 -->
+				<map>loanApplyTime:bv.loanApplyTime</map>            					<!-- 申请日期 -->
+				<map>loanMonths:bv.loanMonths</map>										<!-- 借款期限（申请） -->
+				<map>signUpFlag:bv.signUpFlag</map>                                	    <!-- 是否加盖失败 -->
+				<map>canHandle:bv.canHandle</map>										<!--  -->
+
+				<map>loanTeamEmpCode:bv.consTeamManagercode</map>    					<!-- 团队经理（code） -->
+				<map>loanTeamEmpName:bv.loanTeamEmpName</map>    						<!-- 团队经理（name） -->
+				<map>offendSalesCode:bv.managerCode</map>           					<!-- 客户经理编码 -->
+				<map>offendSalesName:bv.offendSalesName</map>           				<!-- 客户经理姓名 -->
+
+				<map>storeName:bv.storeName</map>                   		   			<!-- 门店名称 -->
+				<map>storeCode:bv.storeCode</map>                    					<!-- 门店code -->
+				<map>addrProvince:bv.addrProvince</map>                    				<!-- 管辖省份 -->
+				<map>addrCity:bv.addrCity</map>                    						<!-- 所属城市 -->
+				<map>storeAssessAmount:bv.storeAssessAmount</map> 						<!-- 门店评估金额 -->
+
+				<map>vehicleBrandModel:bv.vehicleBrandModel</map> 						<!-- 车辆品牌型号 -->
+				<map>plateNumbers:bv.plateNumbers</map>           						<!-- 车牌号码 -->
+
+				<map>dictStatus:bv.dictLoanStatus</map>              			<!-- 借款状态（code） -->
+				<map>dictOperStatus:bv.dictOperStatus</map>              		<!-- 咨询状态（code） -->
+				<map>loanIsPhone:bv.consTelesalesFlag</map> 					<!-- 是否电销（code） -->
+
+				<map>borrowTursteeFlag:bv.borrowTursteeFlag</map>            	<!-- 标识 -->
+				<map>conditionalThroughFlag:bv.conditionalThroughFlag</map>     <!-- 附条件标识 -->
+
+				<map>borrowProductCode:bv.borrowProductCode</map>				<!-- 产品类型编码（申请） -->
+				<map>borrowProductName:bv.borrowProductName</map>				<!-- 产品类型（申请） -->
+				<map>auditBorrowProductCode:bv.auditBorrowProductCode</map>		<!-- 产品类型编码（批复） -->
+				<map>auditBorrowProductName:bv.auditBorrowProductName</map>		<!-- 产品类型编码（批复） -->
+
+				<map>contractBackResultCode:bv.contractBackResultCode</map> 	<!-- 退回原因Code（合同-确认放款退回） -->
+				<map>grantBackResultCode:bv.grantBackResultCode</map> 			<!-- 退回原因Code（放款） -->
+
+				<map>firstCheckName:bv.firstCheckName</map>						<!-- 初审姓名（面审人员） -->
+				<map>recheckName:bv.recheckName</map>							<!-- 复审姓名 -->
+				<map>cycleBorrowingFlag:bv.cycleBorrowingFlag</map>				<!-- 是否循环借 -->
+				<map>extensionFlag:bv.extensionFlag</map>						<!-- 是否展期 -->
+
+				<map>grossRate:bv.grossRate</map>								<!-- 总费率 -->
+				<map>contractExpirationDate:bv.contractExpirationDate</map>		<!-- 合同到期提醒日期（需要计算） -->
+				<map>contractCode:bv.contractCode</map>							<!-- 合同编号 -->
+				<map>contractAmount:bv.contractAmount</map>            			<!-- 合同金额 -->
+				<map>contractVersion:bv.contractVersion</map>            		<!-- 合同版本号 -->
+				<map>grantAmount:bv.grantAmount</map>            				<!-- 放款金额 -->
+				<map>lendingTime:bv.lendingTime</map>            				<!-- 放款日期 -->
+				<map>grantRecepicResult:bv.grantRecepicResult</map> 			<!-- 回盘结果、放款回执结果 -->
+				<map>grantFailResult:bv.grantFailResult</map> 					<!-- 回盘原因、放款失败原因 -->
+
+				<map>bankAccountName:bv.bankAccountName</map>            		<!-- 银行信息（客户银行卡或存折户名） -->
+				<map>bankCardName:bv.bankCardName</map>            				<!-- 账号姓名（客户） -->
+				<map>bankCardNo:bv.bankCardNo</map>            					<!-- 银行账号（客户） -->
+				<map>cardBank:bv.cardBank</map>            						<!-- 开户行（客户） -->
+				<map>midBankCardNo:bv.midBankCardNo</map>           			<!-- 放款账号（银行账号）、中间人卡号 -->
+				<map>midBankName:bv.midBankName</map>            				<!-- 放款银行（银行信息），放款银行名称 -->
+				<map>midBankCardName:bv.midBankCardName</map>            		<!-- 放款账号姓名（账号姓名） -->
+
+				<map>dictLoanWay:bv.dictLoanWay</map>            				<!-- 放款途径 -->
+				<map>deductsAmount:bv.deductsAmount</map>            			<!-- 应划扣金额 -->
+
+				<map>auditAmount:bv.auditAmount</map> 							<!-- 批借金额 -->
+				<map>auditTime:bv.auditTime</map> 								<!-- 批借时间 -->
+				<map>auditLoanMonths:bv.auditLoanMonths</map> 					<!-- 借款期限（批复） -->
+
+				<map>customerIntoTime:bv.customerIntoTime</map> 				<!-- 进件时间 -->
+
+				<map>contractFactDay:bv.contractFactDay</map> 					<!-- 签约日期 -->
+				<map>grantPersons:bv.grantPersons</map> 						<!-- 放款人员 -->
+				<map>comprehensiveServiceFee:bv.comprehensiveServiceFee</map>	<!-- 综合服务费 -->
+
+				<map>trustCashRtn:bv.trustCashRtn</map>			 					<!-- 委托提现回盘状态 -->
+				<map>trustCashFailure:bv.trustCashFailure</map>						<!-- 委托提现失败原因 -->
+				<map>trustCash:bv.trustCash</map>									<!-- 委托提现状态 -->
+				<map>trustGrantOutputStatus:bv.trustGrantOutputStatus</map>			<!-- 资金托管待放款文件导出状态 -->
+				<map>loanFlag:bv.loanFlag</map>	
+				<map>backReason:bv.dictBackMestype</map>
+			</flow>
+			<flow name="车借展期流程">
+				<map>applyId:bv.applyId</map>
+				<map>originalContractCode:bv.originalContractCode</map>					<!-- 原合同编号 -->
+				<map>customerName:bv.customerName</map>									<!-- 用户姓名 -->
+				<map>customerCode:bv.customerCode</map>									<!-- 用户姓名 -->
+				<map>storeName:bv.storeName</map>                   		   			<!-- 门店名称 -->
+				<map>storeId:bv.storeId</map>                    						<!-- 门店code -->
+				<map>storeCode:bv.storeId</map>                    						<!-- 门店code展期初审和车借初审待办合一，队列参数名差异，再加一个-->
+				<map>plateNumbers:bv.plateNumbers</map>           						<!-- 车牌号码 -->
+				<map>coborrowerName:bv.coborrowerName</map>        						<!-- 共借人姓名（多个使用，隔开） -->
+				<map>addrProvince:bv.addrProvince</map>                    				<!-- 管辖省份 -->
+				<map>loanIsPhone:bv.loanIsPhone</map> 									<!-- 是否电销（code） -->
+				<map>storeAssessAmount:bv.storeAssessAmount</map> 						<!-- 门店评估金额 -->
+				<map>addrCity:bv.addrCity</map>											<!-- 所属城市 -->	
+				<map>loanFlag:bv.loanFlag</map>											<!--渠道 -->	
+				<map>firstBackSourceStep:bv.firstBackSourceStep</map>                    <!-- 第一次退回的源节点名称 -->
+				<map>orderField:bv.orderField</map>                                        <!-- 排序字段 -->  
+
+				<map>loanApplyAmount:bv.loanApplyAmount</map>        					<!-- 申请金额 -->
+				<map>loanMonths:bv.loanMonths</map>										<!-- 借款期限（申请） -->
+				<map>loanApplyTime:bv.loanApplyTime</map>            					<!-- 申请日期 -->
+				<map>applyStatusCode:bv.applyStatusCode</map> 							<!-- 申请状态（编码） -->
+				<map>extendNumber:bv.extendNumber</map> 								<!-- 已展期次数 -->
+				<map>derate:bv.derate</map> 											<!-- 降额 -->
+				<map>contractCode:bv.contractCode</map>									<!-- 展期合同编号（合同编号） -->
+				<map>contractAmount:bv.contractAmount</map>            					<!-- 展期合同金额 -->
+				<map>extensionFee:bv.extensionFee</map>            						<!-- 展期费用 -->
+				<map>contractVersion:bv.contractVersion</map>            				<!-- 展期合同版本号 -->
+				<map>totalCost:bv.totalCost</map>            							<!-- 总费用 -->
+				<map>grossRate:bv.grossRate</map>										<!-- 总费率 -->
+				<map>firstCheckName:bv.firstCheckName</map>								<!-- 初审姓名（面审人员） -->
+				<map>recheckName:bv.recheckName</map>									<!-- 复审姓名 -->
+
+				<map>borrowProductCode:bv.borrowProductCode</map>						<!-- 产品类型编码（申请） -->
+				<map>borrowProductName:bv.borrowProductName</map>						<!-- 产品类型（申请） -->
+				<map>auditBorrowProductCode:bv.auditBorrowProductCode</map>				<!-- 产品类型编码（批复） -->
+				<map>auditBorrowProductName:bv.auditBorrowProductName</map>				<!-- 产品类型编码（批复） -->
+
+				<map>auditTime:bv.auditTime</map> 										<!-- 批借时间 -->
+				<map>auditLoanMonths:bv.auditLoanMonths</map> 							<!-- 借款期限（批复） -->
+				<map>originalAuditAmount:bv.originalAuditAmount</map> 					<!-- 原批借金额 -->
+				<map>auditAmount:bv.auditAmount</map> 									<!-- 批借金额 -->
+				<map>finalCheckTime:bv.finalCheckTime</map>								<!-- 终审日期 -->
+				<map>contractFactDay:bv.contractFactDay</map> 							<!-- 签约日期 -->
+
+				<map>customerIntoTime:bv.customerIntoTime</map> 				<!-- 进件时间 -->
+				
+				<map>extensionFlag:bv.extensionFlag</map>								<!-- 是否展期 -->
+				<map>contractEndDay:bv.contractEndDay</map>								<!-- 合同到期日期 -->
+				<map>contractExpirationDate:bv.contractExpirationDate</map>				<!-- 合同提醒到期日期 -->
+				<map>timeOutFlag:bv.timeOutFlag</map>        							<!-- 合同超时作废轮询检测标志 -->
+				<map>timeOutPoint:bv.timeOutPoint</map>        							<!-- 合同超时作废日期 -->
+				<map>timeoutCheckStage:bv.timeoutCheckStage</map>        				<!-- 超时检测阶段 -->
+				
+				<map>offendSalesCode:bv.managerCode</map>           					<!-- 客户经理编码 -->
+				<map>offendSalesName:bv.offendSalesName</map>           				<!-- 客户经理姓名 -->
+			</flow>
+		</flows>
+	</flowAttributeMap>
+</dispatchRules>

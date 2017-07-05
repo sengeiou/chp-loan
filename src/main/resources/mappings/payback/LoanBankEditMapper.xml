@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.account.dao.LoanBankEditDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.account.entity.LoanBankEditEntity" >
+    <id column="id" property="id"  />
+    <result column="loan_code" property="loanCode"  />
+    <result column="bank_name" property="bankName"  />
+    <result column="bank_province" property="bankProvince"  />
+    <result column="bank_city" property="bankCity"  />
+    <result column="bank_orc" property="bankOrc"  />
+    <result column="dict_crea_type" property="dictCreaType"  />
+    <result column="bank_branch" property="bankBranch"  />
+    <result column="bank_account_name" property="bankAccountName"  />
+    <result column="bank_account" property="bankAccount"  />
+    <result column="bank_signing_platform" property="bankSigningPlatform"  />
+    <result column="dict_maintain_status" property="dictMaintainStatus"  />
+    <result column="bank_top_flag" property="bankTopFlag" />
+    <result column="dict_maintain_type" property="dictMaintainType"  />
+    <result column="bank_check_result" property="bankCheckResult"  />
+    <result column="bank_check_desc" property="bankCheckDesc"  />
+    <result column="bank_old_account" property="bankOldAccount"  />
+    <result column="bank_is_rareword" property="bankIsRareword"  />
+    <result column="bank_jzh_khhss" property="bankJzhKhhss"  />
+    <result column="bank_jzh_khhqx" property="bankJzhKhhqx"  />
+    <result column="bank_authorizer" property="bankAuthorizer"  />
+    <result column="create_time" property="createTime" />
+    <result column="create_by" property="createBy"  />
+    <result column="modify_by" property="modifyBy"  />
+    <result column="modify_time" property="modifyTime" />
+    <result column="apply_time" property="applyTime" />
+    <result column="preserve_time" property="preserveTime" />
+    <result column="file_id" property="fileId"  />
+    <result column="file_name" property="fileName"  />
+    <result column="old_bank_account_id" property="oldBankAccountId"  />
+    <result column="updatetype" property="updatetype"  />
+    <result column="dict_source_type" property="dictSourceType"  />
+    <result column="repayment_flag" property="repaymentFlag"  />
+    <result column="dict_source_type_pcl" property="dictSourceTypePcl"  />
+    <result column="tl_sign" property="tlSign"  />
+    <result column="tr_serial_no" property="trSerialNo"  />
+    <result column="trans_date" property="transDate" />
+    <result column="real_authen" property="realAuthen"  />
+    <result column="kl_sign" property="klSign"  />
+    <result column="bank_no" property="bankNo"  />
+    <result column="single_serial_no" property="singleSerialNo"  />
+    <result column="cj_sm_no" property="cjSmNo"  />
+    <result column="cj_qy_no" property="cjQyNo"  />
+    <result column="protocol_number" property="protocolNumber"  />
+    <result column="cj_authen" property="cjAuthen"  />
+    <result column="cj_sign" property="cjSign"  />
+    <result column="cj_sign_failure" property="cjSignFailure"  />
+    <result column="cj_authen_failure" property="cjAuthenFailure"  />
+    <result column="updatecontent" property="updatecontent"  />
+    <result column="emailflag" property="emailFlag"/>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, loan_code, bank_name, bank_province, bank_city, bank_orc, dict_crea_type, bank_branch, 
+    bank_account_name, bank_account, bank_signing_platform, dict_maintain_status, bank_top_flag, 
+    dict_maintain_type, bank_check_result, bank_check_desc, bank_old_account, bank_is_rareword, 
+    bank_jzh_khhss, bank_jzh_khhqx, bank_authorizer, create_time, create_by, modify_by, 
+    modify_time, apply_time, preserve_time, file_id, file_name, old_bank_account_id, 
+    updatetype, dict_source_type, repayment_flag, dict_source_type_pcl, tl_sign, tr_serial_no, 
+    trans_date, real_authen, kl_sign, bank_no, single_serial_no, cj_sm_no, cj_qy_no, 
+    protocol_number, cj_authen, cj_sign, cj_sign_failure, cj_authen_failure, updatecontent,emailflag
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_jk_loan_bank
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="searchByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+  	select 
+  	<include refid="Base_Column_List" />
+    from t_jk_loan_bank
+    where loan_code = #{loanCode}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from t_jk_loan_bank
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.borrow.account.entity.LoanBankEditEntity" >
+    insert into t_jk_loan_bank (id, loan_code, bank_name, 
+      bank_province, bank_city, bank_orc, 
+      dict_crea_type, bank_branch, bank_account_name, 
+      bank_account, bank_signing_platform, dict_maintain_status, 
+      bank_top_flag, dict_maintain_type, bank_check_result, 
+      bank_check_desc, bank_old_account, bank_is_rareword, 
+      bank_jzh_khhss, bank_jzh_khhqx, bank_authorizer, 
+      create_time, create_by, modify_by, 
+      modify_time, apply_time, preserve_time, 
+      file_id, file_name, old_bank_account_id, 
+      updatetype, dict_source_type, repayment_flag, 
+      dict_source_type_pcl, tl_sign, tr_serial_no, 
+      trans_date, real_authen, kl_sign, 
+      bank_no, single_serial_no, cj_sm_no, 
+      cj_qy_no, protocol_number, cj_authen, 
+      cj_sign, cj_sign_failure, cj_authen_failure, 
+      updatecontent,emailFlag)
+    values (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{bankName,jdbcType=VARCHAR}, 
+      #{bankProvince,jdbcType=VARCHAR}, #{bankCity,jdbcType=VARCHAR}, #{bankOrc,jdbcType=VARCHAR}, 
+      #{dictCreaType,jdbcType=VARCHAR}, #{bankBranch,jdbcType=VARCHAR}, #{bankAccountName,jdbcType=VARCHAR}, 
+      #{bankAccount,jdbcType=VARCHAR}, #{bankSigningPlatform,jdbcType=VARCHAR}, #{dictMaintainStatus,jdbcType=VARCHAR}, 
+      #{bankTopFlag,jdbcType=INTEGER}, #{dictMaintainType,jdbcType=VARCHAR}, #{bankCheckResult,jdbcType=VARCHAR}, 
+      #{bankCheckDesc,jdbcType=VARCHAR}, #{bankOldAccount,jdbcType=VARCHAR}, #{bankIsRareword,jdbcType=VARCHAR}, 
+      #{bankJzhKhhss,jdbcType=VARCHAR}, #{bankJzhKhhqx,jdbcType=VARCHAR}, #{bankAuthorizer,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{createBy,jdbcType=VARCHAR}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP}, #{applyTime,jdbcType=TIMESTAMP}, #{preserveTime,jdbcType=TIMESTAMP}, 
+      #{fileId,jdbcType=VARCHAR}, #{fileName,jdbcType=VARCHAR}, #{oldBankAccountId,jdbcType=VARCHAR}, 
+      #{updatetype,jdbcType=VARCHAR}, #{dictSourceType,jdbcType=VARCHAR}, #{repaymentFlag,jdbcType=VARCHAR}, 
+      #{dictSourceTypePcl,jdbcType=VARCHAR}, #{tlSign,jdbcType=VARCHAR}, #{trSerialNo,jdbcType=VARCHAR}, 
+      #{transDate,jdbcType=DATE}, #{realAuthen,jdbcType=VARCHAR}, #{klSign,jdbcType=VARCHAR}, 
+      #{bankNo,jdbcType=VARCHAR}, #{singleSerialNo,jdbcType=VARCHAR}, #{cjSmNo,jdbcType=VARCHAR}, 
+      #{cjQyNo,jdbcType=VARCHAR}, #{protocolNumber,jdbcType=VARCHAR}, #{cjAuthen,jdbcType=VARCHAR}, 
+      #{cjSign,jdbcType=VARCHAR}, #{cjSignFailure,jdbcType=VARCHAR}, #{cjAuthenFailure,jdbcType=VARCHAR}, 
+      #{updatecontent,jdbcType=VARCHAR},#{emailFlag,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.account.entity.LoanBankEditEntity" >
+    insert into t_jk_loan_bank
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="bankName != null" >
+        bank_name,
+      </if>
+      <if test="bankProvince != null" >
+        bank_province,
+      </if>
+      <if test="bankCity != null" >
+        bank_city,
+      </if>
+      <if test="bankOrc != null" >
+        bank_orc,
+      </if>
+      <if test="dictCreaType != null" >
+        dict_crea_type,
+      </if>
+      <if test="bankBranch != null" >
+        bank_branch,
+      </if>
+      <if test="bankAccountName != null" >
+        bank_account_name,
+      </if>
+      <if test="bankAccount != null" >
+        bank_account,
+      </if>
+      <if test="bankSigningPlatform != null" >
+        bank_signing_platform,
+      </if>
+      <if test="dictMaintainStatus != null" >
+        dict_maintain_status,
+      </if>
+      <if test="bankTopFlag != null" >
+        bank_top_flag,
+      </if>
+      <if test="dictMaintainType != null" >
+        dict_maintain_type,
+      </if>
+      <if test="bankCheckResult != null" >
+        bank_check_result,
+      </if>
+      <if test="bankCheckDesc != null" >
+        bank_check_desc,
+      </if>
+      <if test="bankOldAccount != null" >
+        bank_old_account,
+      </if>
+      <if test="bankIsRareword != null" >
+        bank_is_rareword,
+      </if>
+      <if test="bankJzhKhhss != null" >
+        bank_jzh_khhss,
+      </if>
+      <if test="bankJzhKhhqx != null" >
+        bank_jzh_khhqx,
+      </if>
+      <if test="bankAuthorizer != null" >
+        bank_authorizer,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="applyTime != null" >
+        apply_time,
+      </if>
+      <if test="preserveTime != null" >
+        preserve_time,
+      </if>
+      <if test="fileId != null" >
+        file_id,
+      </if>
+      <if test="fileName != null" >
+        file_name,
+      </if>
+      <if test="oldBankAccountId != null" >
+        old_bank_account_id,
+      </if>
+      <if test="updatetype != null" >
+        updatetype,
+      </if>
+      <if test="dictSourceType != null" >
+        dict_source_type,
+      </if>
+      <if test="repaymentFlag != null" >
+        repayment_flag,
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        dict_source_type_pcl,
+      </if>
+      <if test="tlSign != null" >
+        tl_sign,
+      </if>
+      <if test="trSerialNo != null" >
+        tr_serial_no,
+      </if>
+      <if test="transDate != null" >
+        trans_date,
+      </if>
+      <if test="realAuthen != null" >
+        real_authen,
+      </if>
+      <if test="klSign != null" >
+        kl_sign,
+      </if>
+      <if test="bankNo != null" >
+        bank_no,
+      </if>
+      <if test="singleSerialNo != null" >
+        single_serial_no,
+      </if>
+      <if test="cjSmNo != null" >
+        cj_sm_no,
+      </if>
+      <if test="cjQyNo != null" >
+        cj_qy_no,
+      </if>
+      <if test="protocolNumber != null" >
+        protocol_number,
+      </if>
+      <if test="cjAuthen != null" >
+        cj_authen,
+      </if>
+      <if test="cjSign != null" >
+        cj_sign,
+      </if>
+      <if test="cjSignFailure != null" >
+        cj_sign_failure,
+      </if>
+      <if test="cjAuthenFailure != null" >
+        cj_authen_failure,
+      </if>
+      <if test="updatecontent != null" >
+        updatecontent,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="bankName != null" >
+        #{bankName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankProvince != null" >
+        #{bankProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCity != null" >
+        #{bankCity,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOrc != null" >
+        #{bankOrc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCreaType != null" >
+        #{dictCreaType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankBranch != null" >
+        #{bankBranch,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccountName != null" >
+        #{bankAccountName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccount != null" >
+        #{bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSigningPlatform != null" >
+        #{bankSigningPlatform,jdbcType=VARCHAR},
+      </if>
+      <if test="dictMaintainStatus != null" >
+        #{dictMaintainStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="bankTopFlag != null" >
+        #{bankTopFlag,jdbcType=INTEGER},
+      </if>
+      <if test="dictMaintainType != null" >
+        #{dictMaintainType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckResult != null" >
+        #{bankCheckResult,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckDesc != null" >
+        #{bankCheckDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOldAccount != null" >
+        #{bankOldAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankIsRareword != null" >
+        #{bankIsRareword,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhss != null" >
+        #{bankJzhKhhss,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhqx != null" >
+        #{bankJzhKhhqx,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAuthorizer != null" >
+        #{bankAuthorizer,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="applyTime != null" >
+        #{applyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="preserveTime != null" >
+        #{preserveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="fileId != null" >
+        #{fileId,jdbcType=VARCHAR},
+      </if>
+      <if test="fileName != null" >
+        #{fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="oldBankAccountId != null" >
+        #{oldBankAccountId,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetype != null" >
+        #{updatetype,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceType != null" >
+        #{dictSourceType,jdbcType=VARCHAR},
+      </if>
+      <if test="repaymentFlag != null" >
+        #{repaymentFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        #{dictSourceTypePcl,jdbcType=VARCHAR},
+      </if>
+      <if test="tlSign != null" >
+        #{tlSign,jdbcType=VARCHAR},
+      </if>
+      <if test="trSerialNo != null" >
+        #{trSerialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="transDate != null" >
+        #{transDate,jdbcType=DATE},
+      </if>
+      <if test="realAuthen != null" >
+        #{realAuthen,jdbcType=VARCHAR},
+      </if>
+      <if test="klSign != null" >
+        #{klSign,jdbcType=VARCHAR},
+      </if>
+      <if test="bankNo != null" >
+        #{bankNo,jdbcType=VARCHAR},
+      </if>
+      <if test="singleSerialNo != null" >
+        #{singleSerialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="cjSmNo != null" >
+        #{cjSmNo,jdbcType=VARCHAR},
+      </if>
+      <if test="cjQyNo != null" >
+        #{cjQyNo,jdbcType=VARCHAR},
+      </if>
+      <if test="protocolNumber != null" >
+        #{protocolNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="cjAuthen != null" >
+        #{cjAuthen,jdbcType=VARCHAR},
+      </if>
+      <if test="cjSign != null" >
+        #{cjSign,jdbcType=VARCHAR},
+      </if>
+      <if test="cjSignFailure != null" >
+        #{cjSignFailure,jdbcType=VARCHAR},
+      </if>
+      <if test="cjAuthenFailure != null" >
+        #{cjAuthenFailure,jdbcType=VARCHAR},
+      </if>
+      <if test="updatecontent != null" >
+        #{updatecontent,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.borrow.account.entity.LoanBankEditEntity" >
+    update t_jk_loan_bank
+    <set >
+      <if test="loanCode != null" >
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="bankName != null" >
+        bank_name = #{bankName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankProvince != null" >
+        bank_province = #{bankProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCity != null" >
+        bank_city = #{bankCity,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOrc != null" >
+        bank_orc = #{bankOrc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCreaType != null" >
+        dict_crea_type = #{dictCreaType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankBranch != null" >
+        bank_branch = #{bankBranch,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccountName != null" >
+        bank_account_name = #{bankAccountName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAccount != null" >
+        bank_account = #{bankAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSigningPlatform != null" >
+        bank_signing_platform = #{bankSigningPlatform,jdbcType=VARCHAR},
+      </if>
+      <if test="dictMaintainStatus != null" >
+        dict_maintain_status = #{dictMaintainStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="bankTopFlag != null" >
+        bank_top_flag = #{bankTopFlag,jdbcType=INTEGER},
+      </if>
+      <if test="dictMaintainType != null" >
+        dict_maintain_type = #{dictMaintainType,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckResult != null" >
+        bank_check_result = #{bankCheckResult,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCheckDesc != null" >
+        bank_check_desc = #{bankCheckDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="bankOldAccount != null" >
+        bank_old_account = #{bankOldAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="bankIsRareword != null" >
+        bank_is_rareword = #{bankIsRareword,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhss != null" >
+        bank_jzh_khhss = #{bankJzhKhhss,jdbcType=VARCHAR},
+      </if>
+      <if test="bankJzhKhhqx != null" >
+        bank_jzh_khhqx = #{bankJzhKhhqx,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAuthorizer != null" >
+        bank_authorizer = #{bankAuthorizer,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="applyTime != null" >
+        apply_time = #{applyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="preserveTime != null" >
+        preserve_time = #{preserveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="fileId != null" >
+        file_id = #{fileId,jdbcType=VARCHAR},
+      </if>
+      <if test="fileName != null" >
+        file_name = #{fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="oldBankAccountId != null" >
+        old_bank_account_id = #{oldBankAccountId,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetype != null" >
+        updatetype = #{updatetype,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceType != null" >
+        dict_source_type = #{dictSourceType,jdbcType=VARCHAR},
+      </if>
+      <if test="repaymentFlag != null" >
+        repayment_flag = #{repaymentFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        dict_source_type_pcl = #{dictSourceTypePcl,jdbcType=VARCHAR},
+      </if>
+      <if test="tlSign != null" >
+        tl_sign = #{tlSign,jdbcType=VARCHAR},
+      </if>
+      <if test="trSerialNo != null" >
+        tr_serial_no = #{trSerialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="transDate != null" >
+        trans_date = #{transDate,jdbcType=DATE},
+      </if>
+      <if test="realAuthen != null" >
+        real_authen = #{realAuthen,jdbcType=VARCHAR},
+      </if>
+      <if test="klSign != null" >
+        kl_sign = #{klSign,jdbcType=VARCHAR},
+      </if>
+      <if test="bankNo != null" >
+        bank_no = #{bankNo,jdbcType=VARCHAR},
+      </if>
+      <if test="singleSerialNo != null" >
+        single_serial_no = #{singleSerialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="cjSmNo != null" >
+        cj_sm_no = #{cjSmNo,jdbcType=VARCHAR},
+      </if>
+      <if test="cjQyNo != null" >
+        cj_qy_no = #{cjQyNo,jdbcType=VARCHAR},
+      </if>
+      <if test="protocolNumber != null" >
+        protocol_number = #{protocolNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="cjAuthen != null" >
+        cj_authen = #{cjAuthen,jdbcType=VARCHAR},
+      </if>
+      <if test="cjSign != null" >
+        cj_sign = #{cjSign,jdbcType=VARCHAR},
+      </if>
+      <if test="cjSignFailure != null" >
+        cj_sign_failure = #{cjSignFailure,jdbcType=VARCHAR},
+      </if>
+      <if test="cjAuthenFailure != null" >
+        cj_authen_failure = #{cjAuthenFailure,jdbcType=VARCHAR},
+      </if>
+      <if test="updatecontent != null" >
+        updatecontent = #{updatecontent,jdbcType=VARCHAR},
+      </if>
+      <if test="emailFlag != null" >
+        emailFlag = #{emailFlag,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.borrow.account.entity.LoanBankEditEntity" >
+    update t_jk_loan_bank
+    set loan_code = #{loanCode,jdbcType=VARCHAR},
+      bank_name = #{bankName,jdbcType=VARCHAR},
+      bank_province = #{bankProvince,jdbcType=VARCHAR},
+      bank_city = #{bankCity,jdbcType=VARCHAR},
+      bank_orc = #{bankOrc,jdbcType=VARCHAR},
+      dict_crea_type = #{dictCreaType,jdbcType=VARCHAR},
+      bank_branch = #{bankBranch,jdbcType=VARCHAR},
+      bank_account_name = #{bankAccountName,jdbcType=VARCHAR},
+      bank_account = #{bankAccount,jdbcType=VARCHAR},
+      bank_signing_platform = #{bankSigningPlatform,jdbcType=VARCHAR},
+      dict_maintain_status = #{dictMaintainStatus,jdbcType=VARCHAR},
+      bank_top_flag = #{bankTopFlag,jdbcType=INTEGER},
+      dict_maintain_type = #{dictMaintainType,jdbcType=VARCHAR},
+      bank_check_result = #{bankCheckResult,jdbcType=VARCHAR},
+      bank_check_desc = #{bankCheckDesc,jdbcType=VARCHAR},
+      bank_old_account = #{bankOldAccount,jdbcType=VARCHAR},
+      bank_is_rareword = #{bankIsRareword,jdbcType=VARCHAR},
+      bank_jzh_khhss = #{bankJzhKhhss,jdbcType=VARCHAR},
+      bank_jzh_khhqx = #{bankJzhKhhqx,jdbcType=VARCHAR},
+      bank_authorizer = #{bankAuthorizer,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      apply_time = #{applyTime,jdbcType=TIMESTAMP},
+      preserve_time = #{preserveTime,jdbcType=TIMESTAMP},
+      file_id = #{fileId,jdbcType=VARCHAR},
+      file_name = #{fileName,jdbcType=VARCHAR},
+      old_bank_account_id = #{oldBankAccountId,jdbcType=VARCHAR},
+      updatetype = #{updatetype,jdbcType=VARCHAR},
+      dict_source_type = #{dictSourceType,jdbcType=VARCHAR},
+      repayment_flag = #{repaymentFlag,jdbcType=VARCHAR},
+      dict_source_type_pcl = #{dictSourceTypePcl,jdbcType=VARCHAR},
+      tl_sign = #{tlSign,jdbcType=VARCHAR},
+      tr_serial_no = #{trSerialNo,jdbcType=VARCHAR},
+      trans_date = #{transDate,jdbcType=DATE},
+      real_authen = #{realAuthen,jdbcType=VARCHAR},
+      kl_sign = #{klSign,jdbcType=VARCHAR},
+      bank_no = #{bankNo,jdbcType=VARCHAR},
+      single_serial_no = #{singleSerialNo,jdbcType=VARCHAR},
+      cj_sm_no = #{cjSmNo,jdbcType=VARCHAR},
+      cj_qy_no = #{cjQyNo,jdbcType=VARCHAR},
+      protocol_number = #{protocolNumber,jdbcType=VARCHAR},
+      cj_authen = #{cjAuthen,jdbcType=VARCHAR},
+      cj_sign = #{cjSign,jdbcType=VARCHAR},
+      cj_sign_failure = #{cjSignFailure,jdbcType=VARCHAR},
+      cj_authen_failure = #{cjAuthenFailure,jdbcType=VARCHAR},
+      updatecontent = #{updatecontent,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

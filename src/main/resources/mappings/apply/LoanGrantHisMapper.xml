@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.LoanGrantHisDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.LoanGrantHis">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="apply_grant_amount" jdbcType="NUMERIC" property="applyGrantAmount" />
+    <result column="success_amount" jdbcType="NUMERIC" property="successAmount" />
+    <result column="fail_amount" jdbcType="NUMERIC" property="failAmount" />
+    <result column="grant_recepic_result" jdbcType="VARCHAR" property="grantRecepicResult" />
+    <result column="grant_fail_result" jdbcType="VARCHAR" property="grantFailResult" /> 
+    <result column="grant_back_mes" jdbcType="VARCHAR" property="grantBackMes" />
+    <result column="grant_deduct_flag" jdbcType="VARCHAR" property="grantDeductFlag" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="modify_id" jdbcType="VARCHAR" property="modifyId" />
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+  </resultMap>
+  
+   <!-- 插入放款历史记录表 -->
+   <insert id="insertGrantHis" parameterType="com.creditharmony.loan.borrow.grant.entity.LoanGrantHis">
+    insert into jk.t_jk_loan_grant_his(id,contract_code,apply_grant_amount,success_amount,fail_amount,
+    grant_recepic_result,grant_fail_result,grant_back_mes,grant_deduct_flag,create_by,create_time
+    ) 
+    values(#{id},#{contractCode},#{applyGrantAmount},#{successAmount},#{failAmount}
+    ,#{grantRecepicResult},#{grantFailResult},#{grantBackMes},#{grantDeductFlag},#{createBy},#{createTime}
+    )
+   </insert>
+   
+   <!-- 更新放款记录表，根据合同编号 -->
+     <update id="updateLoanGrantHis" parameterType="com.creditharmony.loan.borrow.grant.entity.LoanGrantHis">
+    	update jk.t_jk_loan_grant_his
+      <set>
+      <if test="successAmount != null">
+        success_amount = #{successAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="failAmount != null">
+        fail_amount = #{failAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="grantRecepicResult != null">
+        grant_recepic_result = #{grantRecepicResult,jdbcType=VARCHAR},
+      </if>
+      <if test="grantFailResult != null">
+        grant_fail_result = #{grantFailResult,jdbcType=VARCHAR},
+      </if>
+      <if test="grantBackMes != null">
+        grant_back_mes = #{grantBackMes,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </update>
+  
+   <!-- 查询，根据合同编号 -->
+   <select id="getGrantHis" resultType="com.creditharmony.loan.borrow.grant.entity.LoanGrantHis">
+   select 
+	   id,
+	   contract_code,
+	   apply_grant_amount,
+	   success_amount,
+	   fail_amount,
+	   grant_recepic_result,
+	   grant_fail_result,
+	   grant_back_mes,
+	   grant_deduct_flag,
+	   create_by,
+	   create_time
+  from t_jk_loan_grant_his where contract_code = #{contractCode}
+   </select>
+   
+
+</mapper>

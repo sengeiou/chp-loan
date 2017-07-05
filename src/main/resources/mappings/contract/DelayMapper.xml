@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.DelayDao">
+	<!-- 延期列表 -->
+	<select id="findList" resultType="com.creditharmony.loan.borrow.contract.entity.DelayEntity">
+		SELECT
+			ROW_NUMBER() OVER () AS id ,<!--序号 -->   
+			t.apply_id, 
+			t.loan_code,<!--借款编号 -->
+		    tc.contract_code,<!--合同编号 -->
+		    tc.contract_version, <!--合同版本号 -->
+		    lc.customer_name,<!--客户姓名 -->
+		    tc.cobo_name,     <!--共借人 -->
+		    (SELECT PC.AREA_NAME FROM JK.T_GL_PROVINCE_CITY PC WHERE PC.AREA_CODE = (select o.province_id from JK.T_GL_ORG o where o.id=t.LOAN_STORE_ORGID)) AS provinceName,<!--省份 -->
+		    (SELECT PC.AREA_NAME FROM JK.T_GL_PROVINCE_CITY PC WHERE PC.AREA_CODE = (select o.city_id from JK.T_GL_ORG o where o.id=t.LOAN_STORE_ORGID)) AS cityName, <!--城市 -->
+		    org.name as store_name,                <!--门店 -->
+		    pro.product_name ,               <!--产品 -->
+		    t.dict_loan_status,              <!--状态-->
+		    t.loan_audit_amount,              <!--批复金额-->
+		    t.loan_audit_months,               <!--批复期数-->
+		    lc.customer_telesales_flag,        <!--是否电销-->
+		    t.customer_into_time,              <!--进件时间-->
+		    t.loan_audit_time,                <!--汇诚审批时间-->
+		    his3.create_time signconfirmTime,              <!--确认签署日期-->
+	        his1.create_time rateTime,    --费率审核        
+		    his2.create_time contractTime, 	--合同审核      
+		    trim(t.frozen_code) as frozen_code,                <!--是否冻结-->
+		    t.loan_urgent_flag,            <!--加急标识-->
+		    t.model,                 <!--模式-->
+		    t.loan_flag,                <!--渠道-->
+		    (case when rat.reconsider_risk_level is null then rat.verify_risk_level else rat.reconsider_risk_level end) as riskLevel,                <!--风险等级-->
+		    t.loaninfo_oldornew_flag,
+		    (select lb.cobo_name from jk.t_jk_audit_result re left join jk.t_jk_loan_coborrower lb on re.best_coborrower_id = lb.id where re.loan_code  = t.loan_code order by re.create_time desc limit 1) as bestCoborrower  <!--自然保证人 -->  
+		FROM
+			jk.t_jk_loan_info t LEFT JOIN
+			(select a.loan_code,a.contract_code contract_code,a.contract_version contract_version,a.doc_id doc_id,a.model as model,string_agg(c.cobo_name,',') cobo_name,a.revisit_status,a.contract_fact_day from jk.t_jk_contract a 
+		    LEFT JOIN jk.t_jk_loan_coborrower c on a.loan_code=c.loan_code  group by a.loan_code,a.contract_code) tc on t.loan_code = tc.loan_code
+		    LEFT JOIN jk.t_jk_loan_customer lc ON lc.loan_code = tc.loan_code
+		    LEFT JOIN jk.t_gl_org org on t.loan_store_orgid=org.id 
+		    LEFT JOIN jk.t_gl_jk_product pro on t.loan_audit_product=pro.product_code
+		    LEFT JOIN jk.t_jk_audit_rating rat on rat.loan_code= t.loan_code
+		    LEFT JOIN (select his.loan_code,his.dict_loan_status,max(his.create_time) as create_time from jk.t_jk_loan_status_his his where his.dict_loan_status = '60' and his.dict_loan_status is not null group by  his.loan_code,his.dict_loan_status) his1 on t.loan_code = his1.loan_code
+		    LEFT JOIN (select his.loan_code,max(his.create_time) as create_time from jk.t_jk_loan_status_his his where his.operate_step='合同审核' and his.dict_loan_status is not null group by  his.loan_code) his2 on t.loan_code = his2.loan_code
+			LEFT JOIN (select his.loan_code,his.dict_loan_status,max(his.create_time) as create_time from jk.t_jk_loan_status_his his where his.dict_loan_status = '61' and his.dict_loan_status is not null group by  his.loan_code,his.dict_loan_status) his3 on t.loan_code = his3.loan_code
+		WHERE 1=1
+		 <include refid="selectByParam" />
+		and
+		     NOT EXISTS(
+		     	select 1 from jk.t_jk_postpone pt where pt.contract_code = tc.contract_code
+		     )
+		and tc.contract_code is not null order by rateTime desc
+	</select>
+	
+	<select id="postPoneListExport"  resultType="com.creditharmony.loan.borrow.contract.entity.DelayEntity">
+		SELECT
+			ROW_NUMBER() OVER () AS id ,  
+		    tc.contract_code,
+		    tc.contract_version,
+		    lc.customer_name,
+		    lc.customer_cert_num,
+		    org.name as store_name,               
+		 	round(tc.contract_amount,2) contract_amount,
+		    tc.contract_fact_day,             
+		    his1.create_time rateTime,    
+		    f.create_time contractMadeTime,              
+			p.postpone_time,
+			p.timeOutPoint_time,
+		    t.model,                
+		    t.loan_flag    
+		FROM
+			jk.t_jk_loan_info t LEFT JOIN jk.t_jk_contract tc on t.loan_code = tc.loan_code
+		    LEFT JOIN jk.t_jk_loan_customer lc ON lc.loan_code = tc.loan_code
+		    LEFT JOIN jk.t_gl_org org on t.loan_store_orgid=org.id 
+		    LEFT JOIN jk.t_gl_jk_product pro on t.loan_audit_product=pro.product_code
+		    LEFT JOIN jk.t_jk_audit_rating rat on rat.loan_code= t.loan_code
+		    LEFT JOIN jk.t_jk_postpone p on tc.contract_code = p.contract_code
+		    LEFT JOIN (select f.contract_code,max(f.create_time) create_time from jk.t_jk_contract_file f group by f.contract_code ) f on tc.contract_code = f.contract_code
+		    LEFT JOIN (select his.loan_code,his.dict_loan_status,max(his.create_time) as create_time from jk.t_jk_loan_status_his his where his.dict_loan_status = '60' and his.dict_loan_status is not null group by  his.loan_code,his.dict_loan_status) his1 on t.loan_code = his1.loan_code
+		    LEFT JOIN (select his.loan_code,max(his.create_time) as create_time from jk.t_jk_loan_status_his his where his.operate_step='合同审核' and his.dict_loan_status is not null group by  his.loan_code) his2 on t.loan_code = his2.loan_code
+			LEFT JOIN (select his.loan_code,his.dict_loan_status,max(his.create_time) as create_time from jk.t_jk_loan_status_his his where his.dict_loan_status = '61' and his.dict_loan_status is not null group by  his.loan_code,his.dict_loan_status) his3 on t.loan_code = his3.loan_code
+		 where  1=1
+		    <include refid="selectByParam" />
+		     and
+		    	 NOT EXISTS(
+		     		select 1 from jk.t_jk_postpone pt where pt.contract_code = tc.contract_code
+		    	 )
+		    and tc.contract_code is not null order by rateTime desc
+	</select>
+	
+	<sql id="selectByParam">
+		 <if test="customerName != null  and customerName!=''">
+       	 	and lc.customer_name LIKE '%${customerName}%'
+     	 </if> 
+     	 <if test="contractCode != null  and contractCode!=''">
+	        and tc.contract_code LIKE '%${contractCode}%'
+	     </if>
+	     <if test="customerCertNum != null  and customerCertNum!=''">
+	        and lc.customer_cert_num = #{customerCertNum}
+	     </if>
+	     <if test="contractVersion != null  and contractVersion!=''">
+	        and tc.contract_version = #{contractVersion}
+	     </if> 
+	     <if test="riskLevel != null  and riskLevel!=''">
+        	and rat.verify_risk_level = #{riskLevel}
+      	 </if> 
+      	 <if test="storeOrgIdArray != null and storeOrgIdArray.length > 0">
+        	and t.loan_store_orgid in  
+        	<foreach item="item" index="index" collection="storeOrgIdArray" open="(" separator="," close=")">  
+       			 #{item}  
+      		</foreach> 
+      	 </if> 
+      	 <if test="dictLoanStatus != null  and dictLoanStatus!=''">
+	        and  t.dict_loan_status = #{dictLoanStatus}
+	     </if>
+	     <if test="dictLoanStatusArray != null and dictLoanStatusArray.length > 0">
+        	and t.dict_loan_status in  
+        	<foreach item="item" index="index" collection="dictLoanStatusArray" open="(" separator="," close=")">  
+       			 #{item}  
+      		</foreach> 
+      	 </if> 
+      	  <if test="contractCodeArray != null and contractCodeArray.length > 0">
+        	and tc.contract_code in  
+        	<foreach item="item" index="index" collection="contractCodeArray" open="(" separator="," close=")">  
+       			 #{item}  
+      		</foreach> 
+      	 </if> 
+      	 <if test="model != null  and model !=''">
+	        and t.model = #{model}
+	     </if>
+	     <if test="frozenCode != null  and frozenCode !=''">
+	      <if test="frozenCode ==1">
+	     	 and trim(t.frozen_code) != ''       	 
+	      </if>
+	      <if test="frozenCode ==0">
+	          and (trim(t.frozen_code) = '' or t.frozen_code is null)   
+	      </if>
+      	 </if>
+      	 <if test="productType != null  and productType !=''">
+	        and t.loan_audit_product = #{productType}
+	     </if>
+	     <if test="loanFlag != null  and loanFlag!=''">
+	        and t.loan_flag = #{loanFlag}
+	     </if>
+	     <if test="customerTelesalesFlag != null  and customerTelesalesFlag!=''">
+	        and lc.customer_telesales_flag = #{customerTelesalesFlag}
+	     </if>
+	     <if test="startLoanAuditTime != null and startLoanAuditTime !=''">
+	     	and t.loan_audit_time >= #{startLoanAuditTime}
+	     </if>
+	     <if test="endLoanAuditTime != null and endLoanAuditTime !=''">
+	     	and #{endLoanAuditTime} >= t.loan_audit_time
+	     </if>
+	     <if test="startSignconfirmTime != null and startSignconfirmTime != ''">
+	     	and his3.create_time >= #{startSignconfirmTime}
+	     </if>
+	     <if test="endSignconfirmTime != null and endSignconfirmTime != ''">
+	     	and #{endSignconfirmTime} >= his3.create_time 
+	     </if>
+	     <if test="startTateTime != null and startTateTime !=''">
+	     	and his1.create_time >= #{startTateTime}
+	     </if>
+	     <if test="endTateTime != null and endTateTime !=''">
+	     	and  #{endTateTime} >= his1.create_time
+	     </if>
+	     <if test="startContractTime != null and startContractTime !=''">
+	     	and his2.create_time >= #{startContractTime}
+	     </if>
+	     <if test="endContractTime != null and endContractTime !=''">
+	     	and #{endContractTime} >= his2.create_time
+	     </if>
+	</sql>
+</mapper>
+	

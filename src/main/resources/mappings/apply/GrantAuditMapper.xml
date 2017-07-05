@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.GrantAuditDao">
+  <resultMap id="baseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.GrantAuditEx">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode"  />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="name" jdbcType="VARCHAR" property="storeName" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coborrowerName" />
+    <result column="class_type" jdbcType="VARCHAR" property="classType" /><!-- 借款类型名称 -->
+    <result column="product_name" jdbcType="VARCHAR" property="replyProductName" /><!-- 借款产品名称 -->
+    <result column="grant_amount" jdbcType="NUMERIC" property="lendingMoney" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractMoney" />
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="urgeServiceFee" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="identityCode" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="channelName" />
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="urgentFlag" />
+    <result column="middle_name" jdbcType="VARCHAR" property="bankAccountName" />
+    <result column="mid_bank_name" jdbcType="VARCHAR" property="cautionerDepositBank" />
+    <result column="bank_card_no" jdbcType="VARCHAR" property="lendingAccount" />
+    <result column="dict_loan_way" jdbcType="VARCHAR" property="lendingWayName" />
+    <result column="contract_months" jdbcType="NUMERIC" property="replyMonth" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="telesalesFlag"/>
+    <result column="grant_recepic_result" jdbcType="VARCHAR" property="receiptResult"/>
+    <result column="grant_fail_result" jdbcType="VARCHAR" property="failReason"/>
+    <result column="grant_batch" jdbcType="VARCHAR" property="grantBatchCode"/>
+    <result column="grant_pch" jdbcType="VARCHAR" property="submissionBatch"/>
+    <result column="loan_store_orgid" jdbcType="VARCHAR" property="storeOrgId"/>
+    <result column="bank_account_name" jdbcType="VARCHAR" property="custBankAccountName"/>
+    <result column="issplit" jdbcType="VARCHAR" property="issplit"/>
+  </resultMap>
+  
+  <!-- 放款审核列表数据显示 -->
+  <select id="getGrantAuditList" resultMap="baseResultMap">
+	select
+		a.id, --放款id 
+		a.loan_code, --借款编码
+		d.apply_id, --applyId
+		a.contract_code, --合同编号
+		b.loan_customer_name, --客户姓名
+		b.issplit, --拆分标志 
+		c.customer_cert_num, --证件号码
+		d.cobo_name, --共借人
+		(select product_name from jk.t_gl_jk_product t where t.product_code = d.product_type) as replyProductName, --借款产品
+		e.bank_account_name, --账户姓名
+		'信借' as classType, --借款类型
+		round(d.contract_amount,2) as contractMoney,--合同金额
+		round(a.grant_amount,2) as lendingMoney,-- 放款金额
+		a.grant_fail_amount,--放款失败金额
+		round(f.fee_urged_service,2) as urgeServiceFee, --催收服务费
+		round(sum(grant_amount) OVER (),2) as totalGrantMoney, --放款总金额
+		round(fee_petition,2) as feePetition, --信访费
+		round(fee_credit,2) as feeCredit,--征信费
+		(case when d.product_type = 'A021' then
+		round(fee_petition+fee_urged_service+fee_credit,2) else round(fee_urged_service,2) end) as feeSum, --综合费用
+		d.contract_months, --批复期限
+		g.middle_name,--账户姓名
+		g.mid_bank_name,--开户行
+		g.bank_card_no, --放款账号
+		(select label from jk.t_gl_dict where type = 'jk_payment_way' and value = a.dict_loan_way) as lendingWayName, --放款途径
+		a.grant_back_date, --回盘时间
+		(select label from jk.t_gl_dict where type = 'jk_loansend_result' and value = a.grant_recepic_result) as receiptResult, --回盘结果
+		a.grant_fail_result, --失败原因
+		(select label from jk.t_gl_dict d where d.type = 'jk_channel_flag' and d.value = b.loan_flag) as channelName, --渠道
+		b.loan_urgent_flag as urgentFlag,--加急标识
+		c.customer_telesales_flag as telesalesFlag, --是否电销
+		a.grant_batch, --放款批次
+		a.grant_pch, --提交批次
+		a.lending_time, --放款日期
+		to_char(submissiondate,'yyyy-MM-dd HH:mm:ss') as submissiondate, --提交时间
+		a.submit_deduct_time,--提交划扣时间
+		b.loaninfo_oldornew_flag, --新老标识
+		(select label from jk.t_gl_dict where type = 'jk_trust_status' and value = b.trust_cash) as trustCash, --委托提现
+		a.trust_cash_rtn,--委托提现回盘结果
+		a.trust_cash_failure,--委托提现失败原因
+		b.loan_store_orgid as storeOrgId, --门店id
+		h.name as storeName, --门店名称
+		h.province_id as provinceCode, --门店省
+		h.city_id as cityCode --门店市
+	from jk.t_jk_loan_grant a
+	left join jk.t_jk_loan_info b on b.loan_code = a.loan_code 
+	left join jk.t_jk_loan_customer c on c.loan_code = b.loan_code
+	left join jk.t_jk_contract d on d.loan_code = a.loan_code 
+	left join jk.t_jk_loan_bank e on e.loan_code = d.loan_code and e.bank_top_flag = '1' and e.repayment_flag = '0'
+	left join jk.t_jk_contract_fee f on f.contract_code = d.contract_code
+	left join jk.t_jk_middle_person g on g.id = a.mid_id
+	left join jk.t_gl_org h on h.id = b.loan_store_orgid
+	where b.dict_loan_status = '${@com.creditharmony.loan.borrow.grant.constants.GrantConstantsMapping@GRANT_AUDIT}'
+	  <if test="tgFlag != null and tgFlag != ''">
+			and b.model = #{model}
+	  </if>
+	  <if test="tgFlag == null">
+			and (b.loan_flag is null or b.loan_flag  in ('1','2','4')) and (b.model = '0' or b.model is null)
+	  </if>
+      <if test="customerName != null and customerName != ''" >
+        and loan_customer_name LIKE CONCAT('%', #{customerName}, '%')
+      </if>
+      <if test="replyProductName != null and replyProductName != ''">
+      	and d.product_type = #{replyProductName}
+      </if>
+      <if test="identityCode != null and identityCode != ''" >
+        and customer_cert_num LIKE CONCAT('%', #{identityCode}, '%')
+      </if>
+      <if test="contractCode != null and contractCode != ''" >
+        and a.contract_code = #{contractCode}
+      </if>
+      <if test="storeOrgIds != null" > <!-- 门店id -->
+      	and b.loan_store_orgid in
+		<foreach item="item" index="index" collection="storeOrgIds" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+      </if>
+      <if test="applyIds != null">
+      	and d.apply_id in
+      	<foreach item="item" index="index" collection="applyIds" open="(" separator="," close=")">
+      		#{item}
+      	</foreach>
+      </if>
+      <if test="cautionerDepositBanks != null">
+      	and mid_bank_name in 
+      	<foreach collection="cautionerDepositBanks" item="item" index="index" open="(" separator="," close=")">
+      		#{item}
+      	</foreach>
+      </if>
+      <if test="channelCode != null and channelCode!= ''">
+      	and b.loan_flag = #{channelCode}
+      </if>
+      <if test="additionalFlag != null and additionalFlag != ''">
+      	and dict_is_additional = #{additionalFlag}
+      </if>
+	  <if test="lendingTimeStart != null and lendingTimeStart != ''"> <!-- 放款时间 -->
+		and to_date(to_char(a.lending_time,'yyyy-mm-dd')) &gt;= #{lendingTimeStart}
+	  </if>
+	  <if test="lendingTimeEnd != null and lendingTimeEnd != ''">
+		and to_date(to_char(a.lending_time,'yyyy-mm-dd')) &lt;= #{lendingTimeEnd}
+	  </if>
+	  <if test="grantBatchCode != null and grantBatchCode != ''">
+	  	and grant_batch = #{grantBatchCode}
+	  </if>
+	  <if test="lendingWayCode != null and lendingWayCode != ''">
+	  	and dict_loan_way = #{lendingWayCode}
+	  </if>
+	  <if test="telesalesFlag != null and telesalesFlag != ''">
+	  	and customer_telesales_flag =#{telesalesFlag}
+	  </if>
+	  <if test="submissionDateStart != null and submissionDateStart != ''"> <!-- 提交时间 -->
+		and to_date(to_char(a.submissiondate,'yyyy-mm-dd')) &gt;= #{submissionDateStart}
+	  </if>
+	  <if test="submissionDateEnd != null and submissionDateEnd != ''">
+		and to_date(to_char(a.submissiondate,'yyyy-mm-dd')) &lt;= #{submissionDateEnd}
+	  </if>
+	  <if test="submissionBatch != null and submissionBatch != ''">
+	  	and grant_pch = #{submissionBatch}
+	  </if>
+	  <if test="receiptResult != null and receiptResult != ''">
+	  	and grant_recepic_result = #{receiptResult}
+	  </if>
+	  <if test="urgentFlag != null and urgentFlag != ''">
+	  	and loan_urgent_flag = #{urgentFlag}
+	  </if>
+	  <if test="trustCash != null and trustCash != ''">
+	  	and trust_cash = #{trustCash}
+	  </if>
+	  <if test="provinceCode != null and provinceCode != ''">
+	  	and h.province_id = #{provinceCode}
+	  </if>
+	  <if test="cityCode != null and cityCode != ''">
+	  	and h.city_id = #{cityCode}
+	  </if>
+	  order by b.order_field desc 
+  </select>
+  
+</mapper>

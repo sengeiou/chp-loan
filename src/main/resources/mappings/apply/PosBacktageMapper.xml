@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.poscard.dao.PosBacktageDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.poscard.entity.PosBacktage">
+    <id column="id"  property="id" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="refer_code" jdbcType="VARCHAR" property="referCode" />
+     <result column="pospwd" jdbcType="VARCHAR" property="pospwd" />
+    <result column="pos_order_number" jdbcType="VARCHAR" property="posOrderNumber" />
+    <result column="audit_date" jdbcType="TIMESTAMP" property="auditDate" />
+    <result column="payback_date" jdbcType="TIMESTAMP" property="paybackDate" />
+    <result column="deposited_account" jdbcType="VARCHAR" property="depositedAccount" />
+    <result column="matching_state" jdbcType="VARCHAR" property="matchingState" />
+    <result column="apply_Really_amount" jdbcType="VARCHAR" property="applyReallyAmount" />
+    <result column="payback_apply_id" jdbcType="VARCHAR" property="payBackApplyId" />
+ </resultMap>
+ 
+   <resultMap id="BaseResultMapList" type="com.creditharmony.loan.borrow.poscard.entity.PosBacktage">
+	 <id column="id"  property="id" />
+	 <result column="pos_bill_code" jdbcType="VARCHAR" property="posBillCode" />
+	 <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+	 <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+	 <result column="contract_end_day" jdbcType="VARCHAR" property="contractEndDay" />
+	 <result column="loan_team_orgid" jdbcType="VARCHAR" property="loanTeamOrgId" />
+	 <result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+	 <result column="payback_day" jdbcType="VARCHAR" property="paybackDay" />
+	 <result column="apply_amount" jdbcType="VARCHAR" property="applyAmount" />
+	 <result column="apply_really_amount" jdbcType="VARCHAR" property="applyReallyAmount" />
+	 <result column="dict_pay_use" jdbcType="VARCHAR" property="dictPayUse" />
+	 <result column="dict_pay_status" jdbcType="VARCHAR" property="dictPayStatus" />
+	 <result column="apply_back_mes" jdbcType="VARCHAR" property="applyBackMes" />
+	 <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag" />
+	 <result column="customer_telesales_flag" jdbcType="VARCHAR" property="customerTelesalesFlag" />
+	 <result column="dict_pos_type" jdbcType="VARCHAR" property="dictPosType" />
+	 <result column="payback_bule_amount" jdbcType="VARCHAR" property="paybackBuleAmount" />
+	 <result column="payback_date" jdbcType="VARCHAR" property="paybackDate" />
+	 <result column="dict_repay_method" jdbcType="VARCHAR" property="dictRepayMethod" />
+	 
+	  <result column="sumNumber" jdbcType="VARCHAR" property="sumNumber" />
+	  <result column="sumAmont" jdbcType="VARCHAR" property="sumAmont" />
+ </resultMap>
+    <!--导出 pos后台数据列表 -->
+   <select id="selectPosList"   resultType="com.creditharmony.loan.borrow.poscard.entity.PosBacktage">
+      select 
+        a.refer_code  as  referCode,
+        a.pos_order_number as  posOrderNumber,
+        a.payback_date  as paybackDate,
+        a.deposited_account as  depositedAccount,
+        a.apply_Really_amount as applyReallyAmount,
+        t.label as  matchingState,
+        a.contract_code as  contractCode,
+        a.audit_date  as  auditDate
+	from
+		t_jk_pos_back_list a   
+               left join   t_gl_dict t on t.value  = a .matching_state  and t. type ='jk_matching'
+	    where 1=1
+		<if test="params.beginDate != null and params.beginDate != '' and params.endDate != null and params.endDate != ''">
+		    and  a.audit_date between #{params.beginDate} and #{params.endDate}                 <!-- 查账日期 -->
+		</if>
+		<if test="params.paybackBeginDate != null and params.paybackBeginDate != '' and params.paybackEndDate != null and params.paybackEndDate != ''">
+		    and  a.payback_date between #{params.paybackBeginDate} and #{params.paybackEndDate} <!-- 到账日期 -->
+		</if>
+		<if test="params.referCode != null and params.referCode != ''">
+		    and  a.refer_code LIKE CONCAT('%', #{params.referCode}, '%')              <!-- 参考号 -->
+		</if>
+		<if test="params.posOrderNumber != null and params.posOrderNumber != ''">
+		    and  a.pos_order_number LIKE CONCAT('%', #{params.posOrderNumber}, '%') <!-- 订单号 -->
+		</if>
+		<if test="params.applyReallyAmount != null and params.applyReallyAmount != ''">
+		    and  a.apply_Really_amount =#{params.applyReallyAmount}                   <!-- 金额 -->
+		</if>
+		<if test="params.matchingState != null and params.matchingState != ''">
+		    and  a.matching_state =#{params.matchingState}                   <!-- 匹配状态 -->
+		</if>
+		<if test="contractCode != null and params.contractCode != ''">
+		    and  a.contract_code =#{params.contractCode}                   <!-- 合同编号 -->
+		</if>
+		<if test="params.id != null and params.id != ''">
+		 AND a.id  in (${params.id})           <!-- id -->
+		</if>
+		<if test="params.ids != null and params.ids != ''">
+		   and a.id in
+		   <foreach item="item" index="index" collection="applyIds"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		   
+		</if>
+	    ORDER BY a.payback_date  desc
+  </select>
+ 
+ 
+      <!--POS已匹配成功列表-->
+	 <select id="selectPosBacktagePosCard" resultMap="BaseResultMapList">
+		                 SELECT
+			            distinct pa.id,             <!--id--> 
+			            ps.payback_date,
+                        pa.pos_bill_code ,                  <!--订单编号    -->     
+                        pa.contract_code ,      <!--合同编号--> 
+                        lc.customer_name,      <!--客户姓名--> 
+                        c.contract_end_day,    <!-- 合同到期日--> 
+                        li.loan_team_orgid,    <!--门店名称--> 
+                        li.dict_loan_status,   <!--借款状态 --> 
+                        pb.payback_day,       <!--还款日--> 
+                        pa.apply_amount,     <!--申请还款金额--> 
+                        pa.apply_really_amount,  <!-- 实际还款金额--> 
+                        pa.dict_pay_use,           <!-- 还款类型--> 
+                    	pb.dict_pay_status,       <!--还款状态--> 
+                        pa.dict_pay_result,    <!-- 回盘结果--> 
+			            pa.apply_back_mes,      <!-- 失败原因--> 
+                        li.loan_flag,          <!-- 标识--> 
+                       	lc.customer_telesales_flag,  <!--是否电销--> 
+                        pa.dict_pos_type,                   <!--POS平台-->                
+			            pb.payback_bule_amount ,       <!-- 蓝补金额--> 
+			            ROUND(sum( pa.apply_really_amount) OVER (),2) as sumAmont,
+                        count(*)  over() as sumNumber
+			from jk.t_jk_pos_back_list ps
+                        left join jk.t_jk_payback_apply pa on pa.contract_code =ps.contract_code
+			LEFT JOIN jk.t_jk_payback pb ON pb.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_contract c ON c.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_loan_customer lc ON c.loan_code = lc.loan_code  
+			LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+			where  1=1 
+	    
+		<if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+		    and  ps.payback_date between #{beginDate} and #{endDate}                 <!-- 支付成功日期，到账日期 -->
+		</if>
+		<if test="customerName != null and customerName != ''">
+		    and  lc.customer_name = #{customerName}                   <!-- 客户姓名 -->
+		</if>	
+		<if test="contractCode != null and contractCode != ''">
+		    and   pa.contract_code  = #{contractCode}                   <!-- 合同编号 -->
+		</if>	
+		<if test="posBillCode != null and posBillCode != ''">
+		    and   pa.pos_bill_code  = #{posBillCode}                   <!-- 订单编号 -->
+		</if>		
+		<if test="applyReallyAmount != null and applyReallyAmount != ''">
+		    and   pa.apply_really_amount  = #{applyReallyAmount}      <!-- 实还金额 -->
+		</if>		
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+		    and   pa.dict_pay_status  = #{dictPayStatus}      <!-- 还款状态 -->
+		</if>	
+		<if test="paybackDay != null and paybackDay != ''">
+		    and   pa.payback_day  = #{paybackDay}      <!--还款日 -->
+		</if>
+		                                                 
+		<if test="matchingState != null and matchingState != ''">
+		    and   ps.matching_state  = #{matchingState}       <!--还款方法-->
+		</if>
+		
+		<if test="dictRepayMethod != null and dictRepayMethod != ''">
+		    and   pa.dict_repay_method  = #{dictRepayMethod}     <!--还款方式 -->
+		</if>                                             
+     </select>
+ 
+
+  <sql id="Base_Column_List">
+        a.id,
+        a.contract_code,
+        a.refer_code,
+        a.pos_order_number,
+        a.audit_date,
+        a.payback_date,
+        a.deposited_account,
+        a.matching_state,
+        a.apply_Really_amount,
+        a.payback_apply_id
+  </sql>
+   <!-- pos后台数据列表 -->
+   <select id="selectPosBacktageList"  resultMap="BaseResultMap">
+   select
+		<include refid="Base_Column_List"/>
+	from
+		t_jk_pos_back_list a  <!-- pos后台数据列表 -->
+	    where 1=1
+		<if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+		    and  a.audit_date between #{beginDate} and #{endDate}                 <!-- 查账日期 -->
+		</if>
+		<if test="paybackBeginDate != null and paybackBeginDate != '' and paybackEndDate != null and paybackEndDate != ''">
+		    and  a.payback_date between #{paybackBeginDate} and #{paybackEndDate} <!-- 到账日期 -->
+		</if>
+		<if test="referCode != null and referCode != ''">
+		    and  a.refer_code LIKE CONCAT('%', #{referCode}, '%')              <!-- 参考号 -->
+		</if>
+		<if test="posOrderNumber != null and posOrderNumber != ''">
+		    and  a.pos_order_number LIKE CONCAT('%', #{posOrderNumber}, '%') <!-- 订单号 -->
+		</if>
+		<if test="applyReallyAmount != null and applyReallyAmount != ''">
+		    and  a.apply_Really_amount =#{applyReallyAmount}                   <!-- 金额 -->
+		</if>
+		<if test="matchingState != null and matchingState != ''">
+		    and  a.matching_state =#{matchingState}                   <!-- 匹配状态 -->
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+		    and  a.contract_code =#{contractCode}                   <!-- 合同编号 -->
+		</if>
+	    ORDER BY a.payback_date  desc
+  </select>
+     <!-- 更新POS后台数据列表-->
+	<update id="update">
+		UPDATE jk.t_jk_pos_back_list  
+		 <trim prefix="SET" suffixOverrides=",">
+		  <if test="matchingState != null and matchingState != ''">     
+		  matching_state = #{matchingState}, 
+         </if>
+		<if test="contractCode != null and contractCode != ''">  
+		   contract_code = #{contractCode},    
+		 </if>
+		 <if test="auditDate != null and auditDate != ''"> 
+		  audit_date = #{auditDate},   
+		 </if>
+		 <if test="createBy != null and createBy != ''"> 
+		 create_by = #{createBy}, 
+		 </if>
+		 <if test="createTime != null and createTime != ''"> 
+		 create_time = #{createTime}, 
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+		 modify_by = #{modifyBy}, 
+		 </if>
+		 <if test="modifyTime != null and modifyTime != ''"> 
+		 modify_time = #{modifyTime} 
+		 </if>
+	</trim>
+		WHERE id = #{id}
+	</update>
+	 <!-- 查询POS登录密码 -->
+	 <select id="findList"  resultMap="BaseResultMap">
+   select
+		a.id,pospwd pospwd
+	from
+		T_GL_USER a  <!-- pos用户角色表 -->
+	   	WHERE a.id = #{id}  
+	   	<if test="pospwd != null and pospwd != ''"> 
+			and a.pospwd =#{posOldPassword}
+	  </if>
+     </select>
+     <!-- 修改POS登录密码 -->
+     <update id="updatePosPwd">
+		UPDATE  T_GL_USER  set pospwd=#{posNewPassword}
+		WHERE id = #{id} and login_name = #{loginName}
+	  </update>
+	  <!--POS刷卡查账填写的数据查询在POS后台数据列表是否有未匹配项-->
+	 <select id="checkRefPosStr"  resultMap="BaseResultMap">
+		select id from t_jk_pos_back_list           <!-- pos后台数据列表 -->
+		where   
+		 pos_order_number   =#{posOrderNumber}   <!-- POS订单号 -->    
+		and payback_date   =#{paybackDate}          <!-- 到账时间 -->    
+		and matching_state   =#{matchingState}      <!-- 匹配状态 -->    
+		and apply_really_amount  =#{applyReallyAmount}   <!-- 金额 -->    
+     </select>
+      <!-- 修改POS登录密码 -->
+     <update id="updatePosMaching">
+		UPDATE  t_jk_pos_back_list  set             <!-- pos后台数据列表 -->
+		contract_code = #{contractCode},            <!-- 合同编号 -->      
+		matching_state = #{matchingState},          <!-- 匹配状态 --> 
+		audit_date = #{auditDate}                   <!-- 查账日期 --> 
+		where  1=1 and  refer_code  =#{referCode}     <!-- 参考号 -->      
+		and pos_order_number   =#{posOrderNumber}   <!-- POS订单号 -->    
+		and payback_date   =#{paybackDate}          <!-- 到账时间 -->    
+		and apply_really_amount  =#{applyReallyAmount}   <!-- 金额 -->    
+	  </update>
+     
+    <!--POS已匹配成功列表(详细查看)-->
+	 <select id="seePosOne" resultType="com.creditharmony.loan.borrow.poscard.entity.PosBacktage">
+		                 SELECT
+			            pa.id,             <!--id--> 
+			            ps.payback_date,
+                        pa.pos_bill_code ,                  <!--订单编号    -->     
+                        pa.contract_code ,      <!--合同编号--> 
+                        lc.customer_name,      <!--客户姓名--> 
+                        c.contract_end_day,    <!-- 合同到期日--> 
+                        li.loan_team_orgid,    <!--门店名称--> 
+                        li.dict_loan_status,   <!--借款状态 --> 
+                        pb.payback_day,       <!--还款日--> 
+                        pa.apply_amount,     <!--申请还款金额--> 
+                        pa.apply_really_amount,  <!-- 实际还款金额--> 
+                        pa.dict_pay_use,           <!-- 还款类型--> 
+                    	pb.dict_pay_status,       <!--还款状态--> 
+                        pa.dict_pay_result,    <!-- 回盘结果--> 
+			            pa.apply_back_mes,      <!-- 失败原因--> 
+                        li.loan_flag,          <!-- 标识--> 
+                       	lc.customer_telesales_flag,  <!--是否电销--> 
+                        pa.dict_pos_type,                   <!--POS平台-->                
+			            pb.payback_bule_amount        <!-- 蓝补金额--> 
+			from jk.t_jk_pos_back_list ps
+                        left join jk.t_jk_payback_apply pa on pa.id =ps.payback_apply_id
+			LEFT JOIN jk.t_jk_payback pb ON pb.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_contract c ON c.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_loan_customer lc ON c.loan_code = lc.loan_code  
+			LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+			where  pa.id = #{id}
+     </select>
+
+</mapper>

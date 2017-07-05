@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.ApplyPaybackUseDao">
+	<!--还款用途申请查询当前期供信息   -->
+	 <select id="findCurrentmonthAmount" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth" >
+	    SELECT  
+	    	pm.id,
+	    	pm.month_punish_reduction,
+	    	pm.month_before_finish_amount, 
+			pm.dict_month_status,
+			tp.month_capital_payactual_sum,
+			tp.month_interest_payactual_sum,
+			tp.month_interest_punishshould_sum,
+			tp.month_interest_punishactual_sum,
+			tp.month_punish_reduction_sum,
+			tp.month_late_fee_sum,
+			tp.actual_month_late_fee_sum,
+			tp.month_late_fee_reduction_sum,
+			tp.month_penalty_should_sum,
+			tp.month_penalty_actual_sum,
+			tp.month_penalty_reduction_sum
+	    FROM 
+	    (
+		    SELECT 
+		    MIN(id) id,
+            MIN(dict_month_status) dict_month_status,
+            MIN(months) months,
+            MIN(month_punish_reduction) month_punish_reduction,
+            MAX(month_before_finish_amount) month_before_finish_amount,
+            CONTRACT_CODE
+		    FROM 
+		    jk.t_jk_payback_month WHERE CONTRACT_CODE=#{contractCode} AND dict_month_status='0' GROUP BY CONTRACT_CODE
+	    ) 
+	    pm
+		LEFT JOIN jk.t_jk_payback p on p.contract_code = pm.contract_code
+		LEFT JOIN (select 
+					sum(month_capital_payactual) as month_capital_payactual_sum,<!-- 实还本金总额(sum)-->
+					sum(month_interest_payactual) as month_interest_payactual_sum,<!-- 实还利息总额(sum)-->
+					
+					sum(month_interest_punishshould) as month_interest_punishshould_sum,<!-- 应还罚息总额(sum)-->
+					sum(month_interest_punishactual) as month_interest_punishactual_sum,<!-- 实还罚息总额(sum)-->
+					sum(month_punish_reduction) as month_punish_reduction_sum,<!-- 减免罚息总额(sum)-->
+					
+					sum(month_late_fee) as month_late_fee_sum,<!-- 应还滞纳金(1.3系统单算罚息,1.4一次性还款违约罚金)(sum)-->
+					sum(actual_month_late_fee) as actual_month_late_fee_sum,<!-- 实还滞纳金总额(sum)-->
+					sum(month_late_fee_reduction) as month_late_fee_reduction_sum,<!-- 减免滞纳金总额(sum)-->
+					
+					sum(month_penalty_should) as month_penalty_should_sum,<!-- 应还违约金总额 -->
+					sum(month_penalty_actual) as month_penalty_actual_sum,<!-- 实还违约金总额 -->
+					sum(month_penalty_reduction) as month_penalty_reduction_sum,<!-- 减免违约金总额 -->
+					
+					contract_code from jk.t_jk_payback_month 
+					group by contract_code 
+		)  tp on tp.contract_code = pm.contract_code
+	    WHERE  pm.contract_code=#{contractCode}
+   </select>
+	
+	<!--还款用途申请详细信息计算逾期期供信息   -->
+	 <select id="findOverdueMonthAmount" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+	    SELECT  
+	   		pm.id,
+			tp.month_pay_amount_sum,
+			tp.month_interest_backshould_sum,
+			tp.month_capital_payactual_sum,
+			tp.month_interest_payactual_sum,
+			tp.month_interest_punishshould_sum,
+			tp.month_interest_punishactual_sum,
+			tp.month_punish_reduction_sum,
+			tp.month_late_fee_sum,
+			tp.actual_month_late_fee_sum,
+			tp.month_late_fee_reduction_sum,
+			tp.month_penalty_should_sum,
+			tp.month_penalty_actual_sum,
+			tp.month_penalty_reduction_sum,
+			tp.month_fee_service_sum,
+			tp.actual_month_fee_service_sum
+	    FROM jk.t_jk_payback_month pm
+		LEFT JOIN (select 
+					sum(month_pay_amount) as month_pay_amount_sum,<!-- 应还本金总额(sum)-->
+					sum(month_interest_backshould) as month_interest_backshould_sum,<!-- 应还利息总额(sum)-->
+					sum(month_fee_service) as month_fee_service_sum,<!-- 应还分期服务费总额 -->
+			     	sum(actual_month_fee_service) as actual_month_fee_service_sum, 	<!-- 实还分期服务费总额 -->
+					sum(month_capital_payactual) as month_capital_payactual_sum,<!-- 实还本金总额(sum)-->
+					sum(month_interest_payactual) as month_interest_payactual_sum,<!-- 实还利息总额(sum)-->
+				
+					sum(month_interest_punishshould) as month_interest_punishshould_sum,<!-- 应还罚息总额(sum)-->
+					sum(month_interest_punishactual) as month_interest_punishactual_sum,<!-- 实还罚息总额(sum)-->
+					sum(month_punish_reduction) as month_punish_reduction_sum,<!-- 减免罚息总额(sum)-->
+					
+					sum(month_late_fee) as month_late_fee_sum,<!-- 应还滞纳金(1.3系统单算罚息,1.4一次性还款违约罚金)(sum)-->
+					sum(actual_month_late_fee) as actual_month_late_fee_sum,<!-- 实还滞纳金总额(sum)-->
+					sum(month_late_fee_reduction) as month_late_fee_reduction_sum,<!-- 减免滞纳金总额(sum)-->
+					
+					sum(month_penalty_should) as month_penalty_should_sum,<!-- 应还违约金总额 -->
+					sum(month_penalty_actual) as month_penalty_actual_sum,<!-- 实还违约金总额 -->
+					sum(month_penalty_reduction) as month_penalty_reduction_sum,<!-- 减免违约金总额 -->
+					contract_code from jk.t_jk_payback_month  where dict_month_status in (${paybackMonth.dictMonthStatus})
+					group by contract_code 
+		)  tp on tp.contract_code = pm.contract_code
+	    WHERE  pm.contract_code=#{contractCode}  limit 1
+   </select>
+   <!--还款用途申请保存提前结清数据   -->
+   <insert id="insertOffset">
+	   INSERT INTO jk.t_jk_payback_charge(
+            apply_amount_payback, 
+            id, 
+            contract_code, 
+            apply_amount_violate, 
+            apply_amount_punish, 
+            dict_offset_type, 
+            penalty_total_amount, 
+            settle_total_amount, 
+            apply_bule_amount,<!-- 申请蓝补金额 -->
+            upload_name,
+			upload_date,
+			upload_filename,
+			upload_path,
+            create_by, 
+            create_time, 
+            charge_status,
+            month_overdue_mes)
+	    VALUES (
+		    #{applyAmountPayback},
+		    #{id},  
+		    #{contractCode}, 
+		    #{applyAmountViolate}, 
+		    #{applyAmountPunish}, 
+		    #{dictOffsetType}, 
+		    #{penaltyTotalAmount}, 
+		    #{settleTotalAmount}, 
+		   (select payback_bule_amount from  jk.t_jk_payback where contract_code = #{contractCode}),
+		    #{uploadName},
+			#{uploadDate},
+			#{uploadFilename},
+			#{uploadPath},
+		    #{createBy}, 
+		    #{createTime}, 
+		    #{chargeStatus},
+		    #{monthOverdueMes})
+   </insert>
+
+	<!--获取冲抵期供 -->
+	<select id="getPaybackMonth" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+		SELECT
+		id,
+		contract_code,
+		months,
+		month_pay_day,
+		month_pay_actualday,
+		month_pay_amount,
+		month_interest_backshould,
+		month_capital_payactual,
+		month_interest_payactual,
+		is_overdue,
+		month_interest_punishshould,
+		month_interest_punishactual,
+		month_punish_reduction,
+		month_penalty_should,
+		month_penalty_actual,
+		month_penalty_reduction,
+		month_overdue_days,
+		month_reduction_day,
+		dict_month_status,
+		month_overdue_mes,
+		month_fee_service,
+		actual_month_fee_service,
+		month_pay_total
+		FROM jk.t_jk_payback_month pm
+		where 1=1 
+		<if test="contractCode != null and contractCode!=''">
+			and pm.contract_code = #{contractCode} 
+		</if>
+		<if test="paybackCurrentMonth != null">
+			and pm.months >= #{paybackCurrentMonth}
+		</if>
+			and (pm.dict_month_status not in (#{REPAYMENT_FLAG},#{OVERDUE_FLAG}) or dict_month_status is null) order by months ASC
+	</select>
+
+	<!--获取冲抵期供 逾期 -->
+	<select id="getOverduePaybackMonth" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+		SELECT 
+		id, 
+		contract_code, 
+		months, 
+		month_pay_day,<!-- 还款日 -->
+		month_pay_actualday,<!-- 实际还款日 -->
+		month_fee_service,<!-- 分期服务费 -->
+		actual_month_fee_service,<!-- 分期服务费实还金额 -->
+		month_pay_amount, <!-- 应还本金 -->
+		month_interest_backshould, <!-- 应还利息 -->
+		month_capital_payactual,<!-- 实还本金 -->
+		month_interest_payactual, <!-- 实还利息 -->
+		is_overdue, 
+		month_interest_punishshould,<!-- 应还罚息 -->
+		month_interest_punishactual,<!-- 实还罚息 -->
+		month_punish_reduction,<!-- 减免罚息 --> 
+		month_penalty_should, <!-- 应还违约金 -->
+		month_penalty_actual,<!-- 实还违约金 -->
+		month_penalty_reduction, <!--减免违约金  -->
+		month_late_fee,<!-- 滞纳金 -->
+		actual_month_late_fee,<!-- 实还滞纳金 -->
+		month_late_fee_reduction,<!-- 减免滞纳金 -->
+		month_overdue_days, 
+		month_reduction_day,
+		dict_month_status, <!-- 期供状态 -->
+		month_pay_total,<!-- 应还总额 -->
+		month_overdue_mes
+		FROM jk.t_jk_payback_month
+		where 1=1
+		<if test="contractCode != null and contractCode!=''">
+			and contract_code = #{contractCode} 
+		</if>
+		<if test="months != null and months != ''">
+			and months >= #{months} 
+		</if> 
+		<if test="dictMonthStatus != null and dictMonthStatus!= ''">
+			and dict_month_status in (${dictMonthStatus})
+		</if>
+		order by months
+	</select>
+
+	<!--更新期供-->
+	<update id="updateMonthsAmount">
+		UPDATE jk.t_jk_payback_month
+		<set>
+		<if test="actualMonthFeeService != null and actualMonthFeeService != ''">
+			actual_month_fee_service=#{actualMonthFeeService},
+		</if>
+		<if test="monthCapitalPayactual != null and monthCapitalPayactual != ''">
+			month_capital_payactual=#{monthCapitalPayactual},
+		</if>
+		<if test="monthInterestPayactual != null and monthInterestPayactual != ''">
+			month_interest_payactual=#{monthInterestPayactual}, 
+		</if>
+		<if test="actualMonthLateFee != null and actualMonthLateFee != ''">
+		 actual_month_late_fee = #{actualMonthLateFee},
+		</if>
+		<if test="monthPenaltyActual != null and monthPenaltyActual != ''">
+		 month_penalty_actual = #{monthPenaltyActual},
+		</if>
+		<if test="monthInterestPunishactual != null and monthInterestPunishactual != ''">
+		month_interest_punishactual = #{monthInterestPunishactual},
+		</if>
+		<if test="monthPayActualday != null and monthPayActualday != ''">
+		  month_pay_actualday = #{monthPayActualday},
+		</if>
+		<if test="isOverdue != null and isOverdue != ''">
+			is_overdue=#{isOverdue}, 
+		</if>
+		<if test="dictMonthStatus != null and dictMonthStatus != ''">
+			dict_month_status=#{dictMonthStatus},  
+		</if>
+		<if test="modifyBy != null and modifyBy != ''">
+			modify_by=#{modifyBy}, 
+		</if>
+		<if test="modifyTime != null">
+			modify_time=#{modifyTime} 
+		</if>
+		</set> 
+		WHERE  id = #{id}
+	</update>
+	
+	<!-- 冲抵加锁-->
+	<select id="getPaybackReq"  resultType = "com.creditharmony.loan.borrow.payback.entity.Payback">
+	   select id, 
+	   payback_bule_amount
+	   from t_jk_payback
+	   where 
+	   id = #{reqId} for update
+	</select>
+</mapper>

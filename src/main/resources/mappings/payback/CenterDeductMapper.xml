@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.CenterDeductDao">
+<sql id="dictbackid">'2'</sql>
+<sql id="flag">'0'</sql>
+<sql id="topflag">'1'</sql>
+  <!-- 获取待集中划扣申请的数据列表 -->
+  <select id="getAllList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackList" 
+	parameterType="java.util.Map">
+	
+	select
+	a.id,
+	a.month_id,
+	a.contract_code,
+	a.customer_name,
+	a.stores_name,
+	e.bank_name as apply_bank_name,
+	a.tel,
+	a.months,
+	b.payback_day as monthDay,
+	a.bule_amount,
+	a.dict_month_status,
+	a.status,
+	a.mark,
+	ROUND(a.month_pay_total,2) as monthlySupplyAmount,
+	ROUND(a.complete_amount,2) as complete_amount,
+	ROUND(a.repay_amount,2) as repay_amount,
+	a.dict_deal_type,
+	b.id as "payback.id",
+	b.contract_code as "payback.contract_code",
+	b.dict_pay_status as "payback.dict_pay_status",
+	c.contract_code as "contract.contract_code",
+	c.contract_end_day as "contract.contract_end_day",
+	d.dict_loan_status as "loanInfo.dict_loan_status",
+	d.dict_source_type as "loanInfo.dict_source_type",
+	sum(ROUND(a.repay_amount,2)) OVER () as sumAmont,
+   <!--  count(*)  over() as sumNumber, -->
+    d.model 
+	
+	from jk.t_jk_payback_list a 
+    left join jk.t_jk_payback b on a.contract_code = b.contract_code
+    left join jk.t_jk_contract c on  a.contract_code =c.contract_code
+    left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+    left join jk.t_jk_loan_bank e on d.loan_code = e.loan_code AND e.bank_top_flag ='1' AND e.repayment_flag='1'
+    where  1=1 and a.status  in (${status})
+       
+     <if test="customerName != null and !customerName.equals('')">
+		AND a.customer_name LIKE '%${customerName}%'
+	</if>
+	
+	<if test="contractCode != null and !contractCode.equals('')">
+		AND a.contract_code = #{contractCode}
+	</if>
+	
+	<if test="monthPayDay!= null and !monthPayDay.equals('')">
+       and cast(b.payback_day as integer) = cast(#{monthPayDay} as integer)
+	</if>
+     
+	<if test="contractReplayDay != null and !contractReplayDay.equals('') ">
+		AND c.contract_end_day &gt;=
+		 #{contractReplayDay}
+	</if>
+	<if test="contractEndDay!=null and !contractEndDay.equals('') ">
+		AND c.contract_end_day &lt;=
+		#{contractEndDay}
+	</if>
+	
+	<if test=" storesId!= null and !storesId.equals('')">
+		AND d.loan_store_orgid in (${storesId})
+	</if>
+	
+	<if test="mark!= null and !mark.equals('')">
+		AND a.mark in(${mark})
+	</if>
+	
+	<if test="bankId != null and !bankId.equals('')">
+		AND e.bank_name in (${bankId})
+	</if>
+    <if test="dictDealType!= null and !dictDealType.equals('')">
+		AND a.dict_deal_type = #{dictDealType}
+	</if>
+	<if test="dictSourceType != null and !dictSourceType.equals('')">
+		AND d.dict_source_type = #{dictSourceType}
+	</if>
+	  <if test="model != null and !model.equals('')">
+		  AND d.model  = #{model}
+	  </if>
+
+</select>
+
+  <!-- 获取待集中划扣申请的数据列表(导出) -->
+  <select id="getCenterDeductList"  resultType="com.creditharmony.loan.borrow.payback.entity.ex.CenterDeductEx">
+	select
+	a.id,
+	a.contract_code as contractCode,
+	a.customer_name as customerName,
+	a.stores_name as storesName,
+	bk.label as applyBankName,
+	a.tel,
+	c.contract_end_day  as contractEndDay,
+	a.month_pay_day as monthPayDay,
+	ROUND(a.month_pay_total,2) as repayAmount,
+	flag.label as mark,
+	plat.label as dictDealType,
+	 us.name as customerStaff,
+	 org.name  as  teamName,
+	 ROUND(c.contract_amount,2) as contractMoney,
+	 bank.bank_account as bankAccount,
+	ROUND(a.repay_amount,2) as currentCompleteAmount,
+	ROUND(a.complete_amount,2) as completeAmount,
+	d.model
+	from jk.t_jk_payback_list a 
+    left join jk.t_jk_payback b on a.contract_code = b.contract_code
+    left join jk.t_jk_contract c on  a.contract_code =c.contract_code
+    left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+    left join jk.t_gl_user us on d.loan_customer_service = us.id
+    left join jk.t_gl_org org on d.loan_team_orgid = org.id
+    left join jk.t_jk_loan_bank bank on bank.loan_code=d.loan_code AND bank.bank_top_flag ='1' AND bank.repayment_flag='1'
+    left join (select value,label  from t_gl_dict   where type = 'jk_open_bank' ) bk  on bank.bank_name =  bk.value
+    left join (select value,label  from t_gl_dict   where type = 'jk_deduct_plat' ) plat  on a.dict_Deal_Type =  plat.value
+     left join (select value,label  from t_gl_dict   where type = 'jk_channel_flag' ) flag  on a.mark =  flag.value
+    where  1=1 and a.status  in (${status})
+	   <if test="customerName != null and !customerName.equals('')">
+		AND a.customer_name LIKE CONCAT('%', #{customerName}, '%')
+	</if>
+	   <if test="id != null and !id.equals('')">
+		AND a.id  in (${id})
+	</if>
+	
+	<if test="contractCode != null and !contractCode.equals('')">
+		AND a.contract_code =  #{contractCode}
+	</if>
+	
+	<if test="monthPayDay!= null and !monthPayDay.equals('')">
+       and cast(b.payback_day as integer) = cast(#{monthPayDay} as integer)
+	</if>
+     
+	<if test="contractReplayDay != null and !contractReplayDay.equals('') ">
+		AND c.contract_end_day &gt;=
+		 #{contractReplayDay}
+	</if>
+	<if test="contractEndDay!=null and !contractEndDay.equals('') ">
+		AND c.contract_end_day &lt;=
+		#{contractEndDay}
+	</if>
+	
+	<if test=" storesId!= null and !storesId.equals('')">
+		AND d.loan_store_orgid in (${storesId})
+	</if>
+	
+	<if test="mark!= null and !mark.equals('')">
+		AND a.mark = #{mark}
+	</if>
+	
+	<if test="bankId != null and !bankId.equals('')">
+		AND bank.bank_name in (${bankId})
+	</if>
+	
+    <if test="dictPayStatus!= null and !dictPayStatus.equals('')">
+		AND b.dict_pay_status = #{dictPayStatus}
+	</if>
+    
+    <if test="dictDealType!= null and !dictDealType.equals('')">
+		AND a.dict_deal_type = #{dictDealType}
+	</if>
+	<if test="dictSourceType != null and !dictSourceType.equals('')">
+		AND d.dict_source_type = #{dictSourceType}
+	</if>
+  <if test="model != null and !model.equals('')">
+	  AND d.model  = #{model}
+  </if>
+</select>
+
+ <!-- 集中划扣申请的查询list（申请）  -->
+   <select id="queryCenterApply" resultType="com.creditharmony.loan.borrow.payback.entity.DeductsPaybackApply">
+	select
+	    a.id,
+        a.contract_code as contractCode,
+        d.loan_customer_name as loanCustomerName,
+        e.dict_cert_type as dictLoanCertType ,
+        e.customer_cert_num as loanCustomerCertNum,
+        e.customer_phone_first as customerPhoneFirst,
+        ROUND(a.repay_amount,2) as applyDeductAmount,
+        f.bank_account_name as  repayAccountName,
+        f.bank_account as repayDeductAccount,
+        f.bank_branch  as  applyBankName,
+        f.bank_name as bankCode,
+        a.id as rlistId,
+        a.month_id as monthId,
+		b.id as paybackId,
+	    #{platFormId} as dictDealType,
+		a.month_pay_day as applyPayDay,
+		COALESCE(a.stores_mark,'0') as storesMark,
+		b.payback_day  as paybackDay
+		from jk.t_jk_payback_list a 
+	    left join jk.t_jk_payback b on a.contract_code = b.contract_code
+	    left join jk.t_jk_contract c on  a.contract_code =c.contract_code
+	    left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+	    left join jk.t_jk_loan_customer e on d.loan_code = e.loan_code
+	    left join jk.t_jk_loan_bank f on f.loan_code = d.loan_code and  f.bank_top_flag ='1'  AND f.repayment_flag='1'
+	    
+    where a.status  in (${status})
+       
+     <if test="id != null and !id.equals('')">
+		AND a.id in (${id})
+	</if>
+     <if test="customerName != null and !customerName.equals('')">
+		AND a.customer_name LIKE CONCAT('%', #{customerName}, '%')
+	</if>
+	
+	<if test="contractCode != null and !contractCode.equals('')">
+		AND a.contract_code = #{contractCode}
+	</if>
+	
+	<if test="monthPayDay!= null and !monthPayDay.equals('')">
+         and cast(b.payback_day as integer) = cast(#{monthPayDay} as integer)
+	</if>
+     
+	<if test="contractReplayDay != null and !contractReplayDay.equals('') ">
+		AND c.contract_end_day &gt;=
+		 #{contractReplayDay}
+	</if>
+	<if test="contractEndDay!=null and !contractEndDay.equals('') ">
+		AND c.contract_end_day &lt;=
+		#{contractEndDay}
+	</if>
+	
+	<if test=" storesId!= null and !storesId.equals('')">
+		AND d.loan_store_orgid in (${storesId})
+	</if>
+	
+	<if test="mark!= null and !mark.equals('')">
+		AND a.mark = #{mark}
+	</if>
+	
+	<if test="bankId != null and !bankId.equals('')">
+		AND f.bank_name in (${bankId})
+	</if>
+    <if test="dictDealType!= null and !dictDealType.equals('')">
+		AND a.dict_deal_type = #{dictDealType}
+	</if>
+	<if test="dictSourceType != null and !dictSourceType.equals('')">
+		AND d.dict_source_type = #{dictSourceType}
+	</if>
+	 <if test="model != null and !model.equals('')">
+		  AND d.model  = #{model}
+	 </if>
+	 <if test="channelFlag!=null and !channelFlag.equals('')">
+			and c.channel_flag != #{channelFlag}
+	</if>
+   </select>
+
+
+  <!-- 映射 -->
+	<resultMap type="com.creditharmony.loan.borrow.payback.entity.PaybackList" id="CenterDeductList">
+		<id column="contract_code" property="contractCode" />
+		<result column="id" property="ID"/>
+		<result column="month_id" property="monthId"/>
+		<result column="monthlySupplyAmount" property="monthlySupplyAmount"/>
+		<result column="customer_name" property="customerName" />
+		<result column="stores_name" property="storesName" />
+		<result column="apply_bank_name" property="applyBankName" />
+		<result column="months" property="months" />
+		<result column="tel" property="tel" />
+		<result column="month_pay_day" property="monthPayDay" />
+		<result column="repay_amount" property="repayAmount" />
+		<result column="complete_amount" property="completeAmount" />
+		<result column="bule_amount" property="buleAmount" />
+		<result column="dict_month_status" property="dictMonthStatus" />
+		<result column="mark" property="mark" />
+		<result column="dict_deal_type" property="dictDealType" />
+		<result column="status" property="status" />
+		<result column="sumAmont" property="sumAmont" />
+		<result column="sumNumber" property="sumNumber" />
+		<result column="monthDay" property="monthDay" />
+		<association property="payback"
+			javaType="com.creditharmony.loan.borrow.payback.entity.Payback">
+			<id column="contract_code" property="contractCode" />
+			<result column="mainId" property="id"/>
+			<result column="dict_pay_status" property="dictPayStatus" />
+		</association>
+		<association property="contract"
+			javaType="com.creditharmony.loan.borrow.contract.entity.Contract">
+			<id column="contract_code" property="contractCode" />
+			<result column="contract_end_day" property="contractEndDay" />
+		</association>
+		<association property="loanInfo" javaType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+		  <id column="loan_code" property="loanCode"></id>
+		  <result column="dict_loan_status" property="dictLoanStatus"></result>
+		<result column="dict_source_type" property="dictSourceType"></result>
+		</association>
+	</resultMap>
+   
+   
+   <!-- 借款人卡号信息查询 -->
+ <select id="getUserCardInfo" resultType="com.creditharmony.loan.common.entity.LoanBank" parameterType="java.lang.String" >
+    select a.file_id,a.file_name,a.id,a.loan_code,a.modify_time,a.bank_account_name,a.bank_account,
+    d.label as bank_name,c.label as bank_signing_platform,bank_branch,a.bank_top_flag
+     from jk.t_jk_loan_bank a join jk.t_jk_contract b on b.loan_code=a.loan_code
+    left join (select value,label from t_gl_dict where type ='jk_deduct_plat')c on a.bank_signing_platform = c.value
+    left join (select value,label from t_gl_dict where type ='jk_open_bank') d on a.bank_name = d.value
+    where b.contract_code=#{constractCode} AND a.repayment_flag ='1'
+  </select>
+   
+   <!-- 置顶处于选中状态的卡号信息 -->
+   <update id="updateCardInfo">
+      update jk.t_jk_loan_bank  set bank_top_flag =<include refid="topflag"></include>,repayment_flag ='1' where id=#{id} 
+   </update>
+   <!-- 置顶处于选中状态的卡号信息 -->
+   <update id="updateCardTop">
+      update jk.t_jk_loan_bank  set bank_top_flag ='0' where loan_code = (select loan_code from jk.t_jk_loan_bank where id = #{id})  and 
+      bank_top_flag = '1'  and repayment_flag ='1'
+   </update>
+   
+   <!-- 根据期供ID查询期供表，获取该期的期供金额  -->
+   <select id="queryListHis" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+      select a.id
+      from jk.t_jk_payback_list_his a where a.id=#{rlistId} 
+   </select>
+  
+   <!-- 修改待还款列表中已发出集中划扣申请数据的状态为 已申请 -->
+   <update id="updateState" >
+     update jk.t_jk_payback_list set status=<include refid="topflag"></include> 
+            ,stores_mark = <include refid="topflag"></include>
+            ,modify_by = #{modifyBy},
+		    modify_time = #{modifyTime}
+     where id=#{rlistId}
+   </update>
+    <!-- 插入集中划扣申请的数据  -->
+   <insert id="addCenterApply">
+     INSERT INTO jk.t_jk_deducts_payback_apply
+		(id, contract_code,
+		 loan_customer_name,
+		 dict_loan_cert_type,
+		 loan_customer_cert_num,
+		 customer_phone_first,
+		 month_id,
+		 apply_deduct_amount, 
+		 dict_deal_type,
+		 apply_pay_day, 
+		 repay_account_name,
+		 repay_deduct_account,
+		 apply_bank_name,
+		 bank_code,
+		 apply_really_amount, 
+		 dict_back_result,
+		 lanuch_by, 
+		 org_code, 
+		 create_by,
+		 create_time, 
+		 modify_by, 
+		 modify_time,
+		 r_list_id,
+		 payback_day 
+		 )
+   VALUES
+   (#{id}, #{contractCode},#{loanCustomerName},#{dictLoanCertType},#{loanCustomerCertNum},
+   #{customerPhoneFirst},#{monthId}, #{applyDeductAmount},#{dictDealType},
+   #{applyPayDay},#{repayAccountName},#{repayDeductAccount},#{applyBankName},
+   #{bankCode}, #{applyReallyAmount}, #{dictBackResult},#{lanuchBy},
+   #{orgCode},#{createBy},#{createTime},#{modifyBy},#{modifyTime},#{rlistId},#{paybackDay})
+   </insert>
+   
+    <!--插入 还款_待还款归档列表  -->
+   <insert id="insertListHis">
+     insert into jk.t_jk_payback_list_his
+            (id,month_id,contract_code,customer_name,stores_name,apply_bank_name, 
+             tel, month_pay_day, months, repay_amount, complete_amount, bule_amount, 
+             dict_month_status, status, mark, dict_deal_type,
+             stores_mark, stores_mark_userid, riskcontrol_mark, riskcontrol_remark_userid, 
+             return_reasion,split_back_result,create_time,modify_time,create_By,modify_By) select 
+             id,month_id,contract_code,customer_name,stores_name,apply_bank_name, 
+             tel, month_pay_day, months, repay_amount, complete_amount,  bule_amount,
+             dict_month_status, status, mark, #{dictDealType},
+             stores_mark, stores_mark_userid, riskcontrol_mark, riskcontrol_remark_userid, 
+             return_reasion,'0',now(),now(),#{createBy},#{modifyBy}  from  t_jk_payback_list where  id= #{id}
+   </insert>
+    <!--更新 还款_待还款归档列表  -->
+   <update id="updateListHis">
+     update jk.t_jk_payback_list_his
+            set split_back_result=  #{dictPaybackStatus}
+,
+	                dict_deal_type = #{dictDealType}
+		 where id = #{id}
+   </update>
+   
+    <!--增加还款还款历史明细-->
+    <insert id="addPaybackHis"   parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackHis">
+     insert into jk.T_JK_PAYBACK_HIS(
+       ID,R_MONTH_ID,CONTRACT_CODE,PAYMENT_AMOUNT,PAYMENT_DAY,PAYMENT_COMMISSIONER_CODE,CREATE_BY,CREATE_TIME,MODIFY_BY,MODIFY_TIME
+     ) values(
+       #{id},
+       #{rMonthId},
+       #{contractCode},
+       #{paymentAmount},
+       #{paymentDay},
+       #{paymentCommissionerCode},
+       #{createBy},
+       #{createTime},
+       #{modifyBy},
+       #{modifyTime}
+     )
+   </insert>
+   
+   <insert id="insertCenterApply">
+        insert into JK.t_jk_deducts_payback_apply 
+        (id, contract_code, loan_customer_name, 
+        dict_loan_cert_type, loan_customer_cert_num,
+        customer_phone_first, month_id, apply_deduct_amount, 
+        dict_deal_type, apply_pay_day, repay_account_name, repay_deduct_account, 
+        apply_bank_name, bank_code, dict_back_result,
+        lanuch_by, org_code, create_by, create_time,modify_time,
+        r_list_id)
+        select replace(uuid_generate_v4()::varchar,'-',''),  a.contract_code,d.loan_customer_name,
+        e.dict_cert_type,e.customer_cert_num,
+        e.customer_phone_first, a.month_id as monthId, a.repay_amount,
+        #{dictDealType},now(),f.bank_account_name, f.bank_account,
+        f.bank_branch,f.bank_name,#{prepayment},
+        #{lanuchBy},#{orgcode},#{lanuchBy},now(),now(),
+        a.id as rlistId
+		from jk.t_jk_payback_list a 
+	    left join jk.t_jk_payback b on a.contract_code = b.contract_code
+	    left join jk.t_jk_contract c on  a.contract_code =c.contract_code
+	    left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+	    left join jk.t_jk_loan_customer e on d.loan_code = e.loan_code
+	    left join jk.t_jk_loan_bank f on f.loan_code = d.loan_code and  f.bank_top_flag ='1'
+	    where  a.status  in (${status})
+	     
+       <if test="customerName != null and !customerName.equals('')">
+		AND a.customer_name LIKE '%${customerName}%'
+	   </if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND a.contract_code = #{contractCode}
+		</if>
+		<if test="monthPayDay!= null and !monthPayDay.equals('')">
+	       and cast(b.payback_day as integer) = cast(#{monthPayDay} as integer)
+		</if>
+		<if test="contractReplayDay != null and !contractReplayDay.equals('') ">
+			AND c.contract_end_day &gt;=
+			 #{contractReplayDay}
+		</if>
+		<if test="contractEndDay!=null and !contractEndDay.equals('') ">
+			AND c.contract_end_day &lt;=
+			#{contractEndDay}
+		</if>
+		<if test=" storesId!= null and !storesId.equals('')">
+			AND d.loan_store_orgid in (${storesId})
+		</if>
+		<if test="mark!= null and !mark.equals('')">
+			AND a.mark = #{mark}
+		</if>
+		<if test="bankId != null and !bankId.equals('')">
+			AND f.bank_name in (${bankId})
+		</if>
+	    <if test="dictPayStatus!= null and !dictPayStatus.equals('')">
+			AND b.dict_pay_status = #{dictPayStatus}
+		</if>
+	    <if test="dictDealType!= null and !dictDealType.equals('')">
+			AND a.dict_deal_type = #{dictDealType}
+		</if>
+		<if test="dictSourceType != null and !dictSourceType.equals('')">
+			AND d.dict_source_type = #{dictSourceType}
+		</if>
+   </insert>
+</mapper>

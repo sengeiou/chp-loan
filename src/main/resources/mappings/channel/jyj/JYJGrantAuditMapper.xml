@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.channel.jyj.dao.JYJGrantAuditDao">
+  <resultMap id="baseResultMap" type="com.creditharmony.loan.channel.jyj.entity.JYJGrantAuditEx">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode"  />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="name" jdbcType="VARCHAR" property="storeName" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coborrowerName" />
+    <result column="class_type" jdbcType="VARCHAR" property="classType" /><!-- 借款类型名称 -->
+    <result column="product_name" jdbcType="VARCHAR" property="replyProductName" /><!-- 借款产品名称 -->
+    <result column="grant_amount" jdbcType="NUMERIC" property="lendingMoney" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractMoney" />
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="urgeServiceFee" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="identityCode" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="channelName" />
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="urgentFlag" />
+    <result column="bank_name" jdbcType="VARCHAR" property="depositBank" />
+    <result column="dict_loan_way" jdbcType="VARCHAR" property="lendingWayName" />
+    <result column="contract_months" jdbcType="NUMERIC" property="replyMonth" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="telesalesFlag"/>
+    <result column="grant_recepic_result" jdbcType="VARCHAR" property="receiptResult"/>
+    <result column="grant_fail_result" jdbcType="VARCHAR" property="failReason"/>
+    <result column="grant_batch" jdbcType="VARCHAR" property="grantBatchCode"/>
+    <result column="grant_pch" jdbcType="VARCHAR" property="submissionBatch"/>
+    <result column="loan_store_orgid" jdbcType="VARCHAR" property="storeOrgId"/>
+    <result column="bank_account" jdbcType="VARCHAR" property="lendingAccount"/>
+    <result column="issplit" jdbcType="VARCHAR" property="issplit"/>
+    <result column="grant_back_date" jdbcType="DATE" property="grantBackDate"/>
+    
+  </resultMap>
+  
+  <!-- 放款审核列表数据显示 -->
+  <select id="getGrantAuditList" resultMap="baseResultMap">
+	select
+		a.id, --放款id 
+		a.loan_code, --借款编码
+		d.apply_id, --applyId
+		a.contract_code, --合同编号
+		b.loan_customer_name, --客户姓名
+		b.issplit, --拆分标志 
+		d.cobo_name, --共借人
+		'信借' as classType,
+		'金信' as channelName,
+		(select product_name from jk.t_gl_jk_product t where t.product_code = d.product_type) as replyProductName, --借款产品
+		round(d.contract_amount,2) as contractMoney,--合同金额
+		round(f.first_grant_amount,2) as lendingMoney,-- 首次放款金额
+		round(s.urge_moeny,2) as urgeServiceFee, --划扣金额
+		round(sum(first_grant_amount) OVER (),2) as totalGrantMoney, --放款总金额
+		d.contract_months, --批复期限
+		e.bank_account_name as custBankAccountName, --账户姓名
+		e.bank_account,--放款账号
+		(select label from jk.t_gl_dict where type = 'jk_urge_counteroffer_result' and value = s.dict_deal_status) as receiptResult, --费用收取状态
+		a.grant_fail_result, --失败原因
+		(select label from jk.t_gl_dict d where d.type = 'jk_open_bank' and d.value = e.bank_name) as depositBank, --开户行
+		(select label from jk.t_gl_dict where type = 'jk_payment_way' and value = a.dict_loan_way) as lendingWayName, --放款途径
+		b.loan_urgent_flag as urgentFlag,--加急标识
+		c.customer_telesales_flag as telesalesFlag, --是否电销
+		a.grant_batch, --放款批次
+		a.grant_pch, --提交批次
+		a.lending_time, --放款日期
+		a.submissiondate, --提交时间
+		a.submit_deduct_time,--提交划扣时间
+		b.loaninfo_oldornew_flag, --新老标识
+		b.loan_store_orgid as storeOrgId, --门店id
+		h.name as storeName, --门店名称
+		h.province_id as provinceCode, --门店省
+		h.city_id as cityCode, --门店市
+		(case when s.dict_deal_status = '1' or s.dict_deal_status = '8' then '0'
+		else '1' end) ASC4 
+		,a.grant_back_date --回盘时间
+	from jk.t_jk_loan_grant a
+	left join jk.t_jk_loan_info b on b.loan_code = a.loan_code 
+	left join jk.t_jk_loan_customer c on c.loan_code = b.loan_code
+	left join jk.t_jk_contract d on d.loan_code = a.loan_code
+	left join jk.t_jk_urge_services_amount s on s.contract_code = a.contract_code and s.return_logo = '0'
+	left join jk.t_jk_loan_bank e on e.loan_code = d.loan_code and e.bank_top_flag = '1' and e.repayment_flag = '0'
+	left join jk.t_jk_contract_fee f on f.contract_code = d.contract_code
+	left join jk.t_gl_org h on h.id = b.loan_store_orgid
+	where b.dict_loan_status = '${@com.creditharmony.loan.borrow.grant.constants.GrantConstantsMapping@GRANT_NAME}' 
+	and a.grant_flag = '1' and d.product_type = 'A020'
+      <if test="customerName != null and customerName != ''" >
+        and loan_customer_name LIKE CONCAT('%', #{customerName}, '%')
+      </if>
+      <if test="identityCode != null and identityCode != ''" >
+        and customer_cert_num LIKE CONCAT('%', #{identityCode}, '%')
+      </if>
+      <if test="contractCode != null and contractCode != ''" >
+        and a.contract_code = #{contractCode}
+      </if>
+      <if test="storeOrgIds != null" > <!-- 门店id -->
+      	and b.loan_store_orgid in
+		<foreach item="item" index="index" collection="storeOrgIds" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+      </if>
+      <if test="applyIds != null">
+      	and d.apply_id in
+      	<foreach item="item" index="index" collection="applyIds" open="(" separator="," close=")">
+      		#{item}
+      	</foreach>
+      </if>
+      <if test="additionalFlag != null and additionalFlag != ''">
+      	and dict_is_additional = #{additionalFlag}
+      </if>
+	  <if test="lendingTimeStart != null and lendingTimeStart != ''"> <!-- 放款时间 -->
+		and to_date(to_char(a.lending_time,'yyyy-mm-dd')) &gt;= #{lendingTimeStart}
+	  </if>
+	  <if test="lendingTimeEnd != null and lendingTimeEnd != ''">
+		and to_date(to_char(a.lending_time,'yyyy-mm-dd')) &lt;= #{lendingTimeEnd}
+	  </if>
+	  <if test="grantBatchCode != null and grantBatchCode != ''">
+	  	and grant_batch = #{grantBatchCode}
+	  </if>
+	  <if test="lendingWayCode != null and lendingWayCode != ''">
+	  	and dict_loan_way = #{lendingWayCode}
+	  </if>
+	  <if test="telesalesFlag != null and telesalesFlag != ''">
+	  	and customer_telesales_flag =#{telesalesFlag}
+	  </if>
+	  <if test="submissionDateStart != null and submissionDateStart != ''"> <!-- 提交时间 -->
+		and to_date(to_char(a.submissiondate,'yyyy-mm-dd')) &gt;= #{submissionDateStart}
+	  </if>
+	  <if test="submissionDateEnd != null and submissionDateEnd != ''">
+		and to_date(to_char(a.submissiondate,'yyyy-mm-dd')) &lt;= #{submissionDateEnd}
+	  </if>
+	  <if test="submissionBatch != null and submissionBatch != ''">
+	  	and grant_pch = #{submissionBatch}
+	  </if>
+	  <if test="receiptResult != null and receiptResult != ''">
+	  	and s.dict_deal_status = #{receiptResult}
+	  </if>
+	  <if test="urgentFlag != null and urgentFlag != ''">
+	  	and loan_urgent_flag = #{urgentFlag}
+	  </if>
+	  <if test="provinceCode != null and provinceCode != ''">
+	  	and h.province_id = #{provinceCode}
+	  </if>
+	  <if test="cityCode != null and cityCode != ''">
+	  	and h.city_id = #{cityCode}
+	  </if>
+	  order by ASC4 asc, a.modify_time desc
+  </select>
+  
+  <update id="updateLoanStatus">
+	update jk.t_jk_loan_info set dict_loan_status = #{loanStatus} where loan_code=(select
+	c.loan_code from jk.t_jk_contract c where c.contract_code=#{contractCode})
+	</update>
+	
+	<update id="updateBackResult">
+		update jk.t_jk_contract set contract_back_result=#{backResult} where contract_code=#{contractCode}
+	</update>
+	
+	<update id="updateGrantFlag">
+		update jk.t_jk_loan_grant set grant_flag = '2' where loan_code=(select
+	c.loan_code from jk.t_jk_contract c where c.contract_code=#{contractCode})
+	</update>
+	
+	<select id="getApplyId" resultType="Map">
+		select apply_id as applyId,loan_code as loanCode from jk.t_jk_contract where contract_code=#{contractCode}
+	</select>
+	
+	<select id="getFirstLoanProportion" resultType="Map">
+		SELECT
+    round(bc.first_loan_proportion,2) as firstLoanProportion,c.apply_id as applyId,c.loan_code as loanCode
+FROM
+    jk.t_jk_contract c LEFT JOIN jk.t_jk_loan_bank b
+        ON b.loan_code = c.loan_code and b.bank_top_flag='1' and b.repayment_flag='0' LEFT JOIN jk.t_jk_easy_borrow_bank_configure bc
+        ON b.bank_name = bc.bank_code
+WHERE
+    c.contract_code = #{contractCode}
+	</select>
+</mapper>

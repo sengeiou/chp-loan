@@ -1,0 +1,1131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarCustomerBankInfoDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarCustomerBankInfo" >
+    <id column="loan_code" property="loanCode" jdbcType="CHAR" />
+    <result column="id" property="id" jdbcType="CHAR" />
+    <result column="bank_account_name" property="bankAccountName" jdbcType="VARCHAR" />
+    <result column="bank_province" property="bankProvince" jdbcType="VARCHAR" />
+    <result column="bank_province_city" property="bankProvinceCity" jdbcType="VARCHAR" />
+    <result column="bank_city" property="bankCity" jdbcType="VARCHAR" />
+    <result column="bank_signing_platform" property="bankSigningPlatform" jdbcType="VARCHAR" />
+    <result column="card_bank" property="cardBank" jdbcType="VARCHAR" />
+    <result column="apply_bank_name" property="applyBankName" jdbcType="VARCHAR" />
+    <result column="bank_card_no" property="bankCardNo" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="top" property="top" jdbcType="CHAR" />
+    <result column="card_Bank_Code" property="cardBankCode" jdbcType="VARCHAR" />
+    <result column="account_authorizer_name" property="accountAuthorizerName" jdbcType="VARCHAR" />
+    <result column="dict_source_type" property="dictSourceType" jdbcType="VARCHAR" />
+    <result column="dict_source_type_pcl" property="dictSourceTypePcl" jdbcType="VARCHAR" />
+    <result column="israre" property="israre" jdbcType="VARCHAR" />
+    <result column="dict_maintain_type" property="dictMaintainType" jdbcType="VARCHAR" />
+    <result column="dict_maintain_status" property="dictMaintainStatus" jdbcType="VARCHAR" />
+    <result column="bank_check_result" property="bankCheckResult" jdbcType="VARCHAR" />
+    <result column="bank_check_desc" property="bankCheckDesc" jdbcType="VARCHAR" />
+    <result column="old_bank_account_id" property="oldBankAccountId" jdbcType="VARCHAR" />
+    <result column="file_id" property="fileId" jdbcType="VARCHAR" />
+    <result column="file_name" property="fileName" jdbcType="VARCHAR" />
+    <result column="new_customer_phone" property="newCustomerPhone" jdbcType="VARCHAR" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="VARCHAR" />
+    <result column="updatetype " property="updateType" jdbcType="VARCHAR" />
+    <result column="new_email " property="newEmail" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    bi.loan_code, bi.id, bank_account_name, bank_province, bank_city, card_bank, apply_bank_name, 
+    bank_card_no, bi.create_by, bi.create_time, top, bank_signing_platform, account_authorizer_name, israre
+  </sql>
+  <select id="selectCarCustomerBankInfo" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select concat(pc.area_name, pc2.area_name) bank_province_city, d1.label card_Bank,card_Bank card_Bank_Code,
+    <include refid="Base_Column_List" />
+    from t_cj_customer_bank_info bi
+    left join t_gl_province_city pc on pc.area_code = bi.bank_province
+    left join t_gl_province_city pc2 on pc2.area_code = bi.bank_city
+    left join t_gl_dict d1 on d1.value = bi.card_Bank and d1.type = 'jk_open_bank'
+    where bi.loan_code = #{loanCode,jdbcType=CHAR}
+  </select>
+  <delete id="delete"  parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBankInfo" >
+    delete from t_cj_customer_bank_info
+    where loan_code = #{loanCode,jdbcType=CHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBankInfo" >
+    insert into t_cj_customer_bank_info (loan_code, id, bank_account_name, 
+      bank_province,bank_city, card_bank, apply_bank_name, 
+      bank_card_no, create_by, create_time, 
+      top,bank_signing_platform, account_authorizer_name, israre)
+    values (#{loanCode,jdbcType=CHAR}, #{id,jdbcType=CHAR}, #{bankAccountName,jdbcType=VARCHAR}, 
+      #{bankProvince,jdbcType=VARCHAR},#{bankCity,jdbcType=VARCHAR}, #{cardBank,jdbcType=VARCHAR}, #{applyBankName,jdbcType=VARCHAR}, 
+      #{bankCardNo,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{top,jdbcType=CHAR},#{bankSigningPlatform,jdbcType=VARCHAR},#{accountAuthorizerName,jdbcType=VARCHAR},#{israre,jdbcType=VARCHAR})
+  </insert>
+  
+   <update id="upadteCarCustomerBankInfoById" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBankInfo" >
+    update t_cj_customer_bank_info
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=CHAR},
+      </if>
+      <if test="loanCode != null">
+		loan_code = #{loanCode,jdbcType=VARCHAR},
+	  </if>
+      <if test="bankAccountName != null" >
+        bank_account_name = #{bankAccountName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankProvince != null" >
+        bank_province = #{bankProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCity != null" >
+        bank_city = #{bankCity,jdbcType=VARCHAR},
+      </if>
+      <if test="cardBank != null" >
+        card_bank = #{cardBank,jdbcType=VARCHAR},
+      </if>
+      <if test="applyBankName != null" >
+        apply_bank_name = #{applyBankName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCardNo != null" >
+        bank_card_no = #{bankCardNo,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="top != null" >
+        top = #{top,jdbcType=CHAR},
+      </if>
+      <if test="israre != null">
+      	israre = #{israre,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSigningPlatform != null">
+      	bank_signing_platform = #{bankSigningPlatform,jdbcType=VARCHAR}
+      </if>
+      <if test="accountAuthorizerName != null">
+      	account_authorizer_name = #{accountAuthorizerName,jdbcType=VARCHAR}
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+  
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBankInfo" >
+    update t_cj_customer_bank_info
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=CHAR},
+      </if>
+      <if test="bankAccountName != null" >
+        bank_account_name = #{bankAccountName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankProvince != null" >
+        bank_province = #{bankProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCity != null" >
+        bank_city = #{bankCity,jdbcType=VARCHAR},
+      </if>
+      <if test="cardBank != null" >
+        card_bank = #{cardBank,jdbcType=VARCHAR},
+      </if>
+      <if test="applyBankName != null" >
+        apply_bank_name = #{applyBankName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankCardNo != null" >
+        bank_card_no = #{bankCardNo,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="top != null" >
+        top = #{top,jdbcType=CHAR},
+      </if>
+      <if test="israre != null">
+      	israre = #{israre,jdbcType=VARCHAR},
+      </if>
+      <if test="bankSigningPlatform != null">
+      	bank_signing_platform = #{bankSigningPlatform,jdbcType=VARCHAR}
+      </if>
+      <if test="accountAuthorizerName != null">
+      	account_authorizer_name = #{accountAuthorizerName,jdbcType=VARCHAR}
+      </if>
+    </set>
+    where loan_code = #{loanCode,jdbcType=CHAR}
+  </update>
+  <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
+	select
+	<include refid="Base_Column_List" />
+	from t_cj_customer_bank_info bi
+	where bi.id = #{id,jdbcType=VARCHAR}
+</select>
+
+<!-- 还款账号管理 -->
+  <resultMap id="BaseResultViewMap" type="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView" extends="BaseResultMap" >
+    <result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+    <result column="contract_version" property="contractVersion" jdbcType="VARCHAR" />
+    <result column="customerId " property="customerId" jdbcType="VARCHAR" />
+    <result column="loan_flag " property="loanflag" jdbcType="VARCHAR" />
+    <result column="contract_end_day " property="contractEndDay" jdbcType="TIMESTAMP" />
+    <result column="contract_replay_day " property="firstRepayDay" jdbcType="TIMESTAMP" />
+    <result column="storeName " property="storeName" jdbcType="VARCHAR" />
+    <result column="loanStatus " property="loanStatus" jdbcType="VARCHAR" />
+    <result column="repayment_date"			jdbcType="INTEGER"		property="repayDay"/>
+    <result column="customer_name " property="customerName" jdbcType="VARCHAR" />
+    <result column="customer_cert_num " property="customerCertNum" jdbcType="VARCHAR" />
+    <result column="customer_phone_first " property="customerPhoneFirst" jdbcType="VARCHAR" />
+    <result column="provinceName " property="provinceName" jdbcType="VARCHAR" />
+    <result column="cityName " property="cityName" jdbcType="VARCHAR" />
+    <result column="customer_email " property="customerEmail" jdbcType="VARCHAR" />
+    <result column="operate_step " property="operateStep" jdbcType="VARCHAR" />
+    <result column="old_data " property="oldData" jdbcType="VARCHAR" />
+    <result column="new_data " property="newData" jdbcType="VARCHAR" />
+    <result column="remark " property="remark" jdbcType="VARCHAR" />
+    <result column="cobo_Id " property="coboId" jdbcType="VARCHAR" />
+    <result column="cobo_flag " property="coboFlag" jdbcType="VARCHAR" />
+    <result column="cobo_cert_num " property="coboCertNum" jdbcType="VARCHAR" />
+    <result column="cobo_name " property="coboName" jdbcType="VARCHAR" />
+    <result column="cobo_mobile " property="coboMobile" jdbcType="VARCHAR" />
+    <result column="cobo_email " property="coboEmail" jdbcType="VARCHAR" />
+  </resultMap>
+  
+	<!-- 还款账号维护申请列表 -->
+	<select id="getCarCustomerBankInfoList" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView" resultMap="BaseResultViewMap">
+		select 
+			a.id,
+			a.loan_code,
+			a.modify_time,
+			a.bank_account_name,
+			a.contract_code,
+			a.card_bank ,
+			a.bank_card_no,
+			a.file_name,
+			a.dict_maintain_type,
+			a.dict_maintain_status,
+			a.updatetype,
+			a.top,
+			a.customer_name,
+			a.dict_loan_common_repayment_flag cobo_flag  ,
+            a.old_bank_account_id 
+		from (	
+				select 
+					bank.id,
+					bank.loan_code,
+					bank.modify_time,
+					bank.bank_account_name,
+					act.contract_code,
+					bank.card_bank ,
+					bank.bank_card_no,
+					bank.file_name,
+					bank.dict_maintain_type,
+					bank.dict_maintain_status,
+					bank.updatetype,
+					bank.top,
+					mer.customer_name,
+					lo.dict_loan_common_repayment_flag,
+                    bank.old_bank_account_id 
+				from 
+					jk.t_cj_contract act,
+					jk.t_cj_loan_info lo,
+					t_cj_customer_bank_info bank,
+					jk.t_jk_loan_customer mer
+				where  lo.loan_code = act.loan_code 
+				and bank.loan_code = act.loan_code
+				and act.loan_code = mer.loan_code 
+				and lo.dict_loan_status  in (${loanStatus})
+				<include refid="conditions"></include>
+			union all 
+			select 
+					bank.id,
+					bank.loan_code,
+					bank.modify_time,
+					bank.bank_account_name,
+					act.contract_code,
+					bank.card_bank ,
+					bank.bank_card_no,
+					bank.file_name,
+					bank.dict_maintain_type,
+					bank.dict_maintain_status,
+					bank.updatetype,
+					bank.top,
+					mer.customer_name,
+					lo.dict_loan_common_repayment_flag,
+                    bank.old_bank_account_id 
+				from 
+					jk.t_cj_contract act,
+					jk.t_cj_loan_info lo,
+					t_cj_customer_bank_info_add bank,
+					jk.t_jk_loan_customer mer
+				where  lo.loan_code = act.loan_code 
+				and bank.loan_code = act.loan_code
+				and act.loan_code = mer.loan_code 
+				and lo.dict_loan_status  in (${loanStatus})
+				<include refid="conditions"></include>
+			)a
+			order by a.top desc ,a.dict_maintain_status desc, a.modify_time desc nulls last 
+	</select>
+	
+	<!-- 查询条件 -->
+	<sql id="conditions">
+		<if test="maintainStatusArray == '-1'">
+			and act.contract_code = ''
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and act.contract_code = #{contractCode}
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and mer.customer_cert_num = #{customerCertNum}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and mer.customer_name like '%'||#{customerName}||'%'
+		</if>
+		<if test="dictMaintainStatus != null and dictMaintainStatus != ''">
+			and bank.dict_maintain_status = #{dictMaintainStatus}
+		</if>
+	</sql>
+	
+	<!-- 获取客户信息 -->
+	<select id="getCustomerMsg" parameterType="string" resultType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		select 
+			act.loan_code loanCode,
+			act.contract_version contractVersion,
+			act.contract_code contractCode,
+			mer.customer_name customerName,
+			mer.customer_cert_num customerCertNum,
+			mer.customer_phone_first customerPhoneFirst,
+		  	wer.id coboId,
+			wer.cobo_name coboName,
+			wer.cert_num coboCertNum,
+			wer.mobile coboMobile,
+			wer.email coboEmail
+		from jk.t_cj_contract act,
+			jk.t_jk_loan_customer mer,
+			jk.t_cj_loan_info lo left join jk.t_cj_loan_coborrower wer
+			on lo.loan_code = wer.loan_code 
+		where act.loan_code = mer.loan_code
+		and  lo.loan_code = act.loan_code  
+		and act.loan_code = #{loanCode}
+	</select>
+	
+	<!-- 新建还款账号(在用账号) -->
+    <insert id="insertBankInfo" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView" >
+		insert into jk.t_cj_customer_bank_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,
+			<if test="loanCode != null">
+				loan_code,
+			</if>
+			<if test="bankAccountName != null">
+				bank_account_name,
+			</if>
+			<if test="cardBank != null">
+				card_bank,
+			</if>
+			<if test="applyBankName != null">
+				apply_bank_name,
+			</if>
+			<if test="bankCardNo != null">
+				bank_card_no,
+			</if>
+			<if test="createBy != null">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="top != null">
+				top,
+			</if>
+			<if test="bankProvince != null">
+				bank_province,
+			</if>
+			<if test="bankProvinceCity != null">
+				bank_city,
+			</if>
+			<if test="bankSigningPlatform != null">
+				bank_signing_platform,
+			</if>
+			<if test="israre != null">
+				israre,
+			</if>
+			<if test="accountAuthorizerName != null">
+				account_authorizer_name,
+			</if>
+			<if test="dictMaintainType != null">
+				dict_maintain_type,
+			</if>
+			<if test="dictMaintainStatus != null">
+				dict_maintain_status,
+			</if>
+			<if test="bankCheckResult != null">
+				bank_check_result,
+			</if>
+			<if test="bankCheckDesc != null">
+				bank_check_desc,
+			</if>
+			<if test="oldBankAccountId != null">
+				old_bank_account_id,
+			</if>
+			<if test="fileId != null">
+				file_id,
+			</if>
+			<if test="fileName != null">
+				file_name,
+			</if>
+			<if test="newCustomerPhone != null">
+				new_customer_phone,
+			</if>
+			<if test="modifyBy != null">
+				modify_by,
+			</if>
+			<if test="modifyTime != null">
+				modify_time,
+			</if>
+			<if test="updateType != null">
+				updatetype,
+			</if>
+			<if test="newEmail != null">
+				new_email,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{id},
+			<if test="loanCode != null">
+				#{loanCode},
+			</if>
+			<if test="bankAccountName != null">
+				#{bankAccountName},
+			</if>
+			<if test="cardBank != null">
+				#{cardBank},
+			</if>
+			<if test="applyBankName != null">
+				#{applyBankName},
+			</if>
+			<if test="bankCardNo != null">
+				#{bankCardNo},
+			</if>
+			<if test="createBy != null">
+				#{createBy},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="top != null">
+				#{top},
+			</if>
+			<if test="bankProvince != null">
+				#{bankProvince},
+			</if>
+			<if test="bankProvinceCity != null">
+				#{bankProvinceCity},
+			</if>
+			<if test="bankSigningPlatform != null">
+				#{bankSigningPlatform},
+			</if>
+			<if test="israre != null">
+				#{israre},
+			</if>
+			<if test="accountAuthorizerName != null">
+				#{accountAuthorizerName},
+			</if>
+			<if test="dictMaintainType != null">
+				#{dictMaintainType},
+			</if>
+			<if test="dictMaintainStatus != null">
+				#{dictMaintainStatus},
+			</if>
+			<if test="bankCheckResult != null">
+				#{bankCheckResult},
+			</if>
+			<if test="bankCheckDesc != null">
+				#{bankCheckDesc},
+			</if>
+			<if test="oldBankAccountId != null">
+				#{oldBankAccountId},
+			</if>
+			<if test="fileId != null">
+				#{fileId},
+			</if>
+			<if test="fileName != null">
+				#{fileName},
+			</if>
+			<if test="newCustomerPhone != null">
+				#{newCustomerPhoneEnc},
+			</if>
+			<if test="modifyBy != null">
+				#{modifyBy},
+			</if>
+			<if test="modifyTime != null">
+				#{modifyTime},
+			</if>
+			<if test="updateType != null">
+				#{updateType},
+			</if>
+			<if test="newEmail != null">
+				#{newEmail}, 
+			</if>
+		</trim>
+    </insert>
+    
+    <!-- 新建还款账号(历史账号) -->
+    <insert id="insertBankInfoAdd" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView" >
+		insert into jk.t_cj_customer_bank_info_add
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,
+			<if test="loanCode != null">
+				loan_code,
+			</if>
+			<if test="bankAccountName != null">
+				bank_account_name,
+			</if>
+			<if test="cardBank != null">
+				card_bank,
+			</if>
+			<if test="applyBankName != null">
+				apply_bank_name,
+			</if>
+			<if test="bankCardNo != null">
+				bank_card_no,
+			</if>
+			<if test="createBy != null">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="top != null">
+				top,
+			</if>
+			<if test="bankProvince != null">
+				bank_province,
+			</if>
+			<if test="bankProvinceCity != null">
+				bank_city,
+			</if>
+			<if test="bankSigningPlatform != null">
+				bank_signing_platform,
+			</if>
+			<if test="israre != null">
+				israre,
+			</if>
+			<if test="accountAuthorizerName != null">
+				account_authorizer_name,
+			</if>
+			<if test="dictMaintainType != null">
+				dict_maintain_type,
+			</if>
+			<if test="dictMaintainStatus != null">
+				dict_maintain_status,
+			</if>
+			<if test="bankCheckResult != null">
+				bank_check_result,
+			</if>
+			<if test="bankCheckDesc != null">
+				bank_check_desc,
+			</if>
+			<if test="oldBankAccountId != null">
+				old_bank_account_id,
+			</if>
+			<if test="fileId != null">
+				file_id,
+			</if>
+			<if test="fileName != null">
+				file_name,
+			</if>
+			<if test="newCustomerPhone != null">
+				new_customer_phone,
+			</if>
+			<if test="modifyBy != null">
+				modify_by,
+			</if>
+			<if test="modifyTime != null">
+				modify_time,
+			</if>
+			<if test="updateType != null">
+				updatetype,
+			</if>
+			<if test="newEmail != null">
+				new_email,
+			</if>
+			<if test="coboId != null">
+				cobo_id ,
+			</if>
+			<if test="coboName != null">
+				cobo_name  ,
+			</if>
+			<if test="coboCertNum != null">
+				cert_num  ,
+			</if>
+			<if test="coboMobile != null">
+				cobo_mobile  ,
+			</if>
+			<if test="coboEmail != null">
+				cobo_email  ,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{id},
+			<if test="loanCode != null">
+				#{loanCode},
+			</if>
+			<if test="bankAccountName != null">
+				#{bankAccountName},
+			</if>
+			<if test="cardBank != null">
+				#{cardBank},
+			</if>
+			<if test="applyBankName != null">
+				#{applyBankName},
+			</if>
+			<if test="bankCardNo != null">
+				#{bankCardNo},
+			</if>
+			<if test="createBy != null">
+				#{createBy},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="top != null">
+				#{top},
+			</if>
+			<if test="bankProvince != null">
+				#{bankProvince},
+			</if>
+			<if test="bankProvinceCity != null">
+				#{bankProvinceCity},
+			</if>
+			<if test="bankSigningPlatform != null">
+				#{bankSigningPlatform},
+			</if>
+			<if test="israre != null">
+				#{israre},
+			</if>
+			<if test="accountAuthorizerName != null">
+				#{accountAuthorizerName},
+			</if>
+			<if test="dictMaintainType != null">
+				#{dictMaintainType},
+			</if>
+			<if test="dictMaintainStatus != null">
+				#{dictMaintainStatus},
+			</if>
+			<if test="bankCheckResult != null">
+				#{bankCheckResult},
+			</if>
+			<if test="bankCheckDesc != null">
+				#{bankCheckDesc},
+			</if>
+			<if test="oldBankAccountId != null">
+				#{oldBankAccountId},
+			</if>
+			<if test="fileId != null">
+				#{fileId},
+			</if>
+			<if test="fileName != null">
+				#{fileName},
+			</if>
+			<if test="newCustomerPhone != null">
+				#{newCustomerPhoneEnc},
+			</if>
+			<if test="modifyBy != null">
+				#{modifyBy},
+			</if>
+			<if test="modifyTime != null">
+				#{modifyTime},
+			</if>
+			<if test="updateType != null">
+				#{updateType},
+			</if>
+			<if test="newEmail != null">
+				#{newEmail}, 
+			</if>
+			<if test="coboId != null">
+				#{coboId}, 
+			</if>
+			<if test="coboName != null">
+				#{coboName}, 
+			</if>
+			<if test="coboCertNum != null">
+				#{coboCertNum}, 
+			</if>
+			<if test="coboMobile != null">
+				#{coboMobileEnc},
+			</if>
+			<if test="coboEmail != null">
+				#{coboEmail}, 
+			</if>
+		</trim>
+    </insert>
+    
+    <!-- 获取车借账号基本信息，包括客户姓名和合同编号 -->
+    <select id="getBankInfoMsg" parameterType="string" resultType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		select 
+			info.id ,
+			info.bank_province bankProvince,
+			info.bank_city bankProvinceCity,
+			(select area_name from t_gl_province_city where id = info.bank_province) provinceName,	--银行卡所在省名称
+		  	(select area_name from t_gl_province_city where id = info.bank_city) cityName,	--银行卡所在市名称
+		  	info.bank_account_name bankAccountName,
+		  	info.bank_card_no bankCardNo,
+		  	info.bank_signing_platform bankSigningPlatform,
+		  	info.dict_maintain_status dictMaintainStatus ,
+		  	info.card_bank cardBank,
+		  	info.apply_bank_name applyBankName, 
+		  	info.israre,
+		  	info.new_customer_phone ,
+		  	info.new_email ,
+		  	mer.customer_name customerName,
+		  	mer.customer_cert_num customerCertNum,
+		  	mer.customer_phone_first customerPhoneFirst,
+		  	mer.customer_email,
+			act.contract_version,
+		  	act.contract_code contractCode,
+		  	act.loan_code loanCode 
+		from jk.t_cj_customer_bank_info info,
+			 jk.t_cj_contract act ,
+			 jk.t_jk_loan_customer mer,
+			jk.t_cj_loan_info lo  
+		where info.loan_code = act.loan_code
+		and act.loan_code = mer.loan_code 
+		and  lo.loan_code = act.loan_code  
+		and info.id = #{id}
+		UNION ALL
+		select 
+			info.id ,
+			info.bank_province bankProvince,
+			info.bank_city bankProvinceCity,
+			(select area_name from t_gl_province_city where id = info.bank_province) provinceName,	--银行卡所在省名称
+		  	(select area_name from t_gl_province_city where id = info.bank_city) cityName,	--银行卡所在市名称
+		  	info.bank_account_name bankAccountName,
+		  	info.bank_card_no bankCardNo,
+		  	info.bank_signing_platform bankSigningPlatform,
+		  	info.dict_maintain_status dictMaintainStatus ,
+		  	info.card_bank cardBank,
+		  	info.apply_bank_name applyBankName, 
+		  	info.israre,
+		  	info.new_customer_phone ,
+		  	info.new_email ,
+		  	mer.customer_name customerName,
+		  	mer.customer_cert_num customerCertNum,
+		  	mer.customer_phone_first customerPhoneFirst,
+		  	mer.customer_email,
+			act.contract_version,
+		  	act.contract_code contractCode,
+		  	act.loan_code loanCode
+		from jk.t_cj_customer_bank_info_add info,
+			 jk.t_cj_contract act ,
+			 jk.t_jk_loan_customer mer,
+			jk.t_cj_loan_info lo
+		where info.loan_code = act.loan_code
+		and act.loan_code = mer.loan_code 
+		and  lo.loan_code = act.loan_code  
+		and info.id = #{id}
+    </select>
+    
+    <select id="getCoborrowerList" parameterType="string" resultType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+    	select 
+			id coboId,
+			cobo_name coboName,
+			cert_num coboCertNum,
+			mobile coboMobile,
+			email coboEmail
+		from jk.t_cj_loan_coborrower
+		where loan_code = #{loanCode}
+    </select>
+    
+    <!-- 通过ID查询还款账号信息，用于插入数据到修改手机号或银行卡号 -->
+    <select id="getCjBankInfoById" parameterType="string"  resultType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+    	select 
+    		<include refid="sqlColumn"></include>
+    	from jk.t_cj_customer_bank_info
+    	where id = #{id}
+    	UNION ALL
+    	select 
+    		<include refid="sqlColumn"></include>
+    	from jk.t_cj_customer_bank_info_add
+    	where id = #{id}
+    </select>	
+    
+    <!-- 修改还款账号表的维护状态 -->
+    <update id="updateBankInfoStatus" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		update jk.t_cj_customer_bank_info set dict_maintain_status = #{dictMaintainStatus}
+		where id = #{oldBankAccountId}
+    </update>
+    
+    <!-- 车借还款账号置顶 -->
+    <update id="updateAccountTop" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+	  	update t_cj_customer_bank_info_add set
+	  		top = '0',
+	  		modify_by = #{modifyBy},
+	  		modify_time = #{modifyTime}
+	  	where loan_code = #{loanCode};
+
+	  	update t_cj_customer_bank_info set
+	  		top = '1',
+	  		modify_by = #{modifyBy},
+	  		modify_time = #{modifyTime}
+	  	where loan_code = #{loanCode};
+	  </update>
+  
+    <sql id="sqlColumn">
+	    id,
+	    loan_code loanCode,
+	    bank_account_name bankAccountName,
+	    card_bank cardBank,
+	    apply_bank_name applyBankName,
+	    bank_card_no bankCardNo,
+	    create_by createBy,
+	    create_time createTime,
+	    top,
+	    bank_province bankProvince,
+	    bank_city bankProvinceCity,
+	    bank_signing_platform bankSigningPlatform,
+	    israre,
+	    account_authorizer_name accountAuthorizerName,
+	    dict_maintain_type dictMaintainType,
+	    dict_maintain_status dictMaintainStatus,
+	    bank_check_result bankCheckResult,
+	    bank_check_desc bankCheckDesc,
+	    old_bank_account_id oldBankAccountId,
+	    file_id fileId,
+	    file_name fileName,
+	    new_customer_phone newCustomerPhone,
+	    updatetype updateType
+    </sql>
+    
+	<!-- 车借还款账号维护(审核列表/已办列表) -->
+    <select id="getBankInfoList" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView" resultMap="BaseResultViewMap">
+	select 
+    	*
+	 from (
+		select 
+	  		<include refid="getBankInfoListSql"></include>
+		    wer.id cobo_Id,
+		    wer.cobo_name,
+		    wer.cert_num cobo_cert_num,
+		    wer.mobile cobo_mobile,
+		    wer.email cobo_email
+		from jk.t_cj_loan_info lo
+			left join jk.t_cj_contract act on lo.loan_code = act.loan_code
+			left join jk.t_cj_loan_coborrower wer
+        		ON lo.loan_code = wer.loan_code
+			left join jk.t_jk_loan_customer mer on mer.loan_code = act.loan_code
+			left join jk.t_cj_loan_payback pay on act.id = pay.contract_id 
+			inner join jk.t_cj_customer_bank_info info on act.loan_code = info.loan_code
+			left join jk.t_gl_org org on lo.store_code = org.id
+			left join jk.t_gl_org og on org.parent_id = og.id
+		<include refid="conditionsSql"></include>
+		and info.dict_maintain_type is not null
+		UNION ALL
+		select 
+	  		<include refid="getBankInfoListSql"></include>
+	  		info.cobo_id ,
+	  		info.cobo_name ,
+	  		info.cert_num cobo_cert_num,
+	  		info.cobo_mobile ,
+	  		info.cobo_email
+		from jk.t_cj_loan_info lo
+			left join jk.t_cj_contract act on lo.loan_code = act.loan_code
+			left join jk.t_jk_loan_customer mer on mer.loan_code = act.loan_code
+			left join jk.t_cj_loan_payback pay on act.id = pay.contract_id 
+			inner join jk.t_cj_customer_bank_info_add info on act.loan_code = info.loan_code
+			left join jk.t_gl_org org on lo.store_code = org.id
+			left join jk.t_gl_org og on org.parent_id = og.id
+		<include refid="conditionsSql"></include>
+		and info.dict_maintain_type is not null
+	)a
+	order by a.dict_maintain_status asc, a.modify_time desc,a.top desc nulls last 
+    </select>
+    
+    <select id="getCoboMsg" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView" resultMap="BaseResultViewMap">
+		select 
+		    cobo_name,
+		    cert_num cobo_cert_num,
+		    mobile cobo_mobile,
+		    email cobo_email
+		from t_cj_loan_coborrower
+		where 
+		 (
+		 	cobo_name != #{coboName}
+			or cert_num != #{coboCertNum}
+			or mobile != #{coboMobile}
+			or email != #{coboEmail}
+		)
+		and id = #{coboId}
+    </select>
+    
+    <select id="getOldCoborrowerMsg" parameterType="string" resultType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+    	select 
+			cobo_name oldCoboName,
+			cert_num oldCoboCertNum,
+			mobile oldCoboMobile,
+			email oldCoboEmail
+		from jk.t_cj_loan_coborrower
+		where id = #{id}
+    </select>
+    
+    <sql id="getBankInfoListSql">
+    	mer.id customerId,	--借款人ID
+		mer.customer_name,	--借款人姓名
+	  	mer.customer_phone_first,--客户手机号码
+		mer.customer_cert_num ,--客户身份证号
+		mer.customer_email  ,--客户邮箱地址
+		lo.dict_loan_status loanStatus,  --借款状态
+		lo.loan_flag loan_flag,			--渠道 
+    	lo.dict_loan_common_repayment_flag cobo_flag,
+		act.contract_code,	--合同编号
+		act.contract_end_day,	--合同到期日
+		act.contract_replay_day,	--起始还款日
+		act.contract_version,	--合同版本号
+		info.id,					--账号ID
+		info.loan_code,			--借款编号
+		info.bank_account_name,	--账号名称
+		info.bank_card_no,	--账号
+		info.card_bank cardBank,		--开户行
+		info.dict_maintain_status,--维护状态
+		info.dict_maintain_type,	--维护类型
+		info.top,	--是否置顶
+		info.file_name,		--文件名字
+		info.create_time ,		--申请时间
+		info.modify_time ,	--维护时间
+		info.updatetype ,	--更新类型
+		info.bank_province,
+		info.bank_city bank_province_city,
+		(select area_name from t_gl_province_city where id = info.bank_province) provinceName,	--银行卡所在省名称
+	  	(select area_name from t_gl_province_city where id = info.bank_city) cityName,	--银行卡所在市名称
+	  	info.apply_bank_name ,--具体支行
+	  	info.file_id,--附件ID
+	  	info.file_name,--附件名称
+	  	info.old_bank_account_id,--原账户ID
+	  	info.new_customer_phone,--客户新手机号码
+	  	info.bank_signing_platform ,--划扣平台
+	  	info.new_email ,--新邮箱地址
+	  	info.bank_check_result ,
+	  	info.bank_check_desc ,
+	  	info.israre ,
+		pay.repayment_date ,	--还款日
+		og.name	storeName,			--门店名称
+    </sql>
+    
+     <select id="getOldMsg" parameterType="string" resultType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		select 
+			info.apply_bank_name oldApplyBankName,
+			info.bank_signing_platform oldBankSigningPlatform,
+			info.bank_card_no oldBankCardNo,
+			mer.customer_email oldEmail,
+			mer.customer_phone_first oldPhone
+		from jk.t_cj_customer_bank_info info,jk.t_jk_loan_customer mer
+		where info.loan_code = mer.loan_code
+		and info.id = #{id}
+    </select>
+    
+    <!-- 车借还款维护账号-审核拒绝 -->
+    <update id="checkBankInfoRefuse" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		update  
+			jk.t_cj_customer_bank_info_add 
+		set dict_maintain_status = #{dictMaintainStatus},
+			modify_by =#{modifyBy},
+			modify_time = #{modifyTime}
+			<if test="bankCheckResult != null and bankCheckResult != ''">
+				,bank_check_result  = #{bankCheckResult},
+			</if>
+			<if test="bankCheckDesc != null and bankCheckDesc != ''">
+				bank_check_desc   = #{bankCheckDesc}
+			</if>
+		where  id = #{id}
+    </update>
+    
+    <update id="deleteBankInfo" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		delete from jk.t_cj_customer_bank_info where id = #{id};
+    </update>
+    
+    <update id="deleteBankInfoAdd" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		delete from jk.t_cj_customer_bank_info_add where id = #{id};
+    </update>
+    
+    <!-- 车借还款维护账号-审核,修改原账号数据，并删除新增账号数据 -->
+    <update id="checkTrueUpdateAndDelete" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+		update  
+			jk.t_cj_customer_bank_info 
+		set dict_maintain_status = #{dictMaintainStatus},
+			modify_by =#{modifyBy},
+			modify_time = #{modifyTime}
+			<if test="bankSigningPlatform != null and bankSigningPlatform != ''">
+				,bank_signing_platform = #{bankSigningPlatform}
+			</if>
+			<if test="bankCheckResult != null and bankCheckResult != ''">
+				,bank_check_result  = #{bankCheckResult}
+			</if>
+			<if test="bankCheckDesc != null and bankCheckDesc != ''">
+				,bank_check_desc   = #{bankCheckDesc}
+			</if>
+			<if test="dictMaintainType != null and dictMaintainType != ''">
+				,dict_maintain_type  = #{dictMaintainType}
+			</if>
+			<if test="updateType != null and updateType != ''">
+				,updatetype = #{updateType}
+			</if>
+			<if test="bankCardNo != null and bankCardNo != ''">
+				,bank_card_no = #{bankCardNo}
+			</if>
+			<if test="applyBankName != null and applyBankName != ''">
+				,apply_bank_name = #{applyBankName}
+			</if>
+			<if test="fileId != null and fileId != ''">
+				,file_id = #{fileId}
+			</if>
+			<if test="fileName != null and fileName != ''">
+				,file_name = #{fileName}
+			</if>
+		where  id = #{oldBankAccountId};
+
+		delete from jk.t_cj_customer_bank_info_add where id = #{id};
+    </update>
+    
+    
+    <select id="getBankInfoByLoanCode" parameterType="string" resultMap="BaseResultViewMap">
+    	select 
+			id,
+			loan_code,
+			bank_account_name,
+			card_bank,
+			apply_bank_name,
+			bank_card_no,
+			create_by,
+			create_time,
+			bank_province,
+			bank_city,
+			bank_signing_platform,
+			israre,
+			account_authorizer_name,
+			dict_source_type,
+			dict_source_type_pcl,
+			dict_maintain_type,
+			dict_maintain_status,
+			bank_check_result,
+			bank_check_desc,
+			old_bank_account_id,
+			file_id,
+			file_name,
+			new_customer_phone,
+			modify_by,
+			modify_time,
+			updatetype,
+			new_email
+		from t_cj_customer_bank_info
+		where loan_code = #{loanCode}
+    </select>
+    
+	<!-- 修改手机号或邮箱地址 -->
+ 	<update id="updatePhoneOrEmail"  parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+ 		update jk.t_jk_loan_customer set 
+			<if test="newCustomerPhone != null and newCustomerPhone != ''">
+				customer_phone_first = #{newCustomerPhone}
+			</if>
+			<if test="newEmail != null and newEmail != ''">
+				customer_email = #{newEmail}
+			</if>
+		where id = #{customerId};
+
+		update t_cj_loan_coborrower 
+			set cobo_name = #{coboName},
+			cert_num = #{coboCertNum}
+			<if test="coboMobile != null and coboMobile != ''">
+				,mobile = #{coboMobileEnc}
+			</if>
+			<if test="coboEmail != null and coboEmail != ''">
+				,email = #{coboEmail}
+			</if>
+		where id = #{coboId};
+
+		update jk.t_jk_customer_base
+		<set>
+			<if test="newCustomerPhone != null and newCustomerPhone != ''">
+				customer_mobile_phone = #{newCustomerPhone},
+				is_telephone_modify = '1',
+			</if>
+			<if test="newEmail != null and newEmail != ''">
+				is_email_modify = '1',
+			</if>
+		</set>
+		where customer_code = (select customer_code from jk.t_jk_loan_customer
+		where id = #{customerId})
+	</update>
+    
+    <!-- 添加还款维护账号历史 -->
+    <insert id="insertCjBankInfoLog" parameterType="com.creditharmony.loan.car.carBankInfo.view.CarCustomerBankInfoView">
+  	insert into t_cj_customer_bank_info_log (
+  		loan_code,
+  		operate_step,
+  		old_data,
+  		new_data,
+  		remark,
+  		create_by,
+  		create_time
+  	) values (
+  		#{loanCode},
+  		#{operateStep},
+  		#{oldData},
+  		#{newData},
+  		#{bankCheckDesc},
+  		<if test="createBy != null and createBy != ''">
+	  		#{createBy},
+	  		#{createTime})
+  		</if>
+  		<if test="modifyBy != null and modifyBy != ''">
+	  		#{modifyBy},
+	  		#{modifyTime})
+  		</if>
+  </insert>
+  
+  <!-- 查询历史 -->
+   <select id="getHistoryList" parameterType="string" resultMap="BaseResultViewMap">
+  	select create_time,
+  		(select us.name from t_gl_user us where us.id = his.create_by) create_by,
+  		operate_step,
+  		old_data,
+  		new_data,
+  		remark
+  	from t_cj_customer_bank_info_log his
+  	where his.loan_code = #{loanCode}
+  	order by create_time desc nulls first
+  </select>
+  
+	<!-- 查询条件 -->
+	<sql id="conditionsSql">
+	  	<where>
+			<if test="id != null and id != ''">
+				and info.id = #{id}
+			</if> 
+			<if test="contractCode != null and contractCode != ''">
+				and act.contract_code = #{contractCode}
+			</if> 
+			<if test="customerName != null and customerName != ''">
+				and mer.customer_name like '%'||#{customerName}||'%'
+			</if>
+			<if test="customerCertNum != null and customerCertNum != ''">
+				and mer.customer_cert_num  = #{customerCertNum}
+			</if>
+			<if test="repayDay != null and repayDay != ''">
+				and pay.repayment_date  = #{repayDay}
+			</if>
+			<if test="orgCode != null and orgCode != ''">
+				and og.id in
+				<foreach collection="conditions" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="dictMaintainStatus != null and dictMaintainStatus != ''">
+				and info.dict_maintain_status = #{dictMaintainStatus}
+			</if>
+			<if test="maintainStatusArray!=null and maintainStatusArray!=''">
+			    and info.dict_maintain_status in(${maintainStatusArray})
+			</if>
+	  	</where>
+	</sql>
+</mapper>

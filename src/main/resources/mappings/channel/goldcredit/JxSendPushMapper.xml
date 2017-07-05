@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.channel.goldcredit.dao.JxSendDataDao">
+	<resultMap id="JxSendBeanMap"
+		type="com.creditharmony.adapter.service.jxcredit.bean.CreditCreditorsRightsOutBean">
+	</resultMap>
+	<resultMap type="com.creditharmony.adapter.service.jxcredit.bean.CreditCreditorsRightsOutBean" id="baseMap">
+	<result property="creditNumber" column="LOAN_CODE"></result><!-- 债券编号 -->
+	<result property="contractNumber" column="CONTRACT_CODE"></result><!-- 合同编号 -->
+	<result property="loanAmountNew" column="AUDIT_AMOUNT"></result> <!-- 批复金额 -->
+	<result property="loanTerm" column="CONTRACT_MONTHS"></result><!-- 批复期限 -->
+	<result property="intoareaPro" column="INTOAREA_PRO"></result><!-- 进件省 -->
+	<result property="contractAmountNew" column="CONTRACT_AMOUNT"></result><!-- 合同金额 -->
+	<result property="intoareaCity" column="INTOAREA_CITY"></result><!-- 进件市 -->
+	<result property="putAmount" column="FEE_PAYMENT_AMOUNT"></result><!-- 实放金额 -->
+	<result property="storeNumber" column="STORE_CODE"></result><!-- 门店编号 -->
+	<result property="storeName" column="STORE_NAME"></result><!-- 门店名称 -->
+	<result property="applicationProducts" column="PRODUCT_TYPE"></result><!-- 产品类型 -->
+	<result property="amountPurpose" column="DICT_LOAN_USE"></result><!-- 借款用途 -->
+	<result property="purposeBorrowing" column="REALY_USE"></result><!-- 实际用途 -->
+	<result property="isUrgent" column="LOAN_URGENT_FLAG"></result><!-- 是否加急 -->
+	<result property="amountApplied" column="LOAN_APPLY_AMOUNT"></result><!-- 借款金额 -->
+	<result property="accessMoney" column="FEE_PETITION"></result><!-- 外访费 -->
+	<result property="loanDate" column="LOAN_AUDIT_TIME"></result><!-- 批复时间 -->
+	<result property="rate" column="FEE_ALL_RAIO"></result><!-- 费率 -->
+	<result property="firstRefundDate" column="CONTRACT_REPLAY_DAY"></result><!-- 首次还款日期 -->
+	<result property="fee" column="FEE_SERVICE"></result><!-- 居间服务费 -->
+	<result property="perMonthRefundDay" column="PAYBACK_DAY"></result><!-- 每月还款日 -->
+	<result property="checkMoney" column="FEE_AUDIT_AMOUNT"></result><!-- 审核费 -->
+	<result property="realPermonthRefund" column="CONTRACT_MONTH_REPAY_AMOUNT"></result><!-- 月还款额 -->
+	<result property="askMoney" column="FEE_CONSULT"></result><!-- 咨询费  -->
+	<result property="mixFee" column="FEE_COUNT"></result><!-- 综合服务费 -->
+	<result property="monthMonry" column="FEE_MONTH_RATE"></result><!-- 月利率 -->
+	<result property="urgentMoney" column="FEE_EXPEDITED"></result><!-- 加急费用 -->
+	<result property="loanAccount" column="BANK_ACCOUNT_NAME"></result><!-- 开户名 -->
+	<result property="loanBankNo" column="BANK_ACCOUNT"></result><!-- 放款银行账户 -->
+	<result property="loanBankName" column="BANK_NAME"></result><!-- 放款银行名 -->
+	<result property="loanBankCode" column="LOAN_BANK_CODE"></result><!-- 放款银行编码 -->
+	<result property="openingbank" column="BANK_BRANCH"></result><!-- 开户支行 -->
+	<result property="isLoopBorrow" column="IS_LOOP_BORROW"></result><!-- 是否循环借 -->
+	<result property="homeaddress" column="HOMEADDRESS"></result><!-- 户籍地址 -->
+	<result property="customerName" column="CUSTOMER_NAME"></result><!-- 客户姓名-->
+	<!-- <result property="homeTypeCode" column="home_type_code"></result>没有 -->
+	<!--<result property="homeTypeName" column="home_type_name"></result> 没有 -->
+	<result property="sex" column="CUSTOMER_SEX"></result><!-- 性别 -->
+	<result property="maritalStatus" column="DICT_MARRY_STATUS"></result><!-- 婚姻状况 -->
+	<result property="age" column="USER_AGE"></result><!-- 年龄-->
+	<result property="education" column="DICT_EDUCATION"></result><!-- 学历 -->
+	<result property="identitycardNumber" column="CUSTOMER_CERT_NUM"></result><!-- 身份证号 -->
+	<result property="presentAddress" column="PRESENT_ADDRESS"></result><!-- 现住址 -->
+	<result property="customTelephone" column="CUSTOMER_PHONE"></result><!-- 客户电话-->
+	<!--<result property="livingMembers" column="living_members"></result> 没有 -->
+	<result property="customerManager" column="CUSTOMER_MANAGER"></result><!-- 客户经理 -->
+	<result property="storeManager" column="STORE_MANAGER"></result><!-- 门店经理 -->
+	<result property="natureofHousing" column="CUSTOMER_HOUSE_HOLD_PROPERTY"></result><!-- 住房性质 -->
+	<result property="monthlyRental" column="CUSTOMER_RENT_MONTH"></result><!-- 月租金 -->
+	<result property="monthlyPay" column="HOUSE_MONTH_REPAY_AMOUNT"></result><!-- 月供 -->
+	
+	<result property="examinationstatetime" column="EXAMINATIONSTATETIME"></result><!-- 审核状态时间 -->
+	<result property="reviewprojecttime" column="REVIEWPROJECTTIME"></result><!-- 审核项目时间 -->
+	<result property="creditcertification" column="CREDITCERTIFICATION"></result><!-- 实地认证时间 -->
+	<!--<result property="identityauthenticationtime" column="identityauthenticationtime"></result> 身份公安认证时间 -->
+	<!--<result property="certificationworktime" column="certificationworktime"></result> 工作认证时间 -->
+	<!--<result property="incomecertificationtime" column="incomecertificationtime"></result> 收入认证时间 -->
+	<!--<result property="realestatecertificationtime" column="realestatecertificationtime"></result> 房产认证时间 -->
+	<!--<result property="courtcertificationtime" column="courtcertificationtime"></result> 法院执行认证时间 -->
+	<!--<result property="fieldcertificationtime" column="fieldcertificationtime"></result> 实地认证时间 -->
+	<result property="creditorsRightsSource" column="DICT_SOURCE_TYPE"></result><!-- 系统来源 -->
+	<result property="imageUploadTime" column="IMAGE_UPLOAD_TIME"></result><!-- 客户资料上传时间-->
+	<result property="provinceName" column="BANK_PROVINCE_NAME"></result><!-- 开户省名称-->
+	<result property="cityName" column="BANK_CITY_NAME"></result><!-- 开户市名称-->
+	<result property="fileSaveDisk" column="FILESAVE_DISK"></result>
+	<result property="cVersion" column="CONTRACT_VERSION"></result><!--  合同版本号-->
+	<result property="stagesFee" column="MONTH_FEE_SERVICE"></result><!-- 分期服务费-->
+	<result property="monthMount" column="CONTRACT_MONTH_REPAY_TOTAL"></result><!-- 每月月还款额-->
+	<result property="riskLevel" column="risk_level"></result><!-- 风险等级 -->
+	<result property="customerBirthday" column="customer_birthday"></result><!-- 出生日期-->
+	<result property="dictRepayMethod" column="dict_repay_method"></result><!--  还款方式-->
+	<result property="dictCustomerDiff" column="dict_customer_diff"></result><!--  还款来源-->
+	<result property="bankCardInfo" column="bank_card_info"></result><!-- 银行卡信息审核状态-->
+	<result property="contactInfo" column="contact_info"></result><!-- 联系人信息审核状态 -->
+	
+	<collection property="commonBorrowers" resultMap="borrowersMap"></collection>
+	<collection property="borrowerCompanys" resultMap="companysMap"></collection>
+	<collection property="creditBorrowerProperty" resultMap="ceeditMap"></collection>
+	<collection property="customTelephoneParam" resultMap="baseSecurityMap"></collection>
+	<collection property="contracts" resultMap="contractFileMap"></collection>
+	</resultMap>
+	<resultMap type="com.creditharmony.adapter.service.jxcredit.bean.CreditCreditorsContractOutBean" id="contractFileMap">
+		<result property="fileType" column="fileType"></result><!-- 文件类型 -->
+		<result property="docId" column="doc_id"></result><!-- docId -->
+	</resultMap>
+	<!-- 共借人集合 -->
+	<resultMap type="com.creditharmony.adapter.service.jxcredit.bean.CreditCommonBorrowerOutBean" id="borrowersMap">
+		<result property="creditNumber" column="CREDIT_CUMBER"></result><!-- 债权编号 -->
+		<result property="commonBorrowerName" column="COBO_NAME"></result><!-- 共借人姓名 -->
+		<result property="commonBorrowerCardnumber" column="COBO_CERT_NUM"></result><!-- 共借人身份证号 -->
+		<result property="permanentAddress" column="COBO_HOMEADDRESS"></result><!-- 共借人户籍地址 -->
+		<result property="adress" column="COBO_PRESENT_ADDRESS"></result><!-- 共借人现住址 -->
+		<result property="telephone" column="COBO_FAMILY_TEL"></result><!-- 共借人家庭电话 -->
+		<result property="phone" column="COBO_MOBILE"></result><!-- 共借人手机号码 -->
+		<result property="workUnit" column="WORK_UNIT"></result><!-- 共借人工作单位 -->
+		<result property="unitAdress" column="UNIT_ADRESS"></result><!-- 共借人单位地址 -->
+		<result property="unitTelephone" column="UNIT_TELEPHONE"></result><!-- 共借人单位电话 -->
+		<result property="depName" column="DEP_NAME"></result><!-- 共借人部门名称 -->
+		<result property="job" column="JOB"></result><!-- 共借人职务 -->
+		<result property="sal" column="SAL"></result><!-- 共借人每月工资 -->
+		<!--<result property="rentalIncome" column="rentalIncome"></result>-->
+		<result property="otherIncome" column="OTHER_INCOME"></result><!-- 共借人其他所得 -->
+		<result property="totalYearIncome" column="TOTAL_YEAR_INCOME"></result><!-- 年总收入 -->
+		<!--<result property="reqNumber" column="reqNumber"></result>
+		<result property="reqRefundDate" column="reqRefundDate"></result>
+		<result property="refundMoneySource" column="refundMoneySource"></result>-->
+		<collection property="phoneParam" resultMap="borrowersSecurityMap"></collection>
+	</resultMap>
+	<!-- 公司集合 -->
+	<resultMap type="com.creditharmony.adapter.service.jxcredit.bean.CreditBorrowerCompanyOutBean" id="companysMap">
+		<result property="creditNumber" column="CON_CREDIT_NUMBER"></result><!-- 债权编号 -->
+		<result property="companyName" column="COMP_NAME"></result><!-- 公司名称 -->
+		<result property="customerPosition" column="CUSTOMER_POSITION"></result><!-- 客户岗位名称 -->
+		<result property="companyAddress" column="M_COMP_ADDR"></result><!-- 公司地址 -->
+		<result property="periodService" column="COMP_WORK_EXPERIENCE"></result><!-- 任职年期 -->
+		<result property="natureOfWork" column="NATURE_OF_WORK"></result><!-- 工作单位性质 -->
+		<result property="wageIncome" column="WAGE_INCOME"></result><!-- 工资年收入 -->
+		<!--<result property="companySetuptime" column="companySetuptime"></result>-->
+	</resultMap>
+	<!-- 房产信息 -->
+	<resultMap type="com.creditharmony.adapter.service.jxcredit.bean.CreditBorrowerPropertyOutBean" id="ceeditMap">
+		<result property="creditNumber" column="HOUSE_CREDIT_NUMBER"></result><!-- 债权编号 -->
+		<result property="propertyAddress" column="HOUSE_ADDRESS"></result><!-- 房产地址 -->
+		<result property="propertyOwnership" column="HOUSE_PROPERTY_RELATION"></result><!--  产权归属 -->
+		<result property="isMortgage" column="HOUSE_PLEDGE_FLAG"></result><!-- 抵押或无抵押 -->
+		<result property="propertyAmountmoney" column="HOUSE_LESS_AMOUNT"></result><!-- 借款佘额 -->
+		<result property="estimatedValue" column="ESTIMATED_VALUE"></result><!-- 估值 -->
+	</resultMap>
+	
+	<resultMap type="com.creditharmony.adapter.bean.in.jxcreditor.JxCreditSecurityBean" id="baseSecurityMap">
+		<result property="flg" column="base_flg"></result>
+		<result property="ids" column="base_ids"></result>
+		<result property="userCode" column="base_user_code"></result>
+		<result property="createUser" column="base_create_user"></result>
+		<result property="createTime" column="base_create_time"></result>
+		<result property="objSig" column="base_obj_sig"></result>
+		<result property="dbName" column="base_db_name"></result>
+		<result property="tabName" column="base_tab_name"></result>
+		<result property="encCols" column="base_enc_cols"></result>
+	</resultMap>
+	
+	<resultMap type="com.creditharmony.adapter.bean.in.jxcreditor.JxCreditSecurityBean" id="borrowersSecurityMap">
+		<result property="flg" column="bor_flg"></result>
+		<result property="ids" column="bor_ids"></result>
+		<result property="userCode" column="bor_user_code"></result>
+		<result property="createUser" column="bor_create_user"></result>
+		<result property="createTime" column="bor_create_time"></result>
+		<result property="objSig" column="bor_obj_sig"></result>
+		<result property="dbName" column="bor_db_name"></result>
+		<result property="tabName" column="bor_tab_name"></result>
+		<result property="encCols" column="bor_enc_cols"></result>
+	</resultMap>
+	
+	<select id="findJINXINPush" parameterType="java.util.List" resultMap="baseMap">
+		SELECT A.LOAN_CODE,A.CONTRACT_CODE,A.AUDIT_AMOUNT,A.CONTRACT_MONTHS,C.AREA_NAME AS INTOAREA_PRO,A.CONTRACT_AMOUNT,D.AREA_NAME AS INTOAREA_CITY,A.CONTRACT_VERSION,
+			'' FILESAVE_DISK ,
+			case A.PRODUCT_TYPE  when 'A020' THEN A.CONTRACT_AMOUNT ELSE FEE.FEE_PAYMENT_AMOUNT END FEE_PAYMENT_AMOUNT,
+			ROUND(FEE.FEE_MONTH_RATE/100,5) FEE_MONTH_RATE,FEE.MONTH_FEE_SERVICE,substr(ORG.NAME,0,6) STORE_CODE,ORG.NAME STORE_NAME,case loaninfo_oldornew_flag when '0' then B.REALY_USE else gtl.label||dict_loan_use_new_other end AS REALY_USE,B.LOAN_URGENT_FLAG,
+			B.LOAN_APPLY_AMOUNT,B.LOAN_AUDIT_TIME,ROUND(FEE.FEE_ALL_RAIO/100,5) FEE_ALL_RAIO,A.CONTRACT_REPLAY_DAY,
+			0 FEE_SERVICE, --前期居间服务费
+			PAY.PAYBACK_DAY,
+			A.CONTRACT_MONTH_REPAY_TOTAL CONTRACT_MONTH_REPAY_AMOUNT,
+			TO_CHAR(b.CUSTOMER_INTO_TIME,'yyyyMMdd') IMAGE_UPLOAD_TIME,
+			TO_CHAR(A.CONTRACT_MONTH_REPAY_TOTAL) CONTRACT_MONTH_REPAY_TOTAL,
+			
+			BANK.BANK_ACCOUNT_NAME,BANK.BANK_ACCOUNT,BANK.BANK_NAME LOAN_BANK_CODE,
+			CASE BANK_DICT.LABEL 
+		         WHEN '中国邮政储蓄银行股份有限公司' THEN '中国邮政储蓄银行有限责任公司' 
+		         WHEN '上海浦东发展银行' THEN '上海浦发银行' 
+		         ELSE BANK_DICT.LABEL  
+		    END BANK_NAME,
+			BANK.BANK_BRANCH,DICT.LABEL AS IS_LOOP_BORROW,
+			CONCAT(M1.AREA_NAME,M2.AREA_NAME,M3.AREA_NAME,INFO.CUSTOMER_REGISTER_ADDRESS) AS HOMEADDRESS,INFO.CUSTOMER_NAME,INFO.CUSTOMER_SEX,
+			INFO.DICT_MARRY_STATUS,INFO.DICT_EDUCATION,INFO.CUSTOMER_CERT_NUM,
+			CONCAT(M4.AREA_NAME,M5.AREA_NAME,M6.AREA_NAME,INFO.CUSTOMER_ADDRESS) AS PRESENT_ADDRESS,INFO.CUSTOMER_PHONE_FIRST CUSTOMER_PHONE,
+			B.LOAN_MANAGERCODE,B.LOAN_TEAM_MANAGERCODE,INFO.CUSTOMER_HOUSE_HOLD_PROPERTY,
+			M7.AREA_NAME BANK_PROVINCE_NAME,M8.AREA_NAME BANK_CITY_NAME,
+			COBO.LOAN_CODE AS CREDIT_CUMBER,
+			case loaninfo_oldornew_flag when '0' then COBO.COBO_NAME else '' end AS COBO_NAME,
+			case loaninfo_oldornew_flag when '0' then COBO.COBO_CERT_NUM else '' end AS COBO_CERT_NUMBER,
+			case loaninfo_oldornew_flag when '0' then CONCAT( M9.AREA_NAME, M10.AREA_NAME, M11.AREA_NAME, COBO.COBO_HOUSEHOLD_ADDRESS ) else '' end AS COBO_HOMEADDRESS,
+			case loaninfo_oldornew_flag when '0' then CONCAT( M12.AREA_NAME, M13.AREA_NAME, M14.AREA_NAME, COBO.COBO_NOW_ADDRESS ) else '' end AS COBO_PRESENT_ADDRESS,
+			case loaninfo_oldornew_flag when '0' then COBO.COBO_FAMILY_TEL else '' end AS COBO_FAMILY_TEL,
+			case loaninfo_oldornew_flag when '0' then COBO.COBO_MOBILE else '' end AS COBO_MOBILE,
+			case loaninfo_oldornew_flag when '0' then S_COMPANY.COMP_NAME else '' end AS WORK_UNIT,
+			case loaninfo_oldornew_flag when '0' then CONCAT(M18.AREA_NAME,M19.AREA_NAME,M20.AREA_NAME,S_COMPANY.COMP_ADDRESS) else '' end AS UNIT_ADRESS,
+			case loaninfo_oldornew_flag when '0' then S_COMPANY.COMP_TEL else '' end AS UNIT_TELEPHONE,
+			case loaninfo_oldornew_flag when '0' then S_COMPANY.COMP_DEPARTMENT else '' end AS DEP_NAME,
+			case loaninfo_oldornew_flag when '0' then S_COMPANY.COMP_POST else '' end AS JOB,
+			case loaninfo_oldornew_flag when '0' then NVL(S_COMPANY.COMP_SALARY,0) else '0' end AS SAL,
+			case loaninfo_oldornew_flag when '0' then NVL(S_COMPANY.COMP_OTHER_AMOUNT,0) else '0' end AS OTHER_INCOME,
+			case loaninfo_oldornew_flag when '0' then (COALESCE(S_COMPANY.COMP_SALARY,0)*12) else '0' end AS TOTAL_YEAR_INCOME,
+			M_COMPANY.LOAN_CODE AS CON_CREDIT_NUMBER,M_COMPANY.COMP_NAME,M_COMPANY.COMP_POST AS CUSTOMER_POSITION,
+			CONCAT(M15.AREA_NAME,M16.AREA_NAME,M17.AREA_NAME,M_COMPANY.COMP_ADDRESS) AS M_COMP_ADDR,
+			case loaninfo_oldornew_flag when '0' then M_COMPANY.COMP_WORK_EXPERIENCE else (to_char(now(),'yyyy')::integer-to_char(M_COMPANY.comp_entry_day,'yyyy')::integer)::character varying end AS COMP_WORK_EXPERIENCE,DICT2.LABEL AS NATURE_OF_WORK,M_COMPANY.COMP_SALARY*12 AS WAGE_INCOME,
+			HOUSE.LOAN_CODE AS HOUSE_CREDIT_NUMBER,CONCAT(M21.AREA_NAME,M22.AREA_NAME,M23.AREA_NAME,HOUSE.HOUSE_ADDRESS) AS HOUSE_ADDRESS,
+			HOUSE.HOUSE_PROPERTY_RELATION,CAST(HOUSE.HOUSE_PLEDGE_FLAG AS INTEGER ) AS HOUSE_PLEDGE_FLAG,HOUSE.HOUSE_LESS_AMOUNT,
+			T_USER.NAME AS CUSTOMER_MANAGER,T_USER1.NAME AS STORE_MANAGER,LIVE.CUSTOMER_RENT_MONTH,M_HOUSE.HOUSE_MONTH_REPAY_AMOUNT,
+			B.LOAN_AUDIT_TIME AS EXAMINATIONSTATETIME,B.LOAN_AUDIT_TIME AS REVIEWPROJECTTIME,VISIT.SURVEY_END_TIME AS CREDITCERTIFICATION,
+			B.DICT_SOURCE_TYPE,DATE_PART('YEAR',AGE(INFO.CUSTOMER_BIRTHDAY)) AS USER_AGE,
+			jpt.product_name PRODUCT_TYPE,<!-- 产品类型,要求汉字 -->
+			gtl.label DICT_LOAN_USE,<!-- 借款用途,要求汉字 -->
+			0 FEE_CONSULT,<!-- 前期咨询费 -->
+			0 FEE_AUDIT_AMOUNT,<!-- 前期审核费 -->
+			round(FEE.fee_petition,2) FEE_PETITION,<!-- 外访费 -->
+			round(FEE.fee_info_service,2) fee_info_service,<!--前期信息服务费 -->
+			round(FEE.fee_consult+FEE.fee_audit_amount+FEE.fee_service+FEE.fee_info_service,2)  FEE_COUNT,<!--前期综合服务费 -->
+			nvl(CASE
+            	WHEN ar.reconsider_rate_score IS NOT NULL
+            	THEN ar.reconsider_rate_score WHEN ar.verify_rate_score IS NOT NULL
+            	THEN ar.verify_rate_score WHEN ar.rating_score IS NOT NULL
+            	THEN ar.rating_score
+            	ELSE dr.score
+        	END,'' ) AS risk_level,
+    		substr(INFO.customer_cert_num,7,4) || '年' || substr(
+        		INFO.customer_cert_num,11,2) || '月' || substr(
+        		INFO.customer_cert_num,13,2) || '日' AS customer_birthday,
+    	(SELECT label FROM jk.t_gl_dict WHERE type = 'jk_repay_interest_way' AND VALUE = a.dict_repay_method ) AS dict_repay_method,
+    	nvl(CASE
+            WHEN INFO.dict_customer_diff IS NULL
+            THEN NULL WHEN INFO.dict_customer_diff = '1'
+            THEN '工薪收入'
+            ELSE '经营收入'
+        END,
+        CASE
+            WHEN B.product_type = 'A005'
+            OR B.product_type = 'A006'
+            THEN '经营收入'
+            ELSE '工薪收入'
+        END
+    ) AS dict_customer_diff,
+    CASE WHEN lg.grant_recepic_result = '0' THEN '已认证' ELSE '未认证' END AS bank_card_info,
+    CASE WHEN lg.grant_recepic_result = '0' THEN '已认证' ELSE '未认证' END AS contact_info,
+    '' AS base_flg,     
+	'ID' AS base_ids,    
+	'USERCODE' AS base_user_code,
+	INFO.create_by AS base_create_user,
+	to_char(INFO.create_time,'yyyy-MM-dd hh24:mi:ss') AS base_create_time,
+	'qweasdzx1234' AS base_obj_sig,
+	'loanxj' AS base_db_name,
+	'T_JK_LOAN_CUSTOMER' AS base_tab_name,
+	'customer_phone_first' AS base_enc_cols,
+	'' AS bor_flg,     
+	'ID' AS bor_ids,    
+	'USERCODE' AS bor_user_code,
+	COBO.create_by AS bor_create_user,
+	to_char(COBO.create_time,'yyyy-MM-dd hh24:mi:ss') AS bor_create_time,
+	'qweasdzx1234' AS bor_obj_sig,
+	'loanxj' AS bor_db_name,
+	'T_JK_LOAN_COBORROWER' AS bor_tab_name,
+	'cobo_mobile' AS bor_enc_cols,
+	CASE file.contract_file_name  WHEN '信用咨询及管理服务协议-金信'  THEN '1' when '信用咨询及管理服务协议(保证人)-金信' then '1'  else '2' end fileType,
+	file.doc_id	
+		FROM JK.T_JK_CONTRACT  A
+			LEFT JOIN JK.T_JK_LOAN_INFO B ON A.LOAN_CODE=B.LOAN_CODE
+			LEFT JOIN JK.T_GL_ORG ORG ON B.LOAN_STORE_ORGID = ORG.ID
+			LEFT JOIN JK.T_GL_PROVINCE_CITY C ON ORG.PROVINCE_ID = C.ID
+			LEFT JOIN JK.T_GL_PROVINCE_CITY D ON ORG.CITY_ID=D.ID
+			LEFT JOIN JK.T_JK_CONTRACT_FEE FEE ON FEE.CONTRACT_CODE = A.CONTRACT_CODE
+			Left join jk.T_JK_CONTRACT_FILE file on file.CONTRACT_CODE=A.CONTRACT_CODE and file.contract_file_name in('信用咨询及管理服务协议-金信','还款管理服务说明确认书-金信','信用咨询及管理服务协议(保证人)-金信','还款管理服务说明确认书（保证人）-金信')
+			LEFT JOIN JK.T_JK_PAYBACK PAY ON PAY.CONTRACT_CODE = A.CONTRACT_CODE
+			LEFT JOIN jk.T_JK_LOAN_GRANT lg ON lg.contract_code = A.contract_code 
+			LEFT JOIN jk.t_jk_disclosure_risklevel dr ON dr.loan_code = B.loan_code 
+			LEFT JOIN jk.t_jk_audit_rating ar ON ar.loan_code = B.old_loan_code 
+			LEFT JOIN JK.T_JK_LOAN_BANK BANK ON A.LOAN_CODE= BANK.LOAN_CODE and (BANK.repayment_flag = '0' or BANK.repayment_flag is null) AND BANK.bank_top_flag ='1'
+			LEFT JOIN JK.T_GL_DICT DICT ON DICT.VALUE=B.DICT_IS_CYCLE AND DICT.TYPE='jk_circle_loan_flag'
+			LEFT JOIN JK.T_JK_LOAN_CUSTOMER INFO ON B.LOAN_CODE=INFO.LOAN_CODE
+			LEFT JOIN JK.T_JK_LOAN_COBORROWER COBO ON A.LOAN_CODE=COBO.LOAN_CODE
+			LEFT JOIN JK.T_JK_LOAN_COMPANY M_COMPANY ON A.LOAN_CODE=M_COMPANY.LOAN_CODE AND INFO.ID=M_COMPANY.R_ID
+			LEFT JOIN JK.T_JK_LOAN_COMPANY S_COMPANY ON A.LOAN_CODE=S_COMPANY.LOAN_CODE AND COBO.ID=S_COMPANY.R_ID
+			LEFT JOIN JK.T_JK_LOAN_HOUSE M_HOUSE ON A.LOAN_CODE=M_HOUSE.LOAN_CODE AND INFO.ID=M_HOUSE.R_CUSTOMER_COBORROWER_ID
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M1 ON INFO.CUSTOMER_REGISTER_PROVINCE = M1.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M2 ON INFO.CUSTOMER_REGISTER_CITY=M2.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M3 ON INFO.CUSTOMER_REGISTER_AREA = M3.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M4 ON INFO.CUSTOMER_LIVE_PROVINCE = M4.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M5 ON INFO.CUSTOMER_LIVE_CITY=M5.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M6 ON INFO.CUSTOMER_LIVE_AREA = M6.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY_CMB M7 ON BANK.BANK_PROVINCE=M7.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY_CMB M8 ON BANK.BANK_CITY=M8.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M9 ON COBO.COBO_HOUSEHOLD_PROVINCE = M9.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M10 ON COBO.COBO_HOUSEHOLD_CITY=M10.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M11 ON COBO.COBO_HOUSEHOLD_AREA = M11.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M12 ON COBO.COBO_LIVEING_PROVINCE = M12.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M13 ON COBO.COBO_LIVEING_CITY=M13.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M14 ON COBO.COBO_LIVEING_AREA = M14.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M15 ON M_COMPANY.COMP_PROVINCE = M15.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M16 ON M_COMPANY.COMP_CITY=M16.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M17 ON M_COMPANY.COMP_ARER = M17.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M18 ON S_COMPANY.COMP_PROVINCE = M18.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M19 ON S_COMPANY.COMP_CITY=M19.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M20 ON S_COMPANY.COMP_ARER = M20.AREA_CODE
+			LEFT JOIN JK.T_JK_LOAN_HOUSE HOUSE ON HOUSE.R_CUSTOMER_COBORROWER_ID = B.ID AND HOUSE.LOAN_CODE=B.LOAN_CODE AND HOUSE.LOAN_CUSTOMTER_TYPE='0'
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M21 ON HOUSE.HOUSE_PROVINCE = M21.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M22 ON HOUSE.HOUSE_CITY=M22.AREA_CODE
+			LEFT JOIN JK.T_GL_PROVINCE_CITY M23 ON HOUSE.HOUSE_AREA = M23.AREA_CODE
+			LEFT JOIN JK.T_GL_DICT DICT2 ON DICT2.VALUE=M_COMPANY.DICT_COMP_INDUSTRY AND DICT2.type='jk_industry_type'
+			LEFT JOIN JK.T_GL_DICT BANK_DICT ON BANK_DICT.VALUE=BANK.BANK_NAME AND BANK_DICT.type='jk_open_bank'
+			LEFT JOIN JK.T_GL_USER T_USER ON B.LOAN_MANAGERCODE = T_USER.ID
+			LEFT JOIN JK.T_GL_USER T_USER1 ON B.LOAN_TEAM_MANAGERCODE = T_USER1.ID
+			LEFT JOIN JK.T_JK_CUSTOMER_LIVINGS LIVE ON LIVE.R_CUSTOMER_COBORROWER_ID=INFO.ID AND LIVE.LOAN_CODE=B.LOAN_CODE AND LIVE.LOAN_CUSTOMER_TYPE='0'
+			left join JK.T_gl_jk_product jpt on jpt.product_type='products_type_loan_credit' and jpt.product_code=A.PRODUCT_TYPE
+			left join JK.T_GL_DICT gtl on  gtl.type='jk_loan_use' and gtl.value=B.DICT_LOAN_USE
+			LEFT JOIN (
+				SELECT  B.SURVEY_END_TIME,A.LOAN_CODE
+				FROM JK.T_JK_CONTRACT A 
+				LEFT JOIN JK.T_JK_OUTSIDE_TASK_LIST B ON A.LOAN_CODE = B.LOAN_CODE
+				WHERE A.CONTRACT_CODE IN
+					<foreach collection="list" item="item" open="(" close=")" separator=",">
+						#{item}
+					</foreach>
+				ORDER BY B.CREATE_TIME DESC
+				LIMIT 1
+			) VISIT ON VISIT.LOAN_CODE=A.LOAN_CODE
+		WHERE A.CONTRACT_CODE IN
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</select>
+	<select id="findJINXINSendBack" parameterType="java.util.List" resultType="java.lang.String">
+		SELECT APPLY_ID 
+		FROM JK.T_JK_CONTRACT
+		<where>
+			CONTRACT_CODE IN
+			<foreach collection="list" item="item" open="(" close=")" separator=",">
+			  	#{item}
+			</foreach>
+	  	</where>
+	</select>
+</mapper>

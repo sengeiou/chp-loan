@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.channel.finance.dao.CarCreditorConfirmDao">
+	<resultMap id="creditorConfirmMap"
+		type="com.creditharmony.loan.channel.finance.entity.CreditorConfirmEntity">
+		<result property="loanCode" column="contract_code"></result><!-- 合同编号 -->
+		<result property="loanCustomerName" column="loan_customer_name"></result><!-- 债务人 -->
+		<result property="customerCertNum" column="loan_customer_num"></result><!-- 身份证号 -->
+		<result property="dictLoanUse" column="dict_loan_use"></result><!-- 借款用途 -->
+		<result property="classType" column="product_type"></result><!-- 借款类型 -->
+		<result property="loanMonths" column="loan_months"></result><!-- 原始期限 -->
+		<result property="loanStartDate" column="contract_fact_day"></result><!-- 原始借款开始日期 -->
+		<result property="loanEndDate" column="contract_end_day"></result><!-- 原始借款到期日期 -->
+		<result property="creditorExportDate" column="creditorExportDate"></result><!-- 债权转出日期 -->
+		<result property="payMethod" column="dict_repay_method"></result><!-- 还款方式!! -->
+		<result property="replayDay" column="contract_replay_day"></result><!-- 还款日 -->
+		<result property="contractMonthRepayAmount" column="contract_month_repay_amount"></result><!-- 
+			还款金额 -->
+		<result property="contractAmount" column="contract_amount"></result><!-- 债权金额 -->
+		<result property="feeMonthRate" column="fee_month_rate"></result><!-- 债权月利率 -->
+		<result property="creditor" column="middle_name"></result><!-- 债权人 -->
+	</resultMap>
+	
+	<sql id="creditorConfirmColumns">
+		id,  
+        contract_code,
+        loan_customer_name,
+        customer_cert_num,
+		 dict_loan_use,
+        product_type,
+        loan_months, 
+        contract_fact_day,
+        contract_end_day, 
+        contract_end_day creditorExportDate, 
+		extract(day from contract_replay_day) contract_replay_day,
+            contract_replay_amount contract_month_repay_amount,
+            primeval_worth contract_amount,
+            fee_month_rate, 
+	    '等额本息' dict_repay_method, 
+	    creditor middle_name 
+	</sql>
+	
+	<sql id="selectCondition">
+		<if test="params.cid != null and params.cid != ''">
+			and id in (${params.cid})
+		</if>
+		<if test="params.loanCode != null and params.loanCode != ''">
+			and contract_code = #{params.loanCode}
+		</if>
+		<!-- 债权金额 -->
+		<if test="params.stratContractAmount != null and params.stratContractAmount != ''">
+			and cons_loan_amount &gt;=#{params.stratContractAmount}
+		</if>
+		<if test="params.endContractAmount != null and params.endContractAmount != ''">
+			and cons_loan_amount &lt;=#{params.endContractAmount}
+		</if>
+		<!-- 原始借款开始日期 -->
+		<if test="params.loanStartDate != null and params.loanStartDate != ''">
+			and contract_fact_day &gt;=#{params.loanStartDate}
+		</if>
+		<if test="params.loanEndDate != null and params.loanEndDate != ''">
+			and contract_fact_day &lt;=#{params.loanEndDate}
+		</if>
+		<if test="params.id != null and params.id != ''">
+			and contract.contract_code = #{params.id}
+		</if>
+		and channel_Type = '2'
+	</sql>
+	
+	<select id="findCarCreditorConfirmList"  
+		parameterType="com.creditharmony.loan.channel.finance.view.CreditorConfirmParam"
+		resultMap="creditorConfirmMap">
+		select
+		<include refid="creditorConfirmColumns" />
+		from 
+		    t_cj_creditor_right_info
+		where credit_type = #{params.creditType}
+		<include refid="selectCondition" /> 
+		order by contract_fact_day desc
+	</select>
+	
+	<update id="updateCarCreditorConfirm"
+		parameterType="com.creditharmony.loan.channel.finance.view.CreditorConfirmParam">
+		update t_cj_creditor_right_info  
+		<set>
+			<if test="params.creditConfirmDate != null">
+			 credit_type = '2',credit_confirm_date = #{creditConfirmDate}
+		    </if>
+		</set> 
+		where credit_type = #{params.creditType}
+		<include refid="selectCondition" />
+	</update>
+	
+</mapper>

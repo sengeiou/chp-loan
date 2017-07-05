@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarVehicleInfoDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarVehicleInfo" >
+    <id column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="plate_numbers" property="plateNumbers" jdbcType="VARCHAR" />
+    <result column="suggest_loan_amount" property="suggestLoanAmount" jdbcType="NUMERIC" />
+    <result column="appraiser_name" property="appraiserName" jdbcType="VARCHAR" />
+    <result column="store_assess_amount" property="storeAssessAmount" jdbcType="NUMERIC" />
+    <result column="commercial_maturity_date" property="commercialMaturityDate" jdbcType="DATE" />
+    <result column="similar_market_price" property="similarMarketPrice" jdbcType="NUMERIC" />
+    <result column="factory_date" property="factoryDate" jdbcType="DATE" />
+    <result column="strong_risk_maturity_date" property="strongRiskMaturityDate" jdbcType="DATE" />
+    <result column="annual_check_date" property="annualCheckDate" jdbcType="DATE" />
+    <result column="frame_number" property="frameNumber" jdbcType="VARCHAR" />
+    <result column="vehicle_plant_model" property="vehiclePlantModel" jdbcType="VARCHAR" />
+    <result column="vehicle_brand_model" property="vehicleBrandModel" jdbcType="VARCHAR" />
+    <result column="mileage" property="mileage" jdbcType="NUMERIC" />
+    <result column="first_registration_date" property="firstRegistrationDate" jdbcType="DATE" />
+    <result column="displacemint" property="displacemint" jdbcType="NUMERIC" />
+    <result column="car_body_color" property="carBodyColor" jdbcType="VARCHAR" />
+    <result column="variator" property="variator" jdbcType="VARCHAR" />
+    <result column="engine_number" property="engineNumber" jdbcType="VARCHAR" />
+    <result column="change_num" property="changeNum" jdbcType="VARCHAR" />
+    <result column="ownership_certificate_number" property="ownershipCertificateNumber" jdbcType="VARCHAR" />
+    <result column="modified_situation" property="modifiedSituation" jdbcType="VARCHAR" />
+    <result column="outer_inspection" property="outerInspection" jdbcType="VARCHAR" />
+    <result column="illegal_accident" property="illegalAccident" jdbcType="VARCHAR" />
+    <result column="vehicle_assessment" property="vehicleAssessment" jdbcType="VARCHAR" />
+    <result column="clivta_company" property="clivtaCompany" jdbcType="VARCHAR" />
+    <result column="clivta_num" property="clivtaNum" jdbcType="VARCHAR" />
+    <result column="commericial_company" property="commericialCompany" jdbcType="VARCHAR" />
+    <result column="commericial_num" property="commericialNum" jdbcType="VARCHAR" />
+    <result column="dict_oper_status" property="dictOperStatus" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="extension_assess_amount" property="extensionAssessAmount" jdbcType="NUMERIC" />
+    <result column="extension_suggest_amount" property="extensionSuggestAmount" jdbcType="NUMERIC" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    loan_code, id, plate_numbers, suggest_loan_amount, appraiser_name, store_assess_amount, 
+    clivta_company,clivta_num,commericial_company,commericial_num,
+    commercial_maturity_date, similar_market_price, factory_date, strong_risk_maturity_date, 
+    annual_check_date, frame_number, vehicle_plant_model, vehicle_brand_model, mileage, 
+    first_registration_date, displacemint, car_body_color, variator, engine_number, change_num, 
+    ownership_certificate_number, modified_situation, outer_inspection, illegal_accident, 
+    vehicle_assessment, dict_oper_status, remark, create_by, create_time, modify_by, 
+    modify_time,extension_assess_amount,extension_suggest_amount
+  </sql>
+  <select id="selectByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_cj_vehicle_info
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_cj_vehicle_info
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="notRepeatSubmit" resultType="int" parameterType="java.lang.String">	
+	select count(li.*)
+	from
+	t_cj_loan_info li
+	left join t_cj_vehicle_info vi on li.loan_code=vi.loan_code
+	where
+	vi.plate_numbers = #{plateNumber,jdbcType=VARCHAR}
+	and li.dict_loan_status not in ('1','32','2','5');
+  </select>
+  <select id="uploadAndTrialBack" resultType="int" parameterType="java.lang.String">
+ 	select count(*)
+	from
+	t_cj_loan_info li
+	left join t_cj_vehicle_info vi on li.loan_code=vi.loan_code
+	where
+	vi.plate_numbers = #{plateNumber,jdbcType=VARCHAR}
+	and li.dict_loan_status  in ('2','5');
+  </select>
+  <delete id="delete"  parameterType="com.creditharmony.loan.car.common.entity.CarVehicleInfo" >
+    delete from jk.t_cj_vehicle_info
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertCarVehicleInfo" parameterType="com.creditharmony.loan.car.common.entity.CarVehicleInfo" >
+    insert into jk.t_cj_vehicle_info (loan_code,id, plate_numbers, 
+      suggest_loan_amount, appraiser_name, store_assess_amount, 
+      commercial_maturity_date, similar_market_price, 
+      factory_date, strong_risk_maturity_date, annual_check_date, 
+      frame_number, vehicle_plant_model, vehicle_brand_model, 
+      mileage, first_registration_date, displacemint, 
+      car_body_color, variator, engine_number, 
+      change_num, ownership_certificate_number, 
+      clivta_company,clivta_num,commericial_company,commericial_num,
+      modified_situation, outer_inspection, illegal_accident, 
+      vehicle_assessment, dict_oper_status, remark, 
+      create_by, create_time, modify_by, 
+      modify_time,extension_assess_amount, extension_suggest_amount)
+    values (#{loanCode,jdbcType=VARCHAR},#{id,jdbcType=VARCHAR}, #{plateNumbers,jdbcType=VARCHAR}, 
+      #{suggestLoanAmount,jdbcType=NUMERIC}, #{appraiserName,jdbcType=VARCHAR}, #{storeAssessAmount,jdbcType=NUMERIC}, 
+      #{commercialMaturityDate,jdbcType=DATE}, #{similarMarketPrice,jdbcType=NUMERIC}, 
+      #{factoryDate,jdbcType=DATE}, #{strongRiskMaturityDate,jdbcType=DATE}, #{annualCheckDate,jdbcType=DATE}, 
+      #{frameNumber,jdbcType=VARCHAR}, #{vehiclePlantModel,jdbcType=VARCHAR}, #{vehicleBrandModel,jdbcType=VARCHAR}, 
+      #{mileage,jdbcType=NUMERIC}, #{firstRegistrationDate,jdbcType=DATE}, #{displacemint,jdbcType=NUMERIC}, 
+      #{carBodyColor,jdbcType=VARCHAR}, #{variator,jdbcType=VARCHAR}, #{engineNumber,jdbcType=VARCHAR}, 
+      #{changeNum,jdbcType=VARCHAR}, #{ownershipCertificateNumber,jdbcType=VARCHAR}, 
+      #{clivtaCompany,jdbcType=VARCHAR},#{clivtaNum,jdbcType=VARCHAR},#{commericialCompany,jdbcType=VARCHAR},
+      #{commericialNum,jdbcType=VARCHAR},
+      #{modifiedSituation,jdbcType=VARCHAR}, #{outerInspection,jdbcType=VARCHAR}, #{illegalAccident,jdbcType=VARCHAR}, 
+      #{vehicleAssessment,jdbcType=VARCHAR}, #{dictOperStatus,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, 
+      #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP}, #{extensionAssessAmount,jdbcType=NUMERIC}, #{extensionSuggestAmount,jdbcType=NUMERIC})
+  </insert>
+  
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarVehicleInfo" >
+    update jk.t_cj_vehicle_info
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="plateNumbers != null" >
+        plate_numbers = #{plateNumbers,jdbcType=VARCHAR},
+      </if>
+      <if test="clivtaCompany != null and clivtaCompany !=''" >
+        clivta_company = #{clivtaCompany,jdbcType=VARCHAR},
+      </if>
+      <if test="clivtaNum != null and clivtaNum != ''" >
+        clivta_num = #{clivtaNum,jdbcType=VARCHAR},
+      </if>
+      <if test="commericialCompany != null and commericialCompany !=''" >
+        commericial_company = #{commericialCompany,jdbcType=VARCHAR},
+      </if>
+      <if test="commericialNum != null and commericialNum !=''" >
+        commericial_num = #{commericialNum,jdbcType=VARCHAR},
+      </if>
+      <if test="suggestLoanAmount != null " >
+        suggest_loan_amount = #{suggestLoanAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="appraiserName != null" >
+        appraiser_name = #{appraiserName,jdbcType=VARCHAR},
+      </if>
+      <if test="storeAssessAmount != null" >
+        store_assess_amount = #{storeAssessAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="commercialMaturityDate != null" >
+        commercial_maturity_date = #{commercialMaturityDate,jdbcType=DATE},
+      </if>
+      <if test="similarMarketPrice != null" >
+        similar_market_price = #{similarMarketPrice,jdbcType=NUMERIC},
+      </if>
+      <if test="factoryDate != null" >
+        factory_date = #{factoryDate,jdbcType=DATE},
+      </if>
+      <if test="strongRiskMaturityDate != null" >
+        strong_risk_maturity_date = #{strongRiskMaturityDate,jdbcType=DATE},
+      </if>
+      <if test="annualCheckDate != null" >
+        annual_check_date = #{annualCheckDate,jdbcType=DATE},
+      </if>
+      <if test="frameNumber != null" >
+        frame_number = #{frameNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="vehiclePlantModel != null" >
+        vehicle_plant_model = #{vehiclePlantModel,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleBrandModel != null" >
+        vehicle_brand_model = #{vehicleBrandModel,jdbcType=VARCHAR},
+      </if>
+      <if test="mileage != null and mileage !=''" >
+        mileage = #{mileage,jdbcType=NUMERIC},
+      </if>
+      <if test="firstRegistrationDate != null" >
+        first_registration_date = #{firstRegistrationDate,jdbcType=DATE},
+      </if>
+      <if test="displacemint != null" >
+        displacemint = #{displacemint,jdbcType=NUMERIC},
+      </if>
+      <if test="carBodyColor != null" >
+        car_body_color = #{carBodyColor,jdbcType=VARCHAR},
+      </if>
+      <if test="variator != null" >
+        variator = #{variator,jdbcType=VARCHAR},
+      </if>
+      <if test="engineNumber != null" >
+        engine_number = #{engineNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="changeNum != null" >
+        change_num = #{changeNum,jdbcType=VARCHAR},
+      </if>
+      <if test="ownershipCertificateNumber != null" >
+        ownership_certificate_number = #{ownershipCertificateNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="modifiedSituation != null" >
+        modified_situation = #{modifiedSituation,jdbcType=VARCHAR},
+      </if>
+      <if test="outerInspection != null" >
+        outer_inspection = #{outerInspection,jdbcType=VARCHAR},
+      </if>
+      <if test="illegalAccident != null" >
+        illegal_accident = #{illegalAccident,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleAssessment != null" >
+        vehicle_assessment = #{vehicleAssessment,jdbcType=VARCHAR},
+      </if>
+      <if test="dictOperStatus != null" >
+        dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="extensionAssessAmount != null" >
+        extension_assess_amount = #{extensionAssessAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="extensionSuggestAmount != null" >
+        extension_suggest_amount = #{extensionSuggestAmount,jdbcType=NUMERIC},
+      </if>
+    </set>
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateById" parameterType="com.creditharmony.loan.car.common.entity.CarVehicleInfo" >
+    update jk.t_cj_vehicle_info
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+		loan_code = #{loanCode,jdbcType=VARCHAR},
+	  </if>
+      <if test="plateNumbers != null" >
+        plate_numbers = #{plateNumbers,jdbcType=VARCHAR},
+      </if>
+      <if test="clivtaCompany != null and clivtaCompany !=''" >
+        clivta_company = #{clivtaCompany,jdbcType=VARCHAR},
+      </if>
+      <if test="clivtaNum != null and clivtaNum != ''" >
+        clivta_num = #{clivtaNum,jdbcType=VARCHAR},
+      </if>
+      <if test="commericialCompany != null and commericialCompany !=''" >
+        commericial_company = #{commericialCompany,jdbcType=VARCHAR},
+      </if>
+      <if test="commericialNum != null and commericialNum !=''" >
+        commericial_num = #{commericialNum,jdbcType=VARCHAR},
+      </if>
+      <if test="suggestLoanAmount != null " >
+        suggest_loan_amount = #{suggestLoanAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="appraiserName != null" >
+        appraiser_name = #{appraiserName,jdbcType=VARCHAR},
+      </if>
+      <if test="storeAssessAmount != null" >
+        store_assess_amount = #{storeAssessAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="commercialMaturityDate != null" >
+        commercial_maturity_date = #{commercialMaturityDate,jdbcType=DATE},
+      </if>
+      <if test="similarMarketPrice != null" >
+        similar_market_price = #{similarMarketPrice,jdbcType=NUMERIC},
+      </if>
+      <if test="factoryDate != null" >
+        factory_date = #{factoryDate,jdbcType=DATE},
+      </if>
+      <if test="strongRiskMaturityDate != null" >
+        strong_risk_maturity_date = #{strongRiskMaturityDate,jdbcType=DATE},
+      </if>
+      <if test="annualCheckDate != null" >
+        annual_check_date = #{annualCheckDate,jdbcType=DATE},
+      </if>
+      <if test="frameNumber != null" >
+        frame_number = #{frameNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="vehiclePlantModel != null" >
+        vehicle_plant_model = #{vehiclePlantModel,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleBrandModel != null" >
+        vehicle_brand_model = #{vehicleBrandModel,jdbcType=VARCHAR},
+      </if>
+      <if test="mileage != null and mileage !=''" >
+        mileage = #{mileage,jdbcType=NUMERIC},
+      </if>
+      <if test="firstRegistrationDate != null" >
+        first_registration_date = #{firstRegistrationDate,jdbcType=DATE},
+      </if>
+      <if test="displacemint != null" >
+        displacemint = #{displacemint,jdbcType=NUMERIC},
+      </if>
+      <if test="carBodyColor != null" >
+        car_body_color = #{carBodyColor,jdbcType=VARCHAR},
+      </if>
+      <if test="variator != null" >
+        variator = #{variator,jdbcType=VARCHAR},
+      </if>
+      <if test="engineNumber != null" >
+        engine_number = #{engineNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="changeNum != null" >
+        change_num = #{changeNum,jdbcType=VARCHAR},
+      </if>
+      <if test="ownershipCertificateNumber != null" >
+        ownership_certificate_number = #{ownershipCertificateNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="modifiedSituation != null" >
+        modified_situation = #{modifiedSituation,jdbcType=VARCHAR},
+      </if>
+      <if test="outerInspection != null" >
+        outer_inspection = #{outerInspection,jdbcType=VARCHAR},
+      </if>
+      <if test="illegalAccident != null" >
+        illegal_accident = #{illegalAccident,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleAssessment != null" >
+        vehicle_assessment = #{vehicleAssessment,jdbcType=VARCHAR},
+      </if>
+      <if test="dictOperStatus != null" >
+        dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="extensionAssessAmount != null" >
+        extension_assess_amount = #{extensionAssessAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="extensionSuggestAmount != null" >
+        extension_suggest_amount = #{extensionSuggestAmount,jdbcType=NUMERIC},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- 根据车牌号码查询7天内是否可以进件  -->
+  <select id="selectPlnum" resultType="int" parameterType="java.lang.String">	
+	select count(*)
+	from t_cj_vehicle_info vi
+	left join T_CJ_CUSTOMER_CONSULTATION cc on cc.loan_code = vi.loan_code
+	where
+	vi.plate_numbers = #{plateNumbers,jdbcType=VARCHAR}
+	and cc.DICT_OPER_STATUS <![CDATA[ <>]]> '1'
+	and vi.create_time + 7<![CDATA[ >=]]> sysdate
+  </select>
+  
+   <select id="selectByPlateNumbers" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    vi.loan_code, vi.id, vi.plate_numbers, vi.suggest_loan_amount, vi.appraiser_name, vi.store_assess_amount, 
+    vi.clivta_company,vi.clivta_num,vi.commericial_company,vi.commericial_num,
+    vi.commercial_maturity_date, vi.similar_market_price, vi.factory_date, vi.strong_risk_maturity_date, 
+    vi.annual_check_date, vi.frame_number, vi.vehicle_plant_model, vi.vehicle_brand_model, vi.mileage, 
+    vi.first_registration_date, vi.displacemint, vi.car_body_color, vi.variator, vi.engine_number, vi.change_num, 
+    vi.ownership_certificate_number, vi.modified_situation, vi.outer_inspection, vi.illegal_accident, 
+    vi.vehicle_assessment, vi.dict_oper_status, vi.remark, vi.create_by, vi.create_time, vi.modify_by, 
+    vi.modify_time,vi.extension_assess_amount,vi.extension_suggest_amount
+    from jk.t_cj_vehicle_info vi
+    left join jk.t_cj_loan_info li on vi.loan_code = li.loan_code 
+    where plate_numbers = #{plateNumbers,jdbcType=VARCHAR}
+    and li.loan_rawcode is null
+    order by create_time desc limit(1)
+  </select>
+  
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.GlBillHzDao">
+  <resultMap type="com.creditharmony.loan.common.entity.GlBillHz" id="BaseResultMap">
+   <result column="sign_day" property="signDay" jdbcType="INTEGER"/>
+   <result column="bill_day" property="billDay" jdbcType="INTEGER"/>
+   <result column="type" property="type" jdbcType="VARCHAR"/>
+  </resultMap>
+  <select id="findBySignDay" resultMap="BaseResultMap">
+     select sign_day,bill_day,type from jk.t_gl_bill_hz 
+     where sign_day=#{signDay,jdbcType=INTEGER}
+   </select>
+   <select id="findAllBillDay" resultMap="BaseResultMap">
+     select distinct(bill_day) from jk.t_gl_bill_hz order by bill_day 
+   </select>
+</mapper>

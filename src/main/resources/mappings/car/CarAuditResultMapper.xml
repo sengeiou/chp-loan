@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarAuditResultDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarAuditResult" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="r_status_his_id" property="rStatusHisId" jdbcType="VARCHAR" />
+    <result column="single_tast_id" property="singleTastId" jdbcType="VARCHAR" />
+    <result column="audit_result" property="auditResult" jdbcType="VARCHAR" />
+    <result column="dict_product_type" property="dictProductType" jdbcType="VARCHAR" />
+    <result column="product_type_name" property="productTypeName" jdbcType="VARCHAR" />
+    <result column="dict_audit_months" property="dictAuditMonths" jdbcType="VARCHAR" />
+    <result column="final_evaluated_price" property="finalEvaluatedPrice" jdbcType="NUMERIC" />
+    <result column="audit_amount" property="auditAmount" jdbcType="NUMERIC" />
+    <result column="gross_rate" property="grossRate" jdbcType="NUMERIC" />
+    <result column="first_service_tariffing" property="firstServiceTariffing" jdbcType="NUMERIC" />
+    <result column="audit_check_examine" property="auditCheckExamine" jdbcType="VARCHAR" />
+    <result column="dict_check_type" property="dictCheckType" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="return_type" property="returnType" jdbcType="VARCHAR" />
+    <result column="audit_json" property="auditJson" jdbcType="VARCHAR" />
+    <result column="out_visit_distance" property="outVisitDistance" jdbcType="NUMERIC" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    at.id, at.loan_code, r_status_his_id, single_tast_id, audit_result, dict_product_type, 
+    dict_audit_months, final_evaluated_price, audit_amount, gross_rate, first_service_tariffing, 
+    audit_check_examine, dict_check_type, at.create_time, at.create_by, at.modify_time, at.modify_by, 
+    return_type, audit_json
+  </sql>
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_audit_result at
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="delete"  parameterType="com.creditharmony.loan.car.common.entity.CarAuditResult" >
+    delete from t_cj_audit_result
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.CarAuditResult" >
+    insert into t_cj_audit_result (id, loan_code, r_status_his_id, 
+      single_tast_id, audit_result, dict_product_type, 
+      dict_audit_months, final_evaluated_price, audit_amount, 
+      gross_rate, first_service_tariffing, audit_check_examine, 
+      dict_check_type, create_time, create_by, 
+      modify_time, modify_by, return_type, 
+      audit_json)
+    values (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{rStatusHisId,jdbcType=VARCHAR}, 
+      #{singleTastId,jdbcType=VARCHAR}, #{auditResult,jdbcType=VARCHAR}, #{dictProductType,jdbcType=VARCHAR}, 
+      #{dictAuditMonths,jdbcType=VARCHAR}, #{finalEvaluatedPrice,jdbcType=NUMERIC}, #{auditAmount,jdbcType=NUMERIC}, 
+      #{grossRate,jdbcType=NUMERIC}, #{firstServiceTariffing,jdbcType=NUMERIC}, #{auditCheckExamine,jdbcType=VARCHAR}, 
+      #{dictCheckType,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{createBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{returnType,jdbcType=VARCHAR}, 
+      #{auditJson,jdbcType=VARCHAR})
+  </insert>
+  
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarAuditResult" >
+    update t_cj_audit_result
+    <set >
+      <if test="loanCode != null" >
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="rStatusHisId != null" >
+        r_status_his_id = #{rStatusHisId,jdbcType=VARCHAR},
+      </if>
+      <if test="singleTastId != null" >
+        single_tast_id = #{singleTastId,jdbcType=VARCHAR},
+      </if>
+      <if test="auditResult != null" >
+        audit_result = #{auditResult,jdbcType=VARCHAR},
+      </if>
+      <if test="dictProductType != null" >
+        dict_product_type = #{dictProductType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictAuditMonths != null" >
+        dict_audit_months = #{dictAuditMonths,jdbcType=VARCHAR},
+      </if>
+      <if test="finalEvaluatedPrice != null" >
+        final_evaluated_price = #{finalEvaluatedPrice,jdbcType=NUMERIC},
+      </if>
+      <if test="auditAmount != null" >
+        audit_amount = #{auditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="grossRate != null" >
+        gross_rate = #{grossRate,jdbcType=NUMERIC},
+      </if>
+      <if test="firstServiceTariffing != null" >
+        first_service_tariffing = #{firstServiceTariffing,jdbcType=NUMERIC},
+      </if>
+      <if test="auditCheckExamine != null" >
+        audit_check_examine = #{auditCheckExamine,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckType != null" >
+        dict_check_type = #{dictCheckType,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="returnType != null" >
+        return_type = #{returnType,jdbcType=VARCHAR},
+      </if>
+      <if test="auditJson != null" >
+        audit_json = #{auditJson,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+	
+  <!-- 根据 借款编号 获取 最终 终审通过或附条件通过 的记录 -->
+  <select id="getLastThroughRecord" resultMap="BaseResultMap" parameterType="java.util.Map">
+  	SELECT 
+  	(select  r.out_visit_distance
+    from jk.t_cj_audit_result r
+    where
+    r.loan_code = #{loanCode,jdbcType=VARCHAR} and r.dict_check_type ='2'
+    order by r.create_time desc LIMIT  1) out_visit_distance,
+  	p.product_name product_type_name, 
+  	case when strpos(a.label, '附条件') > 0 then a.label else '无' end audit_result, 
+  	<include refid="Base_Column_List"></include> 
+	FROM t_cj_audit_result at
+	LEFT JOIN t_gl_jk_product p ON at.dict_product_type = p.product_code AND p.product_type = 'products_type_car_credit'
+	LEFT JOIN t_gl_dict a ON a.value = at.audit_result AND a.type = 'jk_car_loan_result' 
+	WHERE at.loan_code = #{loanCode,jdbcType=VARCHAR} 
+		AND (return_type IS NULL or return_type = '')
+		AND (audit_json IS NULL or audit_json = '')
+		AND dict_check_type = #{checkType,jdbcType=VARCHAR}  
+		AND audit_result in
+		<foreach collection="throughCodes" item="item" index="index" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	ORDER BY at.create_time DESC
+	LIMIT 1
+  </select>
+</mapper>

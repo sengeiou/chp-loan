@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarRefundAuditDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarRefundInfo">
+    <id column="id" jdbcType="VARCHAR" property="id" /><!-- 拆分表id -->
+    <result column="r_charge_id" jdbcType="VARCHAR" property="rChargeId" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="store_name" jdbcType="VARCHAR" property="storeName" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="loanCustomerName" />
+    <result column="product_type" jdbcType="VARCHAR" property="productType" />
+	<result column="contract_amount" jdbcType="NUMERIC" property="contractAmount" />
+	
+    <result column="urge_moeny" jdbcType="NUMERIC" property="urgeMoeny" />
+    <result column="urge_decute_moeny" jdbcType="NUMERIC" property="urgeDecuteMoeny" />
+    <result column="contract_months" jdbcType="NUMERIC" property="contractMonths" />
+    <result column="card_bank" jdbcType="VARCHAR" property="cardBank" />
+    
+    <result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="customerTelesalesFlag" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <result column="bank_card_no" jdbcType="VARCHAR" property="bankCardNo" />
+    <result column="audit_status" jdbcType="VARCHAR" property="auditStatus" />
+    <result column="audit_refuse_reason" jdbcType="VARCHAR" property="auditRefuseReason" />
+    
+  </resultMap>
+
+	<!-- 添加催收服务费退款记录 -->
+	<insert id="insertCarRefundInfo"
+		parameterType="com.creditharmony.loan.car.common.entity.CarRefundInfo">
+		INSERT INTO jk.t_cj_service_charge_return
+		(id, r_charge_id, return_amount, return_status, return_time,
+		return_intermediary_id, contract_code, audit_status,
+		audit_refuse_reason)
+		VALUES(#{id}, #{rChargeId}, #{returnAmount}, #{returnStatus}, #{returnTime},
+		 #{returnIntermediaryId}, #{contractCode}, #{auditStatus},
+		 #{auditRefuseReason});
+	</insert>
+  <!-- 退款审核列表查询 -->
+  <select id="selectCarRefundAuditList"  resultMap="BaseResultMap">
+    select distinct
+       t.id id,<!-- 退款id -->
+	   t2.contract_code contractCode,<!-- 合同编号 -->
+	   t3.store_name storeName,<!-- 门店名称 -->
+	   t3.loan_customer_name loanCustomerName,<!-- 客户姓名 -->
+	   t4.product_type productType,<!-- 借款产品 -->
+	   t4.contract_amount contractAmount,<!-- 合同金额 -->
+	   t1.urge_moeny urgeMoeny,<!-- 应划金额 -->
+	   t1.urge_decute_moeny urgeDecuteMoeny,<!-- 实划金额 -->
+	   t4.contract_months contractMonths,<!-- 批借期限 -->
+	   t5.card_bank cardBank,<!-- 开户行 -->
+	   t3.dict_loan_status dictLoanStatus,<!-- 借款状态 -->
+	   t6.customer_telesales_flag customerTelesalesFlag,<!-- 是否电销 -->
+	   t3.apply_id applyId,
+	   t2.loan_code loanCode,
+	   t5.bank_card_no bankCardNo,
+	   t.audit_status auditStatus,<!-- 回盘结果 -->
+	   t.audit_refuse_reason auditRefuseReason<!-- 回盘原因 -->
+    from jk.T_CJ_SERVICE_CHARGE_RETURN t
+		left join jk.T_CJ_URGE_SERVICES_AMOUNT t1 on t1.id = t.r_charge_id
+		left join jk.T_CJ_LOAN_GRANT t2 on t2.id = t1.r_grant_id
+		left join jk.T_CJ_LOAN_INFO t3 on t3.loan_code = t2.loan_code
+		left join jk.T_CJ_CONTRACT t4 on t4.loan_code = t2.loan_code
+		left join jk.T_CJ_CUSTOMER_BANK_INFO t5 on t5.loan_code = t2.loan_code
+		left join jk.T_JK_LOAN_CUSTOMER t6 on t6.loan_code = t2.loan_code
+	where t.return_status !='1'
+		<if test="id != null and id != ''">
+			and t.id=#{id}
+		</if>	
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			and t3.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="storeName != null and storeName != ''">
+			and t3.store_name = #{storeName}
+		</if>
+		<if test="auditStatus != null and auditStatus != ''"><!-- 回盘结果 -->
+			and t.audit_status = #{auditStatus}
+		</if>		
+		<if test="contractCode != null and contractCode != ''">
+			and t2.contract_code LIKE '%' || #{contractCode} || '%'
+		</if>
+		<if test="cardBank != null and cardBank != ''"><!-- 开户行 -->
+			and t5.card_bank =#{cardBank}
+		</if>
+		<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''"> 
+			and t6.customer_telesales_flag =#{customerTelesalesFlag}
+		</if>
+  </select>
+  
+  <select id="CarRefundAuditCountSum"  resultMap="BaseResultMap">
+    select 
+	   COALESCE(sum(COALESCE(t1.urge_moeny,0)),0) urgeMoeny
+    from jk.T_CJ_SERVICE_CHARGE_RETURN t
+		left join jk.T_CJ_URGE_SERVICES_AMOUNT t1 on t1.id = t.r_charge_id
+		left join jk.T_CJ_LOAN_GRANT t2 on t2.id = t1.r_grant_id
+		left join jk.T_CJ_LOAN_INFO t3 on t3.loan_code = t2.loan_code
+		left join jk.T_CJ_CONTRACT t4 on t4.loan_code = t2.loan_code
+		left join jk.T_CJ_CUSTOMER_BANK_INFO t5 on t5.loan_code = t2.loan_code
+		left join jk.T_JK_LOAN_CUSTOMER t6 on t6.loan_code = t2.loan_code
+	where t.return_status !='1'
+		<if test="id != null and id != ''">
+			and t.id=#{id}
+		</if>	
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			and t3.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="storeName != null and storeName != ''">
+			and t3.store_name = #{storeName}
+		</if>
+		<if test="auditStatus != null and auditStatus != ''"><!-- 回盘结果 -->
+			and t.audit_status = #{auditStatus}
+		</if>		
+		<if test="contractCode != null and contractCode != ''">
+			and t2.contract_code LIKE '%' || #{contractCode} || '%'
+		</if>
+		<if test="cardBank != null and cardBank != ''"><!-- 开户行 -->
+			and t5.card_bank =#{cardBank}
+		</if>
+		<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''"> 
+			and t6.customer_telesales_flag =#{customerTelesalesFlag}
+		</if>
+  </select>
+  
+  <!-- 退款审核提交 -->
+  <update id="updateCarRefundAudit" parameterType="com.creditharmony.loan.car.common.entity.CarRefundInfo">
+  update jk.t_cj_service_charge_return 
+	<set>
+      <if test="auditStatus != null">
+        audit_status = #{auditStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="auditRefuseReason != null">
+        audit_refuse_reason = #{auditRefuseReason,jdbcType=VARCHAR},
+      </if>
+    </set>
+      WHERE id  = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 退款待办列表查询 -->
+  <select id="selectCarRefundList"  resultMap="BaseResultMap">
+    select distinct
+       t.id id,<!-- 退款id -->
+	   t2.contract_code contractCode,<!-- 合同编号 -->
+	   t3.store_name storeName,<!-- 门店名称 -->
+	   t3.loan_customer_name loanCustomerName,<!-- 客户姓名 -->
+	   t4.product_type productType,<!-- 借款产品 -->
+	   t4.contract_amount contractAmount,<!-- 合同金额 -->
+	   t1.urge_moeny urgeMoeny,<!-- 应划金额 -->
+	   t1.urge_decute_moeny urgeDecuteMoeny,<!-- 实划金额 -->
+	   t4.contract_months contractMonths,<!-- 批借期限 -->
+	   t5.card_bank cardBank,<!-- 开户行 -->
+	   t3.dict_loan_status dictLoanStatus,<!-- 借款状态 -->
+	   t6.customer_telesales_flag customerTelesalesFlag,<!-- 是否电销 -->
+	   t3.apply_id applyId,
+	   t2.loan_code loanCode,
+	   t5.bank_card_no bankCardNo,
+	   t.audit_status auditStatus,<!-- 回盘结果 -->
+	   t.audit_refuse_reason auditRefuseReason<!-- 回盘原因 -->
+    from jk.t_cj_service_charge_return t
+		left join jk.t_cj_urge_services_amount t1 on t1.id = t.r_charge_id
+		left join jk.t_cj_loan_grant t2 on t2.id = t1.r_grant_id
+		left join jk.t_cj_loan_info t3 on t3.loan_code = t2.loan_code
+		left join jk.t_cj_contract t4 on t4.loan_code = t2.loan_code
+		left join jk.t_cj_customer_bank_info t5 on t5.loan_code = t2.loan_code
+		left join jk.t_jk_loan_customer t6 on t6.loan_code = t2.loan_code
+	where t.return_status !='1'
+		<if test="id != null and id != ''">
+			and t.id=#{id}
+		</if>	
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			and t3.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="storeName != null and storeName != ''">
+			and t3.store_name = #{storeName}
+		</if>
+		<if test="auditStatus != null and auditStatus != ''"><!-- 回盘结果 -->
+			and t.audit_status = #{auditStatus}
+		</if>		
+		<if test="contractCode != null and contractCode != ''">
+			and t2.contract_code LIKE '%' || #{contractCode} || '%'
+		</if>
+		<if test="cardBank != null and cardBank != ''"><!-- 开户行 -->
+			and t5.card_bank =#{cardBank}
+		</if>
+		<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''"> 
+			and t6.customer_telesales_flag =#{customerTelesalesFlag}
+		</if>
+  </select>
+  
+  <!-- 退款列表导出 -->
+  <select id="exportCarRefundList"  resultType="com.creditharmony.loan.car.carRefund.ex.RefundAuditEx">
+    select distinct
+       t.id id,<!-- 退款id -->
+	   t2.contract_code contractCode,<!-- 合同编号 -->
+	   t3.store_name storeName,<!-- 门店名称 -->
+	   t3.loan_customer_name loanCustomerName,<!-- 客户姓名 -->
+	   t4.product_type productType,<!-- 借款产品 -->
+	   t4.contract_amount contractAmount,<!-- 合同金额 -->
+	   t1.urge_moeny urgeMoeny,<!-- 应划金额 -->
+	   t1.urge_decute_moeny urgeDecuteMoeny,<!-- 实划金额 -->
+	   t4.contract_months contractMonths,<!-- 批借期限 -->
+	   t5.card_bank cardBank,<!-- 开户行 -->
+	   t3.dict_loan_status dictLoanStatus,<!-- 借款状态 -->
+	   t6.customer_telesales_flag customerTelesalesFlag,<!-- 是否电销 -->
+	   t3.apply_id applyId,
+	   t2.loan_code loanCode,
+	   t5.bank_card_no bankCardNo,
+	   t.audit_status auditStatus,<!-- 回盘结果 -->
+	   t.audit_refuse_reason auditRefuseReason<!-- 回盘原因 -->
+    from jk.t_cj_service_charge_return t
+		left join jk.t_cj_urge_services_amount t1 on t1.id = t.r_charge_id
+		left join jk.t_cj_loan_grant t2 on t2.id = t1.r_grant_id
+		left join jk.t_cj_loan_info t3 on t3.loan_code = t2.loan_code
+		left join jk.t_cj_contract t4 on t4.loan_code = t2.loan_code
+		left join jk.t_cj_customer_bank_info t5 on t5.loan_code = t2.loan_code
+		left join jk.t_jk_loan_customer t6 on t6.loan_code = t2.loan_code
+	where t.return_status !='1'
+		and t.audit_status in ('1','3')
+		<if test="id != null and id != ''">
+			and t.id=#{id}
+		</if>	
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			and t3.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="storeName != null and storeName != ''">
+			and t3.store_name = #{storeName}
+		</if>
+		<if test="auditStatus != null and auditStatus != ''"><!-- 回盘结果 -->
+			and t.audit_status = #{auditStatus}
+		</if>		
+		<if test="contractCode != null and contractCode != ''">
+			and t2.contract_code LIKE '%' || #{contractCode} || '%'
+		</if>
+		<if test="cardBank != null and cardBank != ''"><!-- 开户行 -->
+			and t5.card_bank =#{cardBank}
+		</if>
+		<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''"> 
+			and t6.customer_telesales_flag =#{customerTelesalesFlag}
+		</if>
+  </select>
+  
+  <!--更新退款退回状态-->
+  <update id="updateRefundReturnStatus" parameterType="com.creditharmony.loan.car.carRefund.ex.RefundAuditEx">
+    update jk.t_cj_service_charge_return 
+	<set>
+	  <if test="returnStatus != null">
+        return_status = #{returnStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="auditStatus != null">
+        audit_status = #{auditStatus,jdbcType=VARCHAR},
+      </if>
+    </set>
+      WHERE contract_code  = #{contractCode,jdbcType=VARCHAR}
+      <if test="requireStatus != null and requireStatus !=''">
+        and audit_status = #{requireStatus,jdbcType=VARCHAR}
+      </if>
+  </update>
+  
+  <!-- 通过退款ID获取借款编码 -->
+  <select id="getLoanCodeByRefundId"  resultType="String">
+    select t2.loan_code
+		from T_CJ_SERVICE_CHARGE_RETURN t
+		left join T_CJ_URGE_SERVICES_AMOUNT t1
+		on t1.id = t.r_charge_id
+		left join T_CJ_LOAN_GRANT t2
+		on t2.id = t1.r_grant_id
+		where t.id=#{id}
+  </select>
+  <!-- 通过合同编号获取借款编码 -->
+  <select id="getLoanCodeByRefundContractCode"  resultType="String">
+    select t2.loan_code
+		from T_CJ_SERVICE_CHARGE_RETURN t
+		left join T_CJ_URGE_SERVICES_AMOUNT t1
+		on t1.id = t.r_charge_id
+		left join T_CJ_LOAN_GRANT t2
+		on t2.id = t1.r_grant_id
+		where t.contract_code=#{id}
+  </select>
+  
+  <!-- 查询要退款的数据 发送给批处理-->
+   <select id="getDeductReq" parameterType="java.util.HashMap" resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+     select 
+   		d.apply_id as batId,
+   		t.contract_code as businessId,
+   		t.return_amount as amount,
+   		b.apply_bank_name as bankName,
+   		b.bank_card_no as accountNo,
+   		b.bank_account_name as accountName,
+    	y.area_name as bankCity,
+	    x.area_name as bankProv,
+	    b.card_bank as bankId,
+	    c.dict_cert_type as idType,
+	    c.customer_cert_num as idNo,
+	    c.customer_phone_first as mobile
+	    
+      from  t_cj_service_charge_return t
+	  left join t_cj_urge_services_amount t1 on t1.id = t.r_charge_id
+	  left join t_cj_loan_grant t2 on t2.id = t1.r_grant_id 
+	  left join jk.t_cj_customer_bank_info b on b.loan_code = t2.loan_code
+	  left join jk.t_gl_province_city x on x.area_code = b.bank_province
+	  left join jk.t_gl_province_city y on y.area_code = b.bank_city    
+	  left join jk.t_jk_loan_customer c on c.loan_code = t2.loan_code 
+	  left join jk.t_cj_loan_info d on d.loan_code = t2.loan_code 
+	  
+	  where t.id=#{id}
+	   <if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and d.dict_loan_status = #{dictLoanStatus} 
+	   </if>		
+
+	</select>
+</mapper>

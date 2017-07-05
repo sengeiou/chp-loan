@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.EarlySettlementExamDao">
+ <!-- 获取提前结清待审核列表数据    以冲抵申请表 为主表-->
+ <select id="getAllList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackCharge">
+    select
+    pc.contract_code,
+    pc.id,
+    pc.penalty_total_amount,
+    pc.settle_total_amount,
+    pc.dict_offset_type,
+    pc.apply_bule_amount,<!-- 提前结清申请时的蓝补金额 -->
+	p.id as "payback.id",
+	p.payback_day as "payback.paybackDay",
+	p.payback_bule_amount as "payback.paybackBuleAmount",
+	p.dict_pay_status as "payback.dictPayStatus",
+	con.contract_code as "contract.contractCode",
+	con.contract_end_day as "contract.contractEndDay",
+	con.contract_version as "contract.contractVersion",
+	locu.customer_name as "loanCustomer.customerName",
+	loin.dict_loan_status as "loanInfo.dictLoanStatus",
+	loin.loan_flag as "loanInfo.loanFlag",
+	loin.dict_source_type as "loanInfo.dictSourceType",
+	loin.loan_store_orgid as "loanInfo.loanStoreOrgId",
+	loin.product_type as "loanInfo.productType",
+	loin.model as "loanInfo.model",
+	usa.urge_moeny as "urgeServicesMoney.urgeMoeny",
+	usa.return_logo as "urgeServicesMoney.returnLogo",
+	org.name as "loanInfo.loanStoreOrgName",
+	loin.model  as  "loanInfo.model"
+	
+    from jk.t_jk_payback_charge  pc
+    LEFT JOIN jk.t_jk_payback p on  p.contract_code = pc.contract_code
+    LEFT JOIN jk.t_jk_contract con on con.contract_code = p.contract_code 
+    LEFT JOIN jk.t_jk_loan_info loin on con.loan_code = loin.loan_code
+    LEFT JOIN jk.t_jk_loan_customer locu on locu.loan_code = loin.loan_code 
+    LEFT JOIN jk.t_jk_urge_services_amount usa on usa.contract_code = p.contract_code 
+    <if test="urgeServicesMoney != null and urgeServicesMoney.returnLogo != null and urgeServicesMoney.returnLogo != ''">
+       and usa.return_logo = #{urgeServicesMoney.returnLogo}
+    </if>	
+    LEFT JOIN jk.t_gl_org org on org.id = loin.loan_store_orgid
+    where  1=1  
+	
+	<if test="chargeStatus!=null and !chargeStatus.equals('')">
+	    AND pc.charge_status in (#{chargeStatus})
+	</if>
+	<if test="dictOffsetType != null and !dictOffsetType.equals('')">
+		AND  pc.dict_offset_type = #{dictOffsetType}
+	</if>
+	<if test="loanCustomer!=null and loanCustomer.customerName!=null and !loanCustomer.customerName.equals('')">
+	    AND  locu.customer_name  LIKE '%'||#{loanCustomer.customerName}||'%'
+	</if>
+	<if test="contractCode != null and !contractCode.equals('')">
+		AND  pc.contract_code =  #{contractCode}
+	</if>
+	
+    <if test="loanInfo!=null and loanInfo.dictSourceType!= null and !loanInfo.dictSourceType.equals('')">
+		AND  loin.dict_source_type = #{loanInfo.dictSourceType}
+	</if>
+	<if test="loanInfo !=null and loanInfo.loanFlag != null and !loanInfo.loanFlag.equals('')">
+		AND  loin.loan_flag = #{loanInfo.loanFlag}
+	</if>
+	<if test="payback != null and payback.paybackDay!= null and ! payback.paybackDay.equals('')">
+		AND  p.payback_day = #{payback.paybackDay}
+	</if>
+	<if test="storeId != null and ! storeId.equals('')">
+		AND  loin.loan_store_orgid  in (${storeId})
+	</if>
+	<if test="contract != null and contract.contractVersion!= null and ! contract.contractVersion.equals('')">
+		AND  con.contract_version  = #{contract.contractVersion}
+	</if>
+	<if test="loanInfo !=null and loanInfo.model != null and !loanInfo.model.equals('')">
+		AND  loin.model  = #{loanInfo.model}
+	</if>
+</select>
+ 
+  <!-- 映射 -->
+	<resultMap type="com.creditharmony.loan.borrow.payback.entity.PaybackCharge" id="EarlySettleExamList">
+		<id column="contract_code" property="contractCode" />
+		<result column="id" property="id" />
+		<result column="penalty_total_amount" property="penaltyTotalAmount" />
+		<result column="settle_total_amount" property="settleTotalAmount" />
+		<result column="dict_offset_type" property="dictOffsetType"/>
+		<result column="apply_bule_amount" property="applyBuleAmount"/>
+		<association property="payback" javaType="com.creditharmony.loan.borrow.payback.entity.Payback">
+			<id column="contract_code" property="contractCode" />
+			<result column="pId" property="id" />
+			<result column="payback_day" property="paybackDay" />
+			<result column="payback_bule_amount" property="paybackBuleAmount" />
+			<result column="dict_pay_status" property="dictPayStatus" />
+		</association>
+		<association property="contract"
+			javaType="com.creditharmony.loan.borrow.contract.entity.Contract">
+			<id column="contract_code" property="contractCode" />
+			<result column="contract_end_day" property="contractEndDay" />
+			<result column="contract_version" property="contractVersion" />
+		</association>
+		<association property="loanCustomer"
+			javaType="com.creditharmony.loan.common.entity.LoanCustomer">
+			<id column="loan_code" property="loanCode" />
+			<result column="customer_name" property="customerName" />
+		</association>
+		<association property="loanInfo"
+			javaType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+			<id column="loan_code" property="loanCode"></id>
+			<result column="dict_loan_status" property="dictLoanStatus"></result>
+			<result column="loan_flag" property="loanFlag" />
+			<result column="dict_source_type" property="dictSourceType"></result>
+			<result column="loan_store_orgid" property="loanStoreOrgId"></result>
+			<result column="product_type" property="productType"></result>
+		</association>
+		<association property="consult"
+			javaType="com.creditharmony.loan.borrow.consult.entity.Consult">
+			<id column="customer_code" property="customerCode" />
+			<result column="cons_team_orgcode" property="loanTeamOrgId" />
+		</association>
+		<association property="urgeServicesMoney"
+			javaType="com.creditharmony.loan.borrow.grant.entity.UrgeServicesMoney">
+			<id column="contract_code" property="contractCode" />
+			<result column="urge_moeny" property="urgeMoeny" />
+		</association>
+
+	</resultMap>
+   
+   <!-- 根据合同编号查询借款客户的违约金及罚息总额，应还款总额 -->
+   <select id="getMonthInfo" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+    select  a.id,a.contract_code, months,month_pay_day,month_pay_amount,
+    month_interest_backshould, month_capital_payactual,month_interest_payactual,
+    month_before_finish_amount,month_before_reduction_amount,
+    month_interest_punishshould,month_interest_punishactual,  
+    month_punish_reduction,month_penalty_should,month_penalty_actual,
+    month_penalty_reduction,dict_month_status  from jk.t_jk_payback_month a,jk.t_jk_payback b
+    where a.contract_code=b.contract_code and 
+     a.contract_code=#{contractCode}  
+    
+   </select>
+   
+  
+   <!--根据冲抵申请表Id,更改申请表中的冲抵状态 为 还款退回 4-->
+	<update id="updatePaybackChargeStatus">
+		UPDATE jk.t_jk_payback_charge 
+		<trim prefix="SET" suffixOverrides=",">
+		 <if test="chargeStatus != null and chargeStatus != ''"> 
+		 	charge_status=#{chargeStatus},
+		 </if>
+		 <if test="returnReason != null and returnReason != '' "> 
+		 	return_reason=#{returnReason},
+		 </if>
+		 <if test="modifyTime != null"> 
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </trim>
+		WHERE  id = #{id}
+	</update>
+   
+   <!-- 根据id查询提前结清审核页面的信息 -->
+   <select id="getEarlyBackApply" resultMap="getEarlyBackApplyMap">
+    
+ select
+        p.id as paybackId, 
+		p.payback_month_amount,
+		p.contract_code,
+		p.payback_bule_amount,
+		p.payback_current_month,
+		p.payback_max_overduedays,<!-- 最长逾期天数 -->
+		loancust.customer_code,
+		loancust.customer_name,
+		loancust.customer_cert_num,
+		contract.contract_code,
+		contract.contract_amount,
+		contract.contract_months,
+		contract.contract_version,<!-- 合同版本号 -->
+		loin.loan_months,
+		loin.dict_loan_status,
+		product.product_code,
+		product.product_name,
+		pc.id,
+		pc.contract_code,
+        pc.penalty_total_amount,
+        pc.settle_total_amount,
+        pc.apply_bule_amount,
+        pc.upload_name,
+        pc.upload_date,
+        pc.upload_filename,
+        pc.upload_path,
+        pm.id as pmId,
+        pm.contract_code,
+        pm.months,
+        pm.month_before_finish_amount,
+        usa.urge_moeny
+		
+		from jk.t_jk_payback_charge pc
+		left join jk.t_jk_payback p on p.contract_code=pc.contract_code 
+		left join jk.t_jk_contract  contract on p.contract_code=contract.contract_code
+		left join jk.t_jk_loan_info loin on loin.loan_code=contract.loan_code
+		left join jk.t_gl_jk_product product on product.product_code=loin.product_type
+		left join jk.t_jk_loan_customer  loancust on loancust.loan_code= contract.loan_code
+		left join 
+		(
+			select 
+			min(id) id,
+        	contract_code,
+        	min(months) months,
+        	max(month_before_finish_amount) month_before_finish_amount
+			from jk.t_jk_payback_month where dict_month_status='0'
+			<if test="contractCode != null and contractCode != '' "> 
+				and contract_code=#{contractCode} 
+			</if>
+			group by contract_code 
+ 		) pm on pm.contract_code=p.contract_code
+		left join jk.t_jk_urge_services_amount usa on usa.contract_code = p.contract_code
+		 <if test="urgeServicesMoney != null and urgeServicesMoney.returnLogo != null and urgeServicesMoney.returnLogo != ''">
+           and usa.return_logo = #{urgeServicesMoney.returnLogo}
+        </if>
+		where pc.id=#{id}
+   </select>
+   
+   <resultMap type="com.creditharmony.loan.borrow.payback.entity.PaybackCharge" id="getEarlyBackApplyMap">
+     <id column="id" property="id" />
+		<result column="contract_code" property="contractCode"/>
+		<result column="penalty_total_amount" property="penaltyTotalAmount"/>
+		<result column="settle_total_amount" property="settleTotalAmount"/>
+		<result column="apply_bule_amount" property="applyBuleAmount"/>
+		<result column="upload_name" property="uploadName" />
+		<result column="upload_date" property="uploadDate" />
+		<result column="upload_filename" property="uploadFilename" />
+		<result column="upload_path" property="uploadPath"/>
+      <association property="payback"
+			javaType="com.creditharmony.loan.borrow.payback.entity.Payback">
+			<id column="customer_code" property="customerCode" />
+			<result column="paybackId" property="id" />
+			<result column="payback_month_amount" property="paybackMonthAmount" />
+			<result column="payback_bule_amount" property="paybackBuleAmount" />
+			<result column="payback_current_month" property="paybackCurrentMonth" />
+			<result column="payback_max_overduedays" property="paybackMaxOverduedays" />
+		</association>
+		<association property="loanCustomer"
+			javaType="com.creditharmony.loan.common.entity.LoanCustomer">
+			<id column="customer_code" property="customerCode" />
+			<result column="customer_name" property="customerName" />
+			<result column="customer_cert_num" property="customerCertNum" />
+		</association>
+		<association property="contract"
+			javaType="com.creditharmony.loan.borrow.contract.entity.Contract">
+			<id column="contract_code" property="contractCode" />
+			<result column="contract_amount" property="contractAmount" />
+			<result column="contract_months" property="contractMonths" />
+			<result column="contract_version" property="contractVersion"/>
+		</association>
+		<association property="loanInfo" javaType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+		  <id column="loan_code" property="loanCode"></id>
+		  <result column="loan_months" property="loanMonths"></result>
+		  <result column="dict_loan_status" property="dictLoanStatus"/>
+		</association>
+		<association property="jkProducts" javaType="com.creditharmony.loan.borrow.payback.entity.JkProducts">
+		  <id column="product_code" property="productCode"></id>
+		  <result column="product_name" property="productName"></result>
+		</association>
+		<association property="paybackMonth" javaType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+		  <id column="contract_code" property="contractCode"></id>
+		   <result column="pmId" property="id"/>
+		   <result column="months" property="months"/>
+		   <result column="month_before_finish_amount" property="monthBeforeFinishAmount"/>
+		</association>
+		<association property="urgeServicesMoney"
+			javaType="com.creditharmony.loan.borrow.grant.entity.UrgeServicesMoney">
+			<id column="contract_code" property="contractCode" />
+			<result column="urge_moeny" property="urgeMoeny" />
+		</association>
+   </resultMap>
+   
+   <!-- 获取提前结清的减免金额总和 -->
+   <select id="getPenaltyPunishSum" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+      SELECT
+					sum(month_penalty_reduction) as month_penalty_reduction_sum,<!-- 减免违约金总额(sum)-->
+					sum(month_punish_reduction) as month_punish_reduction_sum,<!-- 减免罚息总额(sum)-->
+					contract_code from jk.t_jk_payback_month  pm
+	                WHERE  pm.contract_code=#{contractCode}  
+					group by contract_code
+   </select>
+   
+   <!-- 更改还款主表中的还款状态为提前结清待确认  6 -->
+  <update id="updatePaybackStatus">
+		UPDATE jk.t_jk_payback
+		<trim prefix="SET" suffixOverrides=",">
+		 <if test="dictPayStatus != null and dictPayStatus != ''"> 
+		 	dict_pay_status=#{dictPayStatus},
+		 </if>
+		 <if test="modifyTime != null"> 
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </trim>
+		WHERE  id = #{id}
+	</update>
+	
+	<!-- 根据主表id查询当前期数 -->
+	<!-- <select id="getPaybackCurrentMonth" resultType="Payback">
+	  select id,contract_code,payback_current_month from t_jk_payback where id=#{id}
+	</select>
+	 -->
+	 <select id="findChargeById" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackCharge">
+	 	select contract_code,
+	 		apply_plat
+	 	from jk.t_jk_payback_charge
+	 	where id=#{id}
+	 </select>
+</mapper>
+	

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.creditharmony.loan.channel.finance.dao.CarFinancialBusinessDao">
+	<!-- 映射关系配置 entity 与 sql 语句查询结果 的 映射关系 -->
+	<resultMap id="carFinancialBusinessMap"
+		type="com.creditharmony.loan.channel.finance.entity.CarFinancialBusinessEntity">
+		<result property="loanCode" column="contract_code"></result>
+		<result property="loanCustomerName" column="loan_customer_name"></result>
+		<result property="customerCertNum" column="loan_customer_num"></result>
+		<result property="dictLoanUse" column="dict_loan_use"></result>
+		<result property="classType" column="product_type"></result>
+		<result property="loanMonths" column="loan_months"></result>
+		<result property="loanStartDate" column="contract_fact_day"></result>
+		<result property="loanEndDate" column="contract_end_day"></result>
+		<result property="replayDay" column="contract_replay_day"></result>
+		<result property="contractMonthRepayAmount" column="contract_month_repay_amount"></result>
+		<result property="contractAmount" column="contract_amount"></result>
+		<result property="feeMonthRate" column="fee_month_rate"></result>
+		<result property="creditConfirmDate" column="credit_confirm_date"></result>
+		<result property="settleConfirmDate" column="settle_confirm_date"></result>
+		<result property="creditType" column="credit_type"></result>
+		<!--结清时间 settled_date -->
+		<result property="settleDate" column="settled_date"></result>
+	</resultMap>
+	<!-- 车借大金融业务列表查询列名 -->
+	<sql id="FinancialBusinessColumns">
+		id,
+		contract_code,
+		loan_customer_name,
+		customer_cert_num,
+		dict_loan_use,
+		product_type,  
+		loan_months,		
+		contract_fact_day,
+		contract_end_day,
+		contract_replay_day, 
+        contract_replay_amount contract_month_repay_amount,
+        primeval_worth contract_amount,         
+  		fee_month_rate,    		
+		credit_confirm_date,
+		settle_confirm_date,
+		settled_date,		
+		credit_type 
+	</sql>
+	
+	<!-- 车借大金融业务列表 查询条件 -->
+	<sql id="selectCondition">
+		<if test="creditType != null and creditType != ''">
+			and credit_type = #{creditType}
+		</if>
+		<if test="loanCode != null and loanCode != ''">
+			and contract_code = #{loanCode}
+		</if>
+		<if test="stratContractAmount != null and stratContractAmount != ''">
+			and cons_loan_amount &gt;=#{stratContractAmount}
+		</if>
+		<if test="endContractAmount != null and endContractAmount != ''">
+			and cons_loan_amount &lt;=#{endContractAmount}
+		</if>
+		<if
+			test="stratCreditorConfirmDate != null and stratCreditorConfirmDate != ''">
+			and credit_confirm_date
+			&gt;=#{stratCreditorConfirmDate}
+		</if>
+		<if test="endCreditorConfirmDate != null and endCreditorConfirmDate != ''">
+			and credit_confirm_date
+			&lt;=#{endCreditorConfirmDate}
+		</if>
+		and channel_Type = '2'
+	</sql>
+	
+	<!-- 车借大金融业务列表 -->
+	<select id="getCarFinancialBusinessList"
+		parameterType="com.creditharmony.loan.channel.finance.view.CarFinancialBusinessView"
+		resultMap="carFinancialBusinessMap">
+		select * from (
+		select
+		<include refid="FinancialBusinessColumns" />
+		from 
+            t_cj_creditor_right_info
+        where credit_type is not null
+		<include refid="selectCondition" />
+		)a
+		order by contract_fact_day desc
+	</select>
+	
+	<select id="getByLoanCode"
+		resultType="java.lang.Integer" parameterType="String">
+		select count(1) from jk.t_cj_big_finance where loan_code=#{loanCode}
+	</select>
+	
+	<insert id="insertCarFinancialBusiness" parameterType="com.creditharmony.loan.channel.finance.entity.CarFinancialBusiness">
+		insert into jk.t_cj_big_finance(id,loan_code,credit_type,create_by,create_time,modify_by,modify_time)
+		values(#{id},#{loanCode},'1','sys',#{createTime},'sys',#{modifyTime}) 
+	</insert>
+</mapper>

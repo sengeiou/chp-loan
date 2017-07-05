@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.OverdueManageDao">
+	<sql id="overdueManageColumns">
+		a.id                          as id,
+		a.contract_code               as contractCode,              <!--合同编号-->
+		a.months                      as months,                    <!--期数 -->
+		a.month_pay_day               as monthPayDay,               <!--逾期日期-->
+		a.month_overdue_days          as monthOverdueDays,          <!--逾期天数-->
+		a.month_pay_amount            as monthPayAmount,            <!--应还本金-->
+		a.month_interest_backshould   as monthInterestBackshould,   <!--应还利息-->
+		a.month_fee_service           as monthFeeService,           <!--应还分期服务费 -->
+		a.month_penalty_should        as monthPenaltyShould,        <!--应还违约金-->
+		a.month_interest_punishshould as monthInterestPunishshould, <!--应还罚息-->
+		a.month_capital_payactual     as monthCapitalPayactual,     <!--实还本金-->
+		a.month_interest_payactual    as monthInterestPayactual,    <!--实还利息-->
+		a.actual_month_fee_service    as actualMonthFeeService,     <!--分期服务费实还金额 -->
+		a.month_penalty_actual        as monthPenaltyActual,        <!--实还违约金-->
+		a.month_interest_punishactual as monthInterestPunishactual, <!--实还罚息-->
+		a.dict_month_status           as dictMonthStatus,           <!--期供状态-->
+		us.name                       as reductionBy,               <!--减免人-->
+		a.month_reduction_day         as monthReductionDay,         <!--减免天数-->
+		a.month_penalty_reduction     as monthPenaltyReduction,     <!--减免违约金-->
+		a.month_punish_reduction      as monthPunishReduction,      <!--减免罚息-->
+		a.month_late_fee_reduction    as monthLateFeeReduction,     <!--减免滞纳金-->
+		a.month_late_fee              as monthLateFee,              <!--应还滞纳金-->
+		a.actual_month_late_fee       as actualMonthLateFee,        <!--实还滞纳金-->
+		jlc.customer_name             as customerName,              <!--客户姓名-->
+		jp.payback_bule_amount        as paybackBuleAmount,         <!--蓝补金额-->
+		jp.id                         as rPaybackId,                <!--R_PAYBACK_ID 还款主表ID  -->
+		jp.payback_month_amount       as contractMonthRepayAmount,  <!--期供金额-->
+		jli.dict_loan_status          as dictLoanStatus,            <!--借款状态-->
+		jli.model                     as model,                     <!--模式-->
+		jlc.customer_telesales_flag   as customerTelesalesFlag,     <!--是否电销-->
+		jc.contract_version           as contractVersion,           <!--合同版本号 -->
+		jli.loan_flag                 as loanMark                   <!--标识-->
+		,org.name                     as orgName                    <!--门店名称 -->
+		,bank.bank_name               as bankName
+		,ob.label					  as bankNameLabel
+		,dlas.label                   as dictLoanStatusLabel
+		,dps.label                    as dictMonthStatusLabel 
+		,dt.label                     as customerTelesalesFlagLabel
+		,dcf.label                    as loanMarkLabel
+		,dlm.label                    as modelLabel
+	</sql>
+	
+	<sql id="selwhere">
+		<where>
+	 	<!-- 逾期或者追回 --> 
+			<!-- 如果期供状态为追回，未还违约金罚息(应还滞纳金-实还滞纳金 + 应还罚息-实还罚息 - 减免违约金(滞纳金)罚息)为0 在逾期管理列表中不显示 -->
+			<if test="customerName != null and !('').equals(customerName)">
+				and jlc.customer_name LIKE '%'||#{customerName}||'%' 
+			</if>
+			<if test="orgId != null and orgId != ''">
+				and org.id in (${orgId})  <!-- 门店名称 -->
+			</if>
+			<if test="paybackDay != null and paybackDay != ''">
+			    and cast(to_char(jp.payback_day,'dd') as integer) = cast(#{paybackDay} as integer)  <!-- 还款账单日 -->
+			</if>
+			<if test="loanMark != null and loanMark != ''">
+				and jli.loan_flag = #{loanMark} <!-- 标识 -->
+			</if>
+			<if test="model != null and model != ''">
+				and jli.model = #{model} <!-- 模式 -->
+			</if>
+			<if test="dictSourceType != null and dictSourceType != ''">
+				and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+			</if>
+			<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''">
+				and jlc.customer_telesales_flag = #{customerTelesalesFlag} <!-- 是否电销 -->
+			</if>
+			<if test="bankId != null and bankId != ''">
+				and bank.bank_name in  (${bankId}) 
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 查询逾期管理列表 -->
+	<select id="allOverdueManageList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.OverdueManageEx">
+		select
+			<include refid="overdueManageColumns" />
+		from
+			( 
+		    select
+				pm.id
+		      	, pm.contract_code
+		      	, pm.months
+		      	, pm.month_pay_day
+		      	, pm.month_overdue_days
+		      	, pm.is_overdue
+		      	, pm.month_pay_amount
+		      	, pm.month_interest_backshould
+		      	, pm.month_fee_service
+		      	, pm.month_penalty_should
+		      	, pm.month_interest_punishshould
+				, pm.month_capital_payactual
+				, pm.month_interest_payactual
+				, pm.actual_month_fee_service
+				, pm.month_penalty_actual
+				, pm.month_interest_punishactual
+				, pm.dict_month_status
+				, pm.modify_by
+				, pm.month_reduction_day
+				, pm.month_penalty_reduction
+				, pm.month_punish_reduction
+				, pm.month_late_fee_reduction
+				, pm.month_late_fee
+				, pm.actual_month_late_fee
+				, pm.reduction_by
+				, pm.modify_time
+				, jc.contract_version 
+				, payback.id rPaybackId
+		    from
+		      	jk.t_jk_payback_month pm left join jk.t_jk_contract jc 
+		       	on pm.contract_code = jc.contract_code 
+		       	left join jk.t_jk_payback payback on payback.contract_code =  pm.contract_code
+		    <where>
+		        pm.is_overdue = '1' 
+				<if test="contractCode != null and contractCode != ''">
+					and pm.contract_code = #{contractCode}
+				</if>
+				<if test="beginDate != null">
+				    and pm.month_pay_day <![CDATA[>=]]> #{beginDate}
+				</if>
+				<if test="endDate != null">
+					and pm.month_pay_day <![CDATA[<=]]> #{endDate}
+				</if>
+				<if test="dictMonthStatus != null and dictMonthStatus != ''">
+					and pm.dict_month_status = #{dictMonthStatus} <!-- 期供状态 -->
+				</if>
+				<if test="monthOverdueDays != null and monthOverdueDays != ''">
+					and pm.month_overdue_days = #{monthOverdueDays} <!-- 逾期天数 -->
+				</if>
+				<if test="monthOverdueDayMax != null and monthOverdueDayMax != ''">
+				    and pm.month_overdue_days &lt;= #{monthOverdueDayMax}
+				</if>
+				<if test="id != null and id != ''">
+					and pm.id in (${id}) 
+				</if>
+			</where>
+		  	) a 
+			left join jk.t_jk_contract jc 
+		    	on a.contract_code = jc.contract_code 
+		  	left join jk.t_jk_payback jp 
+		    	on jp.contract_code = a.contract_code 
+		  	left join jk.t_jk_loan_info jli 
+		    	on jli.loan_code = jc.loan_code 
+		  	left join (select loan_code, bank_name from jk.t_jk_loan_bank where repayment_flag = '1' and bank_top_flag = '1') bank 
+		    	on jli.loan_code = bank.loan_code 
+		  	left join jk.t_jk_loan_customer jlc 
+		    	on jlc.loan_code = jc.loan_code 
+		  	left join jk.t_gl_org org 
+		    	on org.id = jli.loan_store_orgid 
+		  	left join jk.t_gl_user us 
+		    	on us.id = a.reduction_by
+		  	left join (select value, label from jk.t_gl_dict where type = 'jk_loan_apply_status') dlas
+		    	on jli.dict_loan_status = dlas.value
+		  	left join (select value, label from jk.t_gl_dict where type = 'jk_period_status') dps
+		    	on a.dict_month_status = dps.value
+		  	left join (select value, label from jk.t_gl_dict where type = 'jk_telemarketing') dt
+		    	on jlc.customer_telesales_flag = dt.value
+		  	left join (select value, label from jk.t_gl_dict where type = 'jk_channel_flag') dcf
+		    	on jli.loan_flag = dcf.value
+		  	left join (select value, label from jk.t_gl_dict where type = 'jk_loan_model') dlm
+		    	on jli.model = dlm.value
+		    left join (select value, label from jk.t_gl_dict where type = 'jk_open_bank') ob
+		    	on bank.bank_name = ob.value
+		<include refid="selwhere" />
+		order by 
+			a.month_pay_day
+		<if test="limit != null and offset != null">
+		    limit #{limit} offset #{offset}
+		</if>
+	</select>
+	
+	<!-- 精简优化cnt -->
+	<select id="cnt" resultType="java.lang.Integer">
+	select
+		count(0) as cnt 
+    from
+    	(
+    	select 
+    		a.contract_code 
+    	from 
+			( 
+	        SELECT
+				pm.contract_code
+	        FROM 
+				jk.t_jk_payback_month pm join jk.t_jk_contract jc 
+	            	on pm.contract_code = jc.contract_code 
+	        <where>
+				<if test="contractCode != null and contractCode != ''">
+					and pm.contract_code = #{contractCode}
+				</if>
+				<if test="beginDate != null">
+				    and pm.month_pay_day <![CDATA[>=]]> #{beginDate}
+				</if>
+				<if test="endDate != null">
+					and pm.month_pay_day <![CDATA[<=]]> #{endDate}
+				</if>
+				<if test="dictMonthStatus != null and dictMonthStatus != ''">
+					and pm.dict_month_status = #{dictMonthStatus} <!-- 期供状态 -->
+				</if>
+				<if test="monthOverdueDays != null and monthOverdueDays != ''">
+					and pm.month_overdue_days = #{monthOverdueDays} <!-- 逾期天数 -->
+				</if>
+				<if test="monthOverdueDayMax != null and monthOverdueDayMax != ''">
+				    and pm.month_overdue_days &lt;= #{monthOverdueDayMax}
+				</if>
+				<if test="id != null and id != ''">
+					and pm.id in (${id}) 
+				</if>
+	        and pm.is_overdue = '1' 
+			</where>
+	      	) a 
+			<if test="(customerName != null and customerName != '')
+				   or (orgId != null and orgId != '')
+				   or (loanMark != null and loanMark != '')
+				   or (model != null and model != '')
+				   or (dictSourceType != null and dictSourceType != '')
+				   or (customerTelesalesFlag != null and customerTelesalesFlag != '')
+				   or (bankId != null and bankId != '')">
+				left join jk.t_jk_contract jc 
+		        	on a.contract_code = jc.contract_code
+		    </if>
+			<if test="(customerName != null and customerName != '')
+				   or (customerTelesalesFlag != null and customerTelesalesFlag != '')">
+			    left join jk.t_jk_loan_customer jlc 
+		           	on jlc.loan_code = jc.loan_code
+			</if>
+			<if test="(orgId != null and orgId != '')
+				   or (loanMark != null and loanMark != '')
+				   or (model != null and model != '')
+				   or (dictSourceType != null and dictSourceType != '')
+				   or (bankId != null and bankId != '')">
+				left join jk.t_jk_loan_info jli 
+					on jli.loan_code = jc.loan_code
+			</if>
+			<if test="orgId != null and orgId != ''">
+				left join jk.t_gl_org org 
+		           	on org.id = jli.loan_store_orgid 
+			</if>
+			<if test="paybackDay != null and paybackDay != ''">
+				left join jk.t_jk_payback jp 
+					on jp.contract_code = a.contract_code
+			</if>
+			<if test="bankId != null and bankId != ''">
+			  	left join (select loan_code, bank_name from jk.t_jk_loan_bank where repayment_flag = '1' and bank_top_flag = '1') bank 
+			    	on jli.loan_code = bank.loan_code 
+			</if>
+	    <include refid="selwhere" />
+	    ) t
+	</select>
+
+	<!-- 查询逾期管理 调整页面信息 -->
+	<select id="queryOverdueManage" resultType="com.creditharmony.loan.borrow.payback.entity.ex.OverdueManageEx">
+		select 
+			a.id as id,
+			a.months,
+			a.month_overdue_days as monthOverdueDays, <!--逾期天数-->
+			a.month_pay_day as monthPayDay, <!--逾期时间  -->
+			a.month_interest_punishshould as monthInterestPunishshould, <!--应还罚息  -->
+			a.month_penalty_should as monthPenaltyShould, <!--应还违约金  -->
+			a.month_reduction_day as monthReductionDay, <!--减免天数  -->
+			a.month_penalty_actual as monthPenaltyActual,<!-- 实还违约金 -->
+			a.month_interest_punishactual as monthInterestPunishactual,<!-- 实还罚息 -->
+			a.month_penalty_reduction,<!-- 减免违约金 -->
+			a.month_punish_reduction,<!-- 减免罚息 -->
+			a.month_late_fee,<!-- 应还滞纳金 -->
+			a.actual_month_late_fee,<!-- 实还滞纳金 -->
+			a.month_late_fee_reduction,<!-- 减免滞纳金 -->
+			a.month_pay_amount,<!-- 应还本金 -->
+			a.month_capital_payactual,<!-- 实还本金 -->
+			a.month_interest_backshould,<!-- 应还利息 -->
+			a.month_interest_payactual,<!-- 实还利息 -->
+			a.month_fee_service,<!-- 应还分期服务费 -->
+			a.actual_month_fee_service,<!-- 实还分期服务 -->
+			jp.id as rPaybackId, <!--R_PAYBACK_ID 还款主表ID  -->
+			jlb.bank_name as bankName, <!-- 银行名称  -->
+			jlb.bank_account as bankAccount, <!-- 银行账号  -->
+			jlb.bank_branch as bankBranch, <!-- 银行开户行  -->
+			jlc.customer_cert_num as customerCertNum, <!--借款人身份证号  -->
+			jlc.customer_name as customerName, <!--借款人姓名  -->
+			jc.loan_code as loanCode, <!--借款编码  -->
+			jc.contract_version as contractVersion,<!-- 合同版本号 -->
+			jc.contract_month_repay_total as contractMonthRepayAmount, <!--逾期金额  -->
+			a.contract_code as contractCode
+		from jk.t_jk_payback_month a 
+			left join jk.t_jk_payback jp on a.contract_code = jp.contract_code
+			left join jk.t_jk_contract jc on jc.contract_code = a.contract_code
+			left join jk.t_jk_loan_bank jlb on jlb.loan_code = jc.loan_code 
+			and jlb.bank_top_flag = 1 AND jlb.repayment_flag = '1' 
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+		where a.id = #{id}
+	</select>
+	<!-- 修改逾期管理天数 -->
+	<select id="updateOverdueManage">
+		UPDATE jk.t_jk_payback_month
+		   SET 
+		       month_reduction_day= #{monthReductionDay},
+		       modify_by = #{modifyBy},
+			   modify_time = #{modifyTime}
+		 WHERE id = #{id};
+	</select>
+	<!-- 修改逾期管理天数后添加还款操作流水记录 -->
+	<select id="insertPaybackOpe">
+		INSERT INTO jk.t_jk_payback_ope(
+            id,  r_payback_id, dict_loan_status, dict_r_deduct_type, 
+            operate_result, operator,operate_time,remark,
+            create_by, create_time)
+	    VALUES (
+	    	#{id}, #{rPaybackId}, #{dictLoanStatus}, #{dictRDeductType},
+	        #{operateResult}, #{operator},#{createTime},#{remarks},
+	         #{createBy},#{createTime});
+	</select>
+	<!-- 1.4合同减免金额，输入的值小于应还滞纳金-减免滞纳金的差值 -->
+	<update id="updateMonthPenalty">
+	   UPDATE jk.t_jk_payback_month
+	   <trim prefix="SET" suffixOverrides=",">
+	   <if test="monthPenaltyActual != null and monthPenaltyActual != '' ">
+	      month_penalty_actual = #{monthPenaltyActual},
+	   </if>
+	    <if test="modifyTime != null"> 
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+	   </trim>
+	   WHERE  id = #{id} 
+	</update>
+	<select id="updateMonthPenaltyReduction">
+		UPDATE jk.t_jk_payback_month
+		<trim prefix="SET" suffixOverrides=",">
+		  <if test="monthLateFeeReduction != null and monthLateFeeReduction != ''">
+		  month_late_fee_reduction =#{monthLateFeeReduction},
+		  </if>
+		  <if test="monthPunishReduction != null and monthPunishReduction != ''">
+		   month_punish_reduction =#{monthPunishReduction},
+		  </if>
+		   <if test="monthPenaltyReduction != null and monthPenaltyReduction != ''">
+		   month_penalty_reduction =#{monthPenaltyReduction},
+		  </if>
+		  <if test="reductionBy != null">
+		    reduction_by = #{reductionBy},
+		  </if>
+		  <if test="modifyTime != null">
+		     modify_time = #{modifyTime},
+		  </if>
+		  <if test="modifyBy != null">
+		     modify_by = #{modifyBy}
+		  </if>
+		</trim>
+		 WHERE id=#{id};
+	</select>
+	
+	<!-- 修改减免金额(输入的减免金额小于或等于应还违约金) -->
+<!-- 	<select id="updateMonthPenaltyReduction">
+		UPDATE t_jk_payback_month
+		   SET 
+			month_penalty_reduction=#{reductionAmount},
+			month_punish_reduction= #{monthPunishReduction},
+			modify_by = #{modifyBy},
+			modify_time = #{modifyTime}
+		 WHERE id=#{id};
+	</select>
+	 -->
+	<!-- 修改减免金额(输入的减免金额大于应还违约金) -->
+	<select id="updateMonthPunishReduction">
+		UPDATE jk.t_jk_payback_month
+		   SET 
+			month_penalty_reduction=#{monthPenaltyShould},
+			month_punish_reduction= #{monthPunishReduction},
+			modify_by = #{modifyBy},
+			modify_time = #{modifyTime}
+		 WHERE id=#{id};
+	</select>
+	<!-- 获取蓝补金额 -->
+	<select id="queryPaybackBuleAmount" resultType="com.creditharmony.loan.borrow.payback.entity.ex.OverdueManageEx">
+		select 
+			a.id as id,
+			a.payback_bule_amount
+		from jk.t_jk_payback a where a.id=#{rPaybackId} 	
+	</select>
+	<!-- 剩余的减免金额添加到蓝补金额 -->
+	<select id="updatePaybackBuleAmount">
+		UPDATE jk.t_jk_payback
+		   SET payback_bule_amount = #{paybackBuleAmount},
+			   modify_by = #{modifyBy},
+			   modify_time = #{modifyTime}
+		 WHERE id=#{rPaybackId};
+	</select>
+	<!-- 判断是否全部减免 -->
+	<select id="selectIfAllReduction" resultType="java.math.BigDecimal">
+		SELECT 
+			COALESCE(MONTH_INTEREST_PUNISHSHOULD,0) --应还罚息
+			+ (CASE WHEN TO_NUMBER(C.CONTRACT_VERSION) >=4 THEN 0 ELSE COALESCE(MONTH_PENALTY_SHOULD,0) END)--应还违约金
+			+ COALESCE(MONTH_LATE_FEE,0)--应还滞纳金
+			- COALESCE(MONTH_INTEREST_PUNISHACTUAL,0)
+			- COALESCE(MONTH_PUNISH_REDUCTION,0)
+			- COALESCE(MONTH_PENALTY_ACTUAL,0)
+			- COALESCE(MONTH_PENALTY_REDUCTION,0)
+			- COALESCE(ACTUAL_MONTH_LATE_FEE,0)
+			- COALESCE(MONTH_LATE_FEE_REDUCTION,0)
+		FROM JK.T_JK_PAYBACK_MONTH T,JK.T_JK_CONTRACT C WHERE T.CONTRACT_CODE = C.CONTRACT_CODE
+		AND T.ID = #{monthId}
+	</select>
+	
+	<!-- 查询门店(公共方法) -->
+	<select id="queryCustomerName" resultType="com.creditharmony.loan.borrow.payback.entity.ex.OverdueManageEx">
+		select 
+			name as customerName 
+		from t_gl_org 
+		where id = (select parent_id from t_gl_org where id = #{loanTeamOrgId} <!-- 团队组织机构ID --> )
+	</select>
+	
+	<update id="batchReduce">
+	  UPDATE jk.t_jk_payback_month 
+	  <trim prefix="SET" suffixOverrides=",">
+	     <if test="monthPunishReduction != null and monthPunishReduction != ''">
+	        month_punish_reduction = #{monthPunishReduction},
+	     </if>
+	     <if test="monthPenaltyReduction != null and monthPenaltyReduction != ''">
+	        month_penalty_reduction = #{monthPenaltyReduction},
+	     </if>
+	     <if test="monthLateFeeReduction != null and monthLateFeeReduction !=''">
+	       month_late_fee_reduction = #{monthLateFeeReduction},
+	     </if>
+	     <if test="reductionBy != null and reductionBy != ''">
+	        reduction_by = #{reductionBy},
+	     </if>
+	     <if test="modifyBy != null and modifyBy != ''">
+	       modify_by = #{modifyBy},
+	     </if>
+	     <if test="modifyTime != null and modifyTime != ''">
+	       modify_time = #{modifyTime}
+	     </if>
+	     where id =#{id}
+	  </trim>
+	</update>
+</mapper>

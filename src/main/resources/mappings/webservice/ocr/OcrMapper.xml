@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.webservice.ocr.dao.OcrDao">
+  <resultMap id="DictResultMap" type="com.creditharmony.loan.webservice.ocr.bean.DictionaryInfo">
+  	<result column="value"	jdbcType="VARCHAR"	property="code"/>
+  	<result column="label"	jdbcType="VARCHAR"	property="name"/>
+  </resultMap> 
+  
+  <select id="getDictList" parameterType="java.lang.String" resultMap="DictResultMap">
+  	select value,label from t_gl_dict where type = #{value}
+  </select>
+  
+</mapper>

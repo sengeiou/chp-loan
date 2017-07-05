@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.consult.dao.CustomerManagementDao">
+	
+	<resultMap id="consultSearchViewresult"
+		type="com.creditharmony.loan.borrow.consult.view.ConsultSearchView">
+		<result property="id" column="id" />
+		<result property="mateCertNum" column="customer_cert_num" />		                   <!--客户身份证 -->
+		<result property="customerCode" column="customer_code" />		                       <!--客户编码 -->
+		<result property="createName" column="create_name" />		                           <!--沟通记录创建人 -->
+		<result property="customerName" column="customer_name" />			   		 		   <!--客户姓名 -->
+		<result property="consLoanRecord" column="cons_loan_record" />						   <!--沟通记录 -->
+		<result property="dictOperStatus" column="dict_oper_status" />					       <!--下一步状态 -->
+		<result property="dictOperStatusName" column="dict_oper_status_name" />				   <!--下一步状态名称 -->
+		<result property="createTime" column="create_time" />								   <!--咨询创建时间 -->
+		<result property="consCommunicateDate" column="cons_communicate_date" />			   <!--上一次沟通时间 -->
+		<result property="managerCode" column="manager_code" />					 			   <!--客户经理编号 -->
+		<result property="custManagerName" column="cust_manager_name"/>	                       <!--客户经理姓名 -->
+		<result property="loanTeamEmpcode" column="cons_team_managercode" />                   <!--团队经理编号 -->
+		<result property="loanTeamEmpName" column="team_managername"/>                         <!--团队经理姓名  -->
+		<result property="customerMobilePhone" column="customer_mobile_phone" />               <!--客户联系电话  -->
+		<result property="lastTimeConsCommunicateDate" column="last_communicate_time" />	   <!--上一次沟通时间 -->	
+		<result property="earlyConsCommunicateTime" column="early_communicate_time"/>
+		<result property="consTelesalesFlag" column="cons_telesales_flag"/>                    <!--是否电销 -->
+	    <result property="storeOrgId" column="store_orgid"/>
+	    <result property="storeOrgName" column="store_org_name"/>
+	    <result property="loanInfoOldOrNewFlag" column="loaninfo_oldornew_flag"/>
+	 </resultMap>
+	
+    <sql id="consultColumns">
+		T1.customer_name,
+		T1.customer_mobile_phone,
+		T2.cons_communicate_date,
+		T2.dict_oper_status,
+		T2.cons_loan_record
+    </sql>
+	
+	<!-- 根据ID获取客户咨询-->
+	<select id="get" resultType="com.creditharmony.loan.borrow.consult.view.ConsultSearchView">
+		SELECT
+			<include refid="consultColumns"/>
+		FROM jk.t_jk_customer_consultation
+		WHERE T1.id = #{id,jdbcType=VARCHAR}
+		
+	</select>
+	<update id="updateStatus">
+		UPDATE jk.t_jk_customer_consultation SET 
+		 dict_oper_status = '0',
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	<select id="findCustomerConsultionList" resultMap="consultSearchViewresult">
+		SELECT
+			T2.cons_communicate_date,
+			T2.cons_loan_record,
+			T2.dict_oper_status,
+			T2.create_time,
+			T2.cons_team_managercode,
+			T2.manager_code,
+			T2.store_orgid,
+			T2.customer_code,
+			T2.id,
+			dict.label as dict_oper_status_name,
+			manager."name" as cust_manager_name,
+			manager.status as userStatus,
+			user_status_dict.label as userStatusName,
+			team_manager."name" as team_managername,
+			store."name" as store_org_name,
+			T1.customer_code,
+			T1.customer_name,
+			T1.customer_cert_num,
+			T1.customer_mobile_phone,
+			T2.modify_time as last_communicate_time,
+			consult_data_source.label as consultDataSource
+		FROM
+			jk.t_jk_customer_consultation as T2	  
+			inner join jk.t_gl_user as manager on T2.manager_code = manager.id
+			inner join jk.t_gl_user as team_manager on T2.cons_team_managercode = team_manager.id
+			inner join jk.t_gl_org as store on store.id = T2.store_orgid
+			inner join jk.t_jk_customer_base T1 on T2.customer_code = T1.customer_code
+			left join jk.t_gl_dict as dict on dict."type" = 'jk_next_step' and T2.dict_oper_status = dict.value
+			left join jk.t_gl_dict as user_status_dict on user_status_dict."type" = 'com_user_status' and manager.status = user_status_dict.value
+			left join jk.t_gl_dict as consult_data_source on T2.consult_data_source = consult_data_source.value and consult_data_source.type = 'jk_consult_data_source'
+		WHERE T2.modify_time is not null
+			<if test="customerName != null and customerName != ''">
+				and T1.customer_name LIKE CONCAT('%', #{customerName,jdbcType=VARCHAR}, '%') 
+        	</if>
+        	<if test="mateCertNum != null and mateCertNum != ''">
+				and T1.customer_cert_num LIKE CONCAT('%', #{mateCertNum,jdbcType=VARCHAR}, '%') 
+            </if>
+            <if test="storeOrgId!=null and storeOrgId!=''">
+				and T2.store_orgid = #{storeOrgId,jdbcType=VARCHAR}
+			</if>
+			<if test="dictOperStatus != null and dictOperStatus != ''">
+				and T2.dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR}
+			</if>
+			<if test="userStatus != null and userStatus != ''">
+				and manager.status = #{userStatus,jdbcType=VARCHAR}
+			</if>
+			<if test="consultDataSource != null and consultDataSource != ''">
+				and T2.consult_data_source = #{consultDataSource,jdbcType=VARCHAR}
+			</if>
+			${queryRight}
+		ORDER BY T2.modify_time desc 
+	</select>
+	<!-- 分页查询 -->
+	<select id="findList" resultMap="consultSearchViewresult">
+	  select 
+               t.id,
+               t.customer_code,
+               t.customer_name,
+               t.customer_cert_num,
+               t.last_communicate_time,
+               t.cons_communicate_date,
+               t.cons_loan_record,
+               t.dict_oper_status,     
+               t.create_time,
+               t.cons_team_managercode,
+               t.manager_code,
+               t.store_orgid,
+               t.customer_mobile_phone 
+        from
+        (SELECT T3.id,
+               T1.customer_code,
+               T1.customer_name,
+               T1.customer_cert_num,
+               t5.last_communicate_time,
+               T3.cons_communicate_date,
+               T3.cons_loan_record,
+               T3.dict_oper_status,     
+               T3.create_time,
+               T3.cons_team_managercode,
+               T3.manager_code,
+               T3.store_orgid,
+               T1.customer_mobile_phone 
+               from 
+(select cons_communicate_date,cons_loan_record,dict_oper_status,create_time,cons_team_managercode,
+        manager_code,store_orgid,customer_code,id 
+ from jk.t_jk_customer_consultation T2
+  where 1=1 
+       <if test="loanTeamEmpcode !=null and loanTeamEmpcode !=''">
+         and T2.cons_team_managercode like concat('%', #{loanTeamEmpcode,jdbcType=VARCHAR}, '%') 
+       </if>
+       <if test="consTelesalesFlag !=null and consTelesalesFlag !=''">
+      	 and T2.cons_telesales_flag = #{consTelesalesFlag,jdbcType=VARCHAR} 
+       </if>
+       <if test="dictOperStatus != null and dictOperStatus != ''">
+       	and T2.dict_oper_status LIKE CONCAT('%', #{dictOperStatus,jdbcType=VARCHAR}, '%')
+       </if>
+       <if test="managerCode!=null and managerCode!=''">
+      	 and T2.manager_code = #{managerCode,jdbcType=VARCHAR} 
+       </if>
+       <if test="storeOrgId!=null and storeOrgId!=''">
+      	 and T2.store_orgid = #{storeOrgId,jdbcType=VARCHAR} 
+       </if>
+        ${queryRight} 
+) T3 
+  join 
+(select customer_code,customer_name,customer_cert_num,customer_mobile_phone from jk.t_jk_customer_base
+               WHERE 1=1 
+            <if test="customerName != null and customerName != ''">
+        	  and customer_name LIKE CONCAT('%', #{customerName,jdbcType=VARCHAR}, '%') 
+        	</if>
+        	<if test="mateCertNum != null and mateCertNum != ''">
+              and customer_cert_num LIKE CONCAT('%', #{mateCertNum,jdbcType=VARCHAR}, '%') 
+            </if>
+            <if test="customerCode != null and customerCode != ''">
+         	  and customer_code LIKE CONCAT('%', #{customerCode,jdbcType=VARCHAR}, '%')
+         	</if>
+			) T1 on t1.customer_code = T3.customer_code 
+ 			join 
+			(select CONS_ID,max(CONS_COMMUNICATE_DATE)
+                 last_communicate_time
+                 from jk.T_JK_CONSULTATION_LOG 
+                 group by CONS_ID) t5
+               on t5.CONS_ID = T3.id
+                ) t order by t.last_communicate_time desc
+
+	</select>
+	
+	<select id="findPageList" resultMap="consultSearchViewresult">
+	SELECT  
+		  distinct(T2.id) id,   
+		  T1.customer_code,
+		  T1.customer_name,
+		  T1.customer_cert_num,
+		  T2.cons_communicate_date,
+          T2.cons_loan_record,
+		  T2.dict_oper_status,
+		  T2.create_time,
+		  T2.cons_team_managercode,
+		  T2.cons_telesales_flag,
+		  T4.name as team_managername,
+		  T2.manager_code,	
+		  T3.name as cust_manager_name,
+		  T1.customer_mobile_phone,
+		  T5.loaninfo_oldornew_flag
+		FROM
+		  jk.t_jk_customer_base T1 
+          LEFT JOIN jk.t_jk_customer_consultation T2 ON T2.customer_code = T1.customer_code 
+          LEFT JOIN jk.t_gl_user T3 on T3.user_code=T2.manager_code 
+          LEFT JOIN jk.t_gl_user T4 on T4.user_code=T2.cons_team_managercode 
+          LEFT JOIN jk.t_jk_loan_info T5 on T5.r_id=T2.id
+          WHERE 
+           <if test="consTelesalesFlag==null || consTelesalesFlag==''">
+            (
+             (T2.cons_telesales_flag = #{consCreditNotTelFlag,jdbcType=VARCHAR} 
+            and T2.dict_oper_status = #{dictCreditOperStatus,jdbcType=VARCHAR} )
+            or
+             (T2.cons_telesales_flag = #{dictTelFlag,jdbcType=VARCHAR} 
+              and T2.dict_oper_status = #{dictTelOperStatus,jdbcType=VARCHAR}
+             )
+            )
+           </if>
+           <if test="consTelesalesFlag!=null and consTelesalesFlag=='1'.toString()">
+              T2.cons_telesales_flag = #{dictTelFlag,jdbcType=VARCHAR} 
+              and T2.dict_oper_status = #{dictTelOperStatus,jdbcType=VARCHAR}
+           </if>
+           <if test="consTelesalesFlag!=null and consTelesalesFlag=='0'.toString()">
+             T2.cons_telesales_flag = #{consCreditNotTelFlag,jdbcType=VARCHAR} 
+             and T2.dict_oper_status = #{dictCreditOperStatus,jdbcType=VARCHAR} 
+           </if> 
+		  <if test="customerName != null and customerName != ''">
+			and T1.customer_name LIKE '%'||#{customerName,jdbcType=VARCHAR}||'%'
+		</if>
+		<if test="mateCertNum != null and mateCertNum != ''"> 
+		    and T1.customer_cert_num LIKE '%'||#{mateCertNum,jdbcType=VARCHAR}||'%'
+		</if>
+		<if test="customerCode != null and customerCode != ''">
+			and T1.customer_code LIKE CONCAT('%', #{customerCode,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="loanTeamEmpcode !=null and loanTeamEmpcode !=''">
+		    and T2.cons_team_managercode like concat('%', #{loanTeamEmpcode,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="managerCode!=null and managerCode!=''">
+		    and T2.manager_code = #{managerCode,jdbcType=VARCHAR}
+		</if>
+		<if test="storeOrgId!=null and storeOrgId!=''">
+		    and T2.store_orgid = #{storeOrgId,jdbcType=VARCHAR} 
+		</if> 
+		  <if test=" consServiceUserCode!=null and consServiceUserCode!=''">
+		    and T2.cons_service_user_code = #{consServiceUserCode,jdbcType=VARCHAR} 
+		</if>
+		  order by T2.cons_communicate_date desc
+	</select>
+
+	<select id="findHisPage" resultMap="consultSearchViewresult">
+		SELECT T1.id as countid, 
+		  T1.customer_code,
+		  T2.id,
+		  T3.cons_communicate_date,
+          T3.cons_loan_record,
+          T3.id,
+          T4.name create_name
+		FROM
+		  jk.t_jk_customer_base T1 
+          LEFT JOIN jk.t_jk_customer_consultation T2 ON T2.customer_code = T1.customer_code
+          LEFT JOIN  jk.t_jk_consultation_log T3 ON T3.cons_id = T2.id
+          LEFT JOIN jk.t_gl_user T4 ON T4.id = T3.create_by
+		WHERE  1=1
+		<if test="customerCode != null and customerCode != ''">
+			and T1.customer_code = #{customerCode,jdbcType=VARCHAR}
+		</if>
+		<if test="consultID!=null and consultID!=''">
+		    and T2.id=#{consultID,jdbcType=VARCHAR} 
+		</if>
+		<if test="consCommunicateDate != null and consCommunicateDate != ''">
+			and  T2.cons_communicate_date &lt; #{consCommunicateDate,jdbcType=VARCHAR}
+		</if>	   
+	</select>
+	
+	<!-- 查询全部客户咨询的数量-->
+	<select id="findAllCount" resultType="long">
+		SELECT
+			COUNT(1)
+		FROM CHP_dev.loan_consult a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL,jdbcType=VARCHAR} 
+	</select>
+
+	<!-- 更新客户咨询信息  -->
+	<update id="update">
+		UPDATE jk.t_jk_customer_consultation SET 
+		 dict_oper_status = '0',
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	
+	<!-- 逻辑删除客户咨询信息 -->
+	<update id="delete">
+		UPDATE CHP_dev.loan_consult SET 
+			del_flag = #{DEL_FLAG_DELETE,jdbcType=VARCHAR}
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="findConsOper" resultMap="consultSearchViewresult">
+		SELECT    
+		  T1.customer_code,
+		  T1.customer_name,
+		  T2.id,
+		  T2.dict_oper_status,
+		  T2.cons_team_managercode,
+		  T2.manager_code,	
+          T2.create_time
+		FROM
+		  jk.t_jk_customer_base T1 
+          LEFT JOIN jk.t_jk_customer_consultation T2 ON T2.customer_code = T1.customer_code
+		WHERE T2.dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR} 
+	</select>
+	<select id="findEarliestLog" resultMap="consultSearchViewresult">
+	 select c.*,e.early_communicate_time from 
+          (
+           select a.customer_code,max(a.cons_communicate_date) cons_communicate_date
+           from t_jk_customer_consultation a 
+           where a.customer_code = #{customerCode,jdbcType=VARCHAR}
+           and a.dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR}
+           group by a.customer_code
+           ) b 
+         left join t_jk_customer_consultation c 
+         on  c.customer_code = b.customer_code
+         and c.cons_communicate_date = b.cons_communicate_date 
+         left join 
+          (select 
+               d.cons_id,min(d.cons_communicate_date) early_communicate_time 
+           from jk.t_jk_consultation_log d 
+           group by d.cons_id ) e
+         on e.cons_id = c.id 
+         where  c.customer_code = #{customerCode,jdbcType=VARCHAR} 
+         and c.dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR}
+	</select>
+	<select id="findLastestLog" resultMap="consultSearchViewresult">
+	    select c.*,b.last_communicate_time from 
+          (
+           select a.customer_code,max(a.cons_communicate_date) last_communicate_time
+           from t_jk_customer_consultation a 
+           where a.customer_code = #{customerCode,jdbcType=VARCHAR} 
+           and a.dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR}
+           group by a.customer_code
+           ) b 
+         left join t_jk_customer_consultation c 
+         on  c.customer_code = b.customer_code
+         and c.cons_communicate_date = b.cons_communicate_date 
+         and c.customer_code = #{customerCode,jdbcType=VARCHAR} 
+         and c.dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR} 
+	</select>
+	<select id="findConsultMess" parameterType="map" resultType="com.creditharmony.loan.borrow.consult.entity.Consult">
+		select b.* from jk.t_jk_customer_base a
+ 	 	left join jk.t_jk_customer_consultation b 
+		on a.customer_code = b.customer_code 
+		where a.customer_cert_num = #{customerCertNum,jdbcType=VARCHAR} 
+		and (
+		       (
+		     		b.cons_telesales_flag = #{notTelsaleFlag,jdbcType=VARCHAR} 
+           		 and
+           		    b.dict_oper_status =  #{notTelOperStatus,jdbcType=VARCHAR}
+               )
+           	   or
+               (
+                    b.cons_telesales_flag = #{telsaleFlag,jdbcType=VARCHAR}
+             	 and 
+             	    b.dict_oper_status in
+             	    <foreach collection="telOperStatusList" item="item" open="(" separator="," close=")">
+             	    	 #{item,jdbcType=VARCHAR}
+             	    </foreach>
+               )
+     		) 
+     		order by b.create_time desc 
+  		 limit 1
+	</select>
+	
+<!-- 首次咨询时间 -->
+	 <select id="getConsultationTime" parameterType="java.lang.String" resultMap="consultSearchViewresult">
+    select  to_char(cons_communicate_date,'yyyy-mm-dd HH:MM:SS')  as cons_communicate_date from t_jk_consultation_log  where  cons_id =#{consultId,jdbcType=VARCHAR}
+    order by  cons_communicate_date asc  limit 0,1
+  </select>
+  
+  <!-- 咨询ID -->
+	 <select id="selectByCustId" parameterType="java.lang.String" resultMap="consultSearchViewresult">
+   select  id from t_jk_customer_consultation  where customer_code=#{consultId,jdbcType=VARCHAR}     limit 0,1
+  </select>
+
+	<select id="findInviteCustomerList" resultType="com.creditharmony.loan.borrow.consult.view.InviteCustomerView">
+		select
+			a.id,
+			a.customer_name as customerName,
+			a.phone_num as phoneNum,
+			a.province_code as provinceCode,
+			b.area_name as provinceName,
+			a.city_code as cityCode,
+			c.area_name as cityName,
+			a.status as status,
+			d.name1 as businessOrgName,
+			d.name2 as areaOrgName,
+			d.name3 as storeOrgName,
+			d.name4 as teamOrgName,
+			a.financing_id as financingId,
+			e.name as financingName,
+			a.create_time as createTime,
+			a.source_type as sourceType,
+			a.system_flag as systemFlag,
+			(select label from jk.t_gl_dict where type = 'jk_invite_customer_source' and  
+			(	(a.source_type = '0' and value = '0')
+				or
+				(a.source_type = '1' and value = '2' and (a.financing_id is null or a.financing_id = ''))
+				or
+				(a.source_type = '1' and value = '1' and (a.financing_id is not null and a.financing_id != ''))
+			)) as sourceTypeName,
+			(select label from jk.t_gl_dict where value = a.system_flag and type = 'jk_invite_customer_flag') as systemFlagName,
+			(select label from jk.t_gl_dict where value = a.status and type = 'jk_invite_customer_status') as statusName
+		from
+			(
+				select
+				 	t1.id,
+					t1.customer_name,
+					t1.phone_num,
+					t1.province_code,
+					t1.city_code,
+					t1.financing_id,
+					t1.role_id,
+					t1.org_id,
+					t1.status,
+					t1.system_flag,
+					t1.source_type,
+					t1.create_time
+				from
+				jk.t_jk_app_customer_info as t1
+				where (phone_num, create_time) in (select phone_num, max(create_time) as create_time from jk.t_jk_app_customer_info
+				where flag = '0'
+				<if test="customerName != null and customerName != ''">
+					and customer_name like concat('%', #{customerName,jdbcType=VARCHAR}, '%')
+				</if>
+				<if test="phoneNum != null and phoneNum != ''">
+					and phone_num like concat('%', #{phoneNum,jdbcType=VARCHAR}, '%')
+				</if>
+				<if test="status != null and status != ''">
+					and status = #{status,jdbcType=VARCHAR}
+				</if>
+				<if test="systemFlag != null and systemFlag != ''">
+					and system_flag = #{systemFlag,jdbcType=VARCHAR}
+				</if>
+				<if test="sourceType != null and sourceType == '0'.toString()">
+					and source_type = '0'
+				</if>
+				<if test="sourceType != null and sourceType == '1'.toString()">
+					and source_type = '1' and (financing_id is not null and financing_id != '')
+				</if>
+				<if test="sourceType != null and sourceType == '2'.toString()">
+					and source_type = '1' and (financing_id is null or financing_id = '')
+				</if>
+				<if test="beginDate != null">
+					and create_time &gt; #{beginDate,jdbcType=TIMESTAMP}
+				</if>
+				<if test="endDate != null">
+					and create_time &lt; #{endDate,jdbcType=TIMESTAMP}
+				</if>
+				group by customer_name, phone_num
+				)) a
+			left join jk.t_gl_province_city b on a.province_code = b.id 
+			left join jk.t_gl_province_city c on a.city_code = c.id 
+			left join jk.t_gl_user e on a.financing_id = e.id
+			left join(
+				select
+					org1.name as name1,
+					'' as name2,
+					'' as name3,
+					'' as name4,
+					org1.id as id1,
+					'' as id2,
+					'' as id3,
+					'' as id4,
+					uro.user_id
+				from
+					(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+							and type = '6200000001'
+					) org1 inner join(
+						select
+							org_id,
+							user_id
+						from
+							jk.t_gl_user_role_org
+						group by
+							org_id,
+							user_id
+					) as uro on uro.org_id = org1.id
+				union all select
+					org1.name as name1,
+					org2.name as name2,
+					'' as name3,
+					'' as name4,
+					org1.id as id1,
+					org2.id as id2,
+					'' as id3,
+					'' as id4,
+					uro.user_id
+				from
+					(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+							and type = '6200000001'
+					) org1 left join(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+					) org2 on
+					org2.parent_id = org1.id inner join(
+						select
+							org_id,
+							user_id
+						from
+							jk.t_gl_user_role_org
+						group by
+							org_id,
+							user_id
+					) as uro on
+					uro.org_id = org2.id
+				union all select
+					org1.name as name1,
+					org2.name as name2,
+					org3.name as name3,
+					'' as name4,
+					org1.id as id1,
+					org2.id as id2,
+					org3.id as id3,
+					'' as id4,
+					uro.user_id
+				from
+					(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+							and type = '6200000001'
+					) org1 left join(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+					) org2 on
+					org2.parent_id = org1.id left join(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+					) org3 on
+					org3.parent_id = org2.id inner join(
+						select
+							org_id,
+							user_id
+						from
+							jk.t_gl_user_role_org
+						group by
+							org_id,
+							user_id
+					) as uro on
+					uro.org_id = org3.id
+				union all select
+					org1.name as name1,
+					org2.name as name2,
+					org3.name as name3,
+					org4.name as name4,
+					org1.id as id1,
+					org2.id as id2,
+					org3.id as id3,
+					org4.id as id4,
+					uro.user_id
+				from
+					(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+							and type = '6200000001'
+					) org1 left join(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+					) org2 on
+					org2.parent_id = org1.id left join(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+					) org3 on
+					org3.parent_id = org2.id left join(
+						select
+							*
+						from
+							jk.t_gl_org
+						where
+							del_flag = '0'
+							and useable = '1'
+					) org4 on
+					org4.parent_id = org3.id inner join(
+						select
+							org_id,
+							user_id
+						from
+							jk.t_gl_user_role_org
+						group by
+							org_id,
+							user_id
+				) as uro on uro.org_id = org4.id
+			) d on d.user_id = a.financing_id 
+		<if test="businessOrgId != null and businessOrgId !=''">
+			where d.id1 = #{businessOrgId,jdbcType=VARCHAR}
+		</if>	
+		order by
+			a.customer_name,
+			d.name1,
+			d.name2,
+			d.name3,
+			d.name4
+	</select>
+	
+	<select id="findInviteCustomerDetailList" resultType="com.creditharmony.loan.borrow.consult.view.InviteCustomerDetailView">
+		select id, remarks, create_time as createTime from jk.t_jk_app_customer_detail_info where customer_id = #{customerId} order by create_time desc
+	</select>
+	
+	<update id="updateAppCustomerInfo" >
+		update jk.t_jk_app_customer_info set 
+		<if test="financingId != null and financingId != ''">
+			financing_id = #{financingId, jdbcType=VARCHAR},
+		</if>
+		<if test="status != null and status != ''">
+			status = #{status, jdbcType=VARCHAR},
+		</if>
+		<if test="modifyTime != null">
+			modify_time = #{modifyTime, jdbcType=TIMESTAMP},
+		</if>
+		<if test="modifyBy != null and modifyBy != ''">
+			modify_by = #{modifyBy, jdbcType=VARCHAR}
+		</if>
+		where id = #{id, jdbcType=VARCHAR}
+	</update>
+</mapper>

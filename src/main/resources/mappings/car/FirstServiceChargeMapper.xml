@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.FirstServiceChargeMapper">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.FirstServiceCharge">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="ninety_below_rate" jdbcType="VARCHAR" property="ninetyBelowRate" />
+    <result column="ninety_above_rate" jdbcType="VARCHAR" property="ninetyAboveRate" />
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, ninety_below_rate, ninety_above_rate,contract_version
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_first_service_charge
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_cj_first_service_charge
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.FirstServiceCharge">
+    insert into t_cj_first_service_charge (id, ninety_below_rate, ninety_above_rate,contract_version
+      )
+    values (#{id,jdbcType=VARCHAR}, #{ninetyBelowRate,jdbcType=VARCHAR}, #{ninetyAboveRate,jdbcType=VARCHAR},#{contractVersion,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.car.common.entity.FirstServiceCharge">
+    insert into t_cj_first_service_charge
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="ninetyBelowRate != null">
+        ninety_below_rate,
+      </if>
+      <if test="ninetyAboveRate != null">
+        ninety_above_rate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="ninetyBelowRate != null">
+        #{ninetyBelowRate,jdbcType=VARCHAR},
+      </if>
+      <if test="ninetyAboveRate != null">
+        #{ninetyAboveRate,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.car.common.entity.FirstServiceCharge">
+    update t_cj_first_service_charge
+    <set>
+      <if test="ninetyBelowRate != null">
+        ninety_below_rate = #{ninetyBelowRate,jdbcType=VARCHAR},
+      </if>
+      <if test="ninetyAboveRate != null">
+        ninety_above_rate = #{ninetyAboveRate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.car.common.entity.FirstServiceCharge">
+    update t_cj_first_service_charge
+    set ninety_below_rate = #{ninetyBelowRate,jdbcType=VARCHAR},
+      ninety_above_rate = #{ninetyAboveRate,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- 
+  <select id="findFirstServiceChargeList" resultMap="BaseResultMap">
+	select * from t_cj_first_service_charge
+  </select>
+   -->
+  
+  <select id="findFirstServiceChargeList"  resultMap="BaseResultMap" parameterType="com.creditharmony.loan.car.common.entity.FirstServiceCharge">
+  	select
+  	<include refid="Base_Column_List" />
+  	from t_cj_first_service_charge
+  	<where>
+      <if test="contractVersion != null and contractVersion !='' " >
+       and  contract_version = #{contractVersion,jdbcType=VARCHAR} 
+      </if>
+      </where>
+  	 order by id ASC
+  </select>
+  
+</mapper>

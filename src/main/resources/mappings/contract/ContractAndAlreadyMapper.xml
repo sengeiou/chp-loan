@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.ContractAndAlreadyDao">
+
+
+  <!-- 我的已办列表 -->
+  <select id="findList"  resultType="com.creditharmony.loan.borrow.contract.entity.ContractAndAlready">
+     SELECT
+    t.loan_code AS loan_code,
+    t.contract_code AS contract_code, 
+    t.contract_version AS contract_version,
+    p.label AS loan_flag,
+    t.cobo_name AS cobo_name,
+    d.customer_name AS loan_customer_name,
+    g.area_name AS store_provice_name, 
+    h.area_name AS store_city_name,
+    e.name AS store_code, 
+    j.label AS dict_loan_status, 
+    f.product_name AS product_type, 
+    b.loan_audit_amount AS loan_audit_amount,
+    b.loan_audit_months AS loan_audit_month,
+    b.loan_urgent_flag AS loan_urgent_flag,
+    b.loaninfo_oldornew_flag AS loaninfo_oldornew_flag,
+    k.name AS loan_team_manager_name, 
+    m.name AS loan_manager_name,
+    b.customer_into_time AS customer_into_time,
+    d.customer_telesales_flag AS loan_is_phone,
+    b.model AS model, 
+    (
+        CASE
+            WHEN rating.reconsider_risk_level IS NULL
+            THEN rating.verify_risk_level
+            ELSE rating.reconsider_risk_level
+        END
+    ) AS riskLevel,  
+    t.paperless_flag, 
+    b.loan_audit_time,
+    t.is_register,
+    to_char(t.auditing_time,'yyyy-MM-dd hh24:mi:ss') auditing_time,
+    to_char(op.operate_time,'yyyy-MM-dd hh24:mi:ss') operate_time,
+    t.contract_back_result,
+    b.loan_raise_flag,
+    bank.bank_signing_platform
+FROM
+    (
+        SELECT
+            a.loan_code,
+            a.contract_code contract_code,
+            a.contract_version contract_version,
+            a.paperless_flag paperless_flag,
+            a.model AS model,
+            a.contract_back_result contract_back_result,
+            a.is_register is_register,
+            a.auditing_time,
+            a.auditing_by,
+            string_agg(
+                c.cobo_name,
+                ','
+            ) cobo_name
+        FROM
+            jk.t_jk_contract a LEFT JOIN jk.t_jk_loan_coborrower c
+                ON a.loan_code = c.loan_code
+        GROUP BY
+            a.loan_code,
+            a.contract_code,
+            a.contract_version,
+            a.doc_id
+    ) t LEFT JOIN jk.t_jk_loan_info b
+        ON t.loan_code = b.loan_code LEFT JOIN jk.t_jk_loan_customer d
+        ON t.loan_code = d.loan_code LEFT JOIN jk.t_gl_org e
+        ON b.loan_store_orgid = e.id LEFT JOIN jk.t_gl_jk_product f
+        ON b.loan_audit_product = f.product_code LEFT JOIN jk.t_gl_province_city g
+        ON e.province_id = g.id LEFT JOIN jk.t_gl_province_city h
+        ON e.city_id = h.id LEFT JOIN jk.t_gl_dict j
+        ON j.value = b.dict_loan_status LEFT JOIN jk.t_gl_user k
+        ON k.id = b.loan_team_managercode LEFT JOIN jk.t_gl_user m
+        ON m.id = b.loan_managercode LEFT JOIN(
+        SELECT
+            VALUE,
+            label
+        FROM
+            jk.t_gl_dict
+        WHERE
+            type = 'jk_channel_flag'
+    ) p
+        ON p.value = b.loan_flag
+        LEFT JOIN (select loan_code,max(operate_time) operate_time from jk.t_jk_contract_operate_info
+       where dict_operate_type ='63'  group by loan_code) op
+        on op.loan_code=b.loan_code
+        LEFT JOIN jk.t_jk_audit_rating rating
+        ON rating.loan_code = b.loan_code
+        left join (select bank_signing_platform ,loan_code from jk.t_jk_loan_bank group by loan_code,bank_signing_platform) bank
+        on bank.loan_code=b.loan_code
+WHERE
+    j.description = '借款申请状态'
+    AND b.dict_loan_status is not null
+    and t.auditing_by='${user}'
+    AND e.type = '6200000003'
+        <if test="loanCustomerName != null  and loanCustomerName!=''">
+        and d.customer_name LIKE '%${loanCustomerName}%'
+      </if> 
+      <if test="storeOrgId != null">
+        and b.loan_store_orgid in  
+        <foreach item="item" index="index" collection="storeOrgId" open="(" separator="," close=")">  
+       			 #{item}  
+      		 </foreach> 
+      </if> 
+       <if test="productType != null  and productType!=''">
+        and b.loan_audit_product = #{productType}
+      </if>
+       <if test="customerCertNum != null  and customerCertNum!=''">
+        and d.customer_cert_num = #{customerCertNum}
+      </if>
+       <if test="dictIsAdditional != null  and dictIsAdditional!=''">
+        and b.dict_is_additional = #{dictIsAdditional}
+      </if>
+      <if test="loanTeamManagerName != null  and loanTeamManagerName!=''">
+        and k.name LIKE '%${loanTeamManagerName}%'
+      </if> 
+      <if test="dictSourceType != null  and dictSourceType!=''">
+        and b.dict_source_type = #{dictSourceType}
+      </if>
+      <if test="loanManagerName != null  and loanManagerName!=''">
+        and m.name LIKE '%${loanManagerName}%'
+      </if>
+      <if test="loanUrgentFlag != null  and loanUrgentFlag!=''">
+        and b.loan_urgent_flag = #{loanUrgentFlag}
+      </if>
+      <if test="contractCode != null  and contractCode!=''">
+        and t.contract_code = #{contractCode}
+      </if>
+      <if test="dictLoanStatus != null  and dictLoanStatus!=''">
+        and j.label = #{dictLoanStatus}
+      </if>
+      <if test="loanFlag != null  and loanFlag!=''">
+        and b.loan_flag = #{loanFlag}
+      </if>
+       <if test="model != null  and model !=''">
+        and b.model = #{model}
+      </if>
+      <if test="loanIsPhone != null  and loanIsPhone!=''">
+        and d.customer_telesales_flag = #{loanIsPhone}
+      </if>
+      <if test="contractVersion != null  and contractVersion!=''">
+        and t.contract_version = #{contractVersion}
+      </if> 
+      <if test="riskLevel != null  and riskLevel!=''">
+        and rating.verify_risk_level = #{riskLevel}
+      </if>
+       <if test="auditingTimeStart != null  and auditingTimeStart!=''">
+       <![CDATA[ and t.auditing_time  >= to_timestamp(#{auditingTimeStart},'YYYY-MM-DD HH24:MI:SS')]]>
+      </if>
+       <if test="auditingTimeEnd != null  and auditingTimeEnd!=''">
+       <![CDATA[ and t.auditing_time  <= to_timestamp(#{auditingTimeEnd},'YYYY-MM-DD HH24:MI:SS')]]>
+      </if>
+     order by t.auditing_time desc
+  </select>
+ 
+</mapper>
+	

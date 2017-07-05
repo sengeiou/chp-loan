@@ -1,0 +1,828 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.serve.dao.CustomerServeDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	<result column="id"					jdbcType="VARCHAR"		property="id"/>
+  	<result column="apply_id"			jdbcType="VARCHAR"		property="applyId"/>
+  	<result column="loan_code"			jdbcType="VARCHAR"		property="loanCode"/>
+    <result column="customer_name" 		jdbcType="VARCHAR" 		property="customerName"/>
+    <result column="contract_code" 		jdbcType="VARCHAR" 		property="contractCode" />
+    <result column="name" 				jdbcType="VARCHAR" 		property="storeName"/>
+    <result column="loan_apply_time" 	jdbcType="TIMESTAMP"	property="applyTime"/>
+    <result column="dict_file_type" 	jdbcType="VARCHAR" 		property="fileType"/>
+    <result column="recipient_name" 	jdbcType="VARCHAR" 		property="receiverName"/>
+    <result column="recipient_phone" 	jdbcType="VARCHAR" 		property="receiverPhone"/>
+    <result column="recipient_address" 	jdbcType="VARCHAR" 		property="receiverAddress"/>
+    <result column="recipient_email" 	jdbcType="VARCHAR" 		property="receiverEmail"/>
+    <result column="dict_urgency_level" jdbcType="VARCHAR" 		property="emergentLevel"/>
+    <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatus"/>
+     <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatusLab"/>
+    <result column="product_name" 		jdbcType="VARCHAR" 		property="productType"/>
+    <result column="contract_months" 	jdbcType="VARCHAR" 		property="loanMonths"/>
+    <result column="contract_amount" 	jdbcType="VARCHAR" 		property="contractAmount"/>
+    <result column="contract_end_day"	jdbcType="TIMESTAMP"	property="contractEndDay"/>
+    <result column="settled_date" 		jdbcType="TIMESTAMP"	property="settleDay"/>
+    <result column="dict_loan_status" 	jdbcType="VARCHAR" 		property="creditStatus"/>
+    <result column="courier_number"		jdbcType="VARCHAR"		property="expressNumber"/>
+    <result column="dict_mail_company"	jdbcType="VARCHAR"		property="sendCompany"/>
+    <result column="contract_fact_day"	jdbcType="TIMESTAMP"	property="factDay"/>
+    <result column="contract_fact_day"	jdbcType="TIMESTAMP"	property="contractFactDay"/>
+    <result column="create_by"          jdbcType="VARCHAR"      property="createBy" />
+    <result column="create_time"        jdbcType="DATE"         property="createTime"/>
+    <result column="modify_by"          jdbcType="VARCHAR"      property="modifyBy"/>
+    <result column="modify_time"        jdbcType="DATE"         property="modifyTime"/>
+    <result column="pdf_id"      		jdbcType="VARCHAR"      property="pdfId"/>
+    <result column="doc_id"      		jdbcType="VARCHAR"      property="docId"/>
+    <result column="word_id"      		jdbcType="VARCHAR"      property="wordId"/>
+    <result column="protocol_id"      	jdbcType="VARCHAR"      property="protocolId"/>
+    <result column="channel_flag"      		jdbcType="VARCHAR"      property="mark"/>
+    <result column="loan_flag"      	jdbcType="VARCHAR"      property="loanFlag"/>
+    <result column="loan_flag_name"     jdbcType="VARCHAR"  	property="loanFlagName"/>
+    <result column="model"      		jdbcType="VARCHAR"      property="model"/>
+    <result column="paperless_flag"     jdbcType="VARCHAR"      property="paperlessFlag"/>
+  </resultMap> 
+  
+    <resultMap id="BaseResultMapView" type="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	<result column="id"					jdbcType="VARCHAR"		property="id"/>
+    <result column="contract_code" 		jdbcType="VARCHAR" 		property="contractCode" />
+    <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatus"/>
+     <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatusLab"/>
+
+  </resultMap> 
+  
+  <resultMap id="BaseEmailResultMap" type="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView">
+  	<result column="id"					jdbcType="VARCHAR"		property="id"/>
+  	<result column="apply_id"			jdbcType="VARCHAR"		property="applyId"/>
+  	<result column="loan_code"			jdbcType="VARCHAR"		property="loanCode"/>
+    <result column="customer_name" 		jdbcType="VARCHAR" 		property="customerName"/>
+    <result column="contract_code" 		jdbcType="VARCHAR" 		property="contractCode" />
+    <result column="name" 				jdbcType="VARCHAR" 		property="storeName"/>
+    <result column="loan_apply_time" 	jdbcType="TIMESTAMP"	property="applyTime"/>
+    <result column="dict_file_type" 	jdbcType="VARCHAR" 		property="fileType"/>
+    <result column="recipient_name" 	jdbcType="VARCHAR" 		property="receiverName"/>
+    <result column="recipient_phone" 	jdbcType="VARCHAR" 		property="receiverPhone"/>
+    <result column="recipient_email" 	jdbcType="VARCHAR" 		property="receiverEmail"/>
+    <result column="dict_urgency_level" jdbcType="VARCHAR" 		property="emergentLevel"/>
+    <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatus"/>
+    <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatusLab"/>
+    <result column="product_name" 		jdbcType="VARCHAR" 		property="productType"/>
+    <result column="contract_months" 	jdbcType="VARCHAR" 		property="loanMonths"/>
+    <result column="contract_amount" 	jdbcType="VARCHAR" 		property="contractAmount"/>
+    <result column="contract_end_day"	jdbcType="TIMESTAMP"	property="contractEndDay"/>
+    <result column="settled_date" 		jdbcType="TIMESTAMP"	property="settleDay"/>
+    <result column="dict_loan_status" 	jdbcType="VARCHAR" 		property="creditStatus"/>
+    <result column="courier_number"		jdbcType="VARCHAR"		property="expressNumber"/>
+    <result column="dict_mail_company"	jdbcType="VARCHAR"		property="sendCompany"/>
+    <result column="contract_fact_day"	jdbcType="TIMESTAMP"	property="factDay"/>
+    <result column="contract_fact_day"	jdbcType="TIMESTAMP"	property="contractFactDay"/>
+    <result column="apply_for"          jdbcType="VARCHAR"      property="applyFor" />
+    <result column="apply_time"        jdbcType="DATE"         property="applyTime"/>
+    <result column="modify_by"          jdbcType="VARCHAR"      property="modifyBy"/>
+    <result column="modify_time"        jdbcType="DATE"         property="modifyTime"/>
+    <result column="pdf_id"      		jdbcType="VARCHAR"      property="pdfId"/>
+    <result column="doc_id"      		jdbcType="VARCHAR"      property="docId"/>
+    <result column="word_id"      		jdbcType="VARCHAR"      property="wordId"/>
+    <result column="protocol_id"      	jdbcType="VARCHAR"      property="protocolId"/>
+    <result column="loan_flag"      	jdbcType="VARCHAR"      property="loanFlag"/>
+    <result column="model"      	    jdbcType="VARCHAR"      property="model"/>
+  </resultMap> 
+  
+    <resultMap id="BaseEmailResultMapView" type="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView">
+  	<result column="id"					jdbcType="VARCHAR"		property="id"/>
+    <result column="contract_code" 		jdbcType="VARCHAR" 		property="contractCode" />
+    <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatus"/>
+     <result column="dict_mail_status" 	jdbcType="VARCHAR" 		property="sendStatusLab"/>
+
+  </resultMap> 
+  
+  
+  <resultMap id="OrgResultMap" type="com.creditharmony.loan.users.entity.OrgInfo">
+  	<result column="id"					jdbcType="VARCHAR"		property="id"/>
+  	<result column="name" 				jdbcType="VARCHAR" 		property="name"/>
+  </resultMap>
+  
+  <select id="selectContractSendList" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView" resultMap="BaseResultMap">
+  	<include refid="selectColumns"></include>
+	<include refid="fromTables"></include>
+  	<include refid="conditions"></include>
+  	order by se.create_time desc
+  </select>
+  
+    <select id="selectContractSendEmailList" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView" resultMap="BaseEmailResultMap">
+  	<include refid="selectColumn"></include>
+	<include refid="fromTable"></include>
+	<include refid="condition"></include>
+  	order by se.apply_time desc
+  </select>
+  
+  <select id="getCustomerMsg" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView" resultMap="BaseEmailResultMap">
+  	<include refid="selectColumn"></include>
+	<include refid="fromTable"></include>
+	<where>
+		se.id in
+		<foreach item="item" index="index" collection="idsList" open="(" separator="," close=")">
+				#{item}
+		</foreach>
+	</where>
+  </select>
+  
+  <select id="alreadyDeleteList" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView" resultMap="BaseResultMap">
+  	<include refid="selectColumns"></include>
+	<include refid="fromTables"></include>
+	where se.dict_isdelete = '1'
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name like '%'||#{customerName}||'%'
+		</if>
+		<if test="orgCode != null and orgCode != ''">
+			and og.id in (#{orgCode})
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and se.contract_code = #{contractCode}
+		</if>
+		<if test="fileType != null and fileType != ''">
+			and se.dict_file_type = #{fileType}
+		</if>
+		<if test="emergentLevel != null and emergentLevel != ''">
+			and se.dict_urgency_level = #{emergentLevel}
+		</if>
+	order by se.modify_time desc
+  </select>
+  
+  <sql id="selectColumns">
+  	select se.id,
+  	    tt.product_name,	--产品名称 
+  		lc.customer_name,	--客户姓名
+  		lo.apply_id,		--APPLY_ID
+  		lo.loan_code,		--借款编号
+  		--lo.loan_apply_time,	--申请时间
+  		se.create_time loan_apply_time, --申请时间
+  		lo.dict_loan_status,--借款状态
+  		lo.settled_date,	--结清时间
+  		lo.loan_flag,       --渠道
+  		lo.model,           --模式  
+  		ct.contract_months, --借款期限
+  		ct.contract_code, 	--合同编号
+		ct.contract_end_day,--合同到期日期
+		case when ct.contract_due_day is not null then ct.contract_due_day else ct.contract_fact_day end contract_fact_day, --合同签订日期
+		ct.contract_amount, --合同金额
+		ct.channel_flag,    --渠道
+		se.dict_file_type, 	--文件类型
+		se.dict_urgency_level, 	--紧急程度
+		se.recipient_name,	--收件人姓名
+		se.recipient_phone, --收件人电话
+		se.recipient_address,	--收件人地址
+		se.dict_mail_status,	--邮寄状态
+		se.courier_number,	--快递单号
+		se.pdf_id,			--pdf文件id
+		se.doc_id,			--pdf文件id
+		se.word_id,			--word文件id
+		se.dict_mail_company, --邮寄公司
+		og.name	,			--门店名称
+		ct.protocol_id,                    --协议编号
+		gl_dict.label loan_flag, 		--渠道
+		gl_dict.label loan_flag_name, 		--渠道
+		lo.model,			--模式
+		case ct.paperless_flag when '1' then '是' else '否' end as paperless_flag
+  </sql>
+  
+  <sql id="fromTables">
+  		from t_jk_loan_info lo  
+		left join t_jk_contract ct on lo.loan_code = ct.loan_code
+		inner join t_jk_contract_sending se on ct.contract_code = se.contract_code
+		left join t_jk_loan_customer lc on lc.loan_code = ct.loan_code
+		left join t_gl_org og on lo.loan_store_orgid = og.id
+		left join  t_gl_jk_product  tt on ct.product_type =tt.product_code
+		LEFT JOIN (SELECT label,value FROM  jk.t_gl_dict 
+                  WHERE  type = 'jk_channel_flag') gl_dict ON lo.loan_flag = gl_dict.value 
+  </sql>
+  
+  <sql id="conditions">
+  	<where>
+  		<if test="model != null and model != ''">
+  			and lo.model = #{model}	
+	  	</if>
+  		<if test="isDelete != null and isDelete != ''">
+  			and se.dict_isdelete = '0'	
+	  	</if>
+	  	<if test="sendStatus != null and sendStatus != ''">
+	  		and se.dict_mail_status in  (${sendStatus})
+	  	</if>
+	  	<if test="sendStatus == null or sendStatus == ''">
+	  		and se.dict_mail_status in ('0','4','5')
+	  	</if>
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name like '%'||#{customerName}||'%'
+		</if>
+		<if test="orgCode != null and orgCode != ''">
+			and og.id in (${orgCodeIds})
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and se.contract_code like '%'||#{contractCode}||'%'
+		</if>
+		<if test="fileType != null and fileType != ''">
+			and se.dict_file_type = #{fileType}
+		</if>
+		<if test="emergentLevel != null and emergentLevel != ''">
+			and se.dict_urgency_level = #{emergentLevel}
+		</if>
+		<if test="expressNumber != null and expressNumber != ''">
+			and se.courier_number like '%'||#{expressNumber}||'%'
+		</if>
+		<if test="ids != null and ids != ''">
+			and se.id in
+			<foreach collection="idsList" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+		<if test="mark != null and mark != ''">
+			and ct.channel_flag in(${mark})
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and lo.loan_flag in (${loanFlag})
+		</if>
+		<if test="model != null and model != ''">
+			<if test="model ==1">
+				and lo.model ='1'
+			</if>
+			<if test="model ==0">
+				and lo.model !='1'
+			</if>
+		</if>
+		<if test="paperlessFlag != null and paperlessFlag != ''">
+			and ct.paperless_flag = #{paperlessFlag}
+		</if>
+		<if test="conts != null and conts != ''">
+			and se.contract_code in(${conts})
+		</if>
+  	</where>
+  </sql>
+  
+  <sql id="selectColumn">
+  	select se.id,
+  	    tt.product_name,	--产品名称 
+  		lc.customer_name,	--客户姓名
+  		lo.apply_id,		--APPLY_ID
+  		lo.loan_code,		--借款编号
+  		--lo.loan_apply_time,	--申请时间
+  		se.apply_time loan_apply_time, --申请时间
+  		lo.dict_loan_status,--借款状态
+  		lo.settled_date,	--结清时间
+  		lo.loan_flag,       --渠道
+  		lo.model,           --模式  
+  		ct.contract_months, --借款期限
+  		ct.contract_code, 	--合同编号
+		ct.contract_end_day,--合同到期日期
+		case when ct.contract_due_day is not null then ct.contract_due_day else ct.contract_fact_day end contract_fact_day, --合同签订日期
+		ct.contract_amount, --合同金额
+		se.dict_file_type, 	--文件类型
+		se.recipient_name,	--收件人姓名
+		se.recipient_phone, --收件人电话
+		se.recipient_email,	--收件人邮箱
+		se.dict_mail_status,--发送状态
+		to_char(se.modify_time,'yyyy-MM-dd') AS modify_time,
+		se.pdf_id,			--pdf文件id
+		se.doc_id,			--pdf文件id
+		se.word_id,			--word文件id
+		og.name	,			--门店名称
+		ct.protocol_id      --协议编号
+		
+  </sql>
+  
+   <sql id="fromTable">
+  	from t_jk_loan_info lo  
+		left join t_jk_contract ct on lo.loan_code = ct.loan_code
+		inner join t_jk_contract_sending_email se on ct.contract_code = se.contract_code
+		left join t_jk_loan_customer lc on lc.loan_code = ct.loan_code
+		left join t_gl_org org on lo.loan_team_orgid = org.id
+		left join t_gl_org og on lo.loan_store_orgid =og.id
+		left join  t_gl_jk_product  tt on ct.product_type =tt.product_code 
+  </sql>
+  
+  <sql id="condition">
+  	<where>1=1
+  		<if test="isDelete != null and isDelete != ''">
+  			and se.dict_isdelete = '0'	
+	  	</if>
+	  	<if test="sendStatusLab != null and sendStatusLab != ''">
+	  		and se.dict_mail_status in (${sendStatusLab})
+	  	</if>
+	  	<if test="sendStatus != null and sendStatus != ''">
+	  		and se.dict_mail_status = #{sendStatus}
+	  	</if>
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name like '%'||#{customerName}||'%'
+		</if>
+		<if test="orgCode != null and orgCode != ''">
+			and og.id in (${orgCodeIds})
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and se.contract_code = #{contractCode}
+		</if>
+		<if test="fileType != null and fileType != ''">
+			and se.dict_file_type = #{fileType}
+		</if>
+		<!-- 根据标识搜索 -->
+		<if test="loanFlag != null and loanFlag != '' ">
+			and lo.loan_flag = #{loanFlag}
+		</if>
+		<if test="model !=null and model != ''">
+			and lo.model = #{model} 
+	    </if>
+		<if test="ids != null and ids != ''">
+			and se.id in
+			<foreach collection="idsList" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+  	</where>
+  </sql>
+  
+  <update id="updateMailStatus" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	update t_jk_contract_sending 
+  	set 
+  		dict_mail_status = #{sendStatus}, 
+  		modify_by = #{modifyBy}, 
+  		modify_time = #{modifyTime} 
+  	where 
+  		dict_isdelete = '0' 
+  		and id = #{id} 
+  </update>
+  
+  <update id="updateEmailStatus" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView">
+  	update t_jk_contract_sending_email 
+  	set 
+  		dict_mail_status = #{sendStatus}, 
+  		email_number= #{emailNumber},
+  		doc_id = #{docId},
+  		pdf_id = #{pdfId},
+  		modify_by = #{modifyBy}, 
+  		modify_time = #{modifyTime} 
+  	where 
+  		dict_isdelete = '0' 
+  		and id = #{id} 
+  </update>
+  
+  <update id="updateDeleteStatus" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	update t_jk_contract_sending 
+  	set 
+  		dict_isdelete = #{isDelete}, 
+  		modify_by = #{modifyBy}, 
+  		modify_time = #{modifyTime} 
+  	where 
+  		id = #{id}
+  </update>
+  
+  <update id="updateReceiveStatus" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	update t_jk_contract_sending
+  	set
+  		dict_mail_status = #{sendStatus},
+  		modify_by = #{modifyBy}, 
+  		modify_time = #{modifyTime}
+  	where
+  		dict_isdelete = '0' 
+  		and id = #{id}
+  </update>
+  
+  <select id="getApplyIdAndLoanCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+  	select	
+  		lo.apply_id,
+  		lo.loan_code,
+  		se.dict_file_type
+  	from t_jk_loan_info lo 
+		left join t_jk_contract ct on lo.loan_code = ct.loan_code
+		inner join t_jk_contract_sending se on ct.contract_code = se.contract_code
+  	where 
+  		se.id = #{id} or se.contract_code = #{id} limit 0,1
+  </select>
+  
+  <select id="getEmailApplyIdAndLoanCode" parameterType="java.lang.String" resultMap="BaseEmailResultMap">
+  	select	
+  		lo.apply_id,
+  		lo.loan_code,
+  		se.dict_file_type
+  	from t_jk_loan_info lo 
+		left join t_jk_contract ct on lo.loan_code = ct.loan_code
+		inner join t_jk_contract_sending_Email se on ct.contract_code = se.contract_code
+  	where 
+  		se.id = #{id} or se.contract_code = #{id} limit 0,1
+  </select>
+  
+   <select id="selectCustomerServeBydownLoad" parameterType="java.lang.String" resultMap="BaseEmailResultMap">
+  	select
+	   lc.customer_name,
+	   se.doc_id,
+	   c.protocol_id
+	from
+		jk.t_jk_contract_sending se left join jk.t_jk_contract c on
+		se.contract_code = c.contract_code
+		left join jk.t_jk_loan_customer lc on c.loan_code=lc.loan_code
+		where se.id=#{id} 
+  </select>
+  
+  <select id="getExcelDataList" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView" resultMap="BaseResultMap">
+ 	<include refid="selectColumns"></include>
+	<include refid="fromTables"></include>
+  	<include refid="conditions"></include>
+  	order by se.create_time desc
+  </select>
+
+  
+  <delete id="deleteData" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	delete from t_jk_contract_sending
+  	where id = #{id}
+  </delete>
+  
+  <update id="inputExpressNumber" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	update t_jk_contract_sending
+  	set
+  		courier_number = #{expressNumber},
+  		dict_mail_company = #{sendCompany},
+  		dict_mail_status = '3',
+  		modify_by = #{modifyBy}, 
+  		modify_time = #{modifyTime}
+  	where 1=1
+  	 	<if test="sendStatus!= null and !sendStatus.equals('')">
+			AND dict_mail_status in (${sendStatus})
+		</if>
+		<if test="fileType!= null and !fileType.equals('')">
+			AND dict_file_type = #{fileType}
+		</if>
+  	 	and  (id = #{id} or contract_code = #{contractCode})
+  </update>
+  
+  <!-- 保存邮寄信息 -->
+  <insert id="insertContractSending">
+       insert into jk.t_jk_contract_sending(
+          id,
+		  contract_code, 
+		  dict_file_type, 
+		  dict_urgency_level, 
+		  recipient_name, 
+		  recipient_phone, 
+		  recipient_address, 
+		  dict_mail_status,
+		  courier_number,
+		  dict_mail_company,
+		  dict_isdelete,
+		  create_by, 
+		  create_time,
+		  modify_by, 
+		  modify_time 
+        )values(
+        	#{id},
+        	#{contractCode},
+        	#{fileType},
+        	#{emergentLevel},
+        	#{receiverName},
+        	#{receiverPhone},
+        	#{receiverAddress},
+        	#{sendStatus},
+        	#{expressNumber},
+        	#{sendCompany},
+        	#{isDelete},
+        	#{createBy},
+        	#{createTime},
+        	#{modifyBy},
+        	#{modifyTime}
+        )
+       
+  </insert>
+  
+   <!-- 保存电子协议信息 -->
+  <insert id="insertContractSendingEmail">
+       insert into jk.t_jk_contract_sending_email(
+          id,
+		  contract_code, 
+		  dict_file_type, 
+		  recipient_name, 
+		  recipient_phone, 
+		  recipient_email, 
+		  dict_mail_status,
+		  dict_isdelete,
+		  apply_for, 
+		  apply_time,
+		  modify_by, 
+		  modify_time 
+        )values(
+        	#{id},
+        	#{contractCode},
+        	#{fileType},
+        	#{receiverName},
+        	#{receiverPhone},
+        	#{receiverEmail},
+        	#{sendStatus},
+        	#{isDelete},
+        	#{applyFor},
+        	#{applyTime},
+        	#{modifyBy},
+        	#{modifyTime}
+        )
+       
+  </insert>
+  
+    <!-- 退回 -->
+    <update id="updatedoOpencheck" parameterType="com.creditharmony.loan.borrow.serve.entity.ContractFileSend">
+  	update t_jk_contract_sending 
+  		 <trim prefix="SET" suffixOverrides=",">
+  		 <if test="sendStatus != null and sendStatus != ''"> 
+		    dict_mail_status = #{sendStatus},
+		 </if>
+  	     <if test="modifyBy != null and modifyBy != ''"> 
+		    modify_by =#{modifyBy},
+		 </if>
+  	  	  <if test="modifyTime != null and modifyTime != ''"> 
+		    modify_time =#{modifyTime},
+		 </if>
+		 <if test="fileType != null and fileType != ''"> 
+		    dict_file_type =#{fileType},
+		 </if>
+	     <if test="emergentLevel != null and emergentLevel != ''"> 
+		    dict_urgency_level =#{emergentLevel},
+		 </if>
+	
+	     <if test="receiverName != null and receiverName != ''"> 
+		    recipient_name =#{receiverName},
+		 </if>
+	     <if test="receiverPhone != null and receiverPhone != ''"> 
+		    recipient_phone =#{receiverPhone},
+		 </if>
+	      <if test="receiverAddress != null and receiverAddress != ''"> 
+		    recipient_address =#{receiverAddress},
+		 </if>
+        
+	     <if test="expressNumber != null and expressNumber != ''"> 
+		    courier_number =#{expressNumber},
+		 </if>
+	     <if test="sendCompany != null and sendCompany != ''"> 
+		    dict_mail_company =#{sendCompany},
+		 </if>
+		 <if test="isDelete != null and isDelete != ''"> 
+		    dict_isdelete =#{isDelete}
+		 </if>
+		 	</trim>
+    where 
+  		id = #{id}
+  </update>
+   <!-- 退回 -->
+   <update id="updatedoOpencheckEmail" parameterType="com.creditharmony.loan.borrow.serve.entity.ContractFileSendEmail">
+  	update t_jk_contract_sending_email 
+  		 <trim prefix="SET" suffixOverrides=",">
+  		 <if test="sendStatus != null and sendStatus != ''"> 
+		    dict_mail_status = #{sendStatus},
+		 </if>
+  	     <if test="modifyBy != null and modifyBy != ''"> 
+		    modify_by =#{modifyBy},
+		 </if>
+  	  	  <if test="modifyTime != null and modifyTime != ''"> 
+		    modify_time =#{modifyTime},
+		 </if>
+		 <if test="fileType != null and fileType != ''"> 
+		    dict_file_type =#{fileType},
+		 </if>
+	
+	     <if test="receiverName != null and receiverName != ''"> 
+		    recipient_name =#{receiverName},
+		 </if>
+	     <if test="receiverPhone != null and receiverPhone != ''"> 
+		    recipient_phone =#{receiverPhone},
+		 </if>
+	      <if test="receiverEmail != null and receiverEmail != ''"> 
+		    recipient_email =#{receiverEmail},
+		 </if>
+		 <if test="isDelete != null and isDelete != ''"> 
+		    dict_isdelete =#{isDelete}
+		 </if>
+		 	</trim>
+    where 
+  		id = #{id}
+  </update> 
+  
+  	<!-- 查询合同编号是否已经发送-->
+	<select id="findApplyByDealt" parameterType="Map" resultMap="BaseResultMap">
+		SELECT
+		p.id
+		from jk.t_jk_contract_sending p
+		where 1=1
+		<if test="contractCode!= null and !contractCode.equals('')">
+			AND p.contract_code = #{contractCode}
+		</if>
+		<if test="sendStatus!= null and !sendStatus.equals('')">
+			AND p.dict_mail_status = #{sendStatus}
+		</if>
+	    <if test="sendStatusLab!= null and !sendStatusLab.equals('')">
+			AND p.dict_mail_status != #{sendStatusLab}
+		</if>
+		<if test="fileType!= null and !fileType.equals('')">
+			AND p.dict_file_type = #{fileType}
+		</if>
+	</select>
+	
+	<!-- 查询电子协议是否已经发送-->
+	<select id="findEmailApplyByDealt" parameterType="Map" resultMap="BaseEmailResultMap">
+		SELECT
+		p.id
+		from jk.t_jk_contract_sending_email p
+		where 1=1
+		<if test="contractCode!= null and !contractCode.equals('')">
+			AND p.contract_code = #{contractCode}
+		</if>
+		<if test="sendStatus!= null and !sendStatus.equals('')">
+			AND p.dict_mail_status = #{sendStatus}
+		</if>
+	    <if test="sendStatusLab!= null and !sendStatusLab.equals('')">
+			AND p.dict_mail_status != #{sendStatusLab}
+		</if>
+		<if test="fileType!= null and !fileType.equals('')">
+			AND p.dict_file_type = #{fileType}
+		</if>
+	</select>
+	
+	<!--修改合同表的 合同结清数据  -->
+    <update id="updateMailLoan" parameterType="com.creditharmony.loan.borrow.serve.entity.ContractFileSend">
+  	update t_jk_contract 
+  		 <trim prefix="SET" suffixOverrides=",">
+  	     <if test="modifyBy != null and modifyBy != ''"> 
+		    modify_by =#{modifyBy},
+		 </if>
+  	  	  <if test="modifyTime != null and modifyTime != ''"> 
+		    modify_time =#{modifyTime},
+		 </if>
+		 <if test="settleCause != null and settleCause != ''"> 
+		    settle_cause =#{settleCause},
+		 </if>
+	     <if test="settleCauseElse != null and settleCauseElse != ''"> 
+		    settle_cause_else =#{settleCauseElse},
+		 </if>
+		  <if test="protocolId != null and protocolId != ''"> 
+		    protocol_id =#{protocolId},
+		 </if>
+		 	</trim>
+    where 
+  		contract_code = #{contractCode}
+  </update>
+  <!-- 查询合同寄送表 -->
+    <select id="getContractFile" parameterType="com.creditharmony.loan.borrow.serve.entity.ContractFileSend" resultMap="BaseResultMap">
+  	select	
+  		lo.apply_id,
+  		lo.loan_code,
+  		se.dict_file_type
+  	from t_jk_loan_info lo 
+		left join t_jk_contract ct on lo.loan_code = ct.loan_code
+		inner join t_jk_contract_sending se on ct.contract_code = se.contract_code
+  	where 
+  		se.contract_code = #{contractCode} and se.dict_file_type = #{fileType} limit 0,1
+  </select>
+  <update id="updateMailStatusAll" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView">
+  	update t_jk_contract_sending 
+  	set 
+  		dict_mail_status = '2', 
+  		modify_by = #{modifyBy}, 
+  		modify_time = #{modifyTime} 
+  	where 
+  		dict_isdelete = '0' 
+  		and id in (
+  		select se.id
+  		<include refid="fromTables"></include>
+     	<where>
+  		<if test="isDelete != null and isDelete != ''">
+  			and se.dict_isdelete = '0'	
+	  	</if>
+	  	<if test="sendStatus != null and sendStatus != ''">
+	  		and se.dict_mail_status in  (${sendStatus})
+	  	</if>
+	  	<if test="sendStatus == null or sendStatus == ''">
+	  		and se.dict_mail_status in ('0','4','5')
+	  	</if>
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name like '%'||#{customerName}||'%'
+		</if>
+		<if test="orgCode != null and orgCode != ''">
+			and og.id in (${orgCodeIds})
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and se.contract_code like '%'||#{contractCode}||'%'
+		</if>
+		<if test="fileType != null and fileType != ''">
+			and se.dict_file_type = #{fileType}
+		</if>
+		<if test="emergentLevel != null and emergentLevel != ''">
+			and se.dict_urgency_level = #{emergentLevel}
+		</if>
+		<if test="expressNumber != null and expressNumber != ''">
+			and se.courier_number like '%'||#{expressNumber}||'%'
+		</if>
+		<if test="ids != null and ids != ''">
+			and se.id in
+			<foreach collection="idsList" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+		<if test="conts != null and conts != ''">
+			and se.contract_code in(${conts})
+		</if>
+  	</where>
+  		
+  		)
+  		
+  </update>
+  
+  <!--获取发送邮件的协议 -->
+  <select id="getFileNameList" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView" resultMap="BaseEmailResultMap">
+	select 
+		sign_doc_id AS doc_id,
+		file_name 
+	from jk.T_JK_CONTRACT_file f 
+	where f.contract_code = #{contractCode} and f.sign_doc_id is not null 
+	and 
+			<foreach collection="fileName" item="name" open="(" separator="or" close=")">
+				 f.contract_file_name like #{name}||'%' 
+			</foreach>
+  </select>
+
+	<!-- 发送或拒绝 -->
+	<update id="updateSendOrReturn" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView" >
+		update T_JK_CONTRACT_SENDING_EMAIL
+			set 
+			dict_mail_status = #{sendStatus}
+		where id = #{id}
+	</update>
+	
+	<insert id="insertAgrLog" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView">
+	 insert into jk.T_CJ_CONTRACT_Agr_log(loan_code,operate_step,remark,create_by,create_time)
+	 values(#{contractCode},#{operateStep},#{remark},#{applyFor},#{applyTime})
+	</insert>
+	
+    <select id="contractFileList" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView" resultMap="BaseResultMap">
+  	select lo.apply_id,
+  		lo.loan_code,
+  		se.dict_file_type
+	<include refid="fromTables"></include>
+  	<include refid="conditions"></include>
+  	
+  </select>
+  <select id="findContractCount" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendView"  resultType="int">
+  		select count(1)
+  		<include refid="fromTables"></include>
+  		<include refid="conditions"></include>
+  </select>
+  
+  <update id="updateDocId" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView">
+	update t_jk_contract_sending_email 
+  	set 
+  		pdf_id = #{pdfId},
+  		modify_time = #{modifyTime} 
+  	where 
+  		dict_isdelete = '0' 
+  		and contract_code = #{contractCode} 
+  		and dict_file_type = #{dictFileType}
+  </update>
+  
+  <select id="findEmailTemplate"  resultType="Map">
+  		select template_content,email_description from t_gl_email_template where template_name=#{templateName}
+  </select>
+  
+  <select id="getMaxNumber" parameterType="Map" resultType="Map">
+  		select max(SUBSTR(e.email_number,#{length})::integer) as num from jk.t_jk_contract_sending_email e where e.email_number like #{start}||'%'
+  </select>
+  
+  <select id="getSettledDate" parameterType="String" resultType="Map">
+  		select to_char(i.settled_date,'yyyyMM') AS settled_date from jk.t_jk_loan_info i where i.loan_code = #{loanCode}
+  </select>
+  
+  <select id="export" parameterType="Map" resultMap="BaseEmailResultMap">
+  	<include refid="selectColumn"></include>
+	<include refid="fromTable"></include>
+	<include refid="condition"></include>
+  	order by se.apply_time desc
+  </select>
+  
+  <update id="updatePdfId" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView">
+	update t_jk_contract_sending_email 
+  	set 
+  		dict_mail_status = #{sendStatus}, 
+  		pdf_id = #{pdfId},
+  		modify_time = #{modifyTime} 
+  	where 
+  		dict_isdelete = '0' 
+  		and contract_code = #{contractCode} 
+  		and dict_file_type = #{dictFileType}
+  		and doc_id = #{docId} 
+  </update>
+  <select id="getChannelFlag" parameterType="String" resultType="String">
+  		select loan_flag from jk.t_jk_loan_info i where i.loan_code = #{loanCode}
+  </select>
+  <!--获取发送邮件的协议  zmq-->
+  <select id="getFileNameAndFileIdList" parameterType="com.creditharmony.loan.borrow.serve.view.ContractFileSendEmailView" resultType="com.creditharmony.loan.borrow.serve.view.ContractFileIdAndFileNameView">
+	select 
+		sign_doc_id AS docId,
+		file_name fileName,
+		contract_file_name contractFileName 
+	from jk.T_JK_CONTRACT_file f 
+	where f.contract_code = #{contractCode} 
+	and f.sign_doc_id is not null 
+	and 
+			<foreach collection="fileName" item="name" open="(" separator="or" close=")">
+				 f.contract_file_name like #{name}||'%' 
+			</foreach>
+  </select>
+</mapper>

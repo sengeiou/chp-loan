@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.GrantUrgeBackDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.GrantUrgeBackEx">
+    <id column="id" jdbcType="VARCHAR" property="id" /><!-- 放款id -->
+    <result column="r_charge_id" jdbcType="VARCHAR" property="urgeId" /><!-- 催收id -->
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <!-- 门店名称 -->
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag" />
+    <result column="product_name" jdbcType="VARCHAR" property="productName" />
+    <result column="lending_time" jdbcType="DATE" property="lendingTime" />
+    <result column="contract_months" jdbcType="VARCHAR" property="contractMonths" />
+    <result column="urge_moeny" jdbcType="NUMERIC" property="urgeMoeny" />
+    <!-- 退回金额 -->
+    <result column="return_amount" jdbcType="NUMERIC" property="returnAmount"/>
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractAmount" />
+    <result column="grant_amount" jdbcType="NUMERIC" property="grantAmount" />
+    <result column="audit_amount" jdbcType="NUMERIC" property="auditAmount" />
+    <!--退款状态  -->
+    <result column="return_status" jdbcType="NUMERIC" property="returnStatus" />
+    <!-- 放款审核退回日期 -->
+    <result column="check_time" jdbcType="NUMERIC" property="checkTime" />
+    <!-- 借款类型 -->
+    <result column="class_type" jdbcType="NUMERIC" property="classType" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+    <result column="refundFlag" jdbcType="VARCHAR" property="refundFlag" />
+    <!-- 还款主表 -->
+    <association property="payback" javaType="com.creditharmony.loan.borrow.payback.entity.Payback">
+			<id column="contract_code" property="contractCode" />
+			<result column="payback_bule_amount" property="paybackBuleAmount" />
+	</association>
+  </resultMap>
+  <!-- 查询放款失败催收服务费退回列表，-->
+  <select id="selectUrgeBackList"  resultType="com.creditharmony.loan.borrow.grant.entity.ex.GrantUrgeBackEx">
+    select distinct
+    n.r_charge_id, <!-- 催收主表id -->
+    n.return_status,
+    round(n.return_amount,2) as returnAmount,
+    round(e.urge_moeny,2) as urgeMoeny,
+    e.audit_amount as auditAmount,
+    round(c.grant_amount,2) as grantAmount,
+    d.contract_months,
+    round(d.contract_amount,2) as contractAmount,
+    n.contract_code,
+    o.name,
+    b.customer_name,
+    b.customer_cert_num,
+    a.class_type,
+    j.product_name,
+    a.loan_flag,
+    c.lending_time,
+    c.check_time,
+	e.return_logo as refundFlag
+    from 
+        jk.t_jk_service_charge_return n
+    	LEFT JOIN jk.t_jk_urge_services_amount e ON e.id=n.r_charge_id
+    	LEFT JOIN jk.t_jk_loan_grant c ON c.id=e.r_grant_id
+    	LEFT JOIN jk.t_jk_contract d ON d.contract_code=c.contract_code
+		LEFT JOIN jk.t_jk_loan_info a ON a.loan_code=d.loan_code
+		LEFT JOIN jk.t_jk_loan_customer b ON  b.loan_code=a.loan_code
+		LEFT JOIN jk.t_gl_jk_product j ON  j.product_code=d.product_type
+		LEFT JOIN jk.t_gl_org o ON o.id = a.loan_store_orgid
+	where 1=1 
+	    <!-- 关联催收服务费信息表ID,该查询条件用来导出excel使用,直接获取list -->
+		<if test="urgeId != null and urgeId != ''">
+            and n.r_charge_id in( ${urgeId}) 
+		</if>
+		<if test="customerName != null and customerName != ''">
+			 and b.customer_name LIKE CONCAT('%', #{customerName}, '%') 
+		</if>
+		<if test="storeOrgIds!=null">
+            and a.loan_store_orgid in
+	  	    <foreach collection="storeOrgIds" index="index" item="item" open="(" separator="," close=")">   
+               #{item,jdbcType=VARCHAR}   
+             </foreach>
+		</if>
+		<!-- 合同编号 -->
+		<if test="contractCode != null and contractCode != ''">
+			and d.contract_code LIKE CONCAT('%', #{contractCode}, '%')
+		</if>
+		<!-- 证件号码 -->
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and b.customer_cert_num LIKE CONCAT('%', #{customerCertNum}, '%')
+		</if>
+		<!-- 标识 -->
+		<if test="loanFlag != null and loanFlag != ''">
+			and a.loan_flag = #{loanFlag}
+		</if>
+		<!--放款时间  -->	
+		<if test="lendingTimeBegin != null and lendingTimeBegin != ''">
+			and c.lending_time &gt;= #{lendingTimeBegin}
+		</if>
+		<if test="lendingTimeEnd != null and lendingTimeEnd != ''">
+			and c.lending_time &lt;= #{lendingTimeEnd}
+		</if>
+		<!-- 放款审核退回时间 -->
+		<if test="checkTimeBegin != null and checkTimeBegin != ''">
+			and c.check_time &gt;= #{checkTimeBegin}
+		</if>
+		<if test="checkTimeEnd != null and checkTimeEnd != ''">
+			and c.check_time &lt;= #{checkTimeEnd}
+		</if>
+		<!-- 退款状态 -->	
+		<if test="returnStatus != null and returnStatus != ''">
+			and n.return_status = #{returnStatus}
+		</if>
+		<!-- 根据门店省查询 -->	
+		<if test="province != null and province != ''">
+			and o.province_id = #{province}
+		</if>	
+		<!-- 根据门店市查询 -->
+		<if test="city != null and city != ''">
+			and o.city_id = #{city}
+		</if>
+		<if test="refundFlag != null and refundFlag != ''">
+			and e.return_logo = #{refundFlag}
+		</if>
+  </select>
+  
+  <!-- 根据催收主表id进行查询已收记录页面，即查询拆分表中的情况 -->
+  <select id="backDone" resultType="com.creditharmony.loan.borrow.grant.entity.ex.GrantUrgeBackEx">
+  select 
+  	s.contract_code,
+  	customer_name,
+  	customer_cert_num,
+  	split_amount as deductAmount,
+  	middle_name as midName,
+  	splitback_date as deductDate,
+  	split_back_result as splitBackResult
+  from t_jk_service_charge_return  s
+  left join t_jk_payback_split f on f.r_payback_apply_id  = s.r_charge_id
+  left join t_jk_loan_grant g on g.contract_code = s.contract_code
+  left join t_jk_loan_customer c on c.loan_code = g.loan_code
+  left join t_jk_middle_person p on p.id = g.mid_id
+  where  s.r_charge_id = #{urgeId}
+  </select>
+  
+  <!-- 根据合同编号进行查询，查询催收主表中的处理状态，同时如果一笔单子如果为处理中或者待查账时，给出提示，不允许退回 -->
+  <select id="getDealCount" resultType="String">
+  select b.dict_deal_status	
+  from t_jk_loan_grant a
+  left join t_jk_urge_services_amount b on b.r_grant_id = a.id
+  where a.contract_code = #{contractCode} and b.return_logo!='1'
+  </select>
+  
+  
+  <!-- 根据催收id获得完全失败的单子的个数，如果个数大于0，表示存在一笔应该进行删除的单子 -->
+  <select id="selUrgeFail" resultType="int">
+  select count(*)
+  from t_jk_urge_services_amount a
+  where a.id = #{id}  and COALESCE(a.URGE_DECUTE_MOENY,0) = 0 and COALESCE(a.AUDIT_AMOUNT,0) = 0
+  </select>
+  
+  <!-- 删除催收主表的催收失败单子，该单子一条单子都没有，根据催收主表id-->
+  <delete id="delUrge">
+  delete t_jk_urge_services_amount a where id = #{id}
+  </delete>
+  
+  <!-- 根据合同编号进行查询，退回表中该合同编号的单子的退款状态,如果状态为待退款的，给出提示,查找的是新建的退回表 -->
+  <select id="getUnReturnCount" resultType="String">
+  select distinct return_status
+  from
+  jk.t_jk_service_charge_return 
+  where contract_code = #{contractCode} and return_status = '0'
+  </select>
+  
+  <!-- 根据合同编号对还款拆分表中的回盘结果为成功的单子进行合并，合并为一条单子,查询要放款审核退回要插入到退回表中的实体-->
+  <select id="getUrgeBack" parameterType="String" resultType="com.creditharmony.loan.borrow.grant.entity.ex.GrantUrgeBackEx">
+  select
+  id as urgeId, 
+  (COALESCE(audit_amount,0)+COALESCE(urge_decute_moeny,0)) as returnAmount, <!-- 已划扣金额+已查账金额 -->
+  contract_code as contractCode
+  from jk.t_jk_urge_services_amount 
+  where id = #{urgeId}  <!-- 拆分表中回盘结果为成功的单子 -->
+  </select>
+  
+  <!-- 根据合同编号查找催收服务费id,用来操作审核退回时，更新退回标识 -->
+  <select id="selUrgeId" resultType="String">
+  select b.id    <!-- 催收主表id -->
+  from t_jk_loan_grant a
+  left join t_jk_urge_services_amount b on b.r_grant_id = a.id
+  where a.contract_code = #{contractCode}  and b.return_logo != '1'
+  </select>
+  
+  <!-- 插入催收服务费退回表 -->
+  <insert id="insertUrgeBack" parameterType="com.creditharmony.loan.borrow.grant.entity.ex.GrantUrgeBackEx">
+  insert into t_jk_service_charge_return(id,r_charge_id,return_amount,return_status,contract_code) values(
+  #{id},#{urgeId},#{returnAmount,jdbcType=NUMERIC},#{returnStatus},#{contractCode})
+  </insert>
+  
+  <!-- 确认退款点击确定之后，根据催收id进行更新 -->
+  <update id="updUrgeBack">
+  update t_jk_service_charge_return 
+  <set>
+ 	<if test="returnStatus != null">
+	return_status = #{returnStatus},
+	</if>
+	<if test="returnTime != null">
+	return_time = #{returnTime,jdbcType=TIMESTAMP},
+	</if>
+	<if test="returnIntermediaryId != null">
+	return_intermediary_id = #{returnIntermediaryId}
+	</if>
+  </set>
+    where r_charge_id in( ${urgeId} )
+  </update>
+  
+  <!-- 删除拆分表中的划扣失败的单子,放款审核退回,根据催收主表id。参数为集合 -->
+  <delete id="delGrantFail">
+  delete from t_jk_payback_split where r_payback_apply_id in
+	<foreach collection="list" index="index" item="item" open="(" separator="," close=")">   
+               #{item.urgeId}   
+    </foreach>
+  </delete>
+  
+  <!-- 根据催收主表id查询拆分表中回盘结果为划扣失败的单子 -->
+  <select id="selSplitDelete" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesMoneyEx">
+  select a.id as urgeId
+  from t_jk_urge_services_amount a
+  left join t_jk_payback_split b on b.r_payback_apply_id = a.id and b.dict_r_deduct_type = '1' 
+  where a.id = #{urgeId} and b.split_back_result = '1' <!-- 划扣失败 -->
+  </select>
+  
+  
+  <!-- 查看历史，整个的历史，结合借款状态变更表和还款操作表，可以将表进行合并,参数为合同编号-->
+  <select id="selHistory" resultType="com.creditharmony.loan.borrow.grant.entity.ex.GrantUrgeBackEx">
+  select * from (
+  select 
+  operate_time as operateTime,
+  operator as operator,
+  operate_step as operateStep,
+  operate_result as operateResult,
+  remark as remark
+  from t_jk_contract a
+  left join t_jk_loan_status_his b on b.apply_id = a.apply_id 
+  where a.contract_code = #{contractCode}
+  union
+  select 
+  operate_time  as operateTime,
+  operator as operator,
+  dict_loan_status as operateStep,
+  operate_result as operateResult,
+  remark as remark
+  from t_jk_service_charge_return a
+  left join t_jk_payback_ope b on b.r_payback_id = a.r_charge_id
+  where a.contract_code = #{contractCode}) c order by operateTime DESC
+  </select>
+  
+</mapper>

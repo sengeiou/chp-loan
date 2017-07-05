@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.yunwei.fk.dao.FkOperateDao">
+
+	<select id="queryCurrentRepayment" parameterType="com.creditharmony.loan.yunwei.fk.entity.FkOperateObj" resultType="com.creditharmony.loan.yunwei.fk.entity.FkOperateObj">
+		SELECT t.id as payback_month_id,t.month_pay_day,t.contract_code,
+			p.payback_bule_amount as payback_bule_amount,
+			dict_month_status,month_overdue_days,
+			round(month_pay_amount,2) as month_pay_amount,--应还本金
+			round(month_capital_payactual,2) as month_capital_payactual,--实还本金
+			round(month_interest_backshould,2) as month_interest_backshould,--应还利息
+			round(month_interest_payactual,2) as month_interest_payactual,--实还利息
+			round(month_fee_service,2) as month_fee_service,--分期服务费
+			round(actual_month_fee_service,2) as actual_month_fee_service,--实还分期服务费
+			round(month_interest_punishshould,2) as month_interest_punishshould,--应还罚息(1.3系统单算罚息,1.4罚息为1.3违约金罚息合计)
+			round(month_interest_punishactual,2) as month_interest_punishactual, --实还罚息
+   			round(month_punish_reduction,2) as month_punish_reduction, --减免罚息
+   			(CASE WHEN to_number(c.contract_version) >=4 THEN 0 ELSE round(month_penalty_should,2) END) as month_penalty_should, --应还违约金(1.3系统单算罚息,1.4一次性还款违约罚金)
+   			round(month_penalty_actual,2) as month_penalty_actual,--实还违约金
+   			round(month_penalty_reduction,2) as month_penalty_reduction,--减免违约金
+   			round(month_late_fee,2) as month_late_fee,--滞纳金
+   			round(actual_month_late_fee,2) as actual_month_late_fee,--实还滞纳金
+   			round(month_late_fee_reduction,2) as month_late_fee_reduction --减免滞纳金
+		FROM
+    		jk.t_jk_payback_month t,jk.t_jk_payback p,jk.t_jk_contract c 
+		WHERE t.contract_code = p.contract_code AND p.contract_code = c.contract_code  
+			AND t.contract_code = #{contractCode}
+			AND to_char(t.month_pay_day,'yyyy-MM-dd') = #{repaymentDate}
+	</select>
+	
+	<!--  -->
+	<select id="queryPaybackBlueAmount" parameterType="String" resultType="com.creditharmony.loan.yunwei.fk.entity.PaybackBlueAmount">
+		SELECT t.id as blueAmountId,
+			t.r_month_id as rMonthId,
+			t.deal_time as dealTime,
+			t.trade_type as tradeType,
+			t.dict_deal_use as dictDealUse,
+			t.trade_amount as tradeAmount,
+			t.surplus_bule_amount as surplusBuleAmount,
+			t.dict_offset_type as dictOffsetType,
+			t.contract_code as contractCode
+		FROM jk.T_JK_PAYBACK_BULE_AMONT t 
+		WHERE t.contract_code = #{contractCode} ORDER BY t.create_time DESC
+	</select>
+	
+	<select id="queryActualRepayAmount" parameterType="com.creditharmony.loan.yunwei.fk.entity.PaybackBlueAmount" resultType="com.creditharmony.loan.yunwei.fk.entity.PaybackBlueAmount">
+		SELECT CONTRACT_CODE AS contractCode,
+			APPLY_REALLY_AMOUNT AS actualRepayMoney,
+			MODIFY_TIME AS actualRepayDate
+		FROM JK.T_JK_DEDUCTS_PAYBACK_APPLY_HIS WHERE CONTRACT_CODE = #{parContractCode}
+			AND APPLY_REALLY_AMOUNT >0 
+			AND MODIFY_TIME >= to_date(#{startDate},'yyyy-MM-dd')
+			<![CDATA[AND MODIFY_TIME <= to_date(#{endDate},'yyyy-MM-dd')]]>
+		UNION ALL 
+		SELECT CONTRACT_CODE AS contractCode,
+			APPLY_REALLY_AMOUNT AS actualRepayMoney,
+			MODIFY_TIME AS actualRepayDate
+		FROM JK.T_JK_PAYBACK_APPLY PA WHERE CONTRACT_CODE = #{parContractCode}
+			AND PA.DICT_REPAY_METHOD = '1' AND PA.APPLY_REALLY_AMOUNT > 0
+			AND MODIFY_TIME >= to_date(#{startDate},'yyyy-MM-dd')
+			<![CDATA[AND MODIFY_TIME <= to_date(#{endDate},'yyyy-MM-dd')]]>
+		UNION ALL 
+		SELECT CONTRACT_CODE AS contractCode,
+			APPLY_REALLY_AMOUNT AS actualRepayMoney,
+			MODIFY_TIME AS actualRepayDate
+		FROM JK.T_JK_PAYBACK_APPLY JPA WHERE CONTRACT_CODE=#{parContractCode}
+			AND APPLY_REALLY_AMOUNT>0 AND JPA.DICT_DEDUCT_TYPE = '302' AND JPA.DICT_REPAY_METHOD = '0'
+			AND MODIFY_TIME >= to_date(#{startDate},'yyyy-MM-dd')
+			<![CDATA[AND MODIFY_TIME <= to_date(#{endDate},'yyyy-MM-dd')]]>
+	</select>
+	
+	<select id="selectNowDayAfterDate" parameterType="String" resultType="String">
+		SELECT 
+			to_char(workday,'yyyy-MM-dd') 
+		FROM 
+			jk.t_jk_workday 
+		WHERE 
+			workday > to_date(#{nowDayStr},'yyyy-MM-dd')
+			AND effective_flag = '0' ORDER BY workday ASC LIMIT 3 
+	</select>
+	
+	<select id="queryBlueMoneyAndQg" parameterType="String" resultType="com.creditharmony.loan.yunwei.fk.entity.FkOperateObj">
+		SELECT p.contract_code as contractCode,p.payback_bule_amount as currentBlueMoney,
+			round(month_pay_amount + month_interest_backshould + month_fee_service,2) as qgMoney
+		FROM jk.t_jk_payback p,jk.t_jk_payback_month m
+		WHERE p.contract_code = m.contract_code AND p.contract_code = #{contractCode} limit 1 
+	</select>
+	
+	<select id="selectNowDayBeforeDate" parameterType="java.util.HashMap" resultType="String">
+		SELECT 
+			to_char(workday,'yyyy-MM-dd') 
+		FROM 
+			jk.t_jk_workday 
+		WHERE 
+			to_date(#{repaymentDate},'yyyy-MM-dd') > workday
+			AND effective_flag = '0' ORDER BY workday DESC LIMIT to_number(#{beforeDay})
+	</select>
+	
+	<!-- 修复负数问题 -->
+	<select id="selectDataForFs" resultType="com.creditharmony.loan.yunwei.fk.entity.FkOperateObj">
+		SELECT 
+			m.id as payback_month_id,m.month_pay_day,m.contract_code,
+			p.payback_bule_amount as payback_bule_amount,
+			month_pay_day as repaymentDate,
+			m.dict_month_status,m.month_overdue_days,
+			round(m.month_pay_amount,2) as month_pay_amount,--应还本金
+			round(m.month_capital_payactual,2) as month_capital_payactual,--实还本金
+			round(m.month_interest_backshould,2) as month_interest_backshould,--应还利息
+			round(m.month_interest_payactual,2) as month_interest_payactual,--实还利息
+			round(m.month_fee_service,2) as month_fee_service,--分期服务费
+			round(m.actual_month_fee_service,2) as actual_month_fee_service,--实还分期服务费
+			round(m.month_interest_punishshould,2) as month_interest_punishshould,--应还罚息(1.3系统单算罚息,1.4罚息为1.3违约金罚息合计)
+			round(m.month_interest_punishactual,2) as month_interest_punishactual, --实还罚息
+   			round(m.month_punish_reduction,2) as month_punish_reduction, --减免罚息
+   			(CASE WHEN to_number(c.contract_version) >=4 THEN 0 ELSE round(m.month_penalty_should,2) END) as month_penalty_should, --应还违约金(1.3系统单算罚息,1.4一次性还款违约罚金)
+   			round(m.month_penalty_actual,2) as month_penalty_actual,--实还违约金
+   			round(m.month_penalty_reduction,2) as month_penalty_reduction,--减免违约金
+   			round(m.month_late_fee,2) as month_late_fee,--滞纳金
+   			round(m.actual_month_late_fee,2) as actual_month_late_fee,--实还滞纳金
+   			round(m.month_late_fee_reduction,2) as month_late_fee_reduction --减免滞纳金
+		FROM jk.t_jk_payback_month m,jk.t_jk_contract c ,jk.t_jk_payback p
+		WHERE m.contract_code = c.contract_code 
+			AND m.contract_code = p.contract_code
+			AND (
+			--减免 违约金、罚息、滞纳金 + 实还违约金、罚息、滞纳金 > 应还违约金、罚息、滞纳金
+			round(month_penalty_reduction,2) 
+			+ round(month_punish_reduction,2)
+			+round(month_late_fee_reduction,2)
+			+round(month_penalty_actual,2)
+			+round(month_interest_punishactual,2)
+			+round(actual_month_late_fee,2)
+			-(CASE WHEN to_number(c.contract_version)>=4 THEN 0 ELSE round(month_penalty_should,2) END) 
+			-round(month_interest_punishshould,2)
+			-round(month_late_fee,2)
+			) > 0 
+			AND (round(month_penalty_reduction,2) >0 OR 
+			round(month_punish_reduction,2) >0 OR 
+			round(month_late_fee_reduction,2) >0 ) 
+	</select>
+	
+	<select id="selectDataForXiufu" resultType="com.creditharmony.loan.yunwei.fk.entity.FkOperateObj">
+		SELECT contract_code as contractCode,to_char(repayment_date,'yyyy-MM-dd') as firstXiuFuDate FROM jk.t_jk_tmp_data ORDER BY repayment_date		
+	</select>
+	
+	<select id="selectRepaymentDayList" parameterType="java.util.HashMap" resultType="String">
+		SELECT 
+			m.month_pay_day 
+		FROM jk.t_jk_payback_month m 
+		WHERE m.contract_code = #{contractCode}
+			<![CDATA[AND m.month_pay_day <= now()]]> 
+			AND m.month_pay_day > to_date(#{firstXiuFuDate},'yyyy-MM-dd')
+		ORDER BY m.month_pay_day
+	</select>
+</mapper>

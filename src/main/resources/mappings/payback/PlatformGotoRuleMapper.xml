@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.PlatformGotoRuleDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" >
+  	<id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="platform_id" property="platformId" jdbcType="VARCHAR" />
+    <result column="platform_rule_name" property="platformRuleName" jdbcType="VARCHAR" />
+     <result column="platform_rule" property="platformRule" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="is_concentrate" property="isConcentrate" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, platform_id, platform_rule_name, platform_rule, status, create_by, create_time, 
+    modify_by, modify_time,is_concentrate
+  </sql>
+  
+  <select id="findList" resultType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" 
+  		parameterType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" >
+    select 
+    	 a.id, a.platform_id, b.label as platform_rule_name, a.platform_rule, a.status, a.create_by, a.create_time, 
+    a.modify_by, a.modify_time,a.is_concentrate
+    from jk.t_jk_platform_goto_rule a 
+    left join (select value,label from jk.t_gl_dict  where type = 'jk_deduct_plat') b 
+    on a.platform_id = b.value
+    
+    <where>
+     <if test="id != null and id != ''">
+     	and id = #{id}
+     </if>
+     <if test="platformId != null and platformId != ''" >
+        and platform_id = #{platformId}
+      </if>
+      <if test="platformRuleName != null and  platformRuleName != ''" >
+       	and platform_rule_name = #{platformRuleName}
+      </if>
+      <if test="platformRule != null and  platformRule != ''" >
+        and platform_rule = #{platformRule}
+      </if>
+      <if test="status != null and status != ''" >
+        and status = #{status}
+      </if>
+      <if test="isConcentrate != null and isConcentrate != ''" >
+        and is_concentrate = #{isConcentrate}
+      </if>
+    </where>
+    order by  a.platform_id,a.is_concentrate
+  </select>
+  
+  <select id="get" resultType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" 
+  		parameterType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_platform_goto_rule
+    <where>
+    	<if test="id != null and id != ''">
+    		id = #{id,jdbcType=VARCHAR}
+    	</if>
+    	<if test="platformId != null and platformId != ''">
+    		and platform_id = #{platformId,jdbcType=VARCHAR}
+    	</if>
+        <if test="isConcentrate != null and isConcentrate != ''" >
+        	and is_Concentrate = #{isConcentrate,jdbcType=VARCHAR}
+      	</if>
+    </where>
+  </select>
+  
+  <!-- 查询单个实例 -->
+  <select id="findPlatformGotoRule" parameterType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" 
+  	resultType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule">
+  	select * from jk.t_jk_platform_goto_rule
+  	where status= #{status,jdbcType=VARCHAR} and platform_id = #{platformId,jdbcType=VARCHAR}
+  </select>
+  
+  <insert id="insert" parameterType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" >
+    insert into jk.t_jk_platform_goto_rule (id, platform_id, platform_rule_name, 
+      platform_rule, status, create_by, 
+      create_time, modify_by, modify_time,is_concentrate
+      )
+    values (#{id,jdbcType=VARCHAR}, #{platformId,jdbcType=VARCHAR}, #{platformRuleName,jdbcType=VARCHAR}, 
+      #{platformRule,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP},
+      #{isConcentrate,jdbcType=VARCHAR}
+      )
+  </insert>
+  
+  <update id="update" parameterType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule" >
+    update jk.t_jk_platform_goto_rule
+    <set >
+      <if test="platformId != null" >
+        platform_id = #{platformId,jdbcType=VARCHAR},
+      </if>
+      <if test="platformRuleName != null" >
+        platform_rule_name = #{platformRuleName,jdbcType=VARCHAR},
+      </if>
+      <if test="platformRule != null" >
+        platform_rule = #{platformRule,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+       <if test="isConcentrate != null" >
+        is_concentrate = #{isConcentrate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where
+    <trim prefixOverrides="AND | OR">  
+    	<if test="id != null and id != ''">
+    		and id = #{id,jdbcType=VARCHAR}
+    	</if>
+    	<if test="platformId != null and platformId != ''">
+    		and platform_id = #{platformId,jdbcType=VARCHAR}
+    	</if>
+    </trim>
+  </update>
+  <delete id="delete" parameterType="com.creditharmony.loan.borrow.payback.entity.PlatformGotoRule">
+      delete from jk.t_jk_platform_goto_rule where id =#{id}
+  
+  </delete>
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.users.dao.RoleInfoDao">
+    
+    <resultMap id="roleResult" type="com.creditharmony.loan.users.entity.RoleInfo">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="enName" column="enName" />
+		<result property="roleType" column="roleType" />
+		<result property="dataScope" column="dataScope" />
+		<result property="remarks" column="remarks" />
+		<result property="useable" column="useable" />
+		<result property="sysData" column="sysData" />
+		<result property="orgType" column="orgType" />
+	</resultMap>
+	
+    <sql id="roleColumns">
+    	a.id,
+    	a.name,
+    	a.enName,
+    	a.role_type AS roleType,
+		a.data_scope AS dataScope,
+		a.remarks,
+		a.create_by AS "createBy",
+		a.create_time,
+		a.modify_by AS "modifyBy",
+		a.modify_time,
+		a.del_flag,
+    	a.useable AS useable,
+    	a.is_sys AS sysData,
+    	a.org_type AS orgType
+    </sql>
+    
+	<select id="get" resultMap="roleResult">
+		SELECT
+			<include refid="roleColumns"/>
+		FROM jk.t_gl_role a
+		WHERE a.id = #{id}
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO jk.t_gl_role(
+			id, 
+			name, 
+			enName, 
+			role_type, 
+			data_scope, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			del_flag,
+			is_sys,
+			useable,
+			org_type
+		) VALUES (
+			#{id}, 
+			#{name}, 
+			#{enName}, 
+			#{roleType}, 
+			#{dataScope}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{delFlag},
+			#{sysData},
+			#{useable},
+			#{orgType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE jk.t_gl_role SET 
+			name = #{name}, 
+			enName = #{enName}, 
+			role_type = #{roleType}, 
+			data_scope = #{dataScope}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			is_sys = #{sysData},
+			useable = #{useable},
+			org_type = #{orgType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE jk.t_gl_role 
+		SET del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

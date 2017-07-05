@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.certification.dao.BankDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+    <!-- 卡联使用的查询信息 -->
+    <result column="tr_serial_no" property="trSerialNo" jdbcType="VARCHAR" />
+    <result column="trans_date" property="transDate" jdbcType="VARCHAR" />
+    <result column="bank_name" property="bankName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <!-- 查询需要进行认证的信息，返回为list -->
+  <select id="selectBankInfo" resultMap="BaseResultMap">
+  	select 
+  	tr_serial_no,
+  	to_char(trans_date,'yyyy-mm-dd') as transDate
+  	from jk.t_jk_loan_bank where bank_top_flag = '1' and real_authen = '2'
+     group by tr_serial_no, transDate
+  </select>
+  
+  <!-- 查询卡联签约所需要的信息 -->
+  <select id="selectSignList"  resultType="com.creditharmony.loan.borrow.certification.entity.LoanBank">
+  select
+  bank_account as accNo, --账户号
+  bank_account_name as accName, --账户名
+  customer_cert_num as certNo, --证件号码
+  customer_phone_first as phone, --手机号码
+  bank_no as bankCode, --开户行号
+  bank_name --支行名称
+  from jk.t_jk_loan_bank a left join jk.t_jk_loan_customer b on b.loan_code = a.loan_code 
+  where a.bank_top_flag = '1'  and real_authen = '1' and kl_sign = '0'
+  order by a.id
+  limit 10 offset #{pageNo}
+  </select>
+  
+  <!-- 根据交易流水号进行更新认证标识 -->
+  <update id="updateBySerialNo" parameterType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+    update jk.t_jk_loan_bank 
+    <set>
+      <if test="realAuthen != null" >
+        real_authen = #{realAuthen},
+      </if>
+      <if test="klSign != null" >
+        kl_Sign = #{klSign},
+      </if>
+      <if test="newTrSerialNo != null" >
+        single_serial_no = #{newTrSerialNo}
+      </if>
+    </set>
+    where single_serial_no = #{singleSerialNo,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 根据交易流水号进行更新认证标识 -->
+  <update id="updateByNo" parameterType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+    update jk.t_jk_loan_bank 
+    <set>
+      <if test="realAuthen != null" >
+        real_authen = #{realAuthen},
+      </if>
+      <if test="klSign != null" >
+        kl_Sign = #{klSign},
+      </if>
+      <if test="trSerialNo != null" >
+        tr_Serial_No = #{trSerialNo},
+      </if>
+       <if test="newTrSerialNo != null" >
+        single_serial_no = #{newTrSerialNo}
+      </if>
+      
+    </set>
+    where bank_account = #{accNo,jdbcType=VARCHAR}
+  </update>
+  <!-- 查找符合条件的需要认证的数据 -->
+  	<select id="queryList"  resultType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+  SELECT * FROM (
+select   
+  	 a.bank_name as bankFullName, 
+   	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankName, 
+       a.bank_account_name as accName, a.bank_account as accNo,
+       a.bank_no as bankCode,
+       lc.dict_cert_type as certType,
+       lc.customer_cert_num as certNo,
+       '' as phone,
+       a.id 
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+       left join jk.t_jk_contract con on a.loan_code = con.loan_code
+       left join jk.t_jk_payback p on p.contract_code = con.contract_code
+       left join jk.t_jk_payback_month b on con.contract_code = b.contract_code
+      where (p.dict_pay_status = '0' or p.dict_pay_status = '1') and a.bank_top_flag = '1' and  a.repayment_flag ='1' and  a.real_authen = '0'
+      and   a.bank_name ='102' and p.payback_day='15' and (b.dict_month_status is null or b.dict_month_status = '' or b.dict_month_status = '0') 
+      and   b.month_pay_day ='2016-09-15' 
+  union 
+
+ select   
+  	  a.bank_name as bankFullName, 
+   	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankName, 
+       a.bank_account_name as accName, a.bank_account as accNo,
+       a.bank_no as bankCode,
+       lc.dict_cert_type as certType,
+       lc.customer_cert_num as certNo,
+       '' as phone,
+       a.id 
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+       left join jk.t_jk_contract con on a.loan_code = con.loan_code
+       left join jk.t_jk_payback p on p.contract_code = con.contract_code
+       left join jk.t_jk_payback_month b on con.contract_code = b.contract_code
+      where (p.dict_pay_status = '0' or p.dict_pay_status = '1') and a.bank_top_flag = '1' and  a.repayment_flag ='1' and a.tl_sign = '0'  and  a.real_authen = '0'
+      and   a.bank_name ='105' and p.payback_day='15' and (b.dict_month_status is null or b.dict_month_status = '' or b.dict_month_status = '0') 
+      and   b.month_pay_day ='2016-09-15' 
+)
+	</select>
+	 <update id="updateBankByid">
+		update jk.t_jk_loan_bank set
+	    tr_serial_no = #{trSerialNo},
+	    trans_date = #{commitDate},
+	    real_authen = #{realAuthen},
+	    single_serial_no = #{singleSerialNo}
+		WHERE bank_account = #{id,jdbcType=VARCHAR}
+	 </update>
+	 
+	 
+	  <!-- 查找符合条件的需要认证的数据（畅捷）   lc.customer_phone_first as phone, -->
+  	<select id="queryCjList"  resultType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+  	<!-- 
+  	    select 
+        a.bank_name as bankFullName, 
+   	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankName, 
+       a.bank_account_name as accName, a.bank_account as accNo,
+       a.bank_no as bankCode,
+       lc.dict_cert_type as certType,
+       lc.customer_cert_num as certNo,
+       lc.customer_phone_first as phone,
+       a.id 
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+       left join jk.t_jk_contract con on a.loan_code = con.loan_code
+       left join jk.t_jk_payback p on p.contract_code = con.contract_code
+       left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+       where con.contract_code in (
+ '04550200063'
+       ) and  a.bank_top_flag = '1' and  a.repayment_flag ='1' 
+        -->
+  select   
+  	 a.bank_name as bankFullName, 
+   	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankName, 
+       a.bank_account_name as accName, a.bank_account as accNo,
+       a.bank_no as bankCode,
+       lc.dict_cert_type as certType,
+       lc.customer_cert_num as certNo,
+       lc.customer_phone_first as phone,
+       a.id 
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+       left join jk.t_jk_contract con on a.loan_code = con.loan_code
+       left join jk.t_jk_payback p on p.contract_code = con.contract_code
+       left join jk.t_jk_payback_month b on con.contract_code = b.contract_code
+       left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+       <if test="(queryoverdueDaysString != null and !queryoverdueDaysString.equals(''))">
+	      left join (
+	      select contract_code, min(tt.months),
+	      COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) overdueDays,min(tt.month_pay_day) overday
+	      from jk.t_jk_payback_month tt where tt.dict_month_status = '1' group by tt.contract_code) pm  on pm.contract_code = p.contract_code
+	  </if>
+     <if test="(overCount != null and !overCount.equals(''))">
+      left join (
+      select contract_code, sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+      from jk.t_jk_payback_month tt where tt.is_overdue = '1' group by tt.contract_code) pmt  on pmt.contract_code = p.contract_code
+     </if>
+      where (p.dict_pay_status = '0' or p.dict_pay_status = '1') and a.bank_top_flag = '1' and  a.repayment_flag ='1' and  a.cj_authen = '0'
+      and   a.bank_name = #{bank} and p.payback_day=  cast (#{dayName} as integer) and (b.dict_month_status is null or b.dict_month_status = '' or b.dict_month_status = '0') 
+      and   b.month_pay_day = '${yearReplayDay}' 
+      <if test="tlSign != null and !tlSign.equals('')">
+	      and  a.tl_Sign  = #{tlSign}
+      </if>
+      <if test="queryoverdueDaysString != null and !queryoverdueDaysString.equals('')">
+	    and COALESCE(pm.overdueDays,0)  ${queryoverdueDaysString}
+      </if>
+      <if test="overCount != null and !overCount.equals('')">
+	     and  COALESCE(pmt.overCount,0)  = cast (#{overCount} as integer)
+      </if>
+      <if test="loanStatus != null and loanStatus != ''">
+         and   loin.dict_loan_status = #{loanStatus}
+	 </if>
+	  <if test="model != null and !model.equals('')">
+		  AND loin.model  = #{model}
+	  </if>
+      <if test="quantity != null and !quantity.equals('')">
+         limit '${quantity}'
+      </if>
+      
+      
+      
+	</select>
+	
+	
+	<!-- 根据账号跟新畅捷实名认证标示 -->
+  <update id="updateByAccNo" parameterType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+    update jk.t_jk_loan_bank 
+    <set>
+      <if test="protocolNo != null" >
+        protocol_number = #{protocolNo},
+      </if>
+      <if test="cjAuthen != null" >
+        cj_authen = #{cjAuthen},
+      </if>
+      <if test="cjSign != null" >
+        cj_sign = #{cjSign},
+      </if>
+       <if test="trSerialNo != null" >
+        cj_sm_no = #{trSerialNo},
+      </if>
+      <if test="cjSignFailure != null" >
+        cj_sign_failure = #{cjSignFailure},
+      </if>
+      <if test="cjAuthenFailure != null" >
+        cj_authen_failure = #{cjAuthenFailure},
+      </if>
+       <if test="cjQyNo != null" >
+        cj_qy_no = #{cjQyNo}
+      </if>
+    </set>
+    where bank_account = #{accNo,jdbcType=VARCHAR}
+  </update>
+  
+  <select id="queryCount" resultType="java.lang.String">
+    select   
+  	    count(*)
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+       left join jk.t_jk_contract con on a.loan_code = con.loan_code
+       left join jk.t_jk_payback p on p.contract_code = con.contract_code
+       left join jk.t_jk_payback_month b on con.contract_code = b.contract_code
+       left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+       <if test="(queryoverdueDaysString != null and !queryoverdueDaysString.equals(''))">
+	      left join (
+	      select contract_code, min(tt.months),
+	      COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) overdueDays,min(tt.month_pay_day) overday
+	      from jk.t_jk_payback_month tt where tt.dict_month_status = '1' group by tt.contract_code) pm  on pm.contract_code = p.contract_code
+	  </if>
+     <if test="(overCount != null and !overCount.equals(''))">
+      left join (
+      select contract_code, sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+      from jk.t_jk_payback_month tt where tt.is_overdue = '1' group by tt.contract_code) pmt  on pmt.contract_code = p.contract_code
+     </if>
+      where (p.dict_pay_status = '0' or p.dict_pay_status = '1') and a.bank_top_flag = '1' and  a.repayment_flag ='1' and  a.cj_authen = '0'
+      and   a.bank_name = #{bank} and p.payback_day=  cast (#{dayName} as integer) and (b.dict_month_status is null or b.dict_month_status = '' or b.dict_month_status = '0') 
+      and   b.month_pay_day = '${yearReplayDay}' 
+      <if test="tlSign != null and !tlSign.equals('')">
+	      and  a.tl_Sign  = #{tlSign}
+       </if>
+       <if test="queryoverdueDaysString != null and !queryoverdueDaysString.equals('')">
+	    and COALESCE(pm.overdueDays,0)  ${queryoverdueDaysString}
+       </if>
+      <if test="overCount != null and !overCount.equals('')">
+	     and  COALESCE(pmt.overCount,0)  = cast (#{overCount} as integer)
+      </if>
+      <if test="loanStatus != null and loanStatus != ''">
+         and   loin.dict_loan_status = #{loanStatus}
+	 </if>
+	  <if test="model != null and !model.equals('')">
+		  AND loin.model  = #{model}
+	 </if>
+  </select>
+  
+    <!-- 查找符合条件的需要认证的数据（畅捷）   lc.customer_phone_first as phone, -->
+  	<select id="queryCjByCode"  resultType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+    select   
+  	   a.bank_name as bankFullName, 
+   	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankName, 
+       a.bank_account_name as accName, a.bank_account as accNo,
+       a.bank_no as bankCode,
+       lc.dict_cert_type as certType,
+       lc.customer_cert_num as certNo,
+       lc.customer_phone_first as phone,
+       a.cj_sign as cjSign,
+       a.id 
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+      where a.loan_code = #{loanCode}
+	</select>
+	
+	<!-- 查找符合条件的需要认证的数据（畅捷）   lc.customer_phone_first as phone,-->
+  	<select id="queryCjById"  resultType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+    select   
+  	   a.bank_name as bankFullName, 
+   	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankName, 
+       a.bank_account_name as accName, a.bank_account as accNo,
+       a.bank_no as bankCode,
+       lc.dict_cert_type as certType,
+       lc.customer_cert_num as certNo,
+       lc.customer_phone_first as phone,
+       a.cj_sign as cjSign,
+       a.id 
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+      where a.id = #{id}
+	</select>
+	
+	<!-- 查找符合条件的需要认证的数据（畅捷）   lc.customer_phone_first as phone, -->
+  	<select id="queryCjListCode"  resultType="com.creditharmony.loan.borrow.certification.entity.LoanBank" >
+     select   
+  	 a.bank_name as bankFullName, 
+   	   case when (a.dict_crea_type is null or a.dict_crea_type='') then '0' else a.dict_crea_type end  as cardType, a.bank_branch as bankName, 
+       a.bank_account_name as accName, a.bank_account as accNo,
+       a.bank_no as bankCode,
+       lc.dict_cert_type as certType,
+       lc.customer_cert_num as certNo,
+       lc.customer_phone_first as phone,
+       a.id 
+       from jk.t_jk_loan_bank a  
+       left join jk.t_jk_loan_customer lc on a.loan_code = lc.loan_code 
+       left join jk.t_jk_contract con on a.loan_code = con.loan_code
+       where con.contract_code  in
+	   	<foreach collection="contractCode" item="item" open="(" separator="," close=")">
+	       #{item} 
+	    </foreach>
+	     <if test="flag != null and !flag.equals('')">
+		  AND a.bank_top_flag = '1' and  a.repayment_flag ='1'
+	 </if>
+     </select>
+</mapper>

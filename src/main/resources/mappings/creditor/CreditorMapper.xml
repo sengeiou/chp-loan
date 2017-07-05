@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.creditor.dao.CreditorDao">
+
+    <select id="getListByParam"
+	parameterType="com.creditharmony.loan.borrow.creditor.view.CreditorSearch"
+	resultType="com.creditharmony.loan.borrow.creditor.view.CreditorModel">
+	SELECT id, 
+	loan_code as loanCode,
+	(case loan_status when '1' then '待还款' else '还款中' end) as loanStatus,
+	loan_name as loanName,
+	(select label from t_gl_dict where type='jk_loan_use' and value=loan_purpose) as loanPurpose,
+	ROUND(init_money,2) as initMoney,
+	ROUND(manage_money,2) as manageMoney,
+	to_char(init_loan_date,'yyyy-MM-dd') as initLoanDateStr,
+	repayment_date as repaymentDate,
+	surplus_date as surplusDate,
+	to_char(start_date,'yyyy-MM-dd') as startDateStr,
+	ROUND(interest_rate,3) as interestRate,
+	<!-- to_char(end_date,'yyyy-MM-dd') as endDateStr,-->
+	to_char(init_loan_date :: TIMESTAMP +(repayment_date-1 || ' Months') :: INTERVAL,'yyyy-MM-dd') as endDateStr, 
+	(select product_name from t_gl_jk_product where product_status='1' and product_code=type) as type,
+	(select label from t_gl_dict where type='jk_prof_type' and value = occupation) as occupation ,
+	cernum as cerNum,
+	(select u.name from t_gl_user u where u.id=operation_user) as operationUser,
+	to_char(operation_date,'yyyy-MM-dd HH24:mi:ss') as operationDate,
+	(case status when '1' then '提交' else '' end) as status,
+	create_by as createBy,
+	modify_by as modifyBy
+	FROM jk.t_jk_creditor_input_manage
+	WHERE create_time is not null
+	<include refid="PagingConditions" />
+	</select>
+
+	
+	<sql id="PagingConditions">
+	<if test="loanCode!=null and loanCode!=''">
+  		and loan_code like '%${loanCode}%'
+  	</if>
+  	<if test="loanName!=null and loanName!=''">
+  		and loan_name like '%${loanName}%'
+  	</if>
+  	<if test="cerNum!=null and cerNum!=''">
+  		and cernum like '%${cerNum}%'
+  	</if>
+  	<if test="type!=null and type!=''">
+  		and type = #{type}
+  	</if>
+  	ORDER BY create_time DESC
+  </sql>	
+
+  <insert id="save"
+	parameterType="com.creditharmony.loan.borrow.creditor.view.CreditorModel">
+	INSERT INTO jk.t_jk_creditor_input_manage
+	(id,
+	loan_code,
+	loan_status,
+	loan_name,
+	loan_purpose,
+	init_money,
+	manage_money,
+	init_loan_date,
+	repayment_date,
+	start_date,
+	interest_rate,
+	end_date,
+	type,
+	occupation,
+	cernum,
+	operation_user,
+	status,
+	create_by,
+	modify_by,
+	cer_type,
+	creditor,
+	repayment_type,
+	surplus_date
+	)
+	VALUES(#{id}, #{loanCode}, #{loanStatus},
+	#{loanName},
+	#{loanPurpose}, #{initMoney,jdbcType=DECIMAL}, #{manageMoney}, 
+	#{initLoanDate}, #{repaymentDate}, #{startDate}, #{interestRate},
+	#{endDate}, #{type}, #{occupation},
+	#{cerNum}, #{operationUser},
+	#{status}, #{createBy}, #{modifyBy}, #{cerType}, #{creditor},
+	#{repaymentType}, #{surplusDateInt});
+	</insert>
+    
+    <select id="getName"
+	parameterType="String"
+	resultType="Map">
+	select loan_name as loanName from jk.t_jk_creditor_input_manage where cernum = #{cerNum}
+	</select>
+	
+	<select id="getType" resultType="Map">
+		select product_code as value,product_name as label from t_gl_jk_product where product_type in ('products_type_loan_credit','products_type_loan_all')
+	</select>
+	
+	<select id="getOccupation" resultType="Map">
+	select value,label from t_gl_dict where type=#{type}
+	<if test="value!=null and value!=''">
+  		and value = #{value}
+  	</if>
+	</select>
+	
+	<select id="getCreditor"
+	parameterType="String"
+	resultType="com.creditharmony.core.claim.dto.SyncClaim">
+	SELECT 
+	loan_code as loanCode,
+	creditor as loanMiddleMan,
+	start_date as loanBackmoneyFirday,
+	to_char(init_loan_date :: TIMESTAMP +(repayment_date-1 || ' Months') :: INTERVAL,'yyyy-MM-dd') as loanBackmoneyLastday,
+	(case loan_status when '1' then '待还款' else '还款中' end) as loanStatus,
+	loan_name as loanName,
+	loan_purpose as loanPurpose,
+	ROUND(init_money,2) as loanQuota,
+	ROUND(manage_money,2) as manageMoney,
+	to_char(init_loan_date,'yyyy-MM-dd') as initLoanDateStr,
+	repayment_date as loanMonths,
+	(select product_name from t_gl_jk_product where product_status='1' and product_code=type) as loanProduct,
+	surplus_date as loanMonthsSurplus,
+	to_char(start_date,'yyyy-MM-dd') as loanBackmoneyFirdayStr,
+	interest_rate as loanMonthRate,
+	occupation as loanJob,
+	cernum as loanIdcard,
+	(select gb.bill_day from t_gl_bill gb where gb.sign_day =  to_number(to_char(im.init_loan_date, 'DD'))) as loanBakcmoneyDay
+	FROM jk.t_jk_creditor_input_manage im
+	WHERE im.id = #{id}
+	</select>
+	
+</mapper>

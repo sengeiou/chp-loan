@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarLoanCoborrowerDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarLoanCoborrower" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="cobo_name" property="coboName" jdbcType="VARCHAR" />
+    <result column="dict_sex" property="dictSex" jdbcType="VARCHAR" />
+    <result column="cert_num" property="certNum" jdbcType="VARCHAR" />
+    <result column="dict_household_province" property="dictHouseholdProvince" jdbcType="VARCHAR" />
+     <result column="dict_household_view" property="dictHouseholdView" jdbcType="VARCHAR" />
+     <result column="cobo_house_hold_property" property="coboHouseHoldProperty" jdbcType="VARCHAR" />
+    <result column="dict_household_city" property="dictHouseholdCity" jdbcType="VARCHAR" />
+    <result column="dict_household_area" property="dictHouseholdArea" jdbcType="VARCHAR" />
+    <result column="household_address" property="householdAddress" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="family_tel" property="familyTel" jdbcType="VARCHAR" />
+    <result column="dict_marry_status" property="dictMarryStatus" jdbcType="VARCHAR" />
+    <result column="have_child_flag" property="haveChildFlag" jdbcType="VARCHAR" />
+    <result column="dict_live_province" property="dictLiveProvince" jdbcType="VARCHAR" />
+     <result column="dict_live_view" property="dictLiveView" jdbcType="VARCHAR" />
+    <result column="dict_live_city" property="dictLiveCity" jdbcType="VARCHAR" />
+    <result column="dict_live_area" property="dictLiveArea" jdbcType="VARCHAR" />
+    <result column="now_address" property="nowAddress" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="contact_is_know" property="contactIsKnow" jdbcType="VARCHAR" />
+    <result column="dict_relation_type" property="dictRelationType" jdbcType="VARCHAR" />
+    <result column="dict_relation_customer" property="dictRelationCustomer" jdbcType="VARCHAR" />
+    <result column="house_other" property="houseOther" jdbcType="VARCHAR" />
+    <result column="dict_social_security" property="dictSocialSecurity" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    
+    <result column="dict_cert_type" property="dictCertType" jdbcType="TIMESTAMP" />
+    <result column="house_rent" property="houseRent" jdbcType="TIMESTAMP" />
+    <result column="other_income" property="otherIncome" jdbcType="TIMESTAMP" />
+    <result column="captcha_if_confirm" property="captchaIfConfirm"/>
+  	<result column="confirm_timeout" property="confirmTimeout"/>
+  	<result column="message_auth_code" jdbcType="VARCHAR" property="customerPin"/>
+  	<result column="app_sign_flag" property="appSignFlag"/>
+    <result column="id_valid_flag" property="idValidFlag"/>
+    <result column="compose_photo_id" property="composePhotoId"/>
+    <result column="have_other_income" property="haveOtherIncome"  jdbcType="VARCHAR" />
+  
+    <!-- 共借人增加工作单位、地址、职务 2016-05-22 -->
+    <result column="company_name" property="companyName"/>
+    <result column="company_address" property="companyAddress"/>
+    <result column="company_position" property="companyPosition"/>
+    <!-- 共借人增加是否修改邮箱、是否修改手机 2016-6-13 -->
+    <result column="is_telephone_modify" property="istelephonemodify"  jdbcType="VARCHAR" />
+    <result column="is_email_modify" property="isemailmodify"  jdbcType="VARCHAR" />
+    <!-- 共借人增加身份验证分数2016-6-28 -->
+    <result column="id_valid_score" property="idValidScore"  jdbcType="VARCHAR" />
+    
+    
+    <collection property="carCustomerContactPerson" resultMap="myContacts" ofType="com.creditharmony.loan.car.common.entity.CarCustomerContactPerson" />
+  </resultMap>
+  <resultMap id="myContacts" type="com.creditharmony.loan.car.common.entity.CarCustomerContactPerson">
+  	<id property="id" column="bCId"/>
+    <result column="bCLoanCode" property="loanCode" jdbcType="VARCHAR" />
+    <result column="contact_name" property="contactName" jdbcType="VARCHAR" />
+    <result column="r_customer_coborrower_code" property="rCustomerCoborrowerCode" jdbcType="VARCHAR" />
+    <result column="dict_contact_relation" property="dictContactRelation" jdbcType="VARCHAR" />
+    <result column="contact_uint" property="contactUint" jdbcType="VARCHAR" />
+    <result column="dict_contact_now_address" property="dictContactNowAddress" jdbcType="VARCHAR" />
+    <result column="contact_unit_tel" property="contactUnitTel" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    lc.loan_code, lc.id, lc.cobo_name, lc.dict_sex, lc.cert_num, lc.dict_household_province, lc.dict_household_city, 
+    lc.dict_household_area, lc.household_address, lc.mobile, lc.family_tel, lc.dict_marry_status, lc.have_child_flag, 
+    lc.dict_live_province, lc.dict_live_city, lc.dict_live_area, lc.now_address, lc.email, lc.contact_is_know, 
+    lc.dict_relation_type, lc.dict_relation_customer, lc.house_other, dict_social_security, lc.create_by, 
+    lc.create_time, lc.modify_by, lc.modify_time,lc.dict_cert_type,lc.house_rent,lc.other_income,lc.captcha_if_confirm,
+    lc.confirm_timeout,lc.message_auth_code, lc.app_sign_flag,lc.id_valid_flag,lc.compose_photo_id,
+    lc.company_name,lc.company_address,lc.company_position,lc.have_other_income,lc.is_telephone_modify,lc.is_email_modify,
+    lc.cobo_house_hold_property,lc.id_valid_score
+  </sql>
+  <select id="selectByLoanCodeAndLoanType" resultMap="BaseResultMap" parameterType="java.util.Map" >
+    select 
+    <include refid="Base_Column_List" />,
+    cp.id bCId, cp.loan_code bCLoanCode, cp.r_customer_coborrower_code, cp.contact_name, cp.dict_contact_relation, cp.contact_uint,
+    cp.dict_contact_now_address, cp.contact_unit_tel
+    from t_cj_loan_coborrower lc
+    LEFT JOIN t_cj_customer_contact_person cp ON cp.loan_code = lc.loan_code AND cp.r_customer_coborrower_code = lc.id AND cp.loan_customter_type = #{loanType,jdbcType=VARCHAR}
+    LEFT JOIN t_gl_dict d1 ON d1.value = lc.dict_sex AND d1.type = 'jk_sex'
+    LEFT JOIN t_gl_dict d2 ON d2.value = lc.dict_marry_status AND d2.type = 'jk_marriage'
+    LEFT JOIN t_gl_dict d3 ON d3.value = lc.have_child_flag AND d3.type = 'jk_have_or_nohave'
+    LEFT JOIN t_gl_dict d4 ON d4.value = cp.dict_contact_relation AND d4.type = 'jk_loan_other_relation'
+	LEFT JOIN t_gl_province_city p1 ON p1.area_code = lc.dict_household_province 
+	LEFT JOIN t_gl_province_city c1 ON c1.area_code = lc.dict_household_city AND c1.parent_id = p1.id 
+	LEFT JOIN t_gl_province_city a1 ON a1.area_code = lc.dict_household_area AND a1.parent_id = c1.id 
+	LEFT JOIN t_gl_province_city p2 ON p2.area_code = lc.dict_live_province 
+	LEFT JOIN t_gl_province_city c2 ON c2.area_code = lc.dict_live_city AND c2.parent_id = p2.id 
+	LEFT JOIN t_gl_province_city a2 ON a2.area_code = lc.dict_live_area AND a2.parent_id = c2.id 
+    where lc.loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    concat(p1.area_name, c1.area_name, a1.area_name,lc.household_address) dict_household_view, 
+    concat(p2.area_name, c2.area_name, a2.area_name,lc.now_address) dict_live_view, 
+    <include refid="Base_Column_List" />
+    FROM jk.t_cj_loan_coborrower lc
+	LEFT JOIN t_gl_province_city p1 ON p1.area_code = lc.dict_household_province 
+	LEFT JOIN t_gl_province_city c1 ON c1.area_code = lc.dict_household_city AND c1.parent_id = p1.id 
+	LEFT JOIN t_gl_province_city a1 ON a1.area_code = lc.dict_household_area AND a1.parent_id = c1.id 
+	LEFT JOIN t_gl_province_city p2 ON p2.area_code = lc.dict_live_province 
+	LEFT JOIN t_gl_province_city c2 ON c2.area_code = lc.dict_live_city AND c2.parent_id = p2.id 
+	LEFT JOIN t_gl_province_city a2 ON a2.area_code = lc.dict_live_area AND a2.parent_id = c2.id 
+    WHERE lc.loan_code = #{loanCode,jdbcType=VARCHAR} ORDER BY lc.create_time 
+  </select>
+  <delete id="deleteCoBorrowAndContractPerson" parameterType="com.creditharmony.loan.car.common.entity.CarLoanCoborrower" >
+    delete from t_cj_loan_coborrower
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteCoboByLoanCode" parameterType="com.creditharmony.loan.car.common.entity.CarLoanCoborrower" >
+    delete from t_cj_loan_coborrower
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByIds" parameterType = "java.util.Map" >
+      delete from t_cj_loan_coborrower
+    where id in
+    <foreach collection="delList" open="(" close=")" separator="," item="item">
+    	#{item, jdbcType=VARCHAR}
+    </foreach>
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.CarLoanCoborrower" >
+    insert into t_cj_loan_coborrower (loan_code, id, cobo_name, 
+      dict_sex, cert_num, dict_household_province, 
+      dict_household_city, dict_household_area, household_address, 
+      mobile, family_tel, dict_marry_status, 
+      have_child_flag, dict_live_province, dict_live_city, 
+      dict_live_area, now_address, email, 
+      contact_is_know, dict_relation_type, dict_relation_customer, 
+      house_other, dict_social_security, create_by, 
+      create_time, modify_by, modify_time,dict_cert_type,house_rent,other_income,app_sign_flag,id_valid_flag,compose_photo_id,
+      company_name,company_address,company_position,have_other_income,cobo_house_hold_property,is_telephone_modify,is_email_modify
+      )
+    values (#{loanCode,jdbcType=VARCHAR}, #{id,jdbcType=VARCHAR}, #{coboName,jdbcType=VARCHAR}, 
+      #{dictSex,jdbcType=VARCHAR}, #{certNum,jdbcType=VARCHAR}, #{dictHouseholdProvince,jdbcType=VARCHAR}, 
+      #{dictHouseholdCity,jdbcType=VARCHAR}, #{dictHouseholdArea,jdbcType=VARCHAR}, #{householdAddress,jdbcType=VARCHAR}, 
+      #{mobileEnc,jdbcType=VARCHAR}, #{familyTel,jdbcType=VARCHAR}, #{dictMarryStatus,jdbcType=VARCHAR},
+      #{haveChildFlag,jdbcType=VARCHAR}, #{dictLiveProvince,jdbcType=VARCHAR}, #{dictLiveCity,jdbcType=VARCHAR}, 
+      #{dictLiveArea,jdbcType=VARCHAR}, #{nowAddress,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, 
+      #{contactIsKnow,jdbcType=VARCHAR}, #{dictRelationType,jdbcType=VARCHAR}, #{dictRelationCustomer,jdbcType=VARCHAR}, 
+      #{houseOther,jdbcType=VARCHAR}, #{dictSocialSecurity,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP},
+      #{dictCertType},#{houseRent},#{otherIncome}, #{appSignFlag,jdbcType=VARCHAR},#{idValidFlag,jdbcType=VARCHAR},#{composePhotoId,jdbcType=VARCHAR},
+      #{companyName},#{companyAddress},#{companyPosition},#{haveOtherIncome},#{coboHouseHoldProperty},#{istelephonemodify},#{isemailmodify}
+      )
+  </insert>
+   
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarLoanCoborrower" >
+    update t_cj_loan_coborrower
+    <set >
+    
+      <!-- 共借人增加工作单位、地址、职务 2016-05-22 --> 
+      <if test="companyName != null" >
+        company_name = #{companyName,jdbcType=VARCHAR},
+      </if>
+      <if test="companyAddress != null" >
+        company_address = #{companyAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="companyPosition != null" >
+        company_position = #{companyPosition,jdbcType=VARCHAR},
+      </if>  
+      
+      <if test="loanCode != null" >
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="coboName != null" >
+        cobo_name = #{coboName,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSex != null" >
+        dict_sex = #{dictSex,jdbcType=VARCHAR},
+      </if>
+      <if test="certNum != null" >
+        cert_num = #{certNum,jdbcType=VARCHAR},
+      </if>
+      <if test="dictHouseholdProvince != null" >
+        dict_household_province = #{dictHouseholdProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="dictHouseholdCity != null" >
+        dict_household_city = #{dictHouseholdCity,jdbcType=VARCHAR},
+      </if>
+      <if test="dictHouseholdArea != null" >
+        dict_household_area = #{dictHouseholdArea,jdbcType=VARCHAR},
+      </if>
+      <if test="householdAddress != null" >
+        household_address = #{householdAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null" >
+        mobile = #{mobileEnc,jdbcType=VARCHAR},
+      </if>
+      <if test="familyTel != null" >
+        family_tel = #{familyTel,jdbcType=VARCHAR},
+      </if>
+      <if test="dictMarryStatus != null" >
+        dict_marry_status = #{dictMarryStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="haveChildFlag != null" >
+        have_child_flag = #{haveChildFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLiveProvince != null" >
+        dict_live_province = #{dictLiveProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLiveCity != null" >
+        dict_live_city = #{dictLiveCity,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLiveArea != null" >
+        dict_live_area = #{dictLiveArea,jdbcType=VARCHAR},
+      </if>                                                                                          
+      <if test="nowAddress != null" >
+        now_address = #{nowAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="contactIsKnow != null" >
+        contact_is_know = #{contactIsKnow,jdbcType=VARCHAR},
+      </if>
+      <if test="dictRelationType != null" >
+        dict_relation_type = #{dictRelationType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictRelationCustomer != null" >
+        dict_relation_customer = #{dictRelationCustomer,jdbcType=VARCHAR},
+      </if>
+      <if test="houseOther != null" > 
+        house_other = #{houseOther,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSocialSecurity != null" >
+        dict_social_security = #{dictSocialSecurity,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dictCertType != null" >
+        dict_cert_type = #{dictCertType},
+      </if>
+      <if test="houseRent != null" >
+        house_rent = #{houseRent},
+      </if>
+      <if test="otherIncome != null" >
+        other_income = #{otherIncome},
+      </if>
+      <if test="customerPin!=null">
+         message_auth_code = #{customerPin,jdbcType=VARCHAR},
+       </if>
+       <if test="captchaIfConfirm!=null">
+         captcha_if_confirm = #{captchaIfConfirm,jdbcType=VARCHAR},
+       </if>
+       <if test="confirmTimeout!=null">
+         confirm_timeout = #{confirmTimeout,jdbcType=TIMESTAMP},
+       </if>
+       <if test="appSignFlag!=null and appSignFlag!=''">
+        app_sign_flag = #{appSignFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="idValidFlag != null and idValidFlag!=''">
+        id_valid_flag = #{idValidFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="composePhotoId != null and composePhotoId!=''">
+        compose_photo_id = #{composePhotoId,jdbcType=VARCHAR},
+      </if>
+      <if test="haveOtherIncome != null" ><!-- 其他收入 -->
+        have_other_income = #{haveOtherIncome,jdbcType=VARCHAR},
+      </if>
+      <if test="istelephonemodify != null" ><!-- 其他收入 -->
+        is_telephone_modify = #{istelephonemodify,jdbcType=VARCHAR},
+      </if>
+      <if test="isemailmodify != null" ><!-- 其他收入 -->
+        is_email_modify = #{isemailmodify,jdbcType=VARCHAR},
+      </if>
+      <if test="coboHouseHoldProperty != null" ><!-- 共借人住房性质 -->
+        cobo_house_hold_property = #{coboHouseHoldProperty,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <select id="selectName" resultMap="BaseResultMap" parameterType="java.lang.String" >
+  SELECT array_to_string(array_agg(cobo_name),',') cobo_name
+  	FROM t_cj_loan_coborrower
+	where loan_code= #{loanCode}
+  </select>
+  <select id="selectByLoanCodeNoConvers" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT 
+    <include refid="Base_Column_List" />
+    FROM jk.t_cj_loan_coborrower lc
+    WHERE lc.loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <select id="get" parameterType="string" resultType="com.creditharmony.loan.car.common.entity.CarLoanCoborrower">
+      select <include refid="Base_Column_List"/> 
+      from jk.t_cj_loan_coborrower lc
+      where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <update id="updatePaperlessMessage" parameterType="map">
+     update jk.t_cj_loan_coborrower 
+      <set>
+        <if test="appSignFlag!=null and appSignFlag!=''">
+          app_sign_flag = #{appSignFlag,jdbcType=VARCHAR},
+        </if>
+        <if test="idValidFlag!=null and idValidFlag!=''">
+         id_valid_flag = #{idValidFlag,jdbcType=VARCHAR},
+        </if>
+        <if test="idValidScore!=null">
+           id_valid_score = #{idValidScore,jdbcType=NUMERIC},
+        </if>
+        <if test="composePhotoId!=null and composePhotoId!=''">
+         compose_photo_id = #{composePhotoId,jdbcType=VARCHAR},
+        </if>
+         <if test="idArtificiaFlag!=null and idArtificiaFlag!=''">
+         id_artificia_flag = #{idArtificiaFlag,jdbcType=VARCHAR},
+        </if>
+      </set> 
+      where id=#{customerId,jdbcType=VARCHAR} 
+  </update>
+</mapper>

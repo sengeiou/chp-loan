@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.creditorRights.dao.CreditorRightsDao" >
+   
+   <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.creditorRights.view.CreditorRightView" >
+	    <id column="id" property="id" jdbcType="VARCHAR" />
+	    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+	    <result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+	    <result column="loan_customer_name" property="loanCustomerName" jdbcType="VARCHAR" />
+	    <result column="dict_cert_type" property="certType" jdbcType="VARCHAR" />
+	    <result column="customer_cert_num" property="customerCertNum" jdbcType="VARCHAR" />
+	    <result column="plate_numbers" property="plateNumbers" jdbcType="VARCHAR" />
+	    <result column="product_type" property="productType" jdbcType="VARCHAR" />
+	    <result column="cons_loan_amount" property="loanAmount" jdbcType="NUMERIC" />
+	    <result column="dict_loan_use" property="usageOfLoan" jdbcType="VARCHAR" />
+	    <result column="fee_month_rate" property="monthlyInterestRate" jdbcType="VARCHAR" />
+	    <result column="contract_fact_day" property="contractDay" jdbcType="TIMESTAMP" />
+	    <result column="contract_replay_day" property="downPaymentDay" jdbcType="TIMESTAMP" />
+	    <result column="contract_end_day" property="contractEndDay" jdbcType="TIMESTAMP" />
+	    <result column="creditor" property="creditor" jdbcType="VARCHAR" />
+	    <result column="dict_loan_status" property="loanStatus" jdbcType="VARCHAR" />
+	    <result column="dict_occupation_case" property="job" jdbcType="VARCHAR" />
+	    <result column="creditor_right_source" property="creditorRigthSource" jdbcType="VARCHAR" />
+	    <result column="loan_days" property="borrowingDays" jdbcType="NUMERIC" />
+	    <result column="primeval_worth" property="primevalWorth" jdbcType="NUMERIC" />
+	    <result column="issend_wealth" property="status" jdbcType="VARCHAR" />
+	    <result column="loan_months" property="contractMonths" jdbcType="VARCHAR" />
+	    <result column="credit_type" property="creditType" jdbcType="VARCHAR" />
+  	</resultMap>
+  	
+  	  <resultMap id="SyncClaimResultMap" type="com.creditharmony.core.claim.dto.SyncClaim">
+    <result column="id" jdbcType="VARCHAR" property="loanId" /><!-- 借款人id -->
+    <!-- loancode -->
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <!-- 放款日 -->
+    <result column="lending_time" jdbcType="DATE" property="loanOutmoneyDay" />
+    <!-- 借款人姓名 -->
+    <result column="customer_name" jdbcType="VARCHAR" property="loanName" />
+    <!-- 借款人身份证号 -->
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="loanIdcard" />
+    <!-- 借款类型 -->
+    <result column="class_type" jdbcType="VARCHAR" property="dictLoanType" />
+    <!-- 借款产品,产品名称 -->
+    <result column="product_name" jdbcType="VARCHAR" property="loanProduct" />
+    <!-- 实际用途 -->
+    <result column="realy_use" jdbcType="VARCHAR" property="loanPurpose" />
+    <!-- 首次还款日 -->
+    <result column="contract_replay_day" jdbcType="DATE" property="loanBackmoneyFirday" />
+    <!-- 还款日 -->
+    <result column="bill_day" jdbcType="NUMERIC" property="loanBakcmoneyDay"/>
+    <!-- 最后一次还款日 -->
+    <result column="contract_end_day" jdbcType="DATE" property="loanBackmoneyLastday" />
+    <!-- 批借期限 -->
+    <result column="contract_months" jdbcType="VARCHAR" property="loanMonths" />
+    <!-- 月利率 -->
+    <result column="fee_month_rate" jdbcType="VARCHAR" property="loanMonthRate" />
+    <!-- 中间人姓名 -->
+    <result column="middle_name" jdbcType="VARCHAR" property="loanMiddleMan" />
+    <!-- 资金托管标识，出借标识 -->
+    <result column="loan_flag" jdbcType="VARCHAR" property="loanTrusteeFlag" />
+    <!-- 职业 -->
+    <result column="dict_comp_industry" jdbcType="VARCHAR" property="loanJob" />
+    <!-- 原始债权价值 ,借款金额  -->
+    <result column="loan_apply_amount" jdbcType="VARCHAR" property="loanQuota" />
+  </resultMap>
+  
+   <insert id="insert" parameterType="com.creditharmony.loan.car.creditorRights.entity.CreditorRights">
+	INSERT INTO jk.t_cj_creditor_right_info
+	(id, loan_code, contract_code, loan_customer_name, dict_cert_type,
+	customer_cert_num, plate_numbers, product_type, cons_loan_amount,
+	dict_loan_use, fee_month_rate, contract_fact_day, contract_replay_day,
+	contract_end_day, creditor, dict_loan_status, dict_occupation_case,
+	creditor_right_source, loan_days, primeval_worth, issend_wealth,
+	create_by, create_time, modify_id, modify_time, channel_Type,contract_replay_amount,
+	contract_replay_way,customer_cobo,loan_months,rights_type,credit_type)
+	
+	VALUES(#{id}, #{loanCode}, #{contractCode}, #{loanCustomerName}, #{certType},
+	 #{customerCertNum}, #{plateNumbers}, #{productType}, #{loanAmount}, 
+	 #{usageOfLoan},#{monthlyInterestRate}, #{contractDay}, #{downPaymentDay},
+	  #{contractEndDay}, #{creditor}, #{loanStatus}, #{occupationCase}, 
+	  #{creditorRigthSource}, #{loanDays},#{primevalWorth}, #{issendWealth}, 
+	  #{createBy}, #{createTime}, #{modifyBy}, #{modifyTime}, #{channelType},
+	  #{contractReplayAmount},#{contractReplayWay},#{customerCobo},#{loanMonths},#{rightsType},#{creditType});
+   </insert>
+   <insert id="insertBatch" parameterType="com.creditharmony.loan.car.creditorRights.entity.CreditorRights">
+	INSERT INTO jk.t_cj_creditor_right_info
+	(id, loan_code, contract_code, loan_customer_name, dict_cert_type,
+	customer_cert_num, plate_numbers, product_type, cons_loan_amount,
+	dict_loan_use, fee_month_rate, contract_fact_day, contract_replay_day,
+	contract_end_day, creditor, dict_loan_status, dict_occupation_case,
+	creditor_right_source, loan_days, primeval_worth, issend_wealth,
+	create_by, create_time, modify_id, modify_time, channel_Type,contract_replay_amount,
+	contract_replay_way,customer_cobo,loan_months,rights_type,credit_type)
+	<foreach collection="list" item="item" separator=" union all ">
+	 SELECT #{item.id}, #{item.loanCode}, #{item.contractCode}, #{item.loanCustomerName}, #{item.certType},
+	 #{item.customerCertNum}, #{item.plateNumbers}, #{item.productType}, #{item.primevalWorth}, 
+	 #{item.usageOfLoan},#{item.monthlyInterestRate}, #{item.contractDay}, #{item.downPaymentDay},
+	  #{item.contractEndDay}, #{item.creditor}, #{item.loanStatus}, #{item.occupationCase}, 
+	  #{item.creditorRigthSource}, #{item.loanDays},#{item.primevalWorth}, #{item.issendWealth}, 
+	  #{item.createBy}, #{item.createTime}, #{item.modifyBy}, #{item.modifyTime}, #{item.channelType},
+	  #{item.contractReplayAmount},#{item.contractReplayWay},#{item.customerCobo},#{item.loanMonths},#{item.rightsType},#{item.creditType} 
+	 </foreach>
+   </insert>
+   <insert id="insertCreditorRightsImport" parameterType="com.creditharmony.loan.car.creditorRights.entity.CreditorRightsImport">
+	INSERT INTO jk.t_cj_creditor_right_info
+	(id, loan_code, contract_code, loan_customer_name, dict_cert_type,
+	customer_cert_num, plate_numbers, product_type, cons_loan_amount,
+	dict_loan_use, fee_month_rate, contract_fact_day, contract_replay_day,
+	contract_end_day, creditor, dict_loan_status, dict_occupation_case,
+	creditor_right_source, loan_days, primeval_worth, issend_wealth,
+	create_by, create_time, modify_id, modify_time, channel_Type,contract_replay_amount,
+	contract_replay_way,customer_cobo,loan_months,rights_type,credit_type)
+	VALUES( #{id}, #{loanCode}, #{contractCode}, #{loanCustomerName}, #{certType},
+	 #{customerCertNum}, #{plateNumbers}, #{productType}, #{primevalWorth}, 
+	 #{usageOfLoan},#{monthlyInterestRate}, #{contractDay}, #{downPaymentDay},
+	  #{contractEndDay}, #{creditor}, #{loanStatus}, #{occupationCase}, 
+	  #{creditorRigthSource}, #{loanDays},#{primevalWorth}, #{issendWealth}, 
+	  #{createBy}, #{createTime}, #{modifyBy}, #{modifyTime}, #{channelType},
+	  #{contractReplayAmount},#{contractReplayWay},#{customerCobo},#{loanMonths},#{rightsType},#{creditType})
+   </insert>
+   
+   <!-- 获取合同表借款编码 -->
+   <select id="getCjContractLoanCode" parameterType="string" resultType="string">
+   		select loan_code from jk.t_cj_contract
+	    where contract_code = #{contractCode}
+   </select>
+   
+   <!-- 添加债权(导入Excel) -->
+   <insert id="insertImport" parameterType="com.creditharmony.loan.car.creditorRights.entity.CreditorRightsImport">
+	INSERT INTO jk.t_cj_creditor_right_info
+		(
+			id, 
+			loan_code, 
+			contract_code, 
+			loan_customer_name, 
+			dict_cert_type,
+			customer_cert_num, 
+			plate_numbers, 
+			product_type, 
+			dict_loan_use, 
+			fee_month_rate, 
+			contract_fact_day,
+		    contract_replay_day,
+			contract_end_day, 
+			creditor, 
+			dict_occupation_case,
+			creditor_right_source, 	
+			loan_days,
+			primeval_worth, 	
+		    contract_replay_way,
+		    contract_replay_amount,    
+			create_by, 
+			create_time, 
+			loan_flag
+		)
+	VALUES(
+			#{id}, 
+			#{loanCode}, 
+			#{contractCode}, 
+			#{loanCustomerName}, 
+			#{certType},
+			#{customerCertNum}, 
+			#{plateNumbers}, 
+			#{productType}, 
+			#{usageOfLoan},
+			#{monthlyInterestRate}, 
+			#{contractDay}, 
+			#{downPaymentDay},
+			#{contractEndDay},
+			#{creditor}, 
+			#{occupationCase}, 
+			#{creditorRigthSource}, 
+			#{loanDays},
+			#{primevalWorth}, 
+			#{contractReplayWay}, 
+			#{contractReplayAmount}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{loanFlag}
+		  );
+   </insert>
+   
+   <insert id="insertCreditorCoborrower" parameterType="com.creditharmony.loan.car.creditorRights.entity.Coborrower">
+	INSERT INTO jk.t_cj_creditor_coborrower
+	      (id, cobo_name, cobo_num, creditor_right_id,create_by, create_time,modify_by, modify_time)
+	VALUES(#{id}, #{loanCustomerName}, #{customerCertNum}, #{creditor},#{createBy}, #{createTime}, #{modifyBy}, #{modifyTime});
+   </insert>   
+
+	<select id="getCreditorRights"  parameterType="com.creditharmony.loan.car.creditorRights.view.CreditorRightView" resultMap="BaseResultMap">
+		SELECT 
+			ri.id,
+		    ri.loan_code,
+		    ri.contract_code,
+		    ri.loan_customer_name,
+		    ri.dict_cert_type,
+		    ri.customer_cert_num,
+		    ri.plate_numbers,
+		    ri.product_type,
+		    ri.cons_loan_amount,
+		    ri.dict_loan_use,
+		    ri.fee_month_rate,
+		    ri.contract_fact_day,
+		    ri.contract_replay_day,
+		    ri.contract_end_day,
+		    ri.creditor,
+		    dict_loan_status,
+		    ri.dict_occupation_case,
+		    ri.creditor_right_source,
+		    ri.loan_days,
+		    ri.primeval_worth,
+		    ri.issend_wealth,
+		    ri.create_by,
+		    ri.create_time,
+		    ri.modify_id,
+		    ri.modify_time, 
+		    ri.contract_replay_way,
+		    ri.contract_replay_amount,
+		    ri.loan_flag, 
+		    ri.channel_type,
+    		credit_type
+		FROM jk.t_cj_creditor_right_info ri
+		<where>
+			<if test="loanCustomerName != null and loanCustomerName != ''">
+				ri.loan_customer_name like '%' ||  #{loanCustomerName} || '%'
+			</if>
+			<if test="contractCode != null and contractCode != ''">
+				and ri.contract_code = #{contractCode} 
+			</if>
+			<if test="customerCertNum != null and customerCertNum != ''">
+				and ri.customer_cert_num = #{customerCertNum} 
+			</if>
+			<if test="productType != null and productType != ''">
+				and ri.product_type = #{productType} 
+			</if>
+			<if test="loanStatus != null and loanStatus != ''">
+				and ri.dict_loan_status = #{loanStatus} 
+			</if>
+			<if test="entryDayStart != null">
+				and ri.create_by >= #{entryDayStart} 
+			</if>
+			<if test="entryDayEnd != null">
+				<![CDATA[ and ri.create_by <= #{entryDayEnd} ]]>     
+			</if>
+			<if test="status != null and status != ''">
+				and ri.issend_wealth = #{status} 
+			</if>
+			<if test="rightsType != null and rightsType != ''">
+				and ri.rights_type = #{rightsType} 
+			</if>
+		</where>
+	</select>
+	<select id="getCreditRight"  parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT id, loan_code, contract_code, loan_customer_name, dict_cert_type,
+		customer_cert_num, plate_numbers, product_type, cons_loan_amount,
+		dict_loan_use, fee_month_rate, contract_fact_day, contract_replay_day,
+		contract_end_day, creditor, dict_loan_status, dict_occupation_case,
+		creditor_right_source, loan_days, primeval_worth, issend_wealth,
+		create_by, create_time, modify_id, modify_time,contract_replay_amount,
+		contract_replay_way,channel_type,customer_cobo,loan_months
+		FROM
+		jk.t_cj_creditor_right_info
+		<where>
+			id = #{_parameter}
+		</where>
+	</select>
+	
+	<!-- 获取共借人数据 -->
+	<select id="getCoborrowerData"  parameterType="java.lang.String" resultMap="SyncClaimResultMap">
+		select 
+			cobo_name customer_name,cobo_num customer_cert_num 
+		from jk.t_cj_creditor_coborrower
+			where creditor_right_id = #{creditorRightId}
+	</select>
+	
+	<update id="update" parameterType="com.creditharmony.loan.car.creditorRights.entity.CreditorRights">
+		UPDATE jk.t_cj_creditor_right_info
+		SET loan_code=#{loanCode}, contract_code=#{contractCode}, loan_customer_name=#{loanCustomerName},
+			dict_cert_type=#{certType}, customer_cert_num=#{customerCertNum}, plate_numbers=#{plateNumbers},
+			product_type=#{productType}, cons_loan_amount=#{primevalWorth}, dict_loan_use=#{usageOfLoan},
+			fee_month_rate=#{monthlyInterestRate}, contract_fact_day=#{contractDay}, contract_replay_day=#{downPaymentDay},
+			contract_end_day=#{contractEndDay}, creditor=#{creditor}, dict_loan_status=#{loanStatus},
+			dict_occupation_case=#{occupationCase}, creditor_right_source=#{creditorRigthSource}, loan_days=#{loanDays},
+			primeval_worth=#{primevalWorth}, issend_wealth=#{issendWealth},
+			modify_id=#{modifyBy}, modify_time=#{modifyTime},channel_Type=#{channelType},customer_cobo=#{customerCobo},
+			loan_months = #{loanMonths}
+		WHERE 
+ 			id = #{id} 
+	</update>
+	<update id="updateIssendWealth" parameterType="com.creditharmony.loan.car.creditorRights.entity.CreditorRights">
+		update jk.t_cj_creditor_right_info
+		<set >
+		 	 issend_wealth=#{issendWealth},loan_months = (loan_days / 30),
+		      <if test="rightsType != null" >
+		        rights_type = #{rightsType,jdbcType=VARCHAR},
+		      </if>
+		      <if test="creditType != null" >
+		        credit_type = #{creditType,jdbcType=VARCHAR},
+		      </if>
+	    </set>
+		<where>
+				loan_code = #{loanCode}
+		</where>
+
+	</update>
+	<update id="updateLoanStatus" parameterType="com.creditharmony.loan.car.creditorRights.entity.CreditorRights">
+		update jk.t_cj_creditor_right_info
+		<set >
+		      <if test="loanStatus != null" >
+		        dict_loan_status=#{loanStatus},
+		      </if>
+		      <if test="settledDate != null" >
+		        settled_date = #{settledDate},
+		      </if>
+		      <if test="creditType != null" >
+		        credit_type = #{creditType},
+		      </if>
+	    </set>
+		<where>
+				id = #{id} 
+		</where>
+
+	</update>
+	
+	
+ <select id="syncFortune" resultType="com.creditharmony.core.claim.dto.SyncClaim">
+ 	  select 
+ 	  a.id as loanId,                          				<!-- 借款人id -->
+ 	  a.loan_code as loanCode,								<!-- 借款编码 -->
+ 	  a.primeval_worth as loanQuota,             			<!-- 原始可用债权 -->
+ 	  a.dict_occupation_case as loanJob,         			<!-- 职业情况 -->
+ 	  a.creditor as loanMiddleMan,				 		<!-- 中间人 -->
+ 	  a.fee_month_rate as loanMonthRate,         			<!-- 月利率 -->
+ 	  a.contract_replay_day as loanBackmoneyFirday,         <!-- 首次还款日 -->
+ 	  a.contract_end_day as loanBackmoneyLastday,        	<!-- 最后一期还款日 -->
+ 	  a.dict_loan_use as loanPurpose,         				<!-- 借款用途 -->
+ 	  a.product_type as loanProduct,         				<!-- 产品类型 -->
+ 	  a.customer_cert_num as loanIdcard,         			<!-- 借款人身份证号 -->
+ 	  a.loan_customer_name as loanName,         			<!-- 借款人姓名 -->
+ 	  a.contract_replay_day as loanBakcmoneyDay,			<!-- 还款日 -->
+ 	  a.cons_loan_amount as loanCreditValue,				<!-- 原始债权价值 月满盈表与可用债权表 -->
+ 	  a.cons_loan_amount as loanAvailabeValue,				<!-- 可用债价值  月满盈可用债权表 -->
+ 	  a.plate_numbers as loanPledge,						<!-- 借款抵押物 车借为：车牌号-->
+ 	  a.channel_type 					
+ 	  from jk.t_cj_creditor_right_info a
+      where a.loan_code=#{loanCode}
+ </select>	
+ 
+		<!-- 债权列表   查询要发送到财富端的数据 -->
+	<select id="querySendFortune" parameterType="com.creditharmony.loan.car.creditorRights.view.CreditorRightView" resultType="com.creditharmony.core.claim.dto.SyncClaim">
+ 	  select 
+ 	  a.id as loanId,                          				<!-- 借款人id -->
+ 	  a.loan_code as loanCode,								<!-- 借款编码 -->
+ 	  a.primeval_worth as loanQuota,             			<!-- 原始可用债权 -->
+ 	  a.dict_occupation_case as loanJob,         			<!-- 职业情况 -->
+ 	  a.creditor as loanMiddleMan,				 		<!-- 中间人 -->
+ 	  a.fee_month_rate as loanMonthRate,         			<!-- 月利率 -->
+ 	  a.contract_replay_day as loanBackmoneyFirday,         <!-- 首次还款日 -->
+ 	  a.contract_end_day as loanBackmoneyLastday,        	<!-- 最后一期还款日 -->
+ 	  a.dict_loan_use as loanPurpose,         				<!-- 借款用途 -->
+ 	  a.product_type as loanProduct,         				<!-- 产品类型 -->
+ 	  a.customer_cert_num as loanIdcard,         			<!-- 借款人身份证号 -->
+ 	  a.loan_customer_name as loanName,         			<!-- 借款人姓名 -->
+ 	  extract(day from a.contract_replay_day) as loanBakcmoneyDay,			<!-- 还款日 -->
+ 	  a.cons_loan_amount as loanCreditValue,				<!-- 原始债权价值 月满盈表与可用债权表 -->
+ 	  a.cons_loan_amount as loanAvailabeValue,				<!-- 可用债价值  月满盈可用债权表 -->
+ 	  a.plate_numbers as loanPledge,						<!-- 借款抵押物 车借为：车牌号-->
+ 	  a.channel_type 										<!-- 借款抵押物 车借为：车牌号-->
+ 	  from jk.t_cj_creditor_right_info a
+ 	  <where>
+ 	  		<if test="id != null and id != ''">
+				a.id = #{id}
+			</if>
+ 	   	  	<if test="loanCode != null and loanCode != ''">
+				a.loan_code = #{loanCode}
+			</if>
+ 	  		<if test="loanCustomerName != null and loanCustomerName != ''">
+			    and	a.loan_customer_name like #{loanCustomerName}
+			</if>
+			<if test="contractCode != null and contractCode != ''">
+				and a.contract_code = #{contractCode} 
+			</if>
+			<if test="customerCertNum != null and customerCertNum != ''">
+				and a.customer_cert_num = #{customerCertNum} 
+			</if>
+			<if test="productType != null and productType != ''">
+				and a.product_type = #{productType} 
+			</if>
+			<if test="loanStatus != null and loanStatus != ''">
+				and a.dict_loan_status = #{loanStatus} 
+			</if>
+			<if test="entryDayStart != null">
+				and a.create_by >= #{entryDayStart} 
+			</if>
+			<if test="entryDayEnd != null">
+				<![CDATA[ and a.create_by <= #{entryDayEnd} ]]>     
+			</if>
+			<if test="status != null and status != ''">
+				and a.issend_wealth = #{status} 
+			</if>
+			<if test="rightsType != null and rightsType != ''">
+				and a.rights_type = #{rightsType} 
+			</if>
+ 	  </where>
+
+ 
+ </select>	
+ <select id="querySendFortuneByLoanCode"  resultType="com.creditharmony.core.claim.dto.SyncClaim">
+ 	  select 
+ 	  a.id as loanId,                          				<!-- 借款人id -->
+ 	  a.loan_code as loanCode,								<!-- 借款编码 -->
+ 	  a.primeval_worth as loanQuota,             			<!-- 原始可用债权 -->
+ 	  a.dict_occupation_case as loanJob,         			<!-- 职业情况 -->
+ 	  a.creditor as loanMiddleMan,				 		<!-- 中间人 -->
+ 	  a.fee_month_rate as loanMonthRate,         			<!-- 月利率 -->
+ 	  a.contract_replay_day as loanBackmoneyFirday,         <!-- 首次还款日 -->
+ 	  a.contract_end_day as loanBackmoneyLastday,        	<!-- 最后一期还款日 -->
+ 	  a.dict_loan_use as loanPurpose,         				<!-- 借款用途 -->
+ 	  a.product_type as loanProduct,         				<!-- 产品类型 -->
+ 	  a.customer_cert_num as loanIdcard,         			<!-- 借款人身份证号 -->
+ 	  a.loan_customer_name as loanName,         			<!-- 借款人姓名 -->
+ 	  extract(day from a.contract_replay_day) as loanBakcmoneyDay,			<!-- 还款日 -->
+ 	  a.cons_loan_amount as loanCreditValue,				<!-- 原始债权价值 月满盈表与可用债权表 -->
+ 	  a.cons_loan_amount as loanAvailabeValue,				<!-- 可用债价值  月满盈可用债权表 -->
+ 	  a.plate_numbers as loanPledge,						<!-- 借款抵押物 车借为：车牌号-->
+ 	  a.channel_type 					
+ 	  from jk.t_cj_creditor_right_info a
+ 	  <where>
+		a.loan_code in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		and a.rights_type = '1' 
+</where>
+
+ 
+ </select>	
+ 
+ 	<update id="updateCarCreditorForConfirm">
+		update t_cj_creditor_right_info  
+		<set>
+			<if test="creditType != null">
+			 credit_type = #{creditType},
+		    </if>
+			<if test="creditConfirmDate != null">
+			 credit_confirm_date = #{creditConfirmDate},
+		    </if>
+			<if test="settleConfirmDate != null">
+			 settle_confirm_date = #{settleConfirmDate},
+		    </if>
+			<if test="settledDate != null">
+			 settled_date = #{settledDate},
+		    </if>
+		</set> 
+		where id in (${cid})
+	</update>
+	
+	
+	<!--债权 操作历史数据 -->
+	<!--债权 插入历史数据 -->
+	<insert id="insertCreLog" parameterType="com.creditharmony.loan.car.creditorRights.view.CreditorLog">
+		insert into t_cj_creditor_log(id,loan_code,oper_msg,oper_people,oper_time)
+		values(#{id},#{loanCode},#{operMsg},#{createBy},#{createTime})
+	</insert>
+	
+	<!--债权 按ID查询历史数据 -->
+	<select id="getCreLog" parameterType="string" resultType="com.creditharmony.loan.car.creditorRights.view.CreditorLog">
+		select 
+			id,
+			loan_code,
+			oper_msg operMsg,
+			(select name from jk.t_gl_user
+			where id = oper_people)operPeople ,
+			oper_time operTime
+		from jk.t_cj_creditor_log
+		where loan_code = #{loanCode}
+	</select>
+</mapper>

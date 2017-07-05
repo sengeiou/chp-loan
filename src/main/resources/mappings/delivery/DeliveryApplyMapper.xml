@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.borrow.delivery.dao.DeliveryApplyDao">
+     <!-- 映射关系配置   entity 与 sql 语句查询结果 的 映射关系-->
+      <resultMap id="deliveryApply" type="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewEx" >  
+      	<result property="loanCode" column="LOAN_CODE" /><!-- 借款编码 -->
+      	<result property="loanCustomerName" column="LOAN_CUSTOMER_NAME" /><!-- 客户姓名 -->
+      	<result property="contractCode" column="CONTRACT_CODE" /><!-- 合同编号 -->
+      	<result property="orgName" column="ORG_NAME" /><!-- 机构名 -->
+      	<result property="orgCode" column="loan_store_orgid" /><!-- 机构理编号 -->
+      	<result property="teamManagerCode" column="loan_team_managercode" /><!-- 团队经理编号 -->
+      	<result property="managerCode" column="loan_managercode" /><!-- 客户经理编号 -->
+      	<result property="customerServiceCode" column="loan_customer_service" /><!-- 客服人员编号-->
+      	<result property="outbountByCode" column="loan_survey_emp_id" /><!-- 外访人员编号-->
+      	<result property="teamManagerName" column="TEAM_MANAGER_NAME" /><!-- 团队经理 -->
+      	<result property="managerName" column="MANAGER_NAME" /><!-- 客户经理 -->
+      	<result property="customerServiceName" column="CUSTOMER_SERVICE_NAME" /><!-- 客服人员 -->
+      	<result property="outbountByName" column="OUTBOUNT_bY_NAME" /><!-- 外访人员 -->
+      	<result property="dictLoanStatus" column="DICT_DESCRIPTION" /><!-- 借款状态 -->       	
+     </resultMap>
+     <sql id="applySql">
+  	 b.LOAN_CODE,
+  	 b.LOAN_CUSTOMER_NAME,
+  	 b.loan_store_orgid,
+  	 b.loan_team_managercode,
+  	 b.loan_managercode,
+  	 b.loan_customer_service,
+  	 b.loan_survey_emp_id,
+  	 c.CONTRACT_CODE,
+  	 d.NAME ORG_NAME,
+  	 e.NAME TEAM_MANAGER_NAME,
+  	 f.NAME MANAGER_NAME,
+  	 g.NAME CUSTOMER_SERVICE_NAME,
+  	 h.NAME OUTBOUNT_bY_NAME,
+  	 b.DICT_LOAN_STATUS
+  	 from (select * from jk.T_JK_LOAN_INFO where LOAN_CODE not in (select distinct loan_code from jk.t_jk_task_delivery)) b
+  	 left join jk.T_JK_CONTRACT c on b.LOAN_CODE = c.LOAN_CODE
+  	 left join jk.T_GL_ORG d on b.loan_store_orgid = d.ID
+  	 left join jk.T_GL_USER e on b.loan_team_managercode = e.id
+  	 left join jk.T_GL_USER f on b.loan_managercode = f.id
+  	 left join jk.T_GL_USER g on b.loan_customer_service = g.id
+  	 left join jk.T_GL_USER h on b.loan_survey_emp_id = h.id	
+     </sql>
+  	<!-- 待申请交割列表(交割表t/合同表o/借款_借款信息表i/用户表(团队经理)ut/用户表(客户经理)um/用户表(客服)us/用户表(外访人员)uo/组织机构表g/字典表m-->
+  	<select id="deliveryApplyList" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryParamsEx" resultMap="deliveryApply">
+	  		select distinct
+	  			<include refid="applySql" />
+	  		where b.LOAN_CODE not in (select distinct loan_code from jk.t_jk_task_delivery)
+	  		<!-- 根据客户姓名检索 -->
+	  		<if test="custName != null and custName !='' ">
+	  			and b.LOAN_CUSTOMER_NAME like '%${custName }%'
+	  		</if>
+	  		<!-- 根据合同编号检索 -->
+	  		<if test="contractCode != null and contractCode !='' ">
+	  			and c.CONTRACT_CODE like '%${contractCode }%'
+	  		</if>
+	  		<!-- 根据客户经理检索 -->
+	  		<if test="manager != null and manager !='' ">
+	  			and f.NAME like '%${manager }%'
+	  		</if>
+	  		<!-- 根据团队经理检索 -->
+	  		<if test="teamManager != null and teamManager !='' ">
+	  			and e.NAME like '%${teamManager }%'
+	  		</if>
+	  		<if test="loanStatus !=null and loanStatus != '' ">
+	  			and b.DICT_LOAN_STATUS = #{loanStatus }
+	  		</if>
+	  		           ${queryRight} 
+  	</select> 
+  	
+  	<!-- 根据借款编码获得交割申请信息 -->
+  	<select id="applyInfoByloanCode" parameterType="java.lang.String" resultMap="deliveryApply">
+  		select distinct
+  		<include refid="applySql" />
+  		where b.LOAN_CODE = #{loanCode}
+  	</select>
+  	
+ 	<!-- 查询所有门店 -->
+  	<select id="orgs" parameterType="java.lang.String" resultType="com.creditharmony.loan.borrow.delivery.entity.ex.OrgView">
+  		select distinct 
+  		name orgName,
+  		id orgCode
+  		from 
+  		jk.T_GL_ORG 
+  		where type = #{orgKey}
+  		and useable='1' 
+  		and del_flag='0'  	
+  	</select> 	
+  	<!-- 查询门店的所有团队经理 -->
+  	<select id="teamManager"  resultType="com.creditharmony.loan.borrow.delivery.entity.ex.UserView">
+  		select
+  		 a.id as userCode,
+  		 a.name as userName 
+  		 from jk.t_gl_user a where a.id in (
+		select user_id from jk.t_gl_user_role_org b where b.role_id = #{teamManagerKey} and b.org_id in (
+		select c.id from jk.t_gl_org c where c.parent_id = #{orgCode}) )		
+  	</select>
+  	
+  	<!-- 查询团队经理下的所有客户经理 --> 
+ 	<select id="manager" resultType="com.creditharmony.loan.borrow.delivery.entity.ex.UserView">
+ 		select 
+ 		a.id  as userCode,
+ 		a.name as userName
+ 		from jk.t_gl_user a 
+		where id in 
+		(
+		select user_id from jk.t_gl_user_role_org b 
+		where b.role_id = #{managerKey}
+		)
+		and a.department_id in (
+		select c.department_id from jk.t_gl_user c where c.id = #{userCode}
+		)
+		
+ 	</select>
+ 	
+ 	<!-- 查询门店的所有客服 -->
+ 	<select id="service" resultType="com.creditharmony.loan.borrow.delivery.entity.ex.UserView">
+ 		select 
+ 		a.id as userCode,
+ 		a.name as userName
+ 		 from jk.t_gl_user a where a.id in (
+		select user_id from jk.t_gl_user_role_org b where b.role_id = #{serviceKey} and b.org_id = #{orgCode}
+		)
+ 	</select>
+ 	
+ 	<!-- 查询门店的所有外访人员 -->
+ 	<select id="outBound" resultType="com.creditharmony.loan.borrow.delivery.entity.ex.UserView">
+ 		select 
+ 		a.id as userCode,
+ 		a.name as userName
+ 		 from jk.t_gl_user a where a.id in (
+		select user_id from jk.t_gl_user_role_org b where b.role_id = #{outBoundKey} and b.org_id  = #{orgCode} )
+ 	</select>
+ 	
+ 	<insert id="insertDelivery" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewEx">
+ 		INSERT INTO jk.t_jk_task_delivery(
+            id, loan_code, contract_code, entrust_man, stores_id, team_managercode, 
+            manager_code, customer_servicescode, outbound_by, dict_loan_status, 
+            delivery_apply_time, delivery_reason, new_stores_id, new_team_managercode, 
+            new_managercode, new_customer_servicescode, new_outbound_by, 
+            delivery_result, rejected_reason, audit_code, check_time, create_by, 
+            create_time, modify_by, modify_time)
+    	VALUES (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{contractCode,jdbcType=VARCHAR}, #{entrustMan,jdbcType=VARCHAR}, #{orgCode,jdbcType=VARCHAR}, #{teamManagerCode,jdbcType=VARCHAR}, 
+            #{managerCode,jdbcType=VARCHAR}, #{customerServiceCode,jdbcType=VARCHAR}, #{outbountByCode,jdbcType=VARCHAR}, #{dictLoanStatus,jdbcType=VARCHAR}, 
+            #{deliveryApplyTime,jdbcType=TIMESTAMP}, #{deliveryReason,jdbcType=VARCHAR}, #{newOrgName,jdbcType=VARCHAR}, #{newTeamManagerName,jdbcType=VARCHAR}, 
+            #{newManagerName,jdbcType=VARCHAR}, #{newCustomerServiceName,jdbcType=VARCHAR}, #{newOutbountByName,jdbcType=VARCHAR}, 
+            #{deliveryResult,jdbcType=VARCHAR}, #{rejectedReason,jdbcType=VARCHAR}, #{auditCode,jdbcType=VARCHAR}, #{checkTime,jdbcType=TIMESTAMP}, #{createBy,jdbcType=VARCHAR}, 
+            #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})				
+ 	</insert>
+</mapper>

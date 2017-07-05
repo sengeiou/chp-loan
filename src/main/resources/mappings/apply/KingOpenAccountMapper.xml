@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.trusteeship.dao.KingOpenAccountDao">
+  <resultMap id="baseResultMap" type="com.creditharmony.loan.common.workFlow.view.LoanFlowWorkItemView">
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode"  />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="name" jdbcType="VARCHAR" property="storeName" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coborrowerName" />
+    <result column="product_name" jdbcType="VARCHAR" property="replyProductName" /><!-- 借款产品名称 -->
+    <result column="grant_amount" jdbcType="NUMERIC" property="lendingMoney" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractMoney" />
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="urgeServiceFee" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="identityCode" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="channelName" />
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="urgentFlag" />
+    <result column="bank_branch" jdbcType="VARCHAR" property="bankBranchName" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccountNumber" />
+    <result column="dict_loan_way" jdbcType="VARCHAR" property="lendingWayName" />
+    <result column="contract_months" jdbcType="NUMERIC" property="replyMonth" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="telesalesFlag"/>
+    <result column="loan_store_orgid" jdbcType="VARCHAR" property="storeOrgId"/>
+    <result column="bank_account_name" jdbcType="VARCHAR" property="custBankAccountName"/>
+    <result column="issplit" jdbcType="VARCHAR" property="issplit"/>
+  </resultMap>
+  
+  <!-- 放款确认列表数据显示 -->
+  <select id="getKingOpenList" resultMap="baseResultMap">
+	select
+		a.id, --放款id 
+		a.loan_code, --借款编码
+		d.apply_id, --applyId
+		a.contract_code, --合同编号
+		b.loan_customer_name, --客户姓名
+		b.issplit, --拆分标志
+		c.customer_cert_num, --证件号码
+		c.customer_phone_first as mobelPhone, --手机号
+		c.customer_email as email, --邮箱地址
+		round(d.contract_amount,2) as contractMoney,--合同金额
+		round(a.grant_amount,2) as lendingMoney,-- 放款金额
+		fy_bank.fy_bank as depositBank, --开户行行别
+		fyArea.area_name as kingBankProvinceName, --开户省市
+		fyACode.area_name as kingBankCityName, --开户区县
+		e.bank_branch,--支行
+		e.bank_account_name, --户名
+		e.bank_account, --账户
+		b.dict_loan_status as loanStatusName,--借款状态
+		b.king_status as kingStatus, --金账户开户状态
+		b.king_open_resp_reason, --金账户开户失败原因
+		b.king_proctol_resp_reason, --金账户协议库返回信息
+		case when d.company_name is not null 
+    	 then '1' else '0' end as ensure_flag, --是否有保证人
+		b.loaninfo_oldornew_flag, --新老标识
+		(select label from jk.t_gl_dict where type = 'jk_trust_status' and value = b.trust_cash) as trustCash, --委托提现
+		b.loan_store_orgid as storeOrgId, --门店id
+		h.name as storeName --门店名称
+	from jk.t_jk_loan_grant a
+	left join jk.t_jk_loan_info b on b.loan_code = a.loan_code 
+	left join jk.t_jk_loan_customer c on c.loan_code = b.loan_code
+	left join jk.t_jk_contract d on d.loan_code = a.loan_code 
+	left join jk.t_jk_loan_bank e on e.loan_code = d.loan_code and e.bank_top_flag = '1' and e.repayment_flag = '0'
+	left join jk.t_jk_fy_bank fy_bank on fy_bank.sys_bank_code = e.bank_name
+    left join jk.t_jk_fy_area_code fyArea on fyArea.area_code = e.bank_jzh_khhss 
+    left join jk.t_jk_fy_area_code fyACode on fyACode.area_code = e.bank_jzh_khhqx 
+	left join jk.t_gl_org h on h.id = b.loan_store_orgid
+	where b.model = '1' and b.dict_loan_status = '96'
+      <if test="customerName != null and customerName != ''" >
+        and loan_customer_name LIKE CONCAT('%', #{customerName}, '%')
+      </if>
+      <if test="identityCode != null and identityCode != ''" >
+        and customer_cert_num LIKE CONCAT('%', #{identityCode}, '%')
+      </if>
+      <if test="contractCode != null and contractCode != ''" >
+        and a.contract_code = #{contractCode}
+      </if>
+      <if test="storeOrgIds != null" > <!-- 门店id -->
+      	and b.loan_store_orgid in
+		<foreach item="item" index="index" collection="storeOrgIds" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+      </if>
+      <if test="applyIds != null">
+      	and d.apply_id in
+      	<foreach item="item" index="index" collection="applyIds" open="(" separator="," close=")">
+      		#{item}
+      	</foreach>
+      </if>
+      <if test="additionalFlag != null and additionalFlag != ''">
+      	and dict_is_additional = #{additionalFlag}
+      </if>
+	  <if test = "checkTime != null and checkTime != ''">
+	  	and to_date(to_char(auditing_time,'yyyy-MM-dd')) = #{checkTime}
+	  </if>
+	  order by b.order_field
+  </select>
+  
+</mapper>

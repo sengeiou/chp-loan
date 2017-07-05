@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.users.dao.UserInfoDao">
+	
+    <resultMap id="UserInfoMap" type="com.creditharmony.loan.users.entity.UserInfo">
+	  <id column="ID" property="id" jdbcType="VARCHAR" />
+	  <result column="COMPANY_ID" property="companyId" jdbcType="VARCHAR" />
+	  <result column="DEPARTMENT_ID" property="departmentId" jdbcType="VARCHAR" />
+	  <result column="DEPARTMENT_NAME" property="departmentName" jdbcType="VARCHAR" />
+	  <result column="LOGIN_NAME" property="loginName" jdbcType="VARCHAR" />
+	  <result column="PASSWORD" property="password" jdbcType="VARCHAR" />
+	  <result column="USER_CODE" property="userCode" jdbcType="VARCHAR" />
+	  <result column="NAME" property="name" jdbcType="VARCHAR" />
+	  <result column="EMAIL" property="email" jdbcType="VARCHAR" />
+	  <result column="PHONE" property="phone" jdbcType="VARCHAR" />
+	  <result column="MOBILE" property="mobile" jdbcType="VARCHAR" />
+	  <result column="USER_TYPE" property="userType" jdbcType="DECIMAL" />
+	  <result column="LOGIN_IP" property="loginIp" jdbcType="VARCHAR" />
+	  <result column="LOGIN_DATE" property="loginDate" jdbcType="TIMESTAMP" />
+	  <result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	  <result column="STATUS" property="status" jdbcType="VARCHAR" />
+	  <result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+	  <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+	  <result column="MODIFY_BY" property="modifyBy" jdbcType="VARCHAR" />
+	  <result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+	  <result column="DEL_FLAG" property="delFlag" jdbcType="VARCHAR" />
+	  <result column="ENTRY_TIME" property="entryTime" jdbcType="TIMESTAMP" />
+	  <result column="LEVEL" property="level" jdbcType="DECIMAL" />
+	  <result column="HAS_LOGIN" property="hasLogin" jdbcType="VARCHAR" />
+	  <result column="SEX" property="sex" jdbcType="VARCHAR" />
+	  <result column="POSPWD" property="posPwd" jdbcType="VARCHAR" />
+	  <result column="CALL_EMP_CODE" property="callEmpCode" jdbcType="VARCHAR" />
+	  <result column="LEADER_ID" property="leaderId" jdbcType="VARCHAR" />
+	  <result column="SYSTEM_FLAG" property="systemFlag" jdbcType="DECIMAL" />
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+      ID, COMPANY_ID, DEPARTMENT_ID, LOGIN_NAME, PASSWORD, USER_CODE, NAME, 
+      EMAIL, PHONE, MOBILE, USER_TYPE, LOGIN_IP, LOGIN_DATE, REMARKS, STATUS, CREATE_BY, CREATE_TIME, MODIFY_BY,
+      MODIFY_TIME, DEL_FLAG,ENTRY_TIME,LEVEL,HAS_LOGIN,SEX,POSPWD,CALL_EMP_CODE,LEADER_ID,SYSTEM_FLAG
+    </sql>
+	
+	<select id="get" resultMap="UserInfoMap" parameterType="string">
+		SELECT
+			<include refid="Base_Column_List" />
+		FROM jk.t_gl_user 
+		WHERE  ID = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 查询用户信息 -->
+	<select id="findList" resultMap="UserInfoMap" parameterType="map">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM jk.t_gl_user a
+		WHERE 1=1
+		ORDER BY a.name
+	</select>
+	
+	<!-- 条件查询用户信息 -->
+	<select id="findByParams" resultMap="UserInfoMap" parameterType="map">
+		SELECT a.* 
+		FROM jk.t_gl_user a
+		WHERE 1=1
+		<if test="id!=null and id!=''">
+			AND a.id = #{id}
+		</if>
+	</select>
+	
+	<!-- 插入同步用户 -->
+	<insert id="insert">
+		INSERT INTO jk.t_gl_user(
+			ID, 
+			COMPANY_ID, 
+			DEPARTMENT_ID, 
+			LOGIN_NAME, 
+			PASSWORD, 
+			USER_CODE, 
+			NAME, 
+			EMAIL, 
+			PHONE, 
+			MOBILE, 
+			USER_TYPE, 
+			CREATE_BY, 
+			CREATE_TIME, 
+			MODIFY_BY, 
+			MODIFY_TIME, 
+			REMARKS, 
+			STATUS, 
+			DEL_FLAG,
+			ENTRY_TIME,
+			LEVEL,
+			HAS_LOGIN,
+			SEX,
+			POSPWD,
+			CALL_EMP_CODE,
+			LEADER_ID,
+			SYSTEM_FLAG
+		) VALUES (
+			#{id}, 
+			#{companyId}, 
+			#{departmentId}, 
+			#{loginName}, 
+			#{password}, 
+			#{userCode}, 
+			#{name}, 
+			#{email}, 
+			#{phone}, 
+			#{mobile}, 
+			#{userType}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{status}, 
+			#{delFlag},
+			#{entryTime},
+			#{level},
+			#{hasLogin},
+			#{sex},
+			#{posPwd},
+			#{callEmpCode},
+			#{leaderId},
+			#{systemFlag}
+		)
+	</insert>
+	
+	<!-- 更新用户 -->
+	<update id="update">
+		UPDATE jk.t_gl_user 
+		SET company_id = #{companyId}, 
+			department_id = #{departmentId}, 
+			login_name = #{loginName}, 
+			password = #{password}, 
+			user_code = #{userCode}, 
+			name = #{name}, 
+			email = #{email}, 
+			phone = #{phone}, 
+			mobile = #{mobile}, 
+			user_type = #{userType}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			status = #{status},
+			sex = #{sex},
+			level = #{level},
+			has_login = #{hasLogin},
+			entry_time = #{entryTime},
+			<if test="posPwd != null and posPwd != ''">
+			  pospwd = #{posPwd},
+		    </if>
+			del_flag = #{delFlag},
+			call_emp_code = #{callEmpCode},
+			leader_id = #{leaderId},
+			system_flag = #{systemFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 删除同步用户 -->
+	<update id="delete">
+		UPDATE jk.t_gl_user 
+		SET del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="insertUserRole">
+		INSERT INTO jk.t_gl_user_role(user_id, role_id)
+		<foreach collection="roleList" item="role" separator=" union all ">
+			SELECT #{id}, #{role.id}
+		</foreach>
+	</insert>
+	
+	<!-- 插入用户角色组织关系 -->
+	<insert id="insertUserRoleOrg">
+		INSERT INTO jk.t_gl_user_role_org (user_id,  org_id,  role_id,create_by,create_time,modify_by,modify_time)
+		VALUES (#{userId},#{orgId},#{roleId},#{createBy},#{createTime},#{modifyBy},#{modifyTime})
+	</insert>
+	
+	<!-- 删除用户和角色的关联表数据 -->
+	<delete id="deleteUserRole">
+		DELETE FROM jk.t_gl_user_role WHERE user_id = #{userId}
+	</delete>
+	
+	<!-- 删除用户角色组织的关系 -->
+	<delete id="deleteUserRoleOrg">
+		DELETE FROM jk.t_gl_user_role_org WHERE user_id = #{userId}
+	</delete>
+	
+	<select id="findUserInfoPage" parameterType="com.creditharmony.loan.users.entity.UserInfo" resultMap="UserInfoMap">
+		SELECT a.* 
+		FROM jk.t_gl_user a
+		WHERE 1=1
+		<if test="id!=null and id!=''">
+			AND a.id = #{id}
+		</if>
+		 
+		<if test="departmentId !=null and departmentId !=''">
+			AND a.department_id = #{departmentId}
+		</if>
+		<if test="userType !=null and userType !=''">
+			AND a.user_type = #{userType}
+		</if>
+		<if test="userCode !=null and userCode !=''">
+			AND a.user_Code like  CONCAT('%', #{userCode}, '%')   
+		</if>
+		<if test="name !=null and name !=''">
+			AND a.name like   CONCAT('%', #{name}, '%')   
+		</if>
+		ORDER BY a.user_code
+	</select>
+	
+		<!--  查询User列表   不分页-->
+		<select id="findUserInfo" parameterType="com.creditharmony.loan.users.entity.UserInfo" resultMap="UserInfoMap">
+		SELECT a.* 
+		FROM jk.t_gl_user a
+		WHERE 1=1
+		<if test="id!=null and id!=''">
+			AND a.id = #{id}
+		</if>
+		 
+		<if test="departmentId !=null and departmentId !=''">
+			AND a.department_id = #{departmentId}
+		</if>
+		<if test="userType !=null and userType !=''">
+			AND a.user_type = #{userType}
+		</if>
+		<if test="userCode !=null and userCode !=''">
+			AND a.user_Code like  CONCAT('%', #{userCode}, '%')   
+		</if>
+		<if test="name !=null and name !=''">
+			AND a.name like   CONCAT('%', #{name}, '%')   
+		</if>
+		ORDER BY a.user_code
+	</select>
+	
+	<select id="getRoleUser" parameterType="map" resultMap="UserInfoMap">
+		select * from jk.t_gl_user a 
+		where id in 
+		(
+			select user_id from jk.t_gl_user_role_org b 
+			where b.role_id = #{roleId}
+		) 
+		AND a.status ='1' AND del_flag='0'
+		<if test="departmentId !=null and departmentId !=''">
+			AND a.department_id =#{departmentId} 
+		</if>
+		<if test="name !=null and name !=''">
+			AND a.name like CONCAT('%', #{name}, '%')   
+		</if>
+		<if test="userCode !=null and userCode !=''">
+			AND a.user_Code like  CONCAT('%', #{userCode}, '%')   
+		</if>
+	</select>
+	<select id="getOutPeopleList" parameterType="map" resultMap="UserInfoMap">
+		select 
+			u.*,
+			org.name as department_name
+		from 
+			jk.t_gl_org org
+			inner join jk.t_gl_user_role_org urg on urg.org_id=org.id
+			inner join jk.t_gl_user u on u.id=urg.user_id
+		where
+			(org.id = #{departmentId} or org.parent_ids like '%' || #{departmentId} || '%')
+			and org.type='6200000003'
+			and urg.role_id=#{roleId}
+			and u.status ='1'
+			and u.del_flag='0'
+			<if test="name !=null and name !=''">
+				and u.name like CONCAT('%', #{name}, '%')   
+			</if>
+			<if test="userCode !=null and userCode !=''">
+				and u.user_Code like CONCAT('%', #{userCode}, '%')   
+			</if>
+			<if test="departmentName !=null and departmentName !=''">
+				and org.name like CONCAT('%', #{departmentName}, '%')   
+			</if>
+		order by
+			org.id
+	</select>
+	<select id="getRoleUserByMaps" parameterType="map" resultMap="UserInfoMap">
+		select * from jk.t_gl_user a 
+		where id in 
+		(
+			select user_id from jk.t_gl_user_role_org b where b.role_id = #{roleId} and b.org_id=#{departmentId}
+		)
+	</select>
+	
+	<!-- 角色，部门 查询用户 -->
+	<select id="findUserInfoByRole" parameterType="map" resultMap="UserInfoMap">
+		SELECT  a.* 
+		FROM jk.t_gl_user a
+		LEFT JOIN jk.t_gl_user_role_org  b
+		on a.department_id = b.org_id and a.id = b.user_id
+		where 1 = 1 
+		<if test="orgId!=null and orgId!=''">
+			AND b.org_id = #{orgId}
+		</if>
+		 
+		<if test="roleId !=null and roleId !=''">
+			AND b.role_id = #{roleId}
+		</if>
+		<if test="userCode !=null and userCode !=''">
+			AND a.user_Code like  CONCAT('%', #{userCode}, '%')   
+		</if>
+		<if test="name !=null and name !=''">
+			AND a.name like   CONCAT('%', #{name}, '%')   
+		</if>
+		ORDER BY a.user_code
+	</select>
+	
+	<!-- 获取门店下的所有团队经理 -->
+	<select id="getStoreAllTermManager" parameterType="map" resultMap="UserInfoMap">
+		select a.* from jk.t_gl_user a 
+		inner join jk.t_gl_user_role_org b on b.user_id = a.id 
+		where b.org_id in (
+			select id 
+			from jk.t_gl_org 
+			where parent_id = #{orgId}
+		) and b.role_id = #{roleId}
+	</select>
+	
+	<!-- 获取团队经理下的所有客户经理 -->
+	<select id="getTermAllCustomerManager" parameterType="map" resultMap="UserInfoMap">
+		select a.* 
+		from jk.t_gl_user a
+		where a.id in (
+			select o.user_id 
+			from jk.t_gl_user_role_org o
+			where o.role_id = #{roleId} and o.org_id = (
+				select u.department_id 
+				from jk.t_gl_user u
+				where u.id = #{termId}))
+	</select>
+</mapper>

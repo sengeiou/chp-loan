@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.CustomerBaseInfoDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.ex.ApplyInfoFlagEx">
+    <result column="customer_code"  property="customerCode" />
+    <result column="id"  property="id" />
+    <result column="customer_name"  property="customerName" />
+    <result column="customer_sex"  property="customerSex" />
+    <result column="customer_birthday"  property="customerBirthday" />
+    <result column="dict_cert_type"  property="dictCertType" />
+    <result column="customer_cert_num"  property="mateCertNum" />
+    <result column="customer_cert_org"  property="customerCertOrg" />
+    <result column="id_start_day"  property="idStartDay" />
+    <result column="id_end_day"  property="idEndDay" />
+    <result column="customer_mobile_phone"  property="customerMobilePhone" />
+    <result column="dict_comp_industry"  property="dictCompIndustry" />
+    <result column="customer_name_ocr"  property="customerNameOcr" />
+    <result column="customer_cret_ocr" property="customerCretOcr" />
+    <result column="area_no" property="areaNo"/>
+    <result column="telephone_no" property="telephoneNo"/>
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    customer_code, id, customer_name, customer_sex, customer_birthday, dict_cert_type, 
+    customer_cert_num, customer_cert_org, id_start_day, id_end_day, customer_mobile_phone, 
+    dict_comp_industry, customer_name_ocr, customer_cret_ocr,area_no,telephone_no,
+    create_by, create_time,modify_by, modify_time
+  </sql>
+  <select id="selectByPrimaryKey"  resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_customer_base
+    where customer_code = #{customerCode}
+  </select>
+  <!-- 插入客户信息数据 -->
+	<insert id="insertCustomerBaseInfo" parameterType="com.creditharmony.loan.borrow.consult.entity.CustomerBaseInfo">
+		INSERT INTO jk.t_jk_customer_base(
+			id,			 
+			customer_code, 
+			customer_name,
+		    customer_sex,
+	        customer_mobile_phone,
+			dict_cert_type,
+			customer_cert_num, 
+			id_start_day, 
+			id_end_day, 
+			dict_comp_industry,
+			customer_name_ocr,
+			customer_cret_ocr,
+			area_no,
+			telephone_no,
+			create_by, 
+			create_time,
+			modify_by,
+			modify_time
+			
+		) VALUES (
+			#{id}, 
+			#{customerCode}, 
+			#{customerName}, 
+			#{customerSex}, 
+			#{customerMobilePhone}, 
+			#{dictCertType}, 
+			#{mateCertNum}, 
+			#{idStartDay,jdbcType=TIMESTAMP}, 
+			#{idEndDay,jdbcType=TIMESTAMP}, 
+			#{dictCompIndustry},
+			#{customerNameOcr}, 
+			#{customerCretOcr}, 
+			#{areaNo}, 
+			#{telephoneNo}, 
+			#{createBy}, 
+			#{createTime},
+			#{modifyBy}, 
+			#{modifyTime}
+		)
+	</insert>
+  <!-- 更新客户信息  -->
+	<update id="update">
+		UPDATE jk.t_jk_customer_base  
+		 <trim prefix="SET" suffixOverrides=",">
+		  <if test="customerName != null and customerName != ''">     
+		 customer_name = #{customerName},
+         </if>
+		<if test="customerSex != null and customerSex != ''">  
+		 customer_sex = #{customerSex},
+		 </if>
+		 <if test="customerMobilePhone != null and customerMobilePhone != ''"> 
+		 customer_mobile_phone = #{customerMobilePhone}, 
+		 </if>
+		 <if test="dictCertType != null and dictCertType != ''"> 
+		 dict_cert_type = #{dictCertType},
+		 </if>
+		 <if test="mateCertNum != null and mateCertNum != ''"> 
+		 customer_cert_num = #{mateCertNum}, 
+		 </if>
+		 <if test="idStartDay != null and idStartDay != ''"> 
+		 id_start_day = #{idStartDay}, 
+		 </if>
+		 <if test="idEndDay != null and idEndDay != ''"> 
+		 id_end_day = #{idEndDay}, 
+		 </if>
+		 <if test="dictCompIndustry != null and dictCompIndustry != ''"> 
+		 dict_comp_industry = #{dictCompIndustry},
+		 </if>
+		 <if test="areaNo != null and areaNo != ''"> 
+		 area_no = #{areaNo}, 
+		 </if>
+		 <if test="telephoneNo != null and telephoneNo != ''"> 
+		 telephone_no = #{telephoneNo},
+		 </if>
+		 <if test="createBy != null and createBy != ''"> 
+		 create_by = #{createBy}, 
+		 </if>
+		 <if test="createTime != null and createTime != ''"> 
+		 create_time = #{createTime}, 
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+		 modify_by = #{modifyBy}, 
+		 </if>
+		 <if test="modifyTime != null and modifyTime != ''"> 
+		 modify_time = #{modifyTime} 
+		 </if>
+	</trim>
+		WHERE customer_code = #{customerCode}
+	</update>
+    <select id="findByCertNum" parameterType="map" resultMap="BaseResultMap">
+        select 
+         <include refid="Base_Column_List"/> 
+        from jk.t_jk_customer_base where customer_cert_num=#{mateCertNum,jdbcType=VARCHAR} 
+        and  dict_cert_type=#{certType,jdbcType=VARCHAR} order by modify_time desc limit 1
+    </select>
+</mapper>

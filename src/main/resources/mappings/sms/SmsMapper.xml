@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.sms.dao.SmsDao" >
+  <select id="getSmsTemplate" resultType="com.creditharmony.loan.sms.entity.SmsTemplate">
+		SELECT 
+			id, 
+			template_type, 
+			template_code, 
+			template_name, 
+			template_content, 
+			template_status, 
+			template_description, 
+			url, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time
+		FROM 
+			t_gl_sms_template
+		WHERE
+			template_code = #{templateCode}
+	</select>
+	<insert id="insertSmsHis" parameterType="com.creditharmony.loan.sms.entity.SmsHis">
+		INSERT INTO  t_gl_sms_jk_his(
+            id, loan_code, customer_code, customer_name, sms_send_time, sms_msg, 
+            sms_template_id, sms_send_status, only_flag, create_by, create_time, 
+            modify_by, modify_time)
+	    VALUES (#{id}, #{loanCode}, #{customerCode}, #{customerName}, #{smsSendTime}, #{smsMsg}, 
+	            #{smsTempletId}, #{smsSendStatus}, #{onlyFlag}, #{createBy}, #{createTime}, 
+	            #{modifyBy}, #{modifyTime});
+	</insert>
+	
+	
+	<select id="queryRemindSms" resultType="com.creditharmony.loan.sms.entity.SmsInformation">
+	       select 
+	       a.customer_code as customerCode,
+	       a.customer_name as customerName,
+	       a.customer_sex as sex,
+	       a.customer_phone_first as phone,
+	       d.grant_amount as loanAmount,
+	       c.payback_month_amount as monthRepayAmount,
+	       b.contract_amount  as contractAmount,
+	       c.contract_code as contractCode,
+	       f.name as storesName,
+	       e.dict_loan_status as loanStatus,
+	       g.bank_name as dictBankId,
+	       h.label as bankName,
+	       g.bank_account as accountNum
+	       from jk.t_jk_loan_customer a 
+	        left join  jk.t_jk_contract b  on a.loan_code = b.loan_code
+	        left join  jk.t_jk_payback c on b.contract_code = c.contract_code
+	        left join  jk.t_jk_loan_grant d on b.contract_code  = d.contract_code
+	        left join  jk.t_jk_loan_info e on a.loan_code = e.loan_code
+	        left join  jk.t_gl_org f on e.loan_store_orgid = f.id
+	        left join  jk.t_jk_loan_Bank g on a.loan_code = g.loan_code
+	        left join  (select value,label from  jk.t_gl_dict where type ='jk_open_bank') h on  h.value = g.bank_name
+	       where  a.loan_Code = #{loanCode}
+	</select>
+	
+	<insert id="insertRemindSms">
+	INSERT INTO jk.t_gl_sms_jk_credit_review(
+            id, period_id, customer_code, customer_name, sex, phone, loan_amount, 
+            month_repay_amount, contract_amount, repay_day, contract_code, 
+            stores_name, send_status, loan_status, sms_template_id, sms_template_content, 
+            only_flag, create_by, create_time, modify_by, modify_time, dict_bank_id, 
+            bank_name, account_num)
+    VALUES (#{id},#{periodId},#{customerCode},#{customerName},#{sex},#{phone},#{loanAmount},
+           #{monthRepayAmount}, #{contractAmount},#{repayDay},#{contractCode},
+           #{storesName}, #{sendStatus}, #{loanStatus},#{smsTemplateId},#{smsTemplateContent}
+           ,#{onlyFlag},#{createBy},#{createTime},#{modifyBy}, #{modifyTime},#{dictBankId},
+            #{bankName}, #{accountNum});
+	</insert>
+	
+	<insert id="insertCheatSms">
+	INSERT INTO jk.t_gl_sms_jk_prevent_fraud(
+            id, period_id, customer_code, customer_name, sex, phone, loan_amount, 
+            month_repay_amount, contract_amount, repay_day, contract_code, 
+            stores_name, send_status, loan_status, sms_template_id, sms_template_content, 
+            only_flag, create_by, create_time, modify_by, modify_time, dict_bank_id, 
+            bank_name, account_num)
+    VALUES (#{id},#{periodId},#{customerCode},#{customerName},#{sex},#{phone},#{loanAmount},
+           #{monthRepayAmount}, #{contractAmount},#{repayDay},#{contractCode},
+           #{storesName}, #{sendStatus}, #{loanStatus},#{smsTemplateId},#{smsTemplateContent}
+           ,#{onlyFlag},#{createBy},#{createTime},#{modifyBy}, #{modifyTime},#{dictBankId},
+            #{bankName}, #{accountNum});
+	</insert>
+	
+	
+</mapper>

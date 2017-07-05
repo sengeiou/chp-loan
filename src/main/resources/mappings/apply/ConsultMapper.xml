@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.consult.dao.ConsultDao">
+  <resultMap id="baseMap" type="com.creditharmony.loan.borrow.consult.entity.Consult">
+    <result property="id" column="id" jdbcType="VARCHAR"/>
+    <result property="customerCode" column="customer_code" jdbcType="VARCHAR"/>
+    <result property="managerCode" column="manager_code" jdbcType="VARCHAR"/>
+    <result property="loanApplyMoney" column="cons_loan_amount" jdbcType="NUMERIC"/>
+    <result property="dictLoanUse" column="dict_loan_use" jdbcType="VARCHAR"/>
+    <result property="dictLoanType" column="dict_loan_type" jdbcType="VARCHAR"/>
+    <result property="consLoanRecord" column="cons_loan_record" jdbcType="VARCHAR"/>
+    <result property="consOperStatus" column="dict_oper_status" jdbcType="VARCHAR"/>
+    <result property="consCommunicateDate" column="cons_communicate_date" jdbcType="TIMESTAMP"/>
+    <result property="loanTeamEmpcode" column="cons_team_managercode" jdbcType="VARCHAR"/>
+    <result property="loanTeamOrgId" column="cons_team_orgcode" jdbcType="VARCHAR"/>
+    <result property="teleSalesOrgid" column="cons_telesales_orgcode" jdbcType="VARCHAR"/>
+    <result property="consPhoneSource" column="cons_up_user_code" jdbcType="VARCHAR"/>
+    <result property="consTelesalesFlag" column="cons_telesales_flag" jdbcType="VARCHAR"/>
+    <result property="consCustomerService" column="cons_service_user_code" jdbcType="VARCHAR"/>
+    <result property="storeOrgid" column="store_orgid" jdbcType="VARCHAR"/>
+    <result property="consTelesalesSource" column="cons_telesales_source" jdbcType="VARCHAR"/>
+    <result property="productCode" column="product_code" jdbcType="VARCHAR"/>
+    <result property="loanMonth" column="loan_month" jdbcType="INTEGER"/>
+    <result property="accountId" column="account_id" jdbcType="VARCHAR"/>
+    <result property="accountBank" column="account_bank" jdbcType="VARCHAR"/>
+    <result property="branch" column="branch" jdbcType="VARCHAR"/>
+    <result property="namepic" column="namepic" jdbcType="VARCHAR"/>
+    <result property="certNumPic" column="cert_num_pic" jdbcType="VARCHAR"/>
+    <result property="accountIdPic" column="account_id_pic" jdbcType="VARCHAR"/>
+    <result property="namePicName" column="name_pic_name" jdbcType="VARCHAR"/>
+    <result property="certNumPicName" column="cert_num_pic_name" jdbcType="VARCHAR"/>
+    <result property="accountidPicName" column="accountid_pic_name" jdbcType="VARCHAR"/>
+    <result property="bankProvince" column="bank_province" jdbcType="VARCHAR"/>
+    <result property="bankCity" column="bank_city" jdbcType="VARCHAR"/>
+    <result property="bankId" column="bank_id" jdbcType="VARCHAR"/>
+    <result property="consultationType" column="consultation_type" jdbcType="VARCHAR"/>
+    <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+    <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    <result property="modifyBy" column="modify_by" jdbcType="VARCHAR"/>
+    <result property="modifyTime" column="modify_time" jdbcType="TIMESTAMP"/>
+    <result property="dictLoanUseRemark" column="dict_loan_use_remark" jdbcType="VARCHAR"/>
+  </resultMap>
+  <sql id="baseColumn">
+     id,customer_code,manager_code,cons_loan_amount,
+     dict_loan_use,dict_loan_type,cons_loan_record,
+     dict_oper_status,cons_communicate_date,cons_team_managercode,
+     cons_team_orgcode,cons_telesales_orgcode,cons_up_user_code,
+     cons_telesales_flag,cons_service_user_code,store_orgid,cons_telesales_source,
+     product_code,loan_month,account_id,account_bank,branch,namepic,cert_num_pic,
+     account_id_pic,name_pic_name,cert_num_pic_name,accountid_pic_name,bank_province,
+     bank_city,bank_id,consultation_type,create_by,create_time,modify_by,modify_time,dict_loan_use_remark,isborrow
+  </sql>
+	<!-- 插入数据 -->
+	<insert id="insert">
+		INSERT INTO jk.t_jk_customer_consultation(
+			id,
+			customer_code,
+			cons_loan_record,  
+			dict_oper_status,
+			cons_communicate_date,
+			cons_team_orgcode,
+			cons_team_managercode,
+			cons_telesales_flag,
+			cons_telesales_source,
+			manager_code,
+			store_orgid,
+			dict_loan_type,
+			cons_loan_amount,
+			dict_loan_use,
+			product_code,
+			loan_month,
+			account_id,
+			account_bank,
+			branch,
+			namepic,
+			cert_num_pic,
+            account_id_pic,
+            name_pic_name,
+            cert_num_pic_name,
+            accountid_pic_name,
+            bank_province,
+            bank_city,
+            bank_id,
+            consultation_type,
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time,
+			dict_loan_use_remark,
+			consult_data_source
+		) VALUES (
+			#{id},
+			#{customerCode}, 
+			#{consultRecord.consLoanRecord}, 
+			#{consultRecord.consOperStatus}, 
+			#{consultRecord.consCommunicateDate}, 
+			#{loanTeamOrgId},
+			#{loanTeamEmpcode}, 
+			#{consTelesalesFlag},
+			#{consTelesalesSource},
+			#{managerCode}, 
+			#{storeOrgid},
+			#{dictLoanType}, 
+			#{loanApplyMoney}, 
+			#{dictLoanUse},
+			#{productCode}, 
+			#{loanMonth},
+			#{accountId},
+			#{accountBank},
+			#{branch},
+			#{namepic},
+			#{certNumPic},
+			#{accountIdPic},
+			#{namePicName},
+			#{certNumPicName},
+			#{accountidPicName},
+			#{bankProvince},
+			#{bankCity},
+			#{bankId},
+			#{consultationType},
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy},
+			#{modifyTime},
+			#{dictLoanUseRemark},
+			#{consultDataSource}
+		)
+	</insert>
+	
+	<!-- 插入客户沟通日志-->
+	<insert id="insertConsultRecord">
+		INSERT INTO jk.t_jk_consultation_log(
+			id,
+			cons_id, 
+			cons_loan_record,
+		    cons_oper_status ,
+	        cons_communicate_date,
+			create_by,
+			create_time, 
+			modify_by, 
+			modify_time			
+		) VALUES (
+			#{consultRecord.id},
+			#{id}, 
+			#{consultRecord.consLoanRecord}, 
+			#{consultRecord.consOperStatus}, 
+			#{consultRecord.consCommunicateDate}, 
+			#{consultRecord.createBy}, 
+			#{consultRecord.createTime}, 
+			#{consultRecord.modifyBy}, 
+			#{consultRecord.modifyTime} 
+		)
+	</insert>
+	
+	
+	<!-- 更新客户咨询信息  -->
+	<update id="update">
+		UPDATE jk.t_jk_customer_consultation 
+		<trim prefix="SET" suffixOverrides=",">
+		 <if test="managerCode != null and managerCode != ''"> 
+		 	 manager_code = #{managerCode},
+		 </if>
+		 <if test="loanApplyMoney != null and loanApplyMoney != ''"> 
+		 	 cons_loan_amount = #{loanApplyMoney},
+		 </if>
+		 <if test="dictLoanUse != null and dictLoanUse != ''"> 
+		 	 dict_loan_use = #{dictLoanUse},
+		 </if>
+		 <if test="dictLoanType != null and dictLoanType != ''"> 
+		 	 dict_loan_type = #{dictLoanType},
+		 </if>
+		  <if test="consultRecord.consLoanRecord != null and consultRecord.consLoanRecord != ''"> 
+		 	 cons_loan_record = #{consultRecord.consLoanRecord},
+		 </if>
+		  <if test="consultRecord.consOperStatus != null and consultRecord.consOperStatus != ''"> 
+		 	 dict_oper_status = #{consultRecord.consOperStatus},
+		 </if>
+		 <if test="consultRecord.consCommunicateDate != null"> 
+		 	 cons_communicate_date = #{consultRecord.consCommunicateDate},
+		 </if>
+		 <if test="loanTeamEmpcode != null and loanTeamEmpcode != ''"> 
+		 	 cons_team_managercode = #{loanTeamEmpcode},
+		 </if>
+		 <if test="consTelesalesFlag!=null and consTelesalesFlag!=''">
+		      cons_telesales_flag = #{consTelesalesFlag},
+		 </if>
+		 <if test="consTelesalesSource!=null and consTelesalesSource!=''">
+		    cons_telesales_source = #{consTelesalesSource},
+		 </if>
+		 <if test="loanTeamOrgId != null and loanTeamOrgId != ''"> 
+			 cons_team_orgcode = #{loanTeamOrgId},
+		 </if>
+		 <if test="storeOrgid!=null and storeOrgid!=''">
+		     store_orgid = #{storeOrgid},
+		 </if>
+		 <if test="productCode!=null and productCode!=''">
+		    product_code = #{productCode}, 
+		 </if>
+		 <if test="loanMonth!=null">
+			loan_month = #{loanMonth},
+		  </if>
+		 <if test="accountId!=null and accountId!=''">
+			account_id = #{accountId},
+		 </if>
+		 <if test="accountBank!=null and accountBank!=''">
+			account_bank = #{accountBank},
+		 </if>
+		 <if test="branch!=null and branch!=''">
+			branch = #{branch},
+		 </if>
+		 <if test="namepic!=null and namepic!=''">
+			namepic = #{namepic},
+		 </if>
+		 <if test="certNumPic!=null and certNumPic!=''">
+			cert_num_pic = #{certNumPic},
+		 </if>
+		 <if test="accountIdPic!=null and accountIdPic!=''">
+			account_id_pic = #{accountIdPic},
+		 </if>
+		 <if test="namePicName!=null and namePicName!=''">
+			name_pic_name = #{namePicName},
+		 </if>
+		 <if test="certNumPicName!=null and certNumPicName!=''">
+			cert_num_pic_name = #{certNumPicName},
+		 </if>
+		 <if test="accountidPicName!=null and accountidPicName!=''">
+			accountid_pic_name = #{accountidPicName},
+		 </if>
+		 <if test="bankProvince!=null and bankProvince!=''">
+			bank_province = #{bankProvince},
+		 </if>
+		 <if test="bankCity!=null and bankCity!=''">
+			bank_city = #{bankCity},
+		 </if>
+		 <if test="bankId!=null and bankId!=''">
+			bank_id = #{bankId},
+		 </if>
+		 <if test="consultationType!=null and consultationType!=''">
+			consultation_type = #{consultationType},
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+			 modify_by = #{modifyBy},
+		 </if>
+		  <if test="modifyTime != null"> 
+			 modify_time = #{modifyTime},
+		 </if>
+		 <if test="dictLoanUseRemark != null"> 
+			 dict_loan_use_remark = #{dictLoanUseRemark}
+		 </if>
+		 </trim>
+		WHERE id = #{id}
+	</update>
+
+	<!-- 根据身份证号码获取客户code-->
+	<select id="findCustomerByMcNum" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			customer_code
+		FROM jk.t_jk_customer_base 
+		WHERE customer_cert_num = #{mateCertNum}
+	</select>
+	
+	<!-- 根据客户编码获取客户咨询-->
+	<select id="getConsultByCustomerCode" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT
+			id
+		FROM jk.t_jk_customer_consultation 
+		WHERE customer_code = #{customerCode}
+	</select>
+	<!--更改客户咨询状态 -->
+	<update id="updateConsultStatus" parameterType="map">
+	   update jk.t_jk_customer_consultation 
+	   set dict_oper_status = #{tagConsultStatus,jdbcType=VARCHAR} 
+	   where id = #{consultId,jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 通过Id查询客户的咨询信息 -->
+	<select id="get" resultMap="baseMap" parameterType="string">
+	   select 
+	    <include refid="baseColumn"/> 
+	   from jk.t_jk_customer_consultation 
+	   where id=#{id} 
+	</select>
+	<select id="findTimeByLoanCode" resultType="java.util.Date" parameterType="string">
+	   select 
+	    a.create_time
+	   from jk.t_jk_customer_consultation a left join jk.t_jk_loan_info b on a.id=b.r_id
+	   where b.loan_code=#{loanCode} 
+	</select>
+	<select id="findTimeByApplyId" resultType="java.util.Date" parameterType="string">
+	   select 
+	    a.create_time
+	   from jk.t_jk_customer_consultation a left join jk.t_jk_loan_info b on a.id=b.r_id
+	   where b.apply_id=#{applyId}
+	</select>
+	<!--  -->
+	<select id="findUnsettledByCustomerCode" parameterType="string" resultType="com.creditharmony.loan.borrow.payback.entity.Payback">
+	  select b.* 
+      from jk.t_jk_customer_base a 
+      left join jk.t_jk_loan_customer b 
+      on a.customer_code = b.customer_code  
+      left join t_jk_loan_info c 
+      on c.loan_code = b.loan_code 
+      where c.dict_loan_status not in 
+      <foreach item="item" index="index" collection="payStatus" open="(" separator="," close=")">  
+        #{item}  
+      </foreach>
+      and a.customer_code = #{customerCode,jdbcType=VARCHAR}
+	</select>
+</mapper>

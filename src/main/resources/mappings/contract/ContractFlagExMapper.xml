@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.ContractFlagExDao">
+<resultMap  id="ctrFlag" type="com.creditharmony.loan.borrow.contract.entity.ex.ContractFlagEx">
+  <result column="apply_id" jdbcType="VARCHAR" property="applyId"/>
+  <result column="has_back" jdbcType="VARCHAR" property="hasBack"/>
+  <result column="last_status" jdbcType="VARCHAR" property="lastStatus"/>
+  <result column="is_old" jdbcType="VARCHAR" property="isOld"/>
+  <result column="early_pass_time" jdbcType="TIMESTAMP" property="earlyPassTime"/>
+  <result column="his_loan_status" jdbcType="VARCHAR" property="hisLoanStatus"/>
+  <result column="loan_code" jdbcType="VARCHAR" property="loanCode"/>
+  <result column="apply_create_time" jdbcType="TIMESTAMP" property="applyCreateTime"/>
+  <result column="cur_loan_status" jdbcType="VARCHAR" property="curLoanStatus"/>
+</resultMap>
+  <select id="findLastStatus" resultMap="ctrFlag" parameterType="string">
+     select apply_id,last_status 
+     from jk.t_jk_loan_status_his where create_time =(
+      select max(create_time) from jk.t_jk_loan_status_his 
+      where apply_id = #{applyId}
+      )
+  </select> 
+  <!--
+           在合同审核阶段查询当前列表中的业务数据在之前该阶段是否有退回的情况
+           整个合同审核阶段包括：利率审核、合同制作、合同审核 
+           此条SQL中隐含的条件是 当前传递进来跟apply_id关联的业务没有结束 
+           而且在这几个阶段中有退回的情况出现
+   -->
+  <select id="findHasBack" resultMap="ctrFlag" parameterType="map">
+     select count(*) as has_back <!--为0则表示在当前几个阶段中没有退回的情况--> 
+     from jk.t_jk_loan_status_his where id in(
+      select id from jk.t_jk_loan_status_his 
+      where apply_id = #{applyId}
+       and dict_loan_status in 
+      <foreach item="item" index="index" collection="loanStatus" open="(" separator="," close=")">  
+        #{item}  
+      </foreach> 
+        and operate_step = #{operateStep}
+      )
+  </select>
+  <!--
+               判断当前的业务是否为门店的新业务有两条参考标准：
+         1.该门店的进件第一次进入合同审核阶段,即没有合同审核阶段的记录
+         2.该门店的进件已经通过了合同审核阶段，但是最终状态为拒绝
+               如果存在如下的情形，则不能判断为新：
+         1.该门店的进件不只一次处于或通过了合同审核阶段，但是整个审批流程没有结束
+         2.该门店的进件通过了合同审核阶段，审批流程结束而且最终结果为成功！
+               查询逻辑：
+                      根据当前给定的apply_id导向门店，然后从门店的角度导向历史进件记录 
+                      判断不是new的情况：有合同阶段的审核记录而且流程没有被审核人员拒绝或客户放弃
+    -->
+  <select id="isOld" resultMap="ctrFlag" parameterType="map">
+    select c.create_time as early_pass_time,c.loan_code,c.dict_loan_status as his_loan_status,
+    b.create_time as apply_create_time,b.dict_loan_status as cur_loan_status from 
+ 		 (
+ 			 select create_time,dict_loan_status,loan_code from t_jk_loan_info a 
+    		  where a.dict_loan_status in 
+      		 <foreach item="item" index="index" collection="loanStatusList" open="(" separator="," close=")">  
+       			 #{item}  
+     		 </foreach> 
+       <!--  ('58','59','60','61','62','63','64','65','66','67','68','69','70','71','72','75','87','88','89','90','91','92') --> 
+     		 and a.loan_store_orgid = (
+      			 select distinct(loan_store_orgid)  from t_jk_loan_info b where b.loan_code=#{loanCode,jdbcType=VARCHAR}
+      		 ) 
+       		 order by create_time ,dict_loan_status,loan_code,loan_store_orgid
+		 ) b left join jk.t_jk_loan_status_his c  on c.loan_code = b.loan_code where c.dict_loan_status =#{targetStatus,jdbcType=VARCHAR} <!-- and c.dict_sys_flag = 'MODULE_APPROVE' --> 
+  order by c.create_time,c.loan_code,c.dict_loan_status,b.dict_loan_status,b.create_time limit 1
+  </select>
+</mapper> 

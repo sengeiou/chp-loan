@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.borrow.trusteeship.dao.LoanExcelDao">
+	
+	<select id="getDataRows" parameterType="java.util.HashMap" 
+		resultType="com.creditharmony.loan.borrow.trusteeship.entity.ex.GrantExcel1">
+	select t4.trusteeship_no       receiveLoginName,
+	       t4.customer_name        receiveChinaName,
+	       t3.contract_amount      tradeMoney,
+	       t3.contract_code||'_'   mark,
+	       t3.contract_version     contractVersion,
+	       t5.fee_urged_service    urgedServiceFee,
+	       t2.grant_amount         grantMoney,
+	       t3.apply_id             applyId,
+	       t2.contract_code		   contractCode
+	from t_jk_loan_info t1 
+	join t_jk_loan_grant t2 on t1.loan_code=t2.loan_code
+	join t_jk_contract t3 on t3.loan_code=t1.loan_code
+	join t_jk_loan_customer t4 on t4.loan_code=t1.loan_code
+	join t_jk_contract_fee t5 on t3.contract_code=t5.contract_code
+	<where>
+		<if test="contractCodes != null and contractCodes != ''">
+			t3.contract_code in
+			<foreach collection="contractCodes" item="item" open="(" close=")" separator=",">
+		  		#{item}
+		  	</foreach>
+		</if>
+	</where>
+	</select>
+	
+	<select id="getDataRows2" parameterType="java.util.HashMap" 
+		resultType="com.creditharmony.loan.borrow.trusteeship.entity.ex.GrantExcel2">
+	select t4.trusteeship_no       payLoginName,
+	       t4.customer_name        payChinaName,
+	       t3.contract_code        contractCode,
+	       t3.contract_amount      tradeMoney,
+	       t3.contract_code||'_'   mark,
+	       t3.contract_version     contractVersion,
+	       t5.fee_urged_service    urgedServiceFee,
+	       t2.grant_amount         grantMoney,
+	       t1.id                   id,
+		   t3.apply_id             applyId
+	from t_jk_loan_info t1 
+	join t_jk_loan_grant t2 on t1.loan_code=t2.loan_code
+	join t_jk_contract t3 on t3.loan_code=t1.loan_code
+	join t_jk_loan_customer t4 on t4.loan_code=t1.loan_code
+	join t_jk_contract_fee t5 on t3.contract_code=t5.contract_code
+	<where>
+		<if test="contractCodes != null">
+			t3.contract_code in
+			<foreach collection="contractCodes" item="item" open="(" close=")" separator=",">
+		  		#{item}
+		  	</foreach>
+		</if>
+		<if test="trustCash != null and trustCash != ''">
+			and t1.trust_cash = #{trustCash}
+		</if>
+	</where>
+	</select>
+	
+	<select id="getLoanInfo" parameterType="java.lang.String" resultType="java.util.HashMap">
+		select apply_id,
+		       loan_code
+		from t_jk_loan_info
+		where id=#{id}
+	</select>
+	
+	<update id="updateTrustCash">
+		update jk.t_jk_loan_grant
+		set trust_cash_success_amount=cast(#{1} as numeric)
+		where loan_code=#{0}
+	</update>
+	
+</mapper>

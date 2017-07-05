@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.SplitDao">
+	<resultMap type="com.creditharmony.loan.borrow.contract.entity.Split"
+		id="split">
+		<result column="t_jk_split_id" jdbcType="VARCHAR" property="id" />
+		<result column="zcj" jdbcType="INTEGER" property="zcj" />
+		<result column="jinxin" jdbcType="INTEGER" property="jinxin" />
+		<result column="createtime" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="createby" jdbcType="VARCHAR" property="createby" />
+		<result column="effective" jdbcType="VARCHAR" property="effective" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		t_jk_split_id as id,zcj,jinxin,createtime,createby,effective
+	</sql>
+	<select id="findBySplit" parameterType="string" resultMap="split">
+		select
+		<include refid="Base_Column_List" />
+		from jk.t_jk_split
+		where effective='1'
+	</select>
+	<!-- 占比历史 -->
+	<select id="findList" parameterType="string" resultMap="split">
+		select
+		<include refid="Base_Column_List" />
+		from jk.t_jk_split
+		order by createtime desc
+	</select>
+	<update id="updateSplit">
+		update jk.t_jk_split set effective='0'
+	</update>
+	
+	<insert id="saveSpilt">
+    insert into jk.t_jk_split 
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null and id !=''">
+        t_jk_split_id,
+      </if>
+        zcj,
+        jinxin,
+      <if test="createTime != null and createTime != ''">
+        createtime,
+      </if>
+      <if test="createby != null and createby != ''">
+        createby,
+      </if>
+      <if test="effective != null and effective != ''">
+        effective,
+      </if>
+     
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null and id !=''">
+        #{id,jdbcType=VARCHAR},
+      </if>
+        #{zcj,jdbcType=INTEGER},
+        #{jinxin,jdbcType=INTEGER},
+    
+      <if test="createTime != null and createTime !=''">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createby != null">
+        #{createby,jdbcType=VARCHAR},
+      </if>
+      <if test="effective != null">
+        #{effective,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>
+	

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarChangerInfoDao">
+	<resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarChangerInfo" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="apply_id" property="applyId" jdbcType="VARCHAR" />
+    <result column="change_code" property="changeCode" jdbcType="VARCHAR" />
+    <result column="change_type" property="changeType" jdbcType="VARCHAR" />
+    <result column="change_result" property="changeResult" jdbcType="VARCHAR" />
+    <result column="mobile_change_begin" property="mobileChangeBegin" jdbcType="VARCHAR" />
+    <result column="mobile_change_after" property="mobileChangeAfter" jdbcType="VARCHAR" />
+    <result column="email_change_begin" property="emailChangeBegin" jdbcType="VARCHAR" />
+    <result column="email_change_after" property="meailChangeAfter" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="del_flag" property="dealFlag" jdbcType="VARCHAR" />
+    <result column="update_id" property="updateId" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+    <insert id="insertChangerInfo" parameterType="com.creditharmony.loan.car.common.entity.CarChangerInfo">
+  	insert into t_cj_changer_info (id,apply_id,change_code,change_type,
+		change_result,mobile_change_begin,mobile_change_after,email_change_begin,email_change_after,del_flag,update_id,modify_id,modify_time,create_by)
+	values(#{id,jdbcType=VARCHAR},#{applyId,jdbcType=VARCHAR},#{changeCode,jdbcType=VARCHAR},
+		#{changeType,jdbcType=VARCHAR},#{changeResult,jdbcType=VARCHAR},#{mobileChangeBeginEnc,jdbcType=VARCHAR},
+		#{mobileChangeAfterEnc,jdbcType=VARCHAR},#{emailChangeBegin,jdbcType=VARCHAR},#{meailChangeAfter,jdbcType=VARCHAR},#{dealFlag,jdbcType=VARCHAR},
+		#{updateId,jdbcType=VARCHAR},#{modifyBy,jdbcType=VARCHAR},#{modifyTime,jdbcType=TIMESTAMP},#{createBy,jdbcType=VARCHAR})
+  </insert>
+  <select id="selectByUpdateId" resultMap="BaseResultMap"  parameterType="java.lang.String">
+  		select * from t_cj_changer_info where update_id=#{updateId,jdbcType=VARCHAR} order by modify_time desc
+  </select>
+
+</mapper>

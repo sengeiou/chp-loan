@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.credit.dao.CreditInvestorInfoDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.credit.entity.CreditInvestorInfo" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="contribution_amount" property="contributionAmount" jdbcType="NUMERIC" />
+    <result column="investor_name" property="investorName" jdbcType="VARCHAR" />
+    <result column="dict_cert_type" property="dictCertType" jdbcType="VARCHAR" />
+    <result column="customer_cert_num" property="customerCertNum" jdbcType="VARCHAR" />
+    <result column="dict_currency" property="dictCurrency" jdbcType="VARCHAR" />
+    <result column="contribution_proportion" property="contributionProportion" jdbcType="INTEGER" />
+    <result column="operation" property="operation" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, loan_code, contribution_amount, investor_name, dict_cert_type, customer_cert_num, 
+    dict_currency, contribution_proportion, operation, create_by, create_time, modify_by, 
+    modify_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_credit_investor_info
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from jk.t_jk_credit_investor_info
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertCreditInvestorInfo" parameterType="com.creditharmony.loan.credit.entity.CreditInvestorInfo" >
+    insert into jk.t_jk_credit_investor_info (id, loan_code, contribution_amount, 
+      investor_name, dict_cert_type, customer_cert_num, 
+      dict_currency, contribution_proportion, operation, 
+      create_by, create_time, modify_by, 
+      modify_time)
+    values (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{contributionAmount,jdbcType=NUMERIC}, 
+      #{investorName,jdbcType=VARCHAR}, #{dictCertType,jdbcType=VARCHAR}, #{customerCertNum,jdbcType=VARCHAR}, 
+      #{dictCurrency,jdbcType=VARCHAR}, #{contributionProportion,jdbcType=INTEGER}, #{operation,jdbcType=VARCHAR}, 
+      #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.credit.entity.CreditInvestorInfo" >
+    insert into jk.t_jk_credit_investor_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="contributionAmount != null" >
+        contribution_amount,
+      </if>
+      <if test="investorName != null" >
+        investor_name,
+      </if>
+      <if test="dictCertType != null" >
+        dict_cert_type,
+      </if>
+      <if test="customerCertNum != null" >
+        customer_cert_num,
+      </if>
+      <if test="dictCurrency != null" >
+        dict_currency,
+      </if>
+      <if test="contributionProportion != null" >
+        contribution_proportion,
+      </if>
+      <if test="operation != null" >
+        operation,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="contributionAmount != null" >
+        #{contributionAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="investorName != null" >
+        #{investorName,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCertType != null" >
+        #{dictCertType,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertNum != null" >
+        #{customerCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCurrency != null" >
+        #{dictCurrency,jdbcType=VARCHAR},
+      </if>
+      <if test="contributionProportion != null" >
+        #{contributionProportion,jdbcType=INTEGER},
+      </if>
+      <if test="operation != null" >
+        #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.credit.entity.CreditInvestorInfo" >
+    update jk.t_jk_credit_investor_info
+    <set >
+      <if test="loanCode != null" >
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="contributionAmount != null" >
+        contribution_amount = #{contributionAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="investorName != null" >
+        investor_name = #{investorName,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCertType != null" >
+        dict_cert_type = #{dictCertType,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertNum != null" >
+        customer_cert_num = #{customerCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCurrency != null" >
+        dict_currency = #{dictCurrency,jdbcType=VARCHAR},
+      </if>
+      <if test="contributionProportion != null" >
+        contribution_proportion = #{contributionProportion,jdbcType=INTEGER},
+      </if>
+      <if test="operation != null" >
+        operation = #{operation,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.credit.entity.CreditInvestorInfo" >
+    update jk.t_jk_credit_investor_info
+    set loan_code = #{loanCode,jdbcType=VARCHAR},
+      contribution_amount = #{contributionAmount,jdbcType=NUMERIC},
+      investor_name = #{investorName,jdbcType=VARCHAR},
+      dict_cert_type = #{dictCertType,jdbcType=VARCHAR},
+      customer_cert_num = #{customerCertNum,jdbcType=VARCHAR},
+      dict_currency = #{dictCurrency,jdbcType=VARCHAR},
+      contribution_proportion = #{contributionProportion,jdbcType=INTEGER},
+      operation = #{operation,jdbcType=VARCHAR},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+	<!-- 根据借款编码检索出资人信息List -->
+	<select id="selectByLoanCode" resultMap="BaseResultMap"
+		parameterType="com.creditharmony.loan.credit.entity.CreditInvestorInfo">
+		select
+		<include refid="Base_Column_List" />
+		from jk.t_jk_credit_investor_info
+		where loan_code = #{loanCode,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 根据借款编码删除出资人信息 -->
+	<delete id="deleteByLoanCode" parameterType="java.lang.String">
+		delete from jk.t_jk_credit_investor_info
+		where loan_code = #{loanCode,jdbcType=VARCHAR}
+	</delete>
+</mapper>

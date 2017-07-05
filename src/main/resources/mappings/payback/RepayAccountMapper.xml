@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.account.dao.RepayAccountDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	<result column="id"						jdbcType="VARCHAR"		property="id"/>
+  	<result column="contract_code"			jdbcType="VARCHAR"		property="contractCode"/>
+  	<result column="loan_code"				jdbcType="VARCHAR"		property="loanCode"/>
+  	<result column="customerId"				jdbcType="VARCHAR"		property="customerId"/>
+  	<result column="customer_name"			jdbcType="VARCHAR"		property="customerName"/>
+    <result column="bank_account" 			jdbcType="VARCHAR" 		property="account"/>
+    <result column="bank_no" 				jdbcType="VARCHAR" 		property="hdloanBankbrId"/>
+    <result column="bank_old_account" 		jdbcType="VARCHAR" 		property="oldAccount"/>
+    <result column="bank_name" 				jdbcType="VARCHAR" 		property="bankName" />
+    <result column="bank_account_name" 		jdbcType="VARCHAR" 		property="accountName"/>
+    <result column="contract_end_day" 		jdbcType="TIMESTAMP"	property="contractEndDay"/>
+    <result column="contract_replay_day" 	jdbcType="TIMESTAMP" 	property="firstRepayDay"/>
+    <result column="name" 					jdbcType="VARCHAR" 		property="storeName"/>
+    <result column="dict_loan_status" 		jdbcType="VARCHAR" 		property="loanStatus"/>
+    <result column="dict_maintain_type" 	jdbcType="VARCHAR" 		property="maintainType"/>
+    <result column="repay_day" 				jdbcType="VARCHAR" 		property="repayDay"/>
+    <result column="loan_flag" 				jdbcType="VARCHAR" 		property="flag"/>
+    <result column="dict_maintain_status" 	jdbcType="VARCHAR" 		property="maintainStatus"/>
+    <result column="contract_version" 		jdbcType="VARCHAR" 		property="version"/>
+    <result column="file_id"				jdbcType="VARCHAR"		property="fileId"/>
+    <result column="file_name"				jdbcType="VARCHAR"		property="fileName"/>
+    <result column="phone_file_id"			jdbcType="VARCHAR"		property="phoneFileId"/>
+    <result column="phone_file_name"		jdbcType="VARCHAR"		property="phoneFileName"/>
+    <result column="bank_top_flag"			jdbcType="INTEGER"		property="topFlag"/>
+    
+    <result column="customer_cert_num"		jdbcType="VARCHAR" 		property="customerCard"/>
+    <result column="customer_phone_first"	jdbcType="VARCHAR" 		property="customerPhone"/>
+    <result column="new_customer_phone"		jdbcType="VARCHAR"		property="newCustomerPhone"/>
+    <result column="bank_province"			jdbcType="VARCHAR"		property="provinceId"/>
+    <result column="province_name"			jdbcType="VARCHAR"		property="provinceName"/>
+    <result column="bank_city"				jdbcType="VARCHAR"		property="cityId"/>
+    <result column="city_name"				jdbcType="VARCHAR"		property="cityName"/>
+    <result column="bank_branch"			jdbcType="VARCHAR"		property="bankBranch"/>
+    <result column="bank_signing_platform"	jdbcType="VARCHAR"		property="deductPlat"/>
+    <result column="apply_time" 			jdbcType="TIMESTAMP" 	property="applyTime"/>
+    <result column="preserve_time" 			jdbcType="TIMESTAMP" 	property="maintainTime"/>
+    
+    <result column="create_name"			jdbcType="VARCHAR"		property="operator"/>
+    <result column="create_time"			jdbcType="TIMESTAMP"	property="operateTime"/>
+    <result column="operate_step"			jdbcType="VARCHAR"		property="operateStep"/>
+    <result column="old_data"				jdbcType="VARCHAR"		property="oldData"/>
+    <result column="new_data"				jdbcType="VARCHAR"		property="newData"/>
+    <result column="remark"					jdbcType="VARCHAR"		property="remarks"/>
+    <result column="old_bank_account_id"	jdbcType="VARCHAR"		property="oldAccountId"/>
+    <result column="updatetype"				jdbcType="VARCHAR"		property="uptedaType"/>
+    <result column="customer_email"			jdbcType="VARCHAR" 		property="customerEmail"/>
+    <result column="updatecontent"          jdbcType="VARCHAR"		property="updatecontent"/>
+  </resultMap> 
+  
+  <select id="selectVersionList" resultType="java.lang.String">
+  	select 
+  		distinct version 
+  	from 
+  		t_gl_contract_template 
+  	where 
+  		status = '1' 
+  </select>
+  
+  <select id="selectAccountList" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView" resultMap="BaseResultMap">
+  	select 	
+  		lc.id customerId,	--借款人ID
+		lc.customer_name,	--借款人姓名
+		lc.file_name phone_file_name,	--手机号附件名称
+		 
+		lo.dict_loan_status dict_loan_status,  --借款状态
+		lo.loan_flag loan_flag,			--渠道
+		lo.model,             -- 模式
+		ct.contract_code,	--合同编号
+		ct.contract_end_day,	--合同到期日
+		ct.contract_replay_day,	--起始还款日
+		ct.contract_version,	--合同版本号
+		bk.id,					--账号ID
+		bk.loan_code,			--借款编号
+		bk.bank_account_name,	--账号名称
+		bk.bank_account,	--账号
+		bk.bank_name,		--开户行
+		bk.dict_maintain_status,--维护状态
+		bk.dict_maintain_type,	--维护类型
+		bk.bank_top_flag,	--是否置顶
+		bk.file_name,		--文件名字
+		bk.apply_time,		--申请时间
+		bk.preserve_time,	--维护时间
+		bk.updatetype,	--更新类型
+		pay.payback_day repay_day,	--还款日
+		og.name				--门店名称
+	<include refid="fromTables"></include>
+	<include refid="conditions"></include> 
+	  ${queryRight} 
+	order by bk.bank_top_flag asc ,bk.dict_maintain_status asc, bk.modify_time desc nulls last 
+  </select>
+  
+  <sql id="fromTables">
+  	from jk.t_jk_loan_info lo
+		left join jk.t_jk_contract ct on lo.loan_code = ct.loan_code
+		left join jk.t_jk_loan_customer lc on lc.loan_code = ct.loan_code
+		left join jk.t_jk_payback pay on ct.contract_code = pay.contract_code
+		inner join jk.t_jk_loan_bank bk on ct.loan_code = bk.loan_code 
+		left join jk.t_gl_org org on lo.loan_team_orgid = org.id
+		left join jk.t_gl_org og on org.parent_id = og.id
+		left join (select value,label from jk.t_gl_dict where type='jk_loan_model') p on p.value= ct.model
+  </sql>
+  
+  <sql id="conditions">
+  	<where>
+  	      1=1 
+  	    and bk.repayment_flag='1' 
+		<if test="bankIds != null and bankIds != ''">
+			and bk.id in 
+			<foreach item="item" index="index" collection="bankIdarray" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if> 
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name like '%'||#{customerName}||'%'
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and ct.contract_code = #{contractCode}
+		</if>
+		<if test="repayDay != null and repayDay != ''">
+    		and pay.payback_day = #{repayDay}
+		</if>
+		<if test="ids != null and ids != ''">
+			and og.id in (${orgCode})
+		</if>
+		<if test="maintainStatus != null and maintainStatus != ''">
+			and bk.dict_maintain_status = #{maintainStatus}
+			<if test="jzhMaintainStatus != null and jzhMaintainStatus != ''">
+				 or bk.dict_maintain_status = #{jzhMaintainStatus}
+			</if>
+		</if>
+		<if test="maintainStatusArray!=null and maintainStatusArray!=''">
+		    and bk.dict_maintain_status in(${maintainStatusArray})
+		</if>
+		<if test="version != null and version != ''">
+			and ct.contract_version = #{version}
+		</if>
+		<if test="flag != null and flag != ''">
+			and lo.loan_flag = #{flag}
+		</if>
+		<if test="model != null and model != ''">
+			and lo.model  =  #{model}
+		</if>
+		<if test="uptedaType != null and uptedaType != '' and  uptedaType == '2'.toString()">
+			and bk.updatetype = #{uptedaType}
+		</if>
+		<if test="uptedaType != null and uptedaType != '' and  uptedaType !='2'.toString()">
+			and (bk.updatetype != '2' or bk.updatetype is null)
+		</if>
+		 <if test="phoneSaleSign != null and phoneSaleSign != ''">
+				and lc.customer_telesales_flag=#{phoneSaleSign}
+	     </if>
+  	</where>
+  </sql>
+  
+  <select id="selectLoanStatusAndFlag" parameterType="java.lang.String" resultMap="BaseResultMap">
+  	select lo.dict_loan_status,
+  		lo.loan_flag
+  	from t_jk_contract ct
+  		left join t_jk_loan_info lo on lo.loan_code = ct.loan_code
+  	 where ct.contract_code = #{value}
+  </select>
+  
+  <select id="selectMaintainStatus"  parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView" resultType="java.lang.String">
+  	select bk.dict_maintain_status
+  	from t_jk_contract ct
+  		left join t_jk_loan_bank bk on ct.loan_code = bk.loan_code 
+  	where (bk.dict_maintain_status = #{maintainStatus} 
+  		  or bk.dict_maintain_status = #{jzhMaintainStatus}
+  		  or bk.dict_maintain_status = #{status}) 
+  	and ct.contract_code = #{contractCode} 
+  </select>
+  
+  <select id="selectAddAccountMassage" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView" resultMap="BaseResultMap">
+  	select lc.customer_name,	--客户姓名
+  		lc.customer_cert_num,		--身份证号
+  		lc.customer_phone_first,	--手机号
+  		ct.contract_code, 			--合同编号
+  		ct.loan_code,				--借款编号
+  		ct.model,					--模式
+  		lo.loan_flag				--标识
+	from t_jk_loan_info lo left join  t_jk_contract ct
+		ON lo.loan_code = ct.loan_code LEFT JOIN t_jk_loan_customer lc 
+		ON lc.loan_code = ct.loan_code
+	where ct.contract_code = #{contractCode}
+  </select>
+  
+  
+  <select id="selectAccountInfoById" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView" resultMap="BaseResultMap">
+  	select bk.id,
+  		bk.bank_province,		--银行卡所在省ID
+  		bk.bank_city,			--银行卡所在市ID
+  		(select area_name from jk.t_gl_province_city_cmb where id = bk.bank_province) province_name,	--银行卡所在省名称
+  		(select area_name from jk.t_gl_province_city_cmb where id = bk.bank_city) city_name,	--银行卡所在市名称
+  		bk.bank_account_name,	--开户姓名
+  		bk.bank_account,		--账户
+  		bk.bank_old_account,		--原账户
+  		bk.bank_signing_platform,	--签约平台
+  		bk.dict_maintain_status,	--维护状态
+  		bk.dict_maintain_type,	--维护类型
+  		bk.bank_name,			--开户行
+  		bk.bank_branch,			--具体支行
+  		bk.bank_no,  --支行code
+  		bk.file_id,			--附件ID
+  		bk.file_name,		--附件名称
+  		bk.old_bank_account_id,	--原账户ID
+  		lc.id customerId,		--客户ID
+  		lc.customer_name,		--客户姓名
+  		lc.customer_cert_num,		--身份证号
+  		lc.customer_phone_first,	--手机号
+  		lc.new_customer_phone,		--新手机号
+  		ct.contract_code, 			--合同编号
+  		ct.loan_code,				--借款编号
+  		bk.updateType,               --更新类型
+  		bk.updatecontent,			 --更新内容
+  		lc.customer_email,           --邮箱
+  		bk.bank_check_desc remark	--审核意见
+	from jk.t_jk_loan_bank bk
+  		left join jk.t_jk_contract ct on ct.loan_code = bk.loan_code
+  		left join jk.t_jk_loan_customer lc on lc.loan_code = ct.loan_code
+	where bk.id = #{id}
+  
+  </select>
+  
+  <insert id="insertAccount" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	insert into t_jk_loan_bank (
+  		id,
+  		loan_code,
+  		bank_name,
+  		bank_province,
+  		bank_city,
+  		bank_branch,
+  		bank_no,
+  		bank_account_name,
+  		bank_account,
+  		bank_signing_platform,
+  		dict_maintain_status,
+  		bank_top_flag,
+  		dict_maintain_type,
+  		file_id,
+  		file_name,
+  		create_time,
+  		create_by,
+  		modify_by,
+  		modify_time,
+  		apply_time,
+  		old_bank_account_id,
+  		repayment_flag,
+  		updatetype,
+  		updatecontent,
+  		bank_old_account
+  	) values (
+  		#{id},
+  		#{loanCode},
+  		#{bankName},
+  		#{provinceId},
+  		#{cityId},
+  		#{bankBranch},
+  		#{bankNo},
+  		#{accountName},
+  		#{account},
+  		#{deductPlat},
+  		#{maintainStatus},
+  		#{topFlag},
+  		#{maintainType},
+  		#{fileId},
+  		#{fileName},
+  		#{createTime},
+  		#{createBy},
+  		#{modifyBy},
+  		#{modifyTime},
+  		#{applyTime},
+  		#{oldAccountId},
+  		#{repaymentFlag},
+  		#{uptedaType},
+  		#{updatecontent},
+  		#{oldAccount}
+  	)
+  </insert>
+  
+  <!-- 添加 账户修改记录表 数据 -->
+  <insert id="insertAccountChangeLog" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView" >
+    insert into t_jk_account_change_log
+    <trim prefix="(" suffix=")" suffixOverrides="," >    
+        id,
+        refid,
+        change_type,        
+        file_name,
+        doc_id,
+        create_by,
+        create_time,
+      <if test="phone != null and phone != ''" >
+        file_type,
+      </if>
+      <if test="operator != null and operator != ''" >
+        modify_by,
+      </if>
+      <if test="operateTime != null and operateTime != ''" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >     
+        #{id},    
+        #{refId}, 
+        #{changeType},    
+        #{fileName},    
+        #{fileId},    
+  		#{createBy},
+  		#{createTime},
+      <if test="phone != null and phone != ''" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="operator != null and operator != ''" >
+        #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="operateTime != null and operateTime != ''" >
+        #{operateTime},
+      </if>
+    </trim>
+  </insert>
+  
+  <select id="getAreaName" parameterType="java.lang.String" resultType="java.lang.String">
+  	select area_name from t_gl_province_city_cmb where id = #{value}
+  </select>
+  
+  <insert id="insertChangeHistory" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	insert into t_jk_payback_change_his (
+  		cont_code,
+  		operate_step,
+  		old_data,
+  		new_data,
+  		remark,
+  		create_by,
+  		create_time
+  	) values (
+  		#{contractCode},
+  		#{operateStep},
+  		#{oldData},
+  		#{newData},
+  		#{remarks},
+  		#{modifyBy},
+  		#{modifyTime})
+  </insert>
+  
+  <update id="updateCustomerMobilePhone" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+	update t_jk_loan_customer set new_customer_phone = #{customerPhone},
+  		modify_by = #{createBy},
+  		modify_time = #{createTime}
+	where id = #{customerId}
+	
+  </update>
+  
+  <update id="refusePhone" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime}
+  	where id = #{id};
+  	
+	update t_jk_loan_customer set new_customer_phone = '',
+  		modify_by = #{createBy},
+  		modify_time = #{createTime}
+	where id = #{customerId}
+  </update>
+  
+  <update id="throughPhone" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update jk.t_jk_loan_bank set
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime},
+  		preserve_time = #{maintainTime},
+  		repayment_flag = '1',
+  		bank_top_flag = '1'
+  	where id = #{id};
+  	
+  	update jk.t_jk_loan_bank set bank_top_flag = '0' 
+  	where  id != #{id} and loan_Code = #{loanCode};
+  	
+	update t_jk_loan_customer 
+		set customer_phone_first = #{customerPhone}, new_customer_phone='',	
+	  		modify_by = #{modifyBy},
+	  		modify_time = #{modifyTime}
+	where id = #{customerId}
+  </update>
+  
+  <update id="throughEmail" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update jk.t_jk_loan_bank set
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime},
+  		preserve_time = #{maintainTime},
+  		repayment_flag = '1',
+  		bank_top_flag = '1'
+  	where id = #{id};
+  	
+  	update jk.t_jk_loan_bank set bank_top_flag = '0' 
+  	where  id != #{id} and loan_Code = #{loanCode};
+  	
+	update t_jk_loan_customer 
+		set customer_email = #{updatecontent},	
+	  		modify_by = #{modifyBy},
+	  		modify_time = #{modifyTime}
+	where id = #{customerId}
+  </update>
+  
+  <update id="refuseEmail" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime}
+  	where id = #{id};
+  </update>
+  
+  <update id="refuseAccount" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime}
+  	where id = #{id}
+  </update>
+  
+  <update id="throughAddAccount" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		dict_maintain_status = #{maintainStatus},
+  		<if test="remarks != null and remarks != ''">
+  			bank_check_desc = #{remarks},
+  		</if>
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime},
+  		preserve_time = #{maintainTime},
+  		repayment_flag = #{repaymentFlag},
+  		bank_top_flag = #{topFlag}
+  	where id = #{id}
+  </update>
+  
+  <update id="editBankAccount" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		bank_account = #{account},
+  		bank_branch = #{bankBranch},
+  		file_id = #{fileId},
+  		file_name = #{fileName},
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime},
+  		preserve_time = #{maintainTime},
+  		bank_province = #{provinceId},
+  		bank_city = #{cityId}
+  	where id = #{id};
+  	
+  	<!-- delete from t_jk_loan_bank where id = #{id} -->
+  </update>
+  
+  <update id="throughEditAccount" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		bank_account = #{account},
+  		bank_branch = #{bankBranch},
+  		bank_no = #{hdloanBankbrId},
+  		file_id = #{fileId},
+  		file_name = #{fileName},
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime},
+  		preserve_time = #{maintainTime}
+  		<!-- ,
+  		repayment_flag = #{repaymentFlag},
+  		bank_top_flag = #{topFlag} -->
+  	where id = #{id};
+  	
+  	<!-- delete from t_jk_loan_bank where id = #{id} -->
+  </update>
+  
+  <!-- 金账户初审 -->
+  <update id="saveGoldFirstCheck" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		dict_maintain_status = #{maintainStatus},
+  		bank_check_desc = #{remarks},
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime},
+  		preserve_time = #{maintainTime}
+  	where id = #{id}
+  </update>
+  
+  <select id="getHistoryList" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView" resultMap="BaseResultMap">
+  	select create_time,
+  		(select us.name from t_gl_user us where us.id = his.create_by) create_name,
+  		operate_step,
+  		old_data,
+  		new_data,
+  		remark
+  	from t_jk_payback_change_his his
+  	where his.cont_code = #{contractCode}
+  	order by create_time desc nulls first
+  </select>
+  
+  <update id="updateAccountTop" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	update t_jk_loan_bank set
+  		bank_top_flag = '0',
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime}
+  	where loan_code = #{loanCode};
+  	
+  	update t_jk_loan_bank set
+  		bank_top_flag = '1',
+  		modify_by = #{modifyBy},
+  		modify_time = #{modifyTime}
+  	where id = #{id};
+  </update>
+  
+  <insert id="editGoldAccount"  parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView">
+  	insert into t_jk_loan_bank (
+  		id,
+  		loan_code,
+  		bank_name,
+  		bank_province,
+  		bank_city,
+  		bank_branch,
+  		bank_account_name,
+  		bank_account,
+  		bank_old_account,
+  		bank_signing_platform,
+  		dict_crea_type,
+  		dict_maintain_status,
+  		bank_top_flag,
+  		dict_maintain_type,
+  		file_id,
+  		file_name,
+  		create_time,
+  		create_by,
+  		modify_by,
+  		modify_time,
+  		apply_time,
+  		old_bank_account_id,
+  		updatetype,
+  		repayment_flag,
+  		bank_no,
+  		updatecontent
+  	) values (
+  		#{id},
+  		#{loanCode},
+  		#{bankName},
+  		#{provinceId},
+  		#{cityId},
+  		#{bankBranch},
+  		#{accountName},
+  		#{pMsgAccount},
+  		#{oldAccount},
+  		#{deductPlat},
+  		#{deductPlat},
+  		#{maintainStatus},
+  		#{topFlag},
+  		#{maintainType},
+  		#{fileId},
+  		#{fileName},
+  		#{createTime},
+  		#{createBy},
+  		#{modifyBy},
+  		#{modifyTime},
+  		#{applyTime},
+  		#{oldAccountId},
+  		#{phone},
+  		#{repaymentFlag},
+  		#{hdloanBankbrId},
+  		#{updatecontent}
+  	);
+	update t_jk_loan_customer set new_customer_phone = #{pMsgCustomerPhone},
+  		modify_by = #{createBy},
+  		modify_time = #{createTime}
+	where id = #{customerId}
+  </insert>
+  
+  <select id="getBillDay" resultType="Map">
+  	select bill_day as billDay from t_gl_bill group by bill_day order by bill_day
+  </select>
+  <select id="getTGdownload" parameterType="map" resultType="com.creditharmony.loan.borrow.account.entity.KingAccountChangeExport">
+     select
+   b.bank_jzh_khhss as kind_provice_code,   ---金账户省市
+   p.area_name as kind_province_name,        ---金账户省市 名称
+   b.bank_jzh_khhqx as kind_city_code,   ---金账户区县
+   city.area_name as kind_city_name,     ---金账户区县 名称
+   c.trusteeship_no,   ---金账户账号
+   c.new_customer_phone, ---新手机号
+   c.customer_phone_first as old_customer_phone, ---原有手机号
+   b.bank_name,            ---银行名称
+   b.dict_maintain_type,   ---维护类型
+   b.loan_code,
+   b.bank_branch,          ---具体支行
+   b.bank_account_name,    ---开户姓名
+   b.bank_account,         ---卡号
+   c.dict_cert_type,       ---证件类型
+   c.customer_cert_num,     ---证件号码
+   b.updatetype,           ---变更类型
+   b.file_id,              ---文件ID
+   b.file_name,            ---文件名称
+   b.old_bank_account_id  ---老账户ID
+ from jk.t_jk_loan_bank b left join jk.t_jk_loan_customer c
+   on b.loan_code = c.loan_code 
+   left join jk.t_jk_fy_area_code p on b.bank_jzh_khhss = p.area_code 
+   left join jk.t_jk_fy_area_code city on  b.bank_jzh_khhqx = city.area_code 
+ where b.id in(${ids}) 
+  </select>
+  
+  
+   <select id="selectAccountCount" parameterType="com.creditharmony.loan.borrow.account.view.RepayAccountApplyView" resultType="java.lang.String">
+  	select 	
+  		count(*)
+	<include refid="fromTables"></include>
+	<include refid="conditions"></include> 
+	  ${queryRight} 
+  </select>
+  
+   <select id="selectRoleCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+  	SELECT count(*) FROM jk.t_gl_role a
+          join jk.t_gl_user_role_org b on a.id = b.role_id
+      WHERE a.name in ('金账户管理员','金账户专员') and b.user_id = #{value}
+  </select>
+  
+  <select id="queryDeductLimit">
+  
+  
+  </select>
+  
+</mapper>

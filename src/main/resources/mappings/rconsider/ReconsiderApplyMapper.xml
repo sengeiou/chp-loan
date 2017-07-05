@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.reconsider.dao.ReconsiderApplyDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.reconsider.entity.ReconsiderApply">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId"/>
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <result column="dict_reconsider_type" jdbcType="VARCHAR" property="dictReconsiderType" />
+    <result column="second_reconsider_msg" jdbcType="VARCHAR" property="secondReconsiderMsg" />
+    <result column="apply_by" jdbcType="VARCHAR" property="applyBy" />
+    <result column="org_code" jdbcType="VARCHAR" property="orgCode" />
+    <result column="dict_check_status" jdbcType="VARCHAR" property="dictCheckStatus" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+  </resultMap>
+  <sql id="baseSql">
+    id,apply_id,loan_code,dict_reconsider_type,second_reconsider_msg,
+    apply_by,org_code,dict_check_status,create_time,create_by,
+    modify_time,modify_by 
+  </sql>
+  <insert id="insert">
+    insert into jk.t_jk_reconsider_apply
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="applyId!=null">
+         apply_id,
+      </if>
+      <if test="loanCode != null">
+        loan_code,
+      </if>
+      <if test="dictReconsiderType != null">
+        dict_reconsider_type,
+      </if>
+      <if test="secondReconsiderMsg != null">
+        second_reconsider_msg,
+      </if>
+      <if test="applyBy != null">
+        apply_by,
+      </if>
+      <if test="orgCode != null">
+        org_code,
+      </if>
+      <if test="dictCheckStatus != null">
+        dict_check_status,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+      <if test="modifyBy != null">
+        modify_by,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId!=null">
+         #{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictReconsiderType != null">
+        #{dictReconsiderType,jdbcType=VARCHAR},
+      </if>
+      <if test="secondReconsiderMsg != null">
+        #{secondReconsiderMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="applyBy != null">
+        #{applyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="orgCode != null">
+        #{orgCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckStatus != null">
+        #{dictCheckStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+   <!--根据指定的参数更新借款复议申请表  -->
+   <update id="update" parameterType="map">
+     update jk.t_jk_reconsider_apply 
+     <set>
+      <if test="id != null">
+        id=#{id,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId!=null">
+         apply_id=#{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+        loan_code=#{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictReconsiderType != null">
+        dict_reconsider_type=#{dictReconsiderType,jdbcType=VARCHAR},
+      </if>
+      <if test="secondReconsiderMsg != null">
+        second_reconsider_msg=#{secondReconsiderMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="applyBy != null">
+        apply_by=#{applyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="orgCode != null">
+        org_code=#{orgCode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckStatus != null">
+        dict_check_status=#{dictCheckStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time=#{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null">
+        create_by=#{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time=#{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by=#{modifyBy,jdbcType=VARCHAR},
+      </if>
+      </set>
+    where 
+    <trim prefixOverrides="AND | OR">  
+    	<if test="applyId!=null"> 
+      		and apply_id = #{applyId,jdbcType=VARCHAR} 
+    	</if>
+     	<if test="loanCode!=null"> 
+      		and loan_code = #{loanCode,jdbcType=VARCHAR} 
+    	</if>
+    	<if test="(loanCode == null or loanCode == '') and (applyId == null or applyId == '')">
+     		and loan_code = '0'
+    	</if>
+    </trim>
+  </update>
+ <select id="findReconsiderApply" resultType="com.creditharmony.loan.borrow.reconsider.entity.ReconsiderApply" parameterType="map">
+    select 
+     <include refid="baseSql"/> 
+    from jk.t_jk_reconsider_apply 
+    where 1=1 
+     and loan_code in (select distinct(loan_code) from jk.t_jk_reconsider_apply where
+      apply_id = #{applyId,jdbcType=VARCHAR} 
+     )
+ </select>
+ <select id="selectByParam" resultType="com.creditharmony.loan.borrow.reconsider.entity.ReconsiderApply" parameterType="map">
+    select 
+      <include refid="baseSql"/> 
+    from jk.t_jk_reconsider_apply 
+     where loan_code = #{loanCode,jdbcType=VARCHAR}  
+ </select>
+	<!-- 根据applyID获取复议信息 -->
+	<select id="selectByApply" resultType="com.creditharmony.loan.borrow.reconsider.entity.ReconsiderApply" parameterType="String">
+		select 
+			<include refid="baseSql"/> 
+		from jk.t_jk_reconsider_apply 
+			where apply_id = #{applyId,jdbcType=VARCHAR}
+	</select>
+ 
+</mapper>

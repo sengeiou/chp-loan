@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.yunwei.operate.dao.OperateDataDao">
+
+	<select id="selectLoanSystemLog" resultType="String">
+		SELECT MAX(T.JK_LOAN_SYSTEM_LOG_ID) AS UUID FROM JK.T_JK_LOAN_SYSTEM_LOG T 
+		WHERE T.MESSAGE IS NULL
+	</select>
+	
+	<update id="updateLoanSystemLog" parameterType="java.util.HashMap">
+		UPDATE JK.T_JK_LOAN_SYSTEM_LOG
+		SET MESSAGE =#{MESSAGE},
+			OPERATOR_NAME =#{OPERATOR_NAME},
+			OPERATOR_CODE =#{OPERATOR_CODE},
+			OPERATOR_TIME = SYSDATE
+		WHERE JK_LOAN_SYSTEM_LOG_ID =#{JK_LOAN_SYSTEM_LOG_ID}
+	</update>
+	
+	<insert id="insertLoanSystemLog" parameterType="String">
+		INSERT INTO JK.T_JK_LOAN_SYSTEM_LOG (JK_LOAN_SYSTEM_LOG_ID, MESSAGE, OPERATOR_NAME, OPERATOR_CODE, OPERATOR_TIME)
+		VALUES (#{uid}, null, null, null, SYSDATE)
+	</insert>
+</mapper>

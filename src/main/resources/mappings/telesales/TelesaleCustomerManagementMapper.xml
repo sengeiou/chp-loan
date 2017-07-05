@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.telesales.dao.TelesalesCustomerManagementDAO">
+	
+	<resultMap id="telesaleConsultSearchViewResultMap"
+		type="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+		<result property="id" column="id" />
+		<result property="customerName" column="customer_name" />
+		<result property="customerCode" column="customer_code" />	  		 		   
+		<result property="mateCertNum" column="customer_cert_num" />			   		 	   
+		<result property="dictOperStatus" column="dict_oper_status" />					     
+		<result property="storeCode" column="store_orgid" />		
+		<result property="storeName" column="name" />	
+		<result property="telesaleManName" column="name" />	
+		<result property="telesaleManCode" column="cons_team_managercode" />	
+	    <result property="telesaleTeamLeaderName" column="name" />	 
+	    <result property="telesaleSiteManagerName" column="name" />	
+	    <result property="firstConsultDateStart" column="create_time" />	
+	    <result property="firstConsultDateEnd" column="create_time" />	
+		<result property="consTelesalesSource" column="cons_telesales_source" />						 
+		<result property="consTelesalesSourceName" column="label" />
+		<result property="consCommunicateDate" column="cons_communicate_date" />
+		<result property="createTime" column="create_time" />
+		<result property="consLoanRecord" column="cons_loan_record" />
+		<result property="consServiceUserCode" column="cons_service_user_code" />
+		<result property="consServiceUserName" column="name" />
+		<result property="dictOperStatusName" column="label" />  
+		<result property="isFirstConsult" column="label" />  
+		<result property="telesaleManRole" column="id" />
+		<result property="telesaleTeamLeaderRole" column="id" />         
+		<result property="telesaleSiteManagerRole" column="id" /> 
+		<result property="customerMobilePhone" column="customer_mobile_phone" />
+		<result property="loanCode" column="loan_code" />	
+	    <result property="consTelesalesOrgcode" column="cons_telesales_orgcode" />	
+	 </resultMap>
+	 <!--信借电销客户咨询列表  -->
+	 <select id="findTelesalesCustomerList" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView" resultType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	     select a.* from (select 
+                                  (select jk.fn_getcodetoname(con.cons_telesales_source,'jk_rs_src','dict')) as consTelesalesSourceName,
+							      con.cons_telesales_source   as consTelesalesSource,                        
+							      con.id as id,
+							      base.customer_mobile_phone as customerMobilePhone, 
+							      base.customer_code as customerCode,
+							      base.customer_name as customerName,
+							      base.customer_cert_num as mateCertNum,
+			                      (SELECT jk.fn_getcodetoname(con.store_orgid,null,'org')) as storeName,				     
+							      con.store_orgid as storeCode,
+							      con.modify_time as consCommunicateDate,
+							      con.create_time as createTime,
+							      (select max(cons_communicate_date) from jk.t_jk_consultation_log where cons_id=con.id) as lastTimeConsCommunicateDate,
+							      con.cons_loan_record   as consLoanRecord,
+							      con.cons_telesales_orgcode as consTelesalesOrgcode,
+							      con.cons_team_orgcode as  consTeamOrgcode,
+			                      (SELECT jk.fn_getcodetoname(con.cons_service_user_code,null,'user')) as consServiceUserName,
+			                      (SELECT jk.fn_getcodetoname(con.manager_code,null,'user')) as telesaleManName,				  
+							      con.manager_code as telesaleManCode,
+							     (SELECT jk.fn_getcodetoname(con.cons_team_managercode,null,'user')) as telesaleTeamLeaderName,
+			                     (SELECT jk.fn_getcodetoname(con.scene_manager,null,'user')) as telesaleSiteManagerName,
+							     (SELECT jk.fn_getcodetoname(con.dict_oper_status,'jk_rs_status','dict'))  as dictOperStatusName, 
+							     con.dict_oper_status as dictOperStatus,
+							      case (select count(con2.id)  from jk.t_jk_customer_consultation con2 where con2.id=con.id)  
+							       when 1 then '是'
+							       else '否' 
+							       end as  isFirstConsult
+							   from   jk.t_jk_customer_base base
+							      left join jk.t_jk_customer_consultation con
+							      on base.customer_code=con.customer_code
+							      where 
+							      con.cons_telesales_flag='1'
+							      order by con.create_time desc
+						) a
+                    where 1=1
+                    <!-- 电销组织机构ID -->
+                    <if test="consTelesalesOrgcode != null and consTelesalesOrgcode != ''">
+						and a.consTeamOrgcode = #{consTelesalesOrgcode,jdbcType=VARCHAR}
+					</if>
+                    
+		            <if test="customerName != null and customerName != ''">
+						and a.customerName LIKE CONCAT('%', #{customerName}, '%')
+					</if>
+					<if test="mateCertNum != null and mateCertNum != ''">
+						and a.mateCertNum LIKE CONCAT('%', #{mateCertNum}, '%')
+					</if>
+					<if test="dictOperStatus != null and dictOperStatus != ''">
+						and a.dictOperStatus = #{dictOperStatus,jdbcType=VARCHAR}
+					</if>
+					<if test="storeCode != null and storeCode != ''">
+						and a.storeCode= #{storeCode,jdbcType=VARCHAR}
+					</if>
+					<if test="consTelesalesSource != null and consTelesalesSource != ''">
+						and a.consTelesalesSource= #{consTelesalesSource,jdbcType=VARCHAR}
+					</if>
+					<if test="telesaleManName != null and telesaleManName != ''">
+						and a.telesaleManName LIKE CONCAT('%', #{telesaleManName}, '%')
+					</if>
+					<if test="telesaleTeamLeaderName != null and telesaleTeamLeaderName != ''">
+						and a.telesaleTeamLeaderName LIKE CONCAT('%', #{telesaleTeamLeaderName}, '%')
+					</if>
+					<if test="telesaleSiteManagerName != null and telesaleSiteManagerName != ''">
+						and a.telesaleSiteManagerName LIKE CONCAT('%', #{telesaleSiteManagerName}, '%')
+					</if>
+					
+					<if test="firstConsultDateStart != null and firstConsultDateStart != ''">
+						and to_date(to_char(a.createTime,'yyyy-mm-dd'),'yyyy-mm-dd hh24:mi:ss') &gt;= #{firstConsultDateStart}
+					</if>
+					<if test="firstConsultDateEnd != null and firstConsultDateEnd != ''">
+						and to_date(to_char(a.createTime,'yyyy-mm-dd'),'yyyy-mm-dd hh24:mi:ss') &lt;= #{firstConsultDateEnd}
+					</if>
+					<if test="telesaleManCode != null and telesaleManCode != ''">
+						and a.telesaleManCode = #{telesaleManCode}
+					</if>
+					
+	 </select>
+	 
+	  <!--信借电销客户咨询列表导出  -->
+	 <select id="exportTelesaleCustomerListExcel" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	     select rownum id, a.* from (select 
+                                  (select jk.fn_getcodetoname(con.cons_telesales_source,'jk_rs_src','dict')) as consTelesalesSourceName,
+							      con.cons_telesales_source   as consTelesalesSource,                        
+							      con.id as id,
+							      base.customer_mobile_phone as customerMobilePhone, 
+							      base.customer_code as customerCode,
+							      base.customer_name as customerName,
+							      base.customer_cert_num as mateCertNum,
+			                      (SELECT jk.fn_getcodetoname(con.store_orgid,null,'org')) as storeName,				     
+							      con.store_orgid as storeCode,
+							      con.modify_time as consCommunicateDate,
+							      con.create_time as createTime,
+							      con.cons_loan_record   as consLoanRecord,
+							      con.cons_telesales_orgcode as consTelesalesOrgcode,
+							      con.cons_team_orgcode as  consTeamOrgcode,
+			                      (SELECT jk.fn_getcodetoname(con.cons_service_user_code,null,'user')) as consServiceUserName,
+			                      (SELECT jk.fn_getcodetoname(con.manager_code,null,'user')) as telesaleManName,				  
+							      con.manager_code as telesaleManCode,
+							     (SELECT jk.fn_getcodetoname(con.cons_team_managercode,null,'user')) as telesaleTeamLeaderName,
+			                     (SELECT jk.fn_getcodetoname(con.scene_manager,null,'user')) as telesaleSiteManagerName,
+							     (SELECT jk.fn_getcodetoname(con.dict_oper_status,'jk_rs_status','dict'))  as dictOperStatusName, 
+							     con.dict_oper_status as dictOperStatus,
+							      case (select count(con2.id)  from jk.t_jk_customer_consultation con2 where con2.id=con.id)  
+							       when 1 then '是'
+							       else '否' 
+							       end as  isFirstConsult
+							   from   jk.t_jk_customer_base base
+							      left join jk.t_jk_customer_consultation con
+							      on base.customer_code=con.customer_code
+							      where 
+							      con.cons_telesales_flag='1'
+							      order by con.create_time desc
+						) a
+                    where 1=1
+                    <!-- 电销组织机构ID -->
+                    <if test="consTelesalesOrgcode != null and consTelesalesOrgcode != ''">
+						and a.consTeamOrgcode = #{consTelesalesOrgcode,jdbcType=VARCHAR}
+					</if>
+                    
+		            <if test="customerName != null and customerName != ''">
+						and a.customerName LIKE CONCAT('%', #{customerName}, '%')
+					</if>
+					<if test="mateCertNum != null and mateCertNum != ''">
+						and a.mateCertNum LIKE CONCAT('%', #{mateCertNum}, '%')
+					</if>
+					<if test="dictOperStatus != null and dictOperStatus != ''">
+						and a.dictOperStatus = #{dictOperStatus,jdbcType=VARCHAR}
+					</if>
+					<if test="storeCode != null and storeCode != ''">
+						and a.storeCode= #{storeCode,jdbcType=VARCHAR}
+					</if>
+					<if test="consTelesalesSource != null and consTelesalesSource != ''">
+						and a.consTelesalesSource= #{consTelesalesSource,jdbcType=VARCHAR}
+					</if>
+					<if test="telesaleManName != null and telesaleManName != ''">
+						and a.telesaleManName LIKE CONCAT('%', #{telesaleManName}, '%')
+					</if>
+					<if test="telesaleTeamLeaderName != null and telesaleTeamLeaderName != ''">
+						and a.telesaleTeamLeaderName LIKE CONCAT('%', #{telesaleTeamLeaderName}, '%')
+					</if>
+					<if test="telesaleSiteManagerName != null and telesaleSiteManagerName != ''">
+						and a.telesaleSiteManagerName LIKE CONCAT('%', #{telesaleSiteManagerName}, '%')
+					</if>
+					
+					<if test="firstConsultDateStart != null and firstConsultDateStart != ''">
+						and to_date(to_char(a.createTime,'yyyy-mm-dd'),'yyyy-mm-dd hh24:mi:ss') &gt;= #{firstConsultDateStart}
+					</if>
+					<if test="firstConsultDateEnd != null and firstConsultDateEnd != ''">
+						and to_date(to_char(a.createTime,'yyyy-mm-dd'),'yyyy-mm-dd hh24:mi:ss') &lt;= #{firstConsultDateEnd}
+					</if>
+					<if test="telesaleManCode != null and telesaleManCode != ''">
+						and a.telesaleManCode = #{telesaleManCode}
+					</if>
+					
+	 </select>
+	 
+	 <!-- 根据身份证号获取订单 -->
+	 <select id="findTelesaleCustomerOrderList" resultType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	       select                                  
+		      con.id as id,
+		      base.customer_code as customerCode,
+		      base.customer_name as customerName,
+		      base.customer_cert_num as mateCertNum,
+		      (select jk.fn_getcodetoname(con.store_orgid,null,'org')) as storeName,
+		      con.store_orgid as storeCode,
+		     (select jk.fn_getcodetoname(con.manager_code,null,'user')) as telesaleManName,
+		      con.manager_code as telesaleManCode
+		   from  jk.t_jk_customer_base base
+		      left join jk.t_jk_customer_consultation con
+		      on base.customer_code=con.customer_code
+		      where 
+		      con.cons_telesales_flag='1'		      
+		     <if test="dictOperStatus != null and dictOperStatus != ''">
+		       and  con.dict_oper_status=#{dictOperStatus}
+		     </if>
+		     <if test="mateCertNum != null and mateCertNum != ''">
+				and  base.customer_cert_num =#{mateCertNum}
+			 </if>
+			 <if test="storeCode != null and storeCode != ''">
+				and con.store_orgid  =#{storeCode}
+			 </if>
+		     order by con.create_time desc
+	 </select>	
+	  
+	 <!-- 查询客户历史借款记录列表 -->
+	 <select id="findTelesaleCustomerLoanList" resultType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+				SELECT loan.id,
+				       loan.loan_code AS loanCode,
+				       gra.contract_code AS contractCode,
+					(select string_agg(cobo_name,',') from jk.t_jk_loan_coborrower where loan_code = loan.loan_code) as coboName,
+				       loan.loan_customer_name AS customerName,
+				
+				  (SELECT area_name
+				   FROM jk.t_gl_province_city pro
+				   WHERE pro.id=
+				       (SELECT province_id
+				        FROM jk.t_gl_org org
+				        WHERE org.id=loan.loan_store_orgid)) AS storeProviceName,
+				
+				  (SELECT area_name
+				   FROM jk.t_gl_province_city pro
+				   WHERE pro.id=
+				       (SELECT city_id
+				        FROM jk.t_gl_org org
+				        WHERE org.id=loan.loan_store_orgid)) AS storeCityName,
+				
+				  (SELECT jk.fn_getcodetoname(loan.loan_store_orgid,NULL,'org')) AS storeName,
+				
+				  (SELECT jk.fn_getcodetoname(loan.dict_loan_status,'jk_loan_apply_status','dict')) AS dictLoanStatusName,
+				
+				  (SELECT jk.fn_getcodetoname(loan.product_type,NULL,'prod')) AS productName ,
+				
+				  (SELECT jk.fn_getcodetoname(loan.loan_urgent_flag,'jk_urgent_flag','dict')) AS loanUrgentFlag,
+				       round(loan.loan_apply_amount,2) AS loanApplyAmount,
+				       round(loan.loan_audit_amount,2) AS loanAuditAmount,
+				
+				  (SELECT jk.fn_getcodetoname(loan.loan_team_managercode,NULL,'user')) AS loanTeamManagerCode,
+				
+				  (SELECT jk.fn_getcodetoname(loan.loan_managercode,NULL,'user')) AS loanManagerCode,
+				
+				  (SELECT jk.fn_getcodetoname(loan.create_by,NULL,'user')) AS creater,
+				
+				  (SELECT jk.fn_getcodetoname(loan.loan_survey_emp_id,NULL,'user')) AS loanSurveyEmpId,
+				       loan.loan_apply_time AS loanApplyTime,
+				       loan.customer_into_time AS customerIntoTime,
+				
+				  (SELECT jk.fn_getcodetoname(loan.loan_flag,'jk_channel_flag','dict')) AS loanFlagName,
+				
+				  (SELECT jk.fn_getcodetoname(loan.dict_is_cycle,'jk_circle_loan_flag','dict')) AS dictIsCycleName,
+				
+				  (SELECT jk.fn_getcodetoname(con.cons_telesales_flag,'jk_telemarketing','dict')) AS consTelesalesFlagName,
+				       base.customer_cert_num AS mateCertNum,
+				       base.customer_mobile_phone AS customerMobilePhone,
+				       loan.loaninfo_oldornew_flag as loanInfoOldOrNewFlag,
+				   (select lb.cobo_name from jk.t_jk_audit_result re left join jk.t_jk_loan_coborrower lb on re.best_coborrower_id = lb.id where re.loan_code  = loan.loan_code order by re.create_time desc limit 1) as bestCoborrower <!-- 最优自然保证人 -->		    
+				FROM jk.T_JK_LOAN_INFO loan
+				LEFT JOIN jk.t_jk_customer_consultation con ON con.id=loan.r_id
+				LEFT JOIN jk.t_jk_customer_base base ON base.customer_code=con.customer_code
+				LEFT JOIN t_jk_loan_grant gra ON loan.loan_code=gra.loan_code
+				WHERE 1=1
+		        <if test="customerMobilePhone != null and customerMobilePhone != ''">
+		       		and   base.customer_mobile_phone=#{customerMobilePhone}
+		     	</if>
+			    <if test="mateCertNum != null and mateCertNum != ''">
+					and  base.customer_cert_num =#{mateCertNum}
+				 </if>
+	 </select>	 
+	 <!-- 查询电销待复议列表 -->
+	 <select id='findTelesaleReconsiderList' parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView"  resultType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+			SELECT a.*
+				FROM
+				  (SELECT loan.loan_customer_name AS customerName,
+				          recon.loan_code AS loanCode,
+				            recon.id,
+				          con.cons_telesales_source AS consTelesalesSource,
+				
+				     (SELECT jk.fn_getcodetoname(loan.dict_loan_status,'jk_rs_src','dict')) AS consTelesalesSourceName,
+				
+				     (SELECT jk.fn_getcodetoname(con.manager_code,NULL,'user')) AS telesaleManName,
+				          con.manager_code AS telesaleManCode,
+				
+				     (SELECT jk.fn_getcodetoname(con.cons_team_managercode,NULL,'user')) AS telesaleTeamLeaderName,
+				
+				     (SELECT jk.fn_getcodetoname(con.scene_manager,NULL,'user')) AS telesaleSiteManagerName,
+				
+				     (SELECT jk.fn_getcodetoname(loan.product_type,NULL,'prod')) AS productName ,
+				
+				     (SELECT jk.fn_getcodetoname(loan.loan_store_orgid,NULL,'org')) AS storeName,
+				          round(loan.loan_apply_amount,2) AS loanApplyAmount,
+				          loan.loan_apply_time AS loanApplyTime,
+				          base.customer_cert_num AS mateCertNum,
+				          base.customer_mobile_phone AS customerMobilePhone
+				   FROM jk.t_jk_reconsider_apply recon
+				   LEFT JOIN jk.t_jk_loan_info loan ON recon.loan_code=loan.loan_code
+				   LEFT JOIN jk.t_jk_customer_consultation con ON con.id=loan.r_id
+				   LEFT JOIN jk.t_jk_customer_base base ON base.customer_code=con.customer_code
+				   WHERE con.cons_telesales_flag='1'
+				   ORDER BY recon.create_time DESC )a
+				WHERE 1=1
+               <if test="customerName != null and customerName != ''">
+					   and a.customerName LIKE CONCAT('%', #{customerName}, '%')
+			   </if>
+               <if test="customerMobilePhone != null and customerMobilePhone != ''">
+		       		   and a.customerMobilePhone=#{customerMobilePhone}
+		     	</if>
+			    <if test="mateCertNum != null and mateCertNum != ''">
+					    and a.mateCertNum=#{mateCertNum}
+				 </if>
+				 <if test="consTelesalesSource != null and consTelesalesSource != ''">
+						and a.consTelesalesSource= #{consTelesalesSource}
+				 </if>
+				 <if test="telesaleManName != null and telesaleManName != ''">
+						and a.telesaleManName LIKE CONCAT('%', #{telesaleManName}, '%')
+				 </if>
+				 <if test="telesaleTeamLeaderName != null and telesaleTeamLeaderName != ''">
+						and a.telesaleTeamLeaderName LIKE CONCAT('%', #{telesaleTeamLeaderName}, '%')
+				 </if>
+				 <if test="telesaleSiteManagerName != null and telesaleSiteManagerName != ''">
+						and a.telesaleSiteManagerName LIKE CONCAT('%', #{telesaleSiteManagerName}, '%')
+				 </if>
+	 </select>
+	 
+	 <!-- 电销借款申请管理 -->
+	 <select id="findTelesaleApplyLoanInfoList" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView"  resultType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	 	
+			SELECT a.*
+					FROM
+					  (SELECT loan.loan_code AS loanCode,
+					          gra.contract_code AS contractCode,
+					          
+					          <!-- (SELECT bor.cobo_name FROM jk.t_jk_loan_coborrower bor WHERE bor.loan_code = loan.loan_code                                                                                          
+					                           AND loan.loan_common_repayment_flag='1' limit 1)  AS coboName, -->
+					          (select string_agg(cobo_name,',') from jk.t_jk_loan_coborrower where loan_code = loan.loan_code) as coboName,
+					          loan.loan_customer_name AS customerName,
+					
+					     (SELECT pro1.area_name
+					      FROM jk.t_gl_province_city pro1
+					      LEFT JOIN jk.t_gl_org org1 ON pro1.id=org1.province_id
+					      WHERE org1.id = loan.loan_store_orgid) AS storeProviceName,
+					
+					     (SELECT pro2.area_name
+					      FROM jk.t_gl_province_city pro2
+					      LEFT JOIN jk.t_gl_org org2 ON pro2.id=org2.city_id
+					      WHERE org2.id = loan.loan_store_orgid) AS storeCityName,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_store_orgid,null,'org')) AS storeName,
+					      loan.loan_store_orgid AS storeCode,
+					
+					     (SELECT jk.fn_getcodetoname(loan.dict_loan_status,'jk_loan_apply_status','dict')) AS dictLoanStatusName,
+					      loan.dict_loan_status AS dictLoanStatusCode,
+					
+					     (SELECT jk.fn_getcodetoname(loan.product_type,null,'prod')) AS productName ,
+					      loan.product_type AS productCode ,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_urgent_flag,'jk_urgent_flag','dict')) AS loanUrgentFlag,
+					      round(loan.loan_apply_amount,2) AS loanApplyAmount,
+					      round(loan.loan_audit_amount,2) AS loanAuditAmount,
+					      round(gra.grant_amount,2) AS grantAmount,
+					      loan.loan_months AS loanMoths,
+					
+					     (SELECT jk.fn_getcodetoname(con.cons_telesales_source,'jk_rs_src','dict')) AS consTelesalesSourceName,
+					      con.cons_telesales_source AS consTelesalesSource,
+					
+					     (SELECT jk.fn_getcodetoname(con.manager_code,null,'user')) AS telesaleManName,
+					      con.manager_code AS telesaleManCode,
+					
+					     (SELECT jk.fn_getcodetoname(con.cons_team_managercode,null,'user')) AS telesaleTeamLeaderName,
+					
+					     (SELECT jk.fn_getcodetoname(con.scene_manager,null,'user')) AS telesaleSiteManagerName,
+					
+					     (SELECT jk.fn_getcodetoname(loan.create_by,null,'user')) AS creater,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_survey_emp_id,null,'user')) AS loanSurveyEmpId,
+					      loan.customer_into_time AS customerIntoTime,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_flag,'jk_channel_flag','dict')) AS loanFlagName ,
+					      loan.loan_flag loanFlagCode,
+					
+					     (SELECT jk.fn_getcodetoname(loan.dict_is_cycle,'jk_circle_loan_flag','dict')) AS dictIsCycleName,
+					      loan.dict_is_cycle AS dictIsCycleCode,
+					      base.customer_cert_num AS mateCertNum,
+					      base.customer_mobile_phone AS customerMobilePhone,
+					      loan.dict_is_additional AS dictIsAdditional,
+					        con.cons_team_orgcode as  consTeamOrgcode,
+					      con.cons_telesales_orgcode as consTelesalesOrgcode,
+					      loan.id,
+					      loan.loaninfo_oldornew_flag as loanInfoOldOrNewFlag,
+					      (select lb.cobo_name from jk.t_jk_audit_result re left join jk.t_jk_loan_coborrower lb on re.best_coborrower_id = lb.id where re.loan_code  = loan.loan_code order by re.create_time desc limit 1) as bestCoborrower <!-- 最优自然保证人 -->		
+					   FROM jk.t_jk_loan_info loan
+					   LEFT JOIN jk.t_jk_customer_consultation con ON con.id=loan.r_id
+					   LEFT JOIN jk.t_jk_customer_base base ON base.customer_code=con.customer_code
+					   LEFT JOIN t_jk_loan_grant gra ON loan.loan_code=gra.loan_code
+					   WHERE con.cons_telesales_flag='1'
+					   ORDER BY loan.customer_into_time DESC )a
+					where 1=1   							
+		
+					<!--   电销组织机构ID -->
+                    <if test="consTelesalesOrgcode != null and consTelesalesOrgcode != ''">
+						and a.consTeamOrgcode = #{consTelesalesOrgcode,jdbcType=VARCHAR}
+		           </if>
+				    
+					<if test="telesaleManCode != null and telesaleManCode != ''">
+							and a.telesaleManCode = #{telesaleManCode}
+					</if>
+					
+		            <if test="customerName != null and customerName != ''">
+					       and a.customerName LIKE CONCAT('%', #{customerName}, '%')
+			        </if>
+			        
+				    <if test="mateCertNum != null and mateCertNum != ''">
+						    and a.mateCertNum=#{mateCertNum}
+					</if>
+					<if test="productCode != null and productCode != ''">
+						    and a.productCode=#{productCode}
+					</if>
+					<if test="loanFlagCode != null and loanFlagCode != ''">
+						    and a.loanFlagCode=#{loanFlagCode}
+					</if>
+	                <if test="storeCode != null and storeCode != ''">
+						    and a.storeCode= #{storeCode}
+					</if>
+					<if test="firstConsultDateStart != null and firstConsultDateStart != ''">
+						    and a.customerIntoTime &gt;= #{firstConsultDateStart}
+					</if>
+					<if test="firstConsultDateEnd != null and firstConsultDateEnd != ''">
+						    and a.customerIntoTime &lt;= #{firstConsultDateEnd}
+					</if>
+					<if test="dictIsCycleCode != null and dictIsCycleCode != ''">
+							and a.dictIsCycleCode= #{dictIsCycleCode}
+					</if>
+					<if test="dictIsAdditional != null and dictIsAdditional != ''">
+							and a.dictIsAdditional= #{dictIsAdditional}
+					</if>
+					<if test="creater != null and creater != ''">
+							and a.creater LIKE CONCAT('%', #{creater}, '%')
+					</if>
+					<if test="consTelesalesSource != null and consTelesalesSource != ''">
+						    and a.consTelesalesSource= #{consTelesalesSource}
+					</if>
+					<if test="telesaleManName != null and telesaleManName != ''">
+						    and a.telesaleManName LIKE CONCAT('%', #{telesaleManName}, '%')
+					</if>
+					<if test="telesaleTeamLeaderName != null and telesaleTeamLeaderName != ''">
+						    and a.telesaleTeamLeaderName LIKE CONCAT('%', #{telesaleTeamLeaderName}, '%')
+					</if>
+					<if test="telesaleSiteManagerName != null and telesaleSiteManagerName != ''">
+						    and a.telesaleSiteManagerName LIKE CONCAT('%', #{telesaleSiteManagerName}, '%')
+					</if>
+					<if test="loanCode != null and loanCode != ''">
+						    and a.loanCode =#{loanCode}						  
+					</if>
+					<if test="dictLoanStatusCode != null and dictLoanStatusCode != ''">
+						    and a.dictLoanStatusCode =#{dictLoanStatusCode}						  
+					</if>
+				
+	 </select>
+	 
+	 <!-- 选择产品 -->
+	 <select id="findProducts" resultType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	     select product_code as productCode,product_name as productName from jk.t_gl_jk_product where product_type = 'products_type_loan_credit' and product_status = '1'
+	 </select>
+	 
+	 <!-- 导出电销借款申请列表 -->
+	 <select id="exportTelesaleApplyLoanInfoList" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView"  resultType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	 	       SELECT a.*
+					FROM
+					  (SELECT loan.loan_code AS loanCode,
+					          gra.contract_code AS contractCode,
+					          
+					          <!-- (SELECT bor.cobo_name FROM jk.t_jk_loan_coborrower bor WHERE bor.loan_code = loan.loan_code                                                                                          
+					                           AND loan.loan_common_repayment_flag='1' limit 1)  AS coboName, -->
+					          (select string_agg(cobo_name,',') from jk.t_jk_loan_coborrower where loan_code = loan.loan_code) as coboName,
+					          loan.loan_customer_name AS customerName,
+					
+					     (SELECT pro1.area_name
+					      FROM jk.t_gl_province_city pro1
+					      LEFT JOIN jk.t_gl_org org1 ON pro1.id=org1.province_id
+					      WHERE org1.id = loan.loan_store_orgid) AS storeProviceName,
+					
+					     (SELECT pro2.area_name
+					      FROM jk.t_gl_province_city pro2
+					      LEFT JOIN jk.t_gl_org org2 ON pro2.id=org2.city_id
+					      WHERE org2.id = loan.loan_store_orgid) AS storeCityName,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_store_orgid,null,'org')) AS storeName,
+					      loan.loan_store_orgid AS storeCode,
+					
+					     (SELECT jk.fn_getcodetoname(loan.dict_loan_status,'jk_loan_apply_status','dict')) AS dictLoanStatusName,
+					      loan.dict_loan_status AS dictLoanStatusCode,
+					
+					     (SELECT jk.fn_getcodetoname(loan.product_type,null,'prod')) AS productName ,
+					      loan.product_type AS productCode ,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_urgent_flag,'jk_urgent_flag','dict')) AS loanUrgentFlag,
+					      loan.loan_apply_amount AS loanApplyAmount,
+					      loan.loan_audit_amount AS loanAuditAmount,
+					      gra.grant_amount AS grantAmount,
+					      loan.loan_months AS loanMoths,
+					
+					     (SELECT jk.fn_getcodetoname(con.cons_telesales_source,'jk_rs_src','dict')) AS consTelesalesSourceName,
+					      con.cons_telesales_source AS consTelesalesSource,
+					
+					     (SELECT jk.fn_getcodetoname(con.manager_code,null,'user')) AS telesaleManName,
+					      con.manager_code AS telesaleManCode,
+					
+					     (SELECT jk.fn_getcodetoname(con.cons_team_managercode,null,'user')) AS telesaleTeamLeaderName,
+					
+					     (SELECT jk.fn_getcodetoname(con.scene_manager,null,'user')) AS telesaleSiteManagerName,
+					
+					     (SELECT jk.fn_getcodetoname(loan.create_by,null,'user')) AS creater,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_survey_emp_id,null,'user')) AS loanSurveyEmpId,
+					      loan.customer_into_time AS customerIntoTime,
+					
+					     (SELECT jk.fn_getcodetoname(loan.loan_flag,'jk_channel_flag','dict')) AS loanFlagName ,
+					      loan.loan_flag loanFlagCode,
+					
+					     (SELECT jk.fn_getcodetoname(loan.dict_is_cycle,'jk_circle_loan_flag','dict')) AS dictIsCycleName,
+					      loan.dict_is_cycle AS dictIsCycleCode,
+					      base.customer_cert_num AS mateCertNum,
+					      base.customer_mobile_phone AS customerMobilePhone,
+					      loan.dict_is_additional AS dictIsAdditional,
+					      con.cons_team_orgcode as  consTeamOrgcode,
+					      con.cons_telesales_orgcode as consTelesalesOrgcode,
+					      loan.id,
+					      loan.loaninfo_oldornew_flag as loanInfoOldOrNewFlag
+					   FROM jk.t_jk_loan_info loan
+					   LEFT JOIN jk.t_jk_customer_consultation con ON con.id=loan.r_id
+					   LEFT JOIN jk.t_jk_customer_base base ON base.customer_code=con.customer_code
+					   LEFT JOIN t_jk_loan_grant gra ON loan.loan_code=gra.loan_code
+					   WHERE con.cons_telesales_flag='1'
+					   ORDER BY loan.customer_into_time DESC )a
+					WHERE 1=1
+					
+					<!-- 电销组织机构ID -->
+                    <if test="consTelesalesOrgcode != null and consTelesalesOrgcode != ''">
+						and a.consTeamOrgcode = #{consTelesalesOrgcode,jdbcType=VARCHAR}
+		            </if>
+				    <!--  发起人ID -->
+					<if test="telesaleManCode != null and telesaleManCode != ''">
+							and a.telesaleManCode = #{telesaleManCode}
+					</if>
+					
+					
+		             <if test="customerName != null and customerName != ''">
+					       and a.customerName LIKE CONCAT('%', #{customerName}, '%')
+			        </if>
+			        
+				    <if test="mateCertNum != null and mateCertNum != ''">
+						    and a.mateCertNum=#{mateCertNum}
+					</if>
+					<if test="productCode != null and productCode != ''">
+						    and a.productCode=#{productCode}
+					</if>
+					<if test="loanFlagCode != null and loanFlagCode != ''">
+						    and a.loanFlagCode=#{loanFlagCode}
+					</if>
+	                <if test="storeCode != null and storeCode != ''">
+						    and a.storeCode= #{storeCode}
+					</if>
+					<if test="firstConsultDateStart != null and firstConsultDateStart != ''">
+						    and a.customerIntoTime &gt;= #{firstConsultDateStart}
+					</if>
+					<if test="firstConsultDateEnd != null and firstConsultDateEnd != ''">
+						    and a.customerIntoTime &lt;= #{firstConsultDateEnd}
+					</if>
+					<if test="dictIsCycleCode != null and dictIsCycleCode != ''">
+							and a.dictIsCycleCode= #{dictIsCycleCode}
+					</if>
+					<if test="dictIsAdditional != null and dictIsAdditional != ''">
+							and a.dictIsAdditional= #{dictIsAdditional}
+					</if>
+					<if test="creater != null and creater != ''">
+							and a.creater LIKE CONCAT('%', #{creater}, '%')
+					</if>
+					<if test="consTelesalesSource != null and consTelesalesSource != ''">
+						    and a.consTelesalesSource= #{consTelesalesSource}
+					</if>
+					<if test="telesaleManName != null and telesaleManName != ''">
+						    and a.telesaleManName LIKE CONCAT('%', #{telesaleManName}, '%')
+					</if>
+					<if test="telesaleTeamLeaderName != null and telesaleTeamLeaderName != ''">
+						    and a.telesaleTeamLeaderName LIKE CONCAT('%', #{telesaleTeamLeaderName}, '%')
+					</if>
+					<if test="telesaleSiteManagerName != null and telesaleSiteManagerName != ''">
+						    and a.telesaleSiteManagerName LIKE CONCAT('%', #{telesaleSiteManagerName}, '%')
+					</if>
+					<if test="loanCode != null and loanCode != ''">
+							and a.loanCode in (${loanCode})
+					</if>
+					<if test="dictLoanStatusCode != null and dictLoanStatusCode != ''">
+						    and a.dictLoanStatusCode =#{dictLoanStatusCode}						  
+					</if>
+	 
+	 </select>
+	 <!-- 结清资源导出 -->
+	 <select id="exportLoanCleanExcel" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	 			SELECT
+			    rownum id,
+			    info.loan_customer_name customerName,
+			    cus.CUSTOMER_PHONE_FIRST customerMobilePhone,
+			    cus.CUSTOMER_PHONE_SECOND customerMobilePhone2,
+			    cus.CUSTOMER_CERT_NUM mateCertNum,
+			    (
+			        SELECT
+			            dict.label
+			        FROM
+			            jk.t_gl_dict dict
+			        WHERE
+			            dict.type = 'jk_sex'
+			            AND dict.value = cus.CUSTOMER_SEX
+			    ) gender,
+			    (
+			        SELECT
+			            dict.label
+			        FROM
+			            jk.t_gl_dict dict
+			        WHERE
+			            dict.type = 'jk_repay_status'
+			            AND dict.value = pay.dict_pay_status
+			    ) repayStatus,
+			    to_char(
+			        pay.SETTLEMENT_DATE,
+			        'yyyy-mm-dd'
+			    ) settlementDate,
+			    ROUND( con.AUDIT_AMOUNT, 2 ) auditAmount,
+			    (
+			        SELECT
+			            city.area_name
+			        FROM
+			            jk.t_gl_province_city city
+			        WHERE
+			            city.id =(
+			                SELECT
+			                    org.province_id
+			                FROM
+			                    jk.t_gl_org org
+			                WHERE
+			                    org.id = info.loan_store_orgid
+			            )
+			    ) storeProviceName,
+			    (
+			        SELECT
+			            city.area_name
+			        FROM
+			            jk.t_gl_province_city city
+			        WHERE
+			            city.id =(
+			                SELECT
+			                    org.city_id
+			                FROM
+			                    jk.t_gl_org org
+			                WHERE
+			                    org.id = info.loan_store_orgid
+			            )
+			    ) storeCityName,
+			    (
+			        SELECT
+			            org.name
+			        FROM
+			            jk.t_gl_org org
+			        WHERE
+			            org.id = info.loan_store_orgid
+			    ) storeName
+			FROM
+			    jk.t_jk_payback pay,
+			    jk.t_jk_contract con,
+			    jk.t_jk_loan_info info,
+			    jk.T_JK_LOAN_CUSTOMER cus
+			WHERE
+			    pay.contract_code = con.contract_code
+			    AND con.loan_code = info.loan_code
+			    AND info.loan_code = cus.loan_code
+			    AND pay.DICT_PAY_STATUS IN(
+			        '2',
+			        '3'
+			    )
+			    AND to_char(
+			        pay.SETTLEMENT_DATE,
+			        'yyyy-mm-dd'
+			    ) BETWEEN to_char(
+			        NOW() - INTERVAL '2 month',
+			        'yyyy-mm-dd'
+			    ) AND to_char(
+			        NOW() - INTERVAL '1 month',
+			        'yyyy-mm-dd'
+			    )
+			     AND NOT EXISTS(
+		        SELECT
+		            1
+		        FROM
+		            (
+		                SELECT
+		                    ccc.customer_cert_num,
+		                    MAX(iii.create_time) createtime
+		                FROM
+		                    jk.t_jk_loan_info iii,
+		                    jk.T_JK_LOAN_CUSTOMER ccc
+		                WHERE
+		                    iii.loan_code = ccc.loan_code
+		                    AND ccc.customer_cert_num = cus.CUSTOMER_CERT_NUM
+		                GROUP BY
+		                    ccc.customer_cert_num
+		            ) aa
+		        WHERE
+		            aa.customer_cert_num = cus.CUSTOMER_CERT_NUM
+		            AND to_char(
+		                aa.createtime,
+		                'yyyy-mm-dd'
+		            ) > to_char(
+		                pay.SETTLEMENT_DATE,
+		                'yyyy-mm-dd'
+		            )
+		   		 )
+	 </select>
+	  <!-- 不签约导出 -->
+	 <select id="exportLoanNoSignExcel" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	 	SELECT
+		     rownum id,
+		     info.loan_customer_name customerName,<!-- 客户姓名 -->
+			 cus.CUSTOMER_PHONE_FIRST customerMobilePhone,<!-- 手机号1 -->
+			 cus.CUSTOMER_PHONE_SECOND customerMobilePhone2,
+			 cus.CUSTOMER_CERT_NUM mateCertNum,<!-- 身份证号 -->
+			(
+			        SELECT
+			            dict.label
+			        FROM
+			            jk.t_gl_dict dict
+			        WHERE
+			            dict.type = 'jk_sex'
+			            AND dict.value = cus.CUSTOMER_SEX
+			    ) gender,<!-- 性别 -->
+			(
+			        SELECT
+			            dict.label
+			        FROM
+			            jk.t_gl_dict dict
+			        WHERE
+			            dict.type = 'jk_loan_apply_status'
+			            AND dict.value = info.dict_loan_status
+			    ) repayStatus,<!-- 当前状态 -->
+			 to_char(
+			        pay.SETTLEMENT_DATE,
+			        'yyyy-mm-dd'
+			    ) settlementDate,<!-- 结清时间 -->
+			(
+			        SELECT
+			            ROUND( contract.AUDIT_AMOUNT, 2 )
+			        FROM
+			            jk.t_jk_contract contract
+			        WHERE
+			            contract.id =(
+			                SELECT
+			                    MAX(c.id)
+			                FROM
+			                    jk.t_jk_contract C,
+			                    jk.t_jk_loan_info i,
+			                    jk.T_JK_LOAN_CUSTOMER cu
+			                WHERE
+			                    c.loan_code = i.loan_code
+			                    AND i.loan_code = cu.loan_code
+			                    AND i.dict_loan_status IN(
+			                        '70',
+			                        '87',
+			                        '88',
+			                        '89',
+			                        '90',
+			                        '91',
+			                        '92'
+			                    )
+			                    AND cu.customer_cert_num = cus.customer_cert_num
+			            )
+			    ) auditAmount, <!-- 最近的历史借款金额 -->
+			(
+			        SELECT
+			            city.area_name
+			        FROM
+			            jk.t_gl_province_city city
+			        WHERE
+			            city.id =(
+			                SELECT
+			                    org.province_id
+			                FROM
+			                    jk.t_gl_org org
+			                WHERE
+			                    org.id = info.loan_store_orgid
+			            )
+			    ) storeProviceName,<!--省份 -->
+			(
+			        SELECT
+			            city.area_name
+			        FROM
+			            jk.t_gl_province_city city
+			        WHERE
+			            city.id =(
+			                SELECT
+			                    org.city_id
+			                FROM
+			                    jk.t_gl_org org
+			                WHERE
+			                    org.id = info.loan_store_orgid
+			            )
+			    ) storeCityName, <!--城市 -->
+			(
+			        SELECT
+			            org.name
+			        FROM
+			            jk.t_gl_org org
+			        WHERE
+			            org.id = info.loan_store_orgid
+			    ) storeName,<!--门店 -->
+			 to_char(
+			        info.modify_time,
+			        'yyyy-mm-dd'
+			    )noSignTime <!--不签约时间 -->
+		FROM
+		    jk.t_jk_contract con,
+		    jk.t_jk_loan_info info,
+		    jk.T_JK_LOAN_CUSTOMER cus,
+		    jk.t_jk_payback pay
+		WHERE
+		    con.loan_code = info.loan_code
+		    AND pay.contract_code = con.contract_code
+		    AND info.loan_code = cus.loan_code
+		    AND info.dict_loan_status = '97'
+		    AND to_char(
+		        info.modify_time,
+		        'yyyy-mm-dd'
+		    ) BETWEEN to_char(
+		        NOW() - INTERVAL '2 month',
+		        'yyyy-mm-dd'
+		    ) AND to_char(
+		        NOW() - INTERVAL '1 month',
+		        'yyyy-mm-dd'
+		    )
+		    AND NOT EXISTS(
+		        SELECT
+		            1
+		        FROM
+		            (
+		                SELECT
+		                    ccc.customer_cert_num,
+		                    MAX(iii.create_time) createtime
+		                FROM
+		                    jk.t_jk_loan_info iii,
+		                    jk.T_JK_LOAN_CUSTOMER ccc
+		                WHERE
+		                    iii.loan_code = ccc.loan_code
+		                    AND iii.dict_loan_status IN(
+		                        '70',
+		                        '87',
+		                        '88',
+		                        '89',
+		                        '90',
+		                        '91',
+		                        '92'
+		                    )
+		                    AND ccc.customer_cert_num = cus.CUSTOMER_CERT_NUM
+		                GROUP BY
+		                    ccc.customer_cert_num
+		            ) aa
+		        WHERE
+		            aa.customer_cert_num = cus.CUSTOMER_CERT_NUM
+		            AND to_char(
+		                aa.createtime,
+		                'yyyy-mm-dd'
+		            ) > to_char(
+		                info.modify_time,
+		                'yyyy-mm-dd'
+		            )
+		    )
+	 </select>
+	<!-- 	 结清再贷资源 -->
+	 <select id = "exportLoanAgainExcel" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+	 		SELECT
+			    rownum id,
+			    info.loan_customer_name customerName,
+			    cus.CUSTOMER_PHONE_FIRST customerMobilePhone,
+			    cus.CUSTOMER_PHONE_SECOND customerMobilePhone2,
+			    cus.CUSTOMER_CERT_NUM mateCertNum,
+			    (
+			        SELECT
+			            dict.label
+			        FROM
+			            jk.t_gl_dict dict
+			        WHERE
+			            dict.type = 'jk_sex'
+			            AND dict.value = cus.CUSTOMER_SEX
+			    ) gender,
+			    (
+			        SELECT
+			            dict.label
+			        FROM
+			            jk.t_gl_dict dict
+			        WHERE
+			            dict.type = 'jk_repay_status'
+			            AND dict.value = pay.dict_pay_status
+			    ) repayStatus,
+			    to_char(
+			        pay.SETTLEMENT_DATE,
+			        'yyyy-mm-dd'
+			    ) settlementDate,
+			    ROUND( con.AUDIT_AMOUNT, 2 ) auditAmount,
+			    (
+			        SELECT
+			            city.area_name
+			        FROM
+			            jk.t_gl_province_city city
+			        WHERE
+			            city.id =(
+			                SELECT
+			                    org.province_id
+			                FROM
+			                    jk.t_gl_org org
+			                WHERE
+			                    org.id = info.loan_store_orgid
+			            )
+			    ) storeProviceName,
+			    (
+			        SELECT
+			            city.area_name
+			        FROM
+			            jk.t_gl_province_city city
+			        WHERE
+			            city.id =(
+			                SELECT
+			                    org.city_id
+			                FROM
+			                    jk.t_gl_org org
+			                WHERE
+			                    org.id = info.loan_store_orgid
+			            )
+			    ) storeCityName,
+			    (
+			        SELECT
+			            org.name
+			        FROM
+			            jk.t_gl_org org
+			        WHERE
+			            org.id = info.loan_store_orgid
+			    ) storeName
+			FROM
+			    jk.t_jk_payback pay,
+			    jk.t_jk_contract con,
+			    jk.t_jk_loan_info info,
+			    jk.T_JK_LOAN_CUSTOMER cus
+			WHERE
+			    pay.contract_code = con.contract_code
+			    AND con.loan_code = info.loan_code
+			    AND info.loan_code = cus.loan_code
+			    AND pay.DICT_PAY_STATUS IN(
+			        '0',
+			        '1'
+			    ) AND to_char(
+			        NOW() + INTERVAL '1 month',
+			        'yyyy-mm-dd'
+			    )
+			    =
+			    to_char(
+			        pay.SETTLEMENT_DATE,
+			        'yyyy-mm-dd'
+			    )   ;
+	 </select>
+	<!--  审批拒绝资源 -->
+	 <select id="exportLoanNoAuditExcel" parameterType="com.creditharmony.loan.telesales.view.TelesaleConsultSearchView">
+			SELECT
+   			rownum id,
+		    info.loan_customer_name customerName,
+		    cus.CUSTOMER_PHONE_FIRST customerMobilePhone,
+		    cus.CUSTOMER_PHONE_SECOND customerMobilePhone2,
+		    cus.CUSTOMER_CERT_NUM mateCertNum,
+		    (
+		        SELECT
+		            dict.label
+		        FROM
+		            jk.t_gl_dict dict
+		        WHERE
+		            dict.type = 'jk_sex'
+		            AND dict.value = cus.CUSTOMER_SEX
+		    ) gender,
+		    (
+		        SELECT
+		            dict.label
+		        FROM
+		            jk.t_gl_dict dict
+		        WHERE
+		            dict.type = 'jk_loan_apply_status'
+		            AND dict.value = info.dict_loan_status
+		    ) repayStatus,
+		    to_char(
+		        pay.SETTLEMENT_DATE,
+		        'yyyy-mm-dd'
+		    ) settlementDate,
+		    ROUND( con.AUDIT_AMOUNT, 2 ) auditAmount
+		FROM
+		    jk.t_jk_payback pay,
+		    jk.t_jk_contract con,
+		    jk.t_jk_loan_info info,
+		    jk.T_JK_LOAN_CUSTOMER cus
+		WHERE
+		    pay.contract_code = con.contract_code
+		    AND con.loan_code = info.loan_code
+		    AND info.loan_code = cus.loan_code
+		   	AND info.dict_loan_status IN('34')
+		    AND to_char(
+		        info.modify_time,
+		        'yyyy-MM-dd'
+		    ) BETWEEN to_char(
+		        NOW() - INTERVAL '1 year',
+		        'yyyy-MM-dd'
+		    ) AND to_char(
+		        NOW() - INTERVAL '1 year' + INTERVAL '6 month',
+		        'yyyy-MM-dd'
+		    )
+			  AND NOT EXISTS(
+		        SELECT
+		            1
+		        FROM
+		            (
+		                SELECT
+		                    ccc.customer_cert_num,
+		                    MAX(iii.create_time) createtime
+		                FROM
+		                    jk.t_jk_loan_info iii,
+		                    jk.T_JK_LOAN_CUSTOMER ccc
+		                WHERE
+		                    iii.loan_code = ccc.loan_code
+		                    AND ccc.customer_cert_num = cus.CUSTOMER_CERT_NUM
+		                GROUP BY
+		                    ccc.customer_cert_num
+		            ) aa
+		        WHERE
+		             aa.customer_cert_num = cus.CUSTOMER_CERT_NUM
+		            AND to_char(
+		                aa.createtime,
+		                'yyyy-mm-dd'
+		            ) > to_char(
+		                info.modify_time,
+		                'yyyy-mm-dd'
+		            )
+		    )
+    
+	 
+	 </select>
+</mapper>

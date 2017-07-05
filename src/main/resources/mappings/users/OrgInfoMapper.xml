@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.users.dao.OrgInfoDao">
+
+	 <resultMap id="OrgInfoMap" type="com.creditharmony.loan.users.entity.OrgInfo">
+	  	<id column="ID" property="id" jdbcType="VARCHAR" />
+	  	<result column="PARENT_ID" property="parentId" jdbcType="VARCHAR" />
+	  	<result column="PARENT_IDS" property="parentIds" jdbcType="VARCHAR" />
+	  	<result column="AREA_ID" property="areaId" jdbcType="VARCHAR" />
+	  	<result column="CODE" property="code" jdbcType="VARCHAR" />
+	  	<result column="NAME" property="name" jdbcType="VARCHAR" />
+	  	<result column="SORT" property="sort" jdbcType="DECIMAL" />
+	  	<result column="TYPE" property="type" jdbcType="DECIMAL" />
+	  	<result column="GRADE" property="grade" jdbcType="VARCHAR" />
+	  	<result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+	  	<result column="ZIP_CODE" property="zipCode" jdbcType="VARCHAR" />
+	  	<result column="MASTER" property="master" jdbcType="VARCHAR" />
+	  	<result column="PHONE" property="phone" jdbcType="VARCHAR" />
+	  	<result column="FAX" property="fax" jdbcType="VARCHAR" />
+	  	<result column="EMAIL" property="email" jdbcType="VARCHAR" />
+	  	<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	  	<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+	  	<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+	  	<result column="MODIFY_BY" property="modifyBy" jdbcType="VARCHAR" />
+	  	<result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+	  	<result column="DEL_FLAG" property="delFlag" jdbcType="DECIMAL" />
+	  	<result column="USEABLE" property="useable" jdbcType="DECIMAL" />
+	  	<result column="PROVINCE_ID" property="provinceId" jdbcType="VARCHAR" />
+	  	<result column="CITY_ID" property="cityId" jdbcType="VARCHAR" />
+	  	<result column="DISTRICT_ID" property="districtId" jdbcType="VARCHAR" />
+	  	<result column="PARTY_TYPE" property="partyType" jdbcType="VARCHAR" />
+	  	<result column="STORE_CODE" property="storeCode" jdbcType="VARCHAR" />
+	  	<result column="CAR_LOAN_CODE" property="carLoanCode" jdbcType="VARCHAR" />
+	  	<result column="SYSTEM_FLAG" property="systemFlag" jdbcType="DECIMAL" />
+	  	<result column="CREDIT_PAPERLESS" property="creditPaperless" jdbcType="VARCHAR" />
+	  	<result column="CAR_PAPERLESS" property="carPaperless" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+      ID, PARENT_ID, PARENT_IDS, AREA_ID, CODE, NAME, SORT, TYPE, GRADE, ADDRESS, 
+      ZIP_CODE, MASTER, PHONE, FAX, EMAIL, REMARKS, CREATE_BY, CREATE_TIME, MODIFY_BY,
+      MODIFY_TIME, DEL_FLAG, USEABLE, PROVINCE_ID, CITY_ID, DISTRICT_ID, PARTY_TYPE, 
+      STORE_CODE, CAR_LOAN_CODE, SYSTEM_FLAG,CREDIT_PAPERLESS,CAR_PAPERLESS
+    </sql>
+    
+	<select id="get" resultMap="OrgInfoMap">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM jk.t_gl_org
+		WHERE ID = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findList" resultMap="OrgInfoMap">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM jk.t_gl_org a
+		WHERE 1=1
+		ORDER BY a.code
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO jk.t_gl_org(
+			ID,
+			PARENT_ID, 
+			PARENT_IDS, 
+			AREA_ID, 
+			CODE, 
+			NAME, 
+			SORT, 
+			TYPE, 
+			GRADE, 
+			ADDRESS, 
+			ZIP_CODE, 
+			MASTER, 
+			PHONE, 
+			FAX, 
+			EMAIL, 
+			CREATE_BY, 
+			CREATE_TIME, 
+			MODIFY_BY, 
+			MODIFY_TIME, 
+			REMARKS, 
+			DEL_FLAG,
+			USEABLE,
+			PROVINCE_ID,
+			CITY_ID,
+			DISTRICT_ID,
+			PARTY_TYPE, 
+			STORE_CODE,
+			CAR_LOAN_CODE,
+			SYSTEM_FLAG,
+			CREDIT_PAPERLESS,
+			CAR_PAPERLESS
+		) VALUES (
+			#{id}, 
+			#{parentId}, 
+			#{parentIds}, 
+			#{areaId}, 
+			#{code}, 
+			#{name}, 
+			#{sort}, 
+			#{type}, 
+			#{grade}, 
+			#{address}, 
+			#{zipCode}, 
+			#{master}, 
+			#{phone}, 
+			#{fax}, 
+			#{email}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{delFlag},
+			#{useable},
+			#{provinceId},
+			#{cityId},
+			#{districtId},
+			#{partyType},
+			#{storeCode},
+			#{carLoanCode},
+			#{systemFlag},
+			#{creditPaperless},
+			#{carPaperless}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE jk.t_gl_org SET 
+			parent_id = #{parentId}, 
+			parent_ids = #{parentIds}, 
+			area_id = #{areaId}, 
+			code = #{code}, 
+			name = #{name}, 
+			type = #{type}, 
+			grade = #{grade}, 
+			address = #{address}, 
+			zip_code = #{zipCode}, 
+			master = #{master}, 
+			phone = #{phone}, 
+			fax = #{fax}, 
+			email = #{email}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			useable=#{useable},
+			province_id=#{provinceId},
+			city_id=#{cityId},
+			district_id=#{districtId},
+			party_type=#{partyType},
+			store_code=#{storeCode},
+			car_loan_code=#{carLoanCode},
+			system_flag=#{systemFlag},
+			credit_paperless=#{creditPaperless},
+			car_paperless=#{carPaperless}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE jk.t_gl_org SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE CONCAT('%,', #{id}, ',%')
+	</update>
+	
+	<select id="getByCityIdAndCarLoanCode" parameterType="java.util.Map" resultMap="OrgInfoMap">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM jk.t_gl_org
+		WHERE city_id = #{cityId, jdbcType=VARCHAR} and car_loan_code = #{carLoanCode, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="queryOrgByType" parameterType="java.util.Map" resultMap="OrgInfoMap">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM jk.t_gl_org
+		WHERE type = #{type, jdbcType=VARCHAR} and del_flag = '0' and useable = '1'
+	</select>
+	<!-- 根据父ID查门店 -->
+	<select id="queryOrgByParentIdAndType" parameterType="java.util.Map" resultMap="OrgInfoMap">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM jk.t_gl_org as t1
+		where t1.type in
+		<foreach item="item" index="index" collection="type" open="(" separator="," close=")">  
+	        #{item}  
+   		</foreach>
+		<if test="parentId != null and parentId != ''">
+			 and t1.parent_ids like '%${parentId}%'
+		</if>
+	</select>
+	<!-- 查询组织机构下所有门店 -->
+	<select id="queryDepartmentByOrgId" parameterType="String" resultMap="OrgInfoMap">
+		select 
+			<include refid="Base_Column_List"/>
+		from
+			jk.t_gl_org
+		where
+			(id= #{orgId} or parent_ids like '%' || #{orgId} || '%')
+			and type='6200000003'
+	</select>
+	<!-- 查询组织机构下对应机构类型下的所有机构 -->
+	<select id="selectDeptByOrgidAndOrgtype" resultMap="OrgInfoMap">
+		select 
+			<include refid="Base_Column_List"/>
+		from
+			jk.t_gl_org
+		where
+			(id= #{param1} or parent_ids like '%' || #{param1} || '%')
+			and type=#{param2}
+	</select>
+	
+	<!--zmq  查询组织机构下所有门店 -->
+	<select id="queryDeliveryByOrgId" parameterType="String" resultMap="OrgInfoMap">
+		select 
+			<include refid="Base_Column_List"/>
+		from
+			jk.t_gl_org
+		where type='6200000003'
+		<if test="_parameter != null and _parameter != ''">
+		  and (id= #{orgId} or parent_ids like '%' || #{orgId} || '%')
+		</if>
+	</select>
+	
+</mapper>

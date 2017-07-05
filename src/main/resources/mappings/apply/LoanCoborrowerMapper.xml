@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanCoborrowerDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanCoborrower">
+    <result column="id"  property="id" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="cobo_name"  property="coboName" />
+    <result column="cobo_age"  property="coboAge" />
+    <result column="cobo_sex"  property="coboSex" />
+    <result column="dict_cert_type"  property="dictCertType" />
+    <result column="cobo_cert_num"  property="coboCertNum" />
+    <result column="id_start_day" property="idStartDay"/>
+    <result column="id_end_day" property="idEndDay"/>
+    <result column="customer_graduation_day" property="coboGraduationDay"/>
+    <result column="cobo_house_hold_hold" property="coboHouseHoldHold"/>
+    <result column="cobo_household_province"  property="coboHouseholdProvince" />
+    <result column="cobo_household_city"  property="coboHouseholdCity" />
+    <result column="cobo_household_area"  property="coboHouseholdArea" />
+    <result column="cobo_household_address"  property="coboHouseholdAddress" />
+    <result column="cobo_family_tel"  property="coboFamilyTel" />
+    <result column="cobo_mobile"  property="coboMobile" />
+    <result column="cobo_mobile2" property="coboMobile2"/>
+    <result column="dict_education" property="dictEducation"/>
+    <result column="customer_house_hold_property" property="customerHouseHoldProperty"/>
+    <result column="cobo_liveing_province"  property="coboLiveingProvince" />
+    <result column="cobo_liveing_city"  property="coboLiveingCity" />
+    <result column="cobo_liveing_area"  property="coboLiveingArea" />
+    <result column="cobo_now_address"  property="coboNowAddress" />
+    <result column="cobo_now_tel"  property="coboNowTel" />
+    <result column="cobo_email"  property="coboEmail" />
+    <result column="issuing_authority"  property="issuingAuthority" />
+    <result column="dict_marry_status"  property="dictMarry" />
+    <result column="cobo_have_child_flag"  property="coboHaveChild" />
+    <result column="cobo_contact_is_know"  property="coboContractIsKnow" />
+    <result column="cobo_house_ot_her"  property="coboHouseOther" />
+    <result column="cobo_social_security"  property="coboSocialSecurity" />
+    <result column="customer_firt_arrive_year" property="customerFirtArriveYear"/>
+    <result column="customer_first_living_day" property="customerFirstLivingDay"/>
+    <result column="dict_customer_diff" property="dictCustomerDiff"/>
+    <result column="message_auth_code" property="customerPin"/>
+    <result column="captcha_if_confirm" property="captchaIfConfirm"/>
+    <result column="confirm_timeout" property="confirmTimeout"/>
+    <result column="app_sign_flag" property="appSignFlag"/>
+    <result column="id_valid_flag" property="idValidFlag"/>
+    <result column="compose_photo_id" property="composePhotoId"/>
+    <result column="id_valid_score" property="idValidScore"/>
+    <result column="children_num" property="childrenNum"/>
+    <result column="support_num" property="supportNum"/>
+    <result column="personal_year_income" property="personalYearIncome"/>
+    <result column="home_month_income" property="homeMonthIncome"/>
+    <result column="home_month_pay" property="homeMonthPay"/>
+    <result column="home_total_debt" property="homeTotalDebt"/>
+    <result column="social_security_number" property="socialSecurityNumber"/>
+    <result column="register_property" property="registerProperty"/>
+    <result column="credit_user_name" property="creditUserName"/>
+    <result column="credit_password" property="creditPassword"/>
+    <result column="credit_auth_code" property="creditAuthCode"/>
+    <result column="residential_category_remark" property="residentialCategoryRemark"/>
+    <result column="who_can_know_the_borrowing" property="whoCanKnowTheBorrowing"/>
+    <result column="who_can_know_the_borrowing_remark" property="whoCanKnowTheBorrowingRemark"/>
+   </resultMap>
+  <sql id="baseSql">
+      id, loan_code, cobo_name, cobo_age, 
+      cobo_sex, dict_cert_type, cobo_cert_num, 
+      id_start_day,id_end_day,customer_graduation_day,
+      cobo_house_hold_hold,cobo_household_province,
+      cobo_household_city,cobo_household_area,cobo_household_address,
+      cobo_family_tel,cobo_mobile,cobo_mobile2,cobo_liveing_province,
+      cobo_liveing_city,cobo_liveing_area,cobo_now_address,
+      cobo_now_tel,cobo_email,issuing_authority,dict_marry_status,cobo_have_child_flag,
+      cobo_contact_is_know,cobo_house_ot_her,cobo_social_security,customer_firt_arrive_year,
+      message_auth_code,captcha_if_confirm,confirm_timeout,
+      customer_first_living_day,dict_education,customer_house_hold_property,dict_customer_diff,
+      app_sign_flag,id_valid_flag,compose_photo_id,id_valid_score,
+      create_by, create_time, modify_by, 
+      modify_time, cobo_qq, cobo_weibo, children_num, support_num, personal_year_income, home_month_income,
+      home_month_pay, home_total_debt, social_security_number, register_property, credit_user_name, credit_password,
+      credit_auth_code, residential_category_remark, who_can_know_the_borrowing, who_can_know_the_borrowing_remark
+  </sql>
+  <select id="get" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+       <include refid="baseSql"/>
+       from jk.t_jk_loan_coborrower 
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 查找自然人保证人，进行盖章信息 -->
+  <select id="getSecurityByLoanCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+	select 
+	<include refid="baseSql"/>
+	 from jk.t_jk_loan_coborrower where id = (
+		select best_coborrower_id 
+		from jk.t_jk_audit_result t 
+		where loan_code= #{loanCode,jdbcType=VARCHAR} order by t.create_time desc limit 1
+		)
+  </select>
+  
+  <select id="selectByLoanCode"  parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+      <include refid="baseSql"/>
+    from jk.t_jk_loan_coborrower
+    where loan_code = #{loanCode} order by create_time
+  </select>
+  <delete id="deleteById" parameterType="map">
+    delete from jk.t_jk_loan_coborrower 
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert">
+     insert into jk.t_jk_loan_coborrower(
+       <include refid="baseSql"/> 
+     )values(
+       #{id,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR},#{coboName,jdbcType=VARCHAR},
+       #{coboAge,jdbcType=INTEGER},#{coboSex,jdbcType=VARCHAR},#{dictCertType,jdbcType=VARCHAR},
+       #{coboCertNum,jdbcType=VARCHAR},#{idStartDay,jdbcType=DATE},#{idEndDay,jdbcType=DATE},
+       #{coboGraduationDay,jdbcType=TIMESTAMP},#{coboHouseHoldHold,jdbcType=VARCHAR},#{coboHouseholdProvince,jdbcType=VARCHAR},
+       #{coboHouseholdCity,jdbcType=VARCHAR},#{coboHouseholdArea,jdbcType=VARCHAR},#{coboHouseholdAddress,jdbcType=VARCHAR},
+       #{coboFamilyTel,jdbcType=VARCHAR},#{coboMobile,jdbcType=VARCHAR},#{coboMobile2,jdbcType=VARCHAR},
+       #{coboLiveingProvince,jdbcType=VARCHAR},#{coboLiveingCity,jdbcType=VARCHAR},#{coboLiveingArea,jdbcType=VARCHAR},
+       #{coboNowAddress,jdbcType=VARCHAR},#{coboNowTel,jdbcType=VARCHAR},#{coboEmail,jdbcType=VARCHAR},#{issuingAuthority,jdbcType=VARCHAR},
+       #{dictMarry,jdbcType=VARCHAR},#{coboHaveChild,jdbcType=VARCHAR},#{coboContractIsKnow,jdbcType=VARCHAR},
+       #{coboHouseOther,jdbcType=VARCHAR},#{coboSocialSecurity,jdbcType=VARCHAR},#{customerFirtArriveYear,jdbcType=VARCHAR},
+       #{customerPin,jdbcType=VARCHAR},#{captchaIfConfirm,jdbcType=VARCHAR},#{confirmTimeout,jdbcType=TIMESTAMP},
+       #{customerFirstLivingDay,jdbcType=DATE},#{dictEducation,jdbcType=VARCHAR},#{customerHouseHoldProperty,jdbcType=VARCHAR},
+       #{dictCustomerDiff,jdbcType=VARCHAR},
+       #{appSignFlag,jdbcType=VARCHAR},#{idValidFlag,jdbcType=VARCHAR},#{composePhotoId,jdbcType=VARCHAR},
+       #{idValidScore,jdbcType=NUMERIC},
+       #{createBy,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP},#{modifyBy,jdbcType=VARCHAR},
+       #{modifyTime,jdbcType=TIMESTAMP},
+       #{coboQq,jdbcType=VARCHAR}, #{coboWeibo,jdbcType=VARCHAR},
+       #{childrenNum,jdbcType=INTEGER},#{supportNum,jdbcType=INTEGER},
+       #{personalYearIncome,jdbcType=NUMERIC},#{homeMonthIncome,jdbcType=NUMERIC},
+       #{homeMonthPay,jdbcType=NUMERIC},#{homeTotalDebt,jdbcType=NUMERIC},
+       #{socialSecurityNumber,jdbcType=VARCHAR},#{registerProperty,jdbcType=VARCHAR},
+       #{creditUserName,jdbcType=VARCHAR},#{creditPassword,jdbcType=VARCHAR},
+       #{creditAuthCode,jdbcType=VARCHAR},#{residentialCategoryRemark,jdbcType=VARCHAR},
+       #{whoCanKnowTheBorrowing,jdbcType=VARCHAR},#{whoCanKnowTheBorrowingRemark,jdbcType=VARCHAR}
+     )
+  </insert>
+<update id="update">
+    update jk.t_jk_loan_coborrower 
+    <set>
+       id_end_day = #{idEndDay,jdbcType=TIMESTAMP},
+       <if test="id !=null">
+          id = #{id,jdbcType=VARCHAR},
+       </if>
+        <if test="loanCode !=null">
+          loan_code = #{loanCode,jdbcType=VARCHAR},
+       </if>
+        <if test="coboName !=null">
+          cobo_name = #{coboName,jdbcType=VARCHAR},
+       </if>
+        <if test="coboAge !=null">
+          cobo_age = #{coboAge,jdbcType=INTEGER},
+       </if>
+        <if test="coboSex !=null">
+          cobo_sex = #{coboSex,jdbcType=VARCHAR},
+       </if>
+        <if test="dictCertType !=null">
+          dict_cert_type = #{dictCertType,jdbcType=VARCHAR},
+       </if>
+        <if test="coboCertNum !=null">
+          cobo_cert_num = #{coboCertNum,jdbcType=VARCHAR},
+       </if>
+        <if test="idStartDay !=null">
+          id_start_day = #{idStartDay,jdbcType=TIMESTAMP},
+       </if>
+       <if test="coboGraduationDay !=null">
+          customer_graduation_day = #{coboGraduationDay,jdbcType=TIMESTAMP},
+       </if>
+        <if test="coboHouseHoldHold !=null">
+          cobo_house_hold_hold = #{coboHouseHoldHold,jdbcType=VARCHAR},
+       </if>
+       <if test="coboHouseholdProvince !=null">
+          cobo_household_province = #{coboHouseholdProvince,jdbcType=VARCHAR},
+       </if>
+       <if test="coboHouseholdCity !=null">
+          cobo_household_city = #{coboHouseholdCity,jdbcType=VARCHAR},
+       </if>
+       <if test="coboHouseholdArea !=null">
+          cobo_household_area = #{coboHouseholdArea,jdbcType=VARCHAR},
+       </if>
+       <if test="coboHouseholdAddress !=null">
+          cobo_household_address = #{coboHouseholdAddress,jdbcType=VARCHAR},
+       </if>
+       <if test="coboFamilyTel !=null">
+          cobo_family_tel = #{coboFamilyTel,jdbcType=VARCHAR},
+       </if>
+       <if test="coboMobile !=null">
+          cobo_mobile = #{coboMobile,jdbcType=VARCHAR},
+       </if>
+       <if test="coboMobile2 !=null">
+          cobo_mobile2 = #{coboMobile2,jdbcType=VARCHAR},
+       </if>
+       <if test="coboLiveingProvince !=null">
+          cobo_liveing_province = #{coboLiveingProvince,jdbcType=VARCHAR},
+       </if>
+       <if test="coboLiveingCity !=null">
+          cobo_liveing_city = #{coboLiveingCity,jdbcType=VARCHAR},
+       </if>
+        <if test="coboLiveingArea !=null">
+          cobo_liveing_area = #{coboLiveingArea,jdbcType=VARCHAR},
+       </if>
+       <if test="coboNowAddress !=null">
+          cobo_now_address = #{coboNowAddress,jdbcType=VARCHAR},
+       </if>
+       <if test="coboNowTel !=null">
+          cobo_now_tel = #{coboNowTel,jdbcType=VARCHAR},
+       </if>
+       <if test="coboEmail !=null">
+          cobo_email = #{coboEmail,jdbcType=VARCHAR},
+       </if>
+       <if test="issuingAuthority !=null and issuingAuthority != ''">
+          issuing_authority = #{issuingAuthority,jdbcType=VARCHAR},
+       </if>
+       <if test="dictMarry !=null">
+          dict_marry_status = #{dictMarry,jdbcType=VARCHAR},
+       </if>
+       <if test="customerPin!=null">
+         message_auth_code = #{customerPin,jdbcType=VARCHAR},
+       </if>
+       <if test="captchaIfConfirm!=null">
+         captcha_if_confirm = #{captchaIfConfirm,jdbcType=VARCHAR},
+       </if>
+       <if test="confirmTimeout!=null">
+         confirm_timeout = #{confirmTimeout,jdbcType=TIMESTAMP},
+       </if>
+       <if test="coboHaveChild !=null">
+          cobo_have_child_flag = #{coboHaveChild,jdbcType=VARCHAR},
+       </if>
+       <if test="coboContractIsKnow !=null">
+          cobo_contact_is_know = #{coboContractIsKnow,jdbcType=VARCHAR},
+       </if>
+       <if test="coboHouseOther !=null">
+          cobo_house_ot_her = #{coboHouseOther,jdbcType=VARCHAR},
+       </if>
+       <if test="coboSocialSecurity !=null">
+          cobo_social_security = #{coboSocialSecurity,jdbcType=VARCHAR},
+       </if>
+       <if test="customerFirtArriveYear!=null and customerFirtArriveYear!=''">
+          customer_firt_arrive_year = #{customerFirtArriveYear,jdbcType=VARCHAR},
+       </if>
+       <if test="customerFirstLivingDay!=null">
+          customer_first_living_day = #{customerFirstLivingDay,jdbcType=DATE},
+       </if>
+       <if test="dictEducation!=null and dictEducation!=''">
+          dict_education = #{dictEducation,jdbcType=VARCHAR},
+       </if>
+       <if test="customerHouseHoldProperty!=null and customerHouseHoldProperty!=''">
+         customer_house_hold_property = #{customerHouseHoldProperty,jdbcType=VARCHAR},
+       </if>
+       <if test="dictCustomerDiff!=null and dictCustomerDiff!=''">
+         dict_customer_diff = #{dictCustomerDiff,jdbcType=VARCHAR},
+       </if>
+       <if test="appSignFlag!=null and appSignFlag!=''">
+         app_sign_flag = #{appSignFlag,jdbcType=VARCHAR},
+       </if>
+       <if test="idValidFlag!=null and idValidFlag!=''">
+         id_valid_flag = #{idValidFlag,jdbcType=VARCHAR},
+       </if>
+       <if test="composePhotoId!=null and composePhotoId!=''">
+         compose_photo_id = #{composePhotoId,jdbcType=VARCHAR},
+       </if>
+       <if test="idValidScore!=null">
+         id_valid_score = #{idValidScore,jdbcType=NUMERIC},
+       </if>
+       <if test="createBy !=null">
+          create_by = #{createBy,jdbcType=VARCHAR},
+       </if>
+       <if test="createTime !=null">
+          create_time = #{createTime,jdbcType=DATE},
+       </if>
+       <if test="modifyBy !=null">
+          modify_by = #{modifyBy,jdbcType=VARCHAR},
+       </if>
+       <if test="modifyTime !=null">
+          modify_time = #{modifyTime,jdbcType=DATE},
+       </if>
+       <if test="childrenNum !=null">
+          children_num = #{childrenNum,jdbcType=INTEGER},
+       </if>
+       <if test="supportNum !=null">
+          support_num = #{supportNum,jdbcType=INTEGER},
+       </if>
+       <if test="personalYearIncome !=null">
+          personal_year_income = #{personalYearIncome,jdbcType=NUMERIC},
+       </if>   
+       <if test="homeMonthIncome !=null">
+          home_month_income = #{homeMonthIncome,jdbcType=NUMERIC},
+       </if>
+       <if test="coboQq !=null">
+          cobo_qq = #{coboQq,jdbcType=VARCHAR},
+       </if>
+       <if test="coboWeibo !=null">
+          cobo_weibo = #{coboWeibo,jdbcType=VARCHAR},
+       </if>
+       <if test="homeMonthPay !=null">
+          home_month_pay = #{homeMonthPay,jdbcType=NUMERIC},
+       </if>
+       <if test="homeTotalDebt !=null">
+          home_total_debt = #{homeTotalDebt,jdbcType=NUMERIC},
+       </if>
+       <if test="socialSecurityNumber !=null">
+          social_security_number = #{socialSecurityNumber,jdbcType=VARCHAR},
+       </if>
+       <if test="registerProperty !=null">
+          register_property = #{registerProperty,jdbcType=VARCHAR},
+       </if>
+       <if test="creditUserName !=null">
+          credit_user_name = #{creditUserName,jdbcType=VARCHAR},
+       </if>
+       <if test="creditPassword !=null">
+          credit_password = #{creditPassword,jdbcType=VARCHAR},
+       </if>
+       <if test="creditAuthCode !=null">
+          credit_auth_code = #{creditAuthCode,jdbcType=VARCHAR},
+       </if>
+       <if test="residentialCategoryRemark !=null">
+          residential_category_remark = #{residentialCategoryRemark,jdbcType=VARCHAR},
+       </if>
+       <if test="whoCanKnowTheBorrowing !=null">
+          who_can_know_the_borrowing = #{whoCanKnowTheBorrowing,jdbcType=VARCHAR},
+       </if>
+       <if test="whoCanKnowTheBorrowingRemark !=null">
+          who_can_know_the_borrowing_remark = #{whoCanKnowTheBorrowingRemark,jdbcType=VARCHAR}
+       </if>
+    </set>
+       where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updatePaperlessMessage" parameterType="map">
+     update jk.t_jk_loan_coborrower 
+      <set>
+        <if test="appSignFlag!=null and appSignFlag!=''">
+          app_sign_flag = #{appSignFlag,jdbcType=VARCHAR},
+        </if>
+        <if test="idValidFlag!=null and idValidFlag!=''">
+         id_valid_flag = #{idValidFlag,jdbcType=VARCHAR},
+        </if>
+        <if test="idValidScore!=null">
+           id_valid_score = #{idValidScore,jdbcType=NUMERIC},
+        </if>
+        <if test="composePhotoId!=null and composePhotoId!=''">
+         compose_photo_id = #{composePhotoId,jdbcType=VARCHAR},
+        </if>
+      </set> 
+      where  id=#{customerId,jdbcType=VARCHAR} 
+  </update>
+  <select id="selectCoboNameAndCertNum" parameterType="string" resultType="map">
+		select cobo_name as coboName,cobo_cert_num as coboCertNum from t_jk_loan_coborrower
+		where id = #{id}
+  </select>
+  <!-- 查询最优自然人 -->
+  <select id="selectByLoanCodeOne"  parameterType="java.lang.String" resultMap="BaseResultMap">
+     select  <include refid="baseSql"/>
+    from jk.t_jk_loan_coborrower
+    where id in (select best_coborrower_id 
+		from jk.t_jk_audit_result t 
+		where loan_code= #{loanCode,jdbcType=VARCHAR} order by t.create_time desc limit 1)
+  </select>
+</mapper>

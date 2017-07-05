@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.PaybackSplitCountDao">
+
+	<insert id="insert" parameterType="com.creditharmony.loan.common.entity.PaybackSplitCount">
+		insert into
+		t_jk_payback_split_count
+		(
+		id,
+		split_pch,
+		split_amount,
+		split_bishu,
+		split_date,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time
+		)
+		values
+		(
+		#{id},
+		#{splitPch},
+		#{splitAmount},
+		#{splitBishu},
+		#{splitDate},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime}
+		)
+	</insert>
+
+</mapper>

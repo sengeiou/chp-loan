@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.UrgeServicesBackMoneyDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesBackMoneyEx">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccount" />
+    <result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+    <result column="product_name" jdbcType="VARCHAR" property="productName" />
+    <result column="bank_name" jdbcType="VARCHAR" property="bankName" />
+    <result column="contract_amount" jdbcType="VARCHAR" property="contractAmount" />
+    <result column="grant_amount" jdbcType="VARCHAR" property="grantAmount" />
+    <result column="fee_urged_service" jdbcType="VARCHAR" property="feeUrgedService" />
+    <result column="payback_max_overduedays" jdbcType="VARCHAR" property="paybackMaxOverduedays" />
+    <result column="stores_code" jdbcType="VARCHAR" property="storesCode" />
+    <result column="dict_pay_status" jdbcType="VARCHAR" property="dictPayStatus" />
+    <result column="dict_pay_result" jdbcType="VARCHAR" property="dictPayResult" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="settlement_time" jdbcType="TIMESTAMP" property="settlementTime" />
+    <result column="payback_back_amount" jdbcType="NUMERIC" property="paybackBackAmount" />
+    <result column="back_apply_pay_time" jdbcType="TIMESTAMP" property="backApplyPayTime" />
+    <result column="back_apply_departmen" jdbcType="VARCHAR" property="backApplyDepartment" />
+    <result column="back_transactor" jdbcType="VARCHAR" property="backTransactor" />
+    <result column="back_transactor_team" jdbcType="VARCHAR" property="backTransactorTeam" />
+    <result column="back_time" jdbcType="TIMESTAMP" property="backTime" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="bank_branch" jdbcType="VARCHAR" property="bankBranch" />
+    <result column="bank_province" jdbcType="VARCHAR" property="bankProvince" />
+    <result column="bank_city" jdbcType="VARCHAR" property="bankCity" />
+    <result column="customer_register_province" jdbcType="VARCHAR" property="customerRegisterProvince" />
+    <result column="customer_register_city" jdbcType="VARCHAR" property="customerRegisterCity" />
+    <result column="channel_flag" jdbcType="VARCHAR" property="channelFlag" /> 
+  </resultMap>
+  
+    <resultMap id="UrgeHistorytMap" type="com.creditharmony.loan.borrow.grant.entity.UrgeHistory">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <id column="r_urge_id" jdbcType="VARCHAR" property="rUrgeId" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="dict_pay_result" jdbcType="VARCHAR" property="dictayPayResult" />
+    <result column="operate_step" jdbcType="VARCHAR" property="operateStep" />
+    <result column="remark" jdbcType="VARCHAR" property="remarks" />
+    <result column="name" jdbcType="VARCHAR" property="operator" />
+    <result column="operate_time" jdbcType="TIMESTAMP" property="operateTime" />
+     <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column=" modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+  </resultMap>
+  
+<!-- 催收服务费返款申请列表页面初始化 -->
+  <select id="selectBackMoneyApply" parameterType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesBackMoneyEx" resultMap="BaseResultMap">
+   select
+		b.id,
+		b.r_payback_id,
+		b.contract_code,
+		b.dict_pay_status,
+		b.dict_pay_result,
+		b.remark,
+		b.settlement_time,
+		b.payback_back_amount,
+		b.back_apply_pay_time,
+		b.back_apply_by,
+		b.back_apply_departmen,
+		b.back_transactor,
+		b.back_transactor_team,
+		b.back_time,
+		b.create_by,
+		b.create_time,
+		b.modify_by,
+		b.modify_time,
+		c.customer_name,
+		t.contract_amount,
+		t.channel_flag,
+		l.grant_amount,
+		a.bank_name,
+		a.bank_account,
+		i.dict_loan_status,
+		e.fee_urged_service,
+		p.payback_max_overduedays,
+		a.bank_branch,
+		c.customer_register_province,
+		c.customer_register_city,
+		o.name as storesCode,
+		i.loan_store_orgid as storesId,
+		i.model,
+		i.loan_flag,
+		bp.area_name as bank_province,
+		bc.area_name as bank_city
+	from
+		jk.t_jk_urge_services_backamount b <!-- 催收服务费返款信息 -->
+		left join jk.t_jk_loan_grant l on l.contract_code = b.contract_code<!-- 放款记录表 -->
+		left join jk.t_jk_contract t on t.contract_code = l.contract_code<!--合同表  -->
+		left join jk.t_jk_contract_fee e on e.contract_code = l.contract_code<!-- 合同_费率表 -->
+		left join jk.t_jk_loan_info i on i.loan_code = l.loan_code<!-- 借款_借款信息表 -->
+		left join jk.t_jk_loan_customer c on c.loan_code = i.loan_code<!-- 借款客户信息 -->
+		left join jk.t_jk_loan_bank a on a.loan_code = l.loan_code and a.repayment_flag = '1'  <!-- 借款_账户信息表 -->
+		AND a.bank_top_flag='1' AND a.repayment_flag='1'
+		left join jk.t_jk_payback p on p.id = b.r_payback_id <!-- 还款_还款主表 -->
+		left join jk.t_gl_org o ON o.id = i.loan_store_orgid<!-- 组织机构表 -->
+		left join jk.t_gl_province_city bp ON bp.area_code = a.bank_province
+		left join jk.t_gl_province_city bc ON bc.area_code = a.bank_city
+	where b.payback_back_amount > 0 
+		<if test="id!=null and id!=''">
+		and b.id=#{id}
+		</if>
+		<if test="dictPayStatus!=null and dictPayStatus!=''">
+		and b.dict_pay_status=#{dictPayStatus}
+		</if>
+		<if test="contractCode!=null and contractCode!=''">
+		and b.contract_code=#{contractCode}
+		</if>
+		<if test="customerName != null and customerName != ''">
+		and c.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="bankName!=null and bankName!=''">
+		and a.bank_name = #{bankName}
+		</if>
+		<if test="model != null and model != ''">
+			and i.model = #{model}
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and i.loan_flag = #{loanFlag}
+		</if>
+		<if test="backApplyPayTime!=null and backApplyPayTime!=''">
+			and cast(b.back_apply_pay_time as Date)  = #{backApplyPayTime}
+		</if>
+		<if test="dictPayResult!=null and dictPayResult!=''">
+			and b.dict_pay_result=#{dictPayResult}
+		</if>
+		<if test="storesId != null and storesId != ''">
+			AND i.loan_store_orgid = #{storesId}
+		</if> 
+		<if test="channelFlag != null and channelFlag != '' and channelFlag!=-1">
+			AND t.channel_flag = #{channelFlag}
+		</if> 
+		<if test="channelFlag != null and channelFlag != '' and channelFlag==-1">
+			AND t.channel_flag !='5'
+		</if>
+		 ${queryRight} 
+	order by b.back_apply_pay_time DESC
+  </select>
+  
+  <!-- 根据催收返款id进行查询需要进行发送返款申请的单子 -->
+  <select id="selSendApply" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesBackMoneyEx">
+  select b.contract_code ,dict_pay_status,b.id as id
+  from t_jk_urge_services_backamount b
+  left join t_jk_loan_grant a on a.contract_code = b.contract_code
+  left join t_jk_urge_services_amount c on c.r_grant_id = a.id
+  where b.id = #{id}
+  </select>
+  
+  <!-- 插入催收返款表 -->
+  <insert id="insertUrgeBack" parameterType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServicesBackMoneyEx">
+    insert into t_jk_urge_services_backmoney
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="rId != null">
+        r_id,
+      </if>
+      <if test="contractCode != null">
+        contract_code,
+      </if>
+      <if test="dictPayStatus != null">
+        dict_pay_status,
+      </if>
+      <if test="dictPayResult != null">
+        dict_pay_result,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="settlementTimestamp != null">
+        settlement_timestamp,
+      </if>
+      <if test="paybackBackAmount != null">
+        payback_back_amount,
+      </if>
+      <if test="applyPayTimestamp != null">
+        apply_pay_timestamp,
+      </if>
+      <if test="backApplyBy != null">
+        back_apply_by,
+      </if>
+      <if test="backApplyTeam != null">
+        back_apply_team,
+      </if>
+      <if test="backTransactor != null">
+        back_transactor,
+      </if>
+      <if test="backTransactorTeam != null">
+        back_transactor_team,
+      </if>
+      <if test="backTimestamp != null">
+        back_timestamp,
+      </if>
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifyBy != null">
+        modify_by,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=NUMERIC},
+      </if>
+      <if test="rId != null">
+        #{rId,jdbcType=NUMERIC},
+      </if>
+      <if test="contractCode != null">
+        #{contractCode,jdbcType=NUMERIC},
+      </if>
+      <if test="dictPayStatus != null">
+        #{dictPayStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="dictPayResult != null">
+        #{dictPayResult,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="settlementTimestamp != null">
+        #{settlementTimestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="paybackBackAmount != null">
+        #{paybackBackAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="applyPayTimestamp != null">
+        #{applyPayTimestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="backApplyBy != null">
+        #{backApplyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="backApplyTeam != null">
+        #{backApplyTeam,jdbcType=VARCHAR},
+      </if>
+      <if test="backTransactor != null">
+        #{backTransactor,jdbcType=VARCHAR},
+      </if>
+      <if test="backTransactorTeam != null">
+        #{backTransactorTeam,jdbcType=VARCHAR},
+      </if>
+      <if test="backTimestamp != null">
+        #{backTimestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  
+ <!-- 更新单子的返款状态 -->
+   <update id="updateUrgeBack" parameterType="com.creditharmony.loan.borrow.grant.entity.UrgeServicesBackMoney">
+    update t_jk_urge_services_backamount
+    <set>
+      <if test="contractCode != null">
+        contract_code = #{contractCode,jdbcType=NUMERIC},
+      </if>
+      <if test="dictPayStatus != null">
+        dict_pay_status = #{dictPayStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="dictPayResult != null">
+        dict_pay_result = #{dictPayResult,jdbcType=VARCHAR},
+      </if>
+
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="settlementTime != null">
+        settlement_time = #{settlementTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="backApplyPayTime != null">
+        back_apply_pay_time = #{backApplyPayTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="backApplyBy != null">
+        back_apply_by = #{backApplyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="backApplyDepartment != null">
+        back_apply_departmen = #{backApplyDepartment,jdbcType=VARCHAR},
+      </if>
+      <if test="backTransactor != null">
+        back_transactor = #{backTransactor,jdbcType=VARCHAR},
+      </if>
+      <if test="backTransactorTeam != null">
+        back_transactor_team = #{backTransactorTeam,jdbcType=VARCHAR},
+      </if>
+      <if test="backTime != null">
+        back_time = #{backTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null and modifyBy!=''">
+      	modify_by=#{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null and modifyTime!=''">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+      </if>
+    </set>
+    where id = #{id}
+  </update> 
+  
+  <!-- 查询催收服务费返款操作历史列表 -->
+  <select id="selectUrgeHistory" parameterType="com.creditharmony.loan.borrow.grant.entity.UrgeHistory" resultMap="UrgeHistorytMap">
+   select
+		 id,
+		 r_urge_id,
+		 contract_code, 
+		 dict_pay_result, 
+		 operate_step, 
+		 remark, 
+		 operator, 
+		 operate_time
+	from
+		t_jk_urge_servi 
+	where 
+		 r_urge_id = #{rUrgeId}
+    order by create_time DESC
+  </select>
+  
+  	<!--操作历史添加   -->
+	<insert id="insertUrgeHistory">
+	INSERT INTO t_jk_urge_servi(
+		id,
+		r_urge_id,
+		contract_code,
+		dict_pay_result,
+		operate_step,
+		remark,
+		operator,
+		operate_time,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time)
+	VALUES (
+		#{id},
+		#{rUrgeId},
+		#{contractCode},
+		#{dictayPayResult},
+		#{operateStep},
+		#{remarks},
+		#{operator},
+		#{operateTime},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime});
+	</insert>
+  <select id="getObjectById" resultMap="BaseResultMap">
+  	select b.id, b.r_payback_id, b.contract_code, b.dict_pay_status, b.dict_pay_result, b.remark, b.settlement_time, 
+    b.payback_back_amount, b.back_apply_pay_time, b.back_apply_by, b.back_apply_departmen, b.back_transactor, 
+    b.back_transactor_team, b.back_time, b.create_by, b.create_time, b.modify_by, b.modify_time
+    from t_jk_urge_services_backamount b
+    where id=#{id}
+  </select>
+</mapper>

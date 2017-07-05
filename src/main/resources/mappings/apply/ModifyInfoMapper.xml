@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.ModifyInfoDao">
+  <insert id="insert">
+	INSERT INTO jk.t_jk_modify_info(
+            id, loan_code, modify_type, r_id, dict_loan_status, primitive_column, 
+            primitive_value, modify_column, modify_value, create_by, create_time, 
+            modify_by, modify_time)
+    VALUES (#{id,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR},#{modifyType,jdbcType=VARCHAR},#{rId,jdbcType=VARCHAR},#{dictLoanStatus,jdbcType=VARCHAR},#{primitiveColumn,jdbcType=VARCHAR}, 
+           #{primitiveValue,jdbcType=VARCHAR},#{modifyColumn,jdbcType=VARCHAR},#{modifyValue,jdbcType=VARCHAR},#{createBy,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP}, 
+           #{modifyBy,jdbcType=VARCHAR},#{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="update">
+  	UPDATE t_jk_modify_info
+  	<set>
+  		<if test="loanCode != null and loanCode !=''">
+  			loan_code=#{loanCode,jdbcType=VARCHAR},
+  		</if>
+	  	<if test="modifyType != null and modifyType !=''">
+	  		modify_type=#{modifyType,jdbcType=VARCHAR}, 
+  		</if>
+  		<if test="rId != null and rId !=''">
+  			r_id=#{rId,jdbcType=VARCHAR},
+  		</if>
+  		<if test="dictLoanStatus != null and dictLoanStatus !=''">
+  			dict_loan_status=#{dictLoanStatus,jdbcType=VARCHAR},
+  		</if>
+  		<if test="primitiveColumn != null and primitiveColumn !=''">
+  			primitive_column=#{primitiveColumn,jdbcType=VARCHAR}, 
+  		</if>
+  		<if test="primitiveValue != null and primitiveValue !=''">
+  			primitive_value= #{primitiveValue,jdbcType=VARCHAR},
+  		</if>
+  		<if test="modifyColumn != null and modifyColumn !=''"> 		
+       		modify_column=#{modifyColumn,jdbcType=VARCHAR},
+  		</if>
+  		<if test="modifyValue != null and modifyValue !=''">
+  			modify_value=#{modifyValue,jdbcType=VARCHAR}, 
+  		</if>
+  		<if test="createBy != null and createBy !=''">
+  			create_by=#{createBy,jdbcType=VARCHAR},
+  		</if>
+  		<if test="createTime != null and createTime !=''">
+  			create_time=#{createTime,jdbcType=DATE},
+  		</if>
+  		<if test="modifyBy != null and modifyBy !=''">
+  			modify_by=#{modifyBy,jdbcType=VARCHAR},
+  		</if>
+  		<if test="modifyTime != null and modifyTime !=''">
+  			modify_time=#{modifyTime,jdbcType=DATE}
+  		</if>    
+  	</set>   		
+	 WHERE id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

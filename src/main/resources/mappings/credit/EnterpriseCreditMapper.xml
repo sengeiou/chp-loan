@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.credit.dao.EnterpriseCreditDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.credit.entity.EnterpriseCredit" >
+    <id column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="credit_version" property="creditVersion" jdbcType="VARCHAR" />
+    <result column="loan_card_code" property="loanCardCode" jdbcType="VARCHAR" />
+    <result column="report_date" property="reportDate" jdbcType="DATE" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    loan_code, credit_version, loan_card_code, report_date, create_by, create_time, modify_by, 
+    modify_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_enterprise_credit
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="selectByEnterpriseCredit" resultMap="BaseResultMap" parameterType="com.creditharmony.loan.credit.entity.EnterpriseCredit" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_enterprise_credit
+    where loan_code = #{loanCode}
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from jk.t_jk_enterprise_credit
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertEnterpriseCredit" parameterType="com.creditharmony.loan.credit.entity.EnterpriseCredit" >
+    insert into jk.t_jk_enterprise_credit (loan_code, credit_version, loan_card_code, 
+      report_date, create_by, create_time, 
+      modify_by, modify_time)
+    values (#{loanCode,jdbcType=VARCHAR}, #{creditVersion,jdbcType=VARCHAR}, #{loanCardCode,jdbcType=VARCHAR}, 
+      #{reportDate,jdbcType=DATE}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.credit.entity.EnterpriseCredit" >
+    insert into jk.t_jk_enterprise_credit
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="creditVersion != null" >
+        credit_version,
+      </if>
+      <if test="loanCardCode != null" >
+        loan_card_code,
+      </if>
+      <if test="reportDate != null" >
+        report_date,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="creditVersion != null" >
+        #{creditVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCardCode != null" >
+        #{loanCardCode,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null" >
+        #{reportDate,jdbcType=DATE},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.credit.entity.EnterpriseCredit" >
+    update jk.t_jk_enterprise_credit
+    <set >
+      <if test="creditVersion != null" >
+        credit_version = #{creditVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCardCode != null" >
+        loan_card_code = #{loanCardCode,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null" >
+        report_date = #{reportDate,jdbcType=DATE},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.credit.entity.EnterpriseCredit" >
+    update jk.t_jk_enterprise_credit
+    set credit_version = #{creditVersion,jdbcType=VARCHAR},
+      loan_card_code = #{loanCardCode,jdbcType=VARCHAR},
+      report_date = #{reportDate,jdbcType=DATE},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+  
+  <select id="getByLoanCode" parameterType="com.creditharmony.loan.credit.entity.EnterpriseCredit">
+		select 
+			<include refid="Base_Column_List" />
+		from
+			jk.t_jk_enterprise_credit
+		where 
+			loan_code = #{loanCode,jdbcType=VARCHAR}
+	</select>
+  
+  
+	<select id="getVersion" parameterType="java.lang.String" resultType="com.creditharmony.loan.credit.entity.EnterpriseCredit">
+		select 
+			b.label as credit_version, 
+			a.loan_card_code, 
+			a.report_date
+		from
+			jk.t_jk_enterprise_credit a
+		left join
+			jk.t_gl_dict b
+		on a.credit_version = b.value and b.type='jk_enterprise_risk_type'
+		where 
+			a.loan_code = #{loanCode,jdbcType=VARCHAR}
+	</select>
+  
+  
+  
+</mapper>

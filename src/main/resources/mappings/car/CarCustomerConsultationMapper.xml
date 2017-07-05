@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarCustomerConsultationDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarCustomerConsultation" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="customer_code" property="customerCode" jdbcType="VARCHAR" />
+    <result column="manager_code" property="managerCode" jdbcType="VARCHAR" />
+    <result column="cons_team_manager_code" property="consTeamManagerCode" jdbcType="VARCHAR" />
+    <result column="cons_loan_amount" property="consLoanAmount" jdbcType="NUMERIC" />
+    <result column="dict_loan_use" property="dictLoanUse" jdbcType="VARCHAR" />
+    <result column="dict_loan_type" property="dictLoanType" jdbcType="VARCHAR" />
+    <result column="cons_loan_remarks" property="consLoanRemarks" jdbcType="VARCHAR" />
+    <result column="cons_communicate_date" property="consCommunicateDate" jdbcType="TIMESTAMP" />
+    <result column="plan_arrival_time" property="planArrivalTime" jdbcType="TIMESTAMP" />
+    <result column="cons_telesales_flag" property="consTelesalesFlag" jdbcType="VARCHAR" />
+    <result column="cons_service_user_code" property="consServiceUserCode" jdbcType="VARCHAR" />
+    <result column="cons_telesales_source" property="consTelesalesSource" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="cons_telesales_orgcode" property="consTelesalesOrgcode" jdbcType="VARCHAR" />
+    <result column="dict_oper_status" property="dictOperStatus" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="BaseResultMap2" type="com.creditharmony.loan.car.carConsultation.ex.CarLoanAdvisoryBacklogEx" >
+    <result column="customer_code" property="customerCode" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="customer_name" property="customerName" jdbcType="VARCHAR" />
+    <result column="manager_name" property="customerManager" jdbcType="VARCHAR" />
+    <result column="team_name" property="teamManager" jdbcType="VARCHAR" />
+    <result column="store_name" property="mingDiang" jdbcType="VARCHAR" />
+    <result column="plan_arrival_time" property="planArrivalTime" jdbcType="TIMESTAMP" />
+    <result column="vehicle_brand_model" property="vehicleBrandModel" jdbcType="VARCHAR" />
+    <result column="dict_oper_status" property="dictOperStatus" jdbcType="VARCHAR" />
+    <result column="cons_telesales_flag" property="consTelesalesFlag" jdbcType="VARCHAR" />
+    <result column="apply_id" property="applyId" jdbcType="VARCHAR" />
+    <result column="customer_cert_num" property="customerCertNum" jdbcType="VARCHAR" />
+    <result column="loan_apply_time" property="loanApplyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, customer_code, manager_code, cons_team_manager_code, cons_loan_amount, dict_loan_use, 
+    dict_loan_type, cons_loan_remarks, cons_communicate_date, plan_arrival_time, cons_telesales_flag, 
+    cons_service_user_code, cons_telesales_source, create_by, modify_by, create_time, 
+    modify_time, cons_telesales_orgcode, dict_oper_status
+  </sql>
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_customer_consultation
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_customer_consultation
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByCustomerCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_customer_consultation
+    where customer_code = #{customerCode,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_customer_consultation
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <delete id="delete"  parameterType="com.creditharmony.loan.car.common.entity.CarCustomerConsultation" >
+    delete from t_cj_customer_consultation
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertCarCustomerConsultation" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerConsultation" >
+    insert into t_cj_customer_consultation (id, customer_code, manager_code, 
+      cons_team_manager_code, cons_loan_amount, dict_loan_use, 
+      dict_loan_type, cons_loan_remarks, cons_communicate_date, 
+      plan_arrival_time, cons_telesales_flag, cons_service_user_code, 
+      cons_telesales_source, create_by, modify_by, 
+      create_time, modify_time, cons_telesales_orgcode, 
+      dict_oper_status,loan_code)
+    values (#{id,jdbcType=VARCHAR}, #{customerCode,jdbcType=VARCHAR}, #{managerCode,jdbcType=VARCHAR}, 
+      #{consTeamManagerCode,jdbcType=VARCHAR}, #{consLoanAmount,jdbcType=NUMERIC}, #{dictLoanUse,jdbcType=VARCHAR}, 
+      #{dictLoanType,jdbcType=VARCHAR}, #{consLoanRemarks,jdbcType=VARCHAR}, #{consCommunicateDate,jdbcType=TIMESTAMP}, 
+      #{planArrivalTime,jdbcType=TIMESTAMP}, #{consTelesalesFlag,jdbcType=VARCHAR}, #{consServiceUserCode,jdbcType=VARCHAR}, 
+      #{consTelesalesSource,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyTime,jdbcType=TIMESTAMP}, #{consTelesalesOrgcode,jdbcType=VARCHAR}, 
+      #{dictOperStatus,jdbcType=VARCHAR},#{loanCode,jdbcType=VARCHAR})
+  </insert>
+  <!-- 咨询待办列表、客户管理列表 sql块 -->
+  <sql id="customer_consultation_list">
+  	  select
+  	  li.id,
+  	  li.apply_id,
+	   cc.customer_code,
+	   li.loan_code,
+	   c.customer_name,
+	   mendian.name store_name,
+	   cc.plan_arrival_time,
+	   vi.vehicle_brand_model,
+	   kehu.name manager_name,
+	   tuan.name team_name,
+	   cc.dict_oper_status,
+	   cc.cons_telesales_flag,
+	   li.dict_loan_status
+	   from t_cj_customer_consultation cc 
+	   left join t_cj_loan_info li on cc.loan_code = li.loan_code
+	   left join t_cj_vehicle_info vi on li.loan_code = vi.loan_code
+	   left join t_jk_customer_base c on  c.CUSTOMER_CODE = cc.CUSTOMER_CODE
+	   left join t_gl_user tuan on tuan.LOGIN_NAME = cc.CONS_TEAM_MANAGER_CODE
+	   left join t_gl_org tuanorg on tuanorg.id = tuan.department_id 
+	   left join t_gl_org mendian on mendian.id = tuanorg.PARENT_ID
+	   left join t_gl_user kehu on kehu.LOGIN_NAME = cc.MANAGER_CODE
+  </sql>
+   
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerConsultation" >
+    update t_cj_customer_consultation
+    <set >
+      <if test="customerCode != null" >
+        customer_code = #{customerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="managerCode != null" >
+        manager_code = #{managerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="consTeamManagerCode != null" >
+        cons_team_manager_code = #{consTeamManagerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="consLoanAmount != null" >
+        cons_loan_amount = #{consLoanAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="dictLoanUse != null" >
+        dict_loan_use = #{dictLoanUse,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLoanType != null" >
+        dict_loan_type = #{dictLoanType,jdbcType=VARCHAR},
+      </if>
+      <if test="consLoanRemarks != null" >
+        cons_loan_remarks = #{consLoanRemarks,jdbcType=VARCHAR},
+      </if>
+      <if test="consCommunicateDate != null" >
+        cons_communicate_date = #{consCommunicateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="planArrivalTime != null" >
+        plan_arrival_time = #{planArrivalTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="consTelesalesFlag != null" >
+        cons_telesales_flag = #{consTelesalesFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="consServiceUserCode != null" >
+        cons_service_user_code = #{consServiceUserCode,jdbcType=VARCHAR},
+      </if>
+      <if test="consTelesalesSource != null" >
+        cons_telesales_source = #{consTelesalesSource,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="consTelesalesOrgcode != null" >
+        cons_telesales_orgcode = #{consTelesalesOrgcode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictOperStatus != null" >
+        dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR},
+      </if>
+    </set>
+   where
+      <trim prefixOverrides="AND | OR">
+   <if test="loanCode != null and loanCode != ''">
+		and loan_code = #{loanCode,jdbcType=VARCHAR}
+	</if>
+	<if test="customerCode != null and customerCode != ''">
+		and customer_code = #{customerCode,jdbcType=VARCHAR}
+	</if>
+      </trim>
+  </update>
+  
+  <update id="updateById" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerConsultation" >
+    update t_cj_customer_consultation
+    <set >
+      <if test="customerCode != null" >
+        customer_code = #{customerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+		loan_code = #{loanCode,jdbcType=VARCHAR},
+	  </if>
+      <if test="managerCode != null" >
+        manager_code = #{managerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="consTeamManagerCode != null" >
+        cons_team_manager_code = #{consTeamManagerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="consLoanAmount != null" >
+        cons_loan_amount = #{consLoanAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="dictLoanUse != null" >
+        dict_loan_use = #{dictLoanUse,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLoanType != null" >
+        dict_loan_type = #{dictLoanType,jdbcType=VARCHAR},
+      </if>
+      <if test="consLoanRemarks != null" >
+        cons_loan_remarks = #{consLoanRemarks,jdbcType=VARCHAR},
+      </if>
+      <if test="consCommunicateDate != null" >
+        cons_communicate_date = #{consCommunicateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="planArrivalTime != null" >
+        plan_arrival_time = #{planArrivalTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="consTelesalesFlag != null" >
+        cons_telesales_flag = #{consTelesalesFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="consServiceUserCode != null" >
+        cons_service_user_code = #{consServiceUserCode,jdbcType=VARCHAR},
+      </if>
+      <if test="consTelesalesSource != null" >
+        cons_telesales_source = #{consTelesalesSource,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="consTelesalesOrgcode != null" >
+        cons_telesales_orgcode = #{consTelesalesOrgcode,jdbcType=VARCHAR},
+      </if>
+      <if test="dictOperStatus != null" >
+        dict_oper_status = #{dictOperStatus,jdbcType=VARCHAR},
+      </if>
+    </set>
+      where id = #{id,jdbcType=VARCHAR}
+	
+  </update>
+  
+  <!-- 根据客户姓名，客户经理，咨询状态，预计到店时间，是否电销查询车借咨询待办相关信息 -->
+  <select id="selectByCarLoanAdvisoryBacklog"  parameterType="com.creditharmony.loan.car.carConsultation.ex.CarLoanAdvisoryBacklogEx" resultMap="BaseResultMap2">
+   <include refid="customer_consultation_list"></include>
+   where cc.dict_Oper_Status in ('0')
+   	<if test="customerName != null and customerName != ''">
+   		and c.customer_name like concat('%', #{customerName}, '%')
+   	</if>
+   	<if test="customerManager != null and customerManager != ''">
+   		and kehu.name like concat('%', #{customerManager}, '%')
+   	</if>
+   	<if test="dictOperStatus != null and dictOperStatus != ''">
+   		and cc.dict_oper_status=#{dictOperStatus}
+   	</if>
+   	<if test="planArrivalTime != null and planArrivalTime != ''">
+   		and cc.plan_arrival_time &gt; #{planArrivalTime}
+   	</if>
+   	<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+   		and cc.plan_arrival_time &lt; #{planArrivalTimeend}
+   	</if>
+   	<if test="consTelesalesFlag != null and consTelesalesFlag != ''">
+   		and cc.cons_telesales_flag = #{consTelesalesFlag}
+   	</if>
+   	<if test="storeId != null and storeId != ''">
+   		and li.store_code = #{storeId}
+   	</if>
+   	order by COALESCE(li.dict_loan_status,'0') desc
+  </select>
+  <!-- 根据客户姓名，客户经理，咨询状态，预计到店时间，是否电销查询客户管理信息列表  -->
+  <select id="getCustomerManagementList"  parameterType="com.creditharmony.loan.car.carConsultation.ex.CarLoanAdvisoryBacklogEx" resultMap="BaseResultMap2">
+ 	<include refid="customer_consultation_list"></include>
+ 	<where>
+ 		<if test="dictOperStatus != null and dictOperStatus != ''">
+		   	cc.dict_Oper_Status in (#{dictOperStatus})
+ 		</if>
+ 		<if test="customerName != null and customerName != ''">
+   			and c.customer_name like concat('%', #{customerName}, '%')
+	   	</if>
+	   	<if test="customerManager != null and customerManager != ''">
+	   		and kehu.name like concat('%', #{customerManager}, '%')
+	   	</if>
+	   	<if test="planArrivalTime != null and planArrivalTime != ''">
+	   		and cc.plan_arrival_time &gt;= #{planArrivalTime}
+	   	</if>
+	   	<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+	   		and cc.plan_arrival_time &lt;= #{planArrivalTimeend}
+	   	</if>
+	   	<if test="consTelesalesFlag != null and consTelesalesFlag != ''">
+	   		and cc.cons_telesales_flag = #{consTelesalesFlag}
+	   	</if>
+ 	</where>
+  </select>
+  <!-- 查询90天是否可以再次咨询 -->
+   <select id="selectConsul" resultType="int" parameterType="java.lang.String">	
+	select count(li.*) 
+	from t_cj_customer_consultation li
+	left join t_cj_vehicle_info vi on li.loan_code = vi.loan_code
+	where li.dict_oper_status = '2' and vi.plate_numbers = #{plateNumbers,jdbcType=VARCHAR} 
+	and li.create_time + 90 <![CDATA[ >= ]]>sysdate 
+  </select>
+  <!-- 根据客户姓名，客户经理，咨询状态，预计到店时间，是否电销查询车借OCR咨询待办相关信息 -->
+  <select id="selectOcrByCarLoanAdvisoryBacklog"  parameterType="com.creditharmony.loan.car.carConsultation.ex.CarLoanAdvisoryBacklogEx" resultMap="BaseResultMap2">
+   select
+  	  li.id,
+  	  li.apply_id,
+	   cc.customer_code,
+	   lc.customer_cert_num,
+	   li.loan_code,
+	   li.loan_apply_time,
+	   c.customer_name,
+	   mendian.name store_name,
+	   cc.plan_arrival_time,
+	   vi.vehicle_brand_model,
+	   kehu.name manager_name,
+	   tuan.name team_name,
+	   cc.dict_oper_status,
+	   cc.cons_telesales_flag,
+	   li.dict_loan_status
+	   from t_cj_customer_consultation cc 
+	   left join t_cj_loan_info li on cc.id = li.id
+	   left join t_cj_vehicle_info vi on li.id = vi.id
+	   left join t_jk_customer_base c on  c.id = cc.id
+	   left join t_gl_user tuan on tuan.LOGIN_NAME = cc.CONS_TEAM_MANAGER_CODE
+	   left join t_gl_org tuanorg on tuanorg.id = tuan.department_id 
+	   left join t_gl_org mendian on mendian.id = tuanorg.PARENT_ID
+	   left join t_gl_user kehu on kehu.LOGIN_NAME = cc.MANAGER_CODE
+	   left join t_jk_loan_customer lc on li.id=lc.id 
+   where APPLY_TYPE = '1' and cc.dict_Oper_Status is null
+   	<if test="customerName != null and customerName != ''">
+   		and c.customer_name like concat('%', #{customerName}, '%')
+   	</if>
+   	<if test="customerManager != null and customerManager != ''">
+   		and kehu.name like concat('%', #{customerManager}, '%')
+   	</if>
+   	<if test="dictOperStatus != null and dictOperStatus != ''">
+   		and cc.dict_oper_status=#{dictOperStatus}
+   	</if>
+   	<if test="planArrivalTime != null and planArrivalTime != ''">
+   		and cc.plan_arrival_time &gt; #{planArrivalTime}
+   	</if>
+   	<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+   		and cc.plan_arrival_time &lt; #{planArrivalTimeend}
+   	</if>
+   	<if test="consTelesalesFlag != null and consTelesalesFlag != ''">
+   		and cc.cons_telesales_flag = #{consTelesalesFlag}
+   	</if>
+   	<if test="storeId != null and storeId != ''">
+   		and li.store_code = #{storeId}
+   	</if>
+   	<if test="customerCertNum != null and customerCertNum != ''">
+   		and lc.customer_cert_num = #{customerCertNum}
+   	</if>
+   	<if test="vehicleBrandModel != null and vehicleBrandModel != ''">
+   		and vi.vehicle_brand_model = #{vehicleBrandModel}
+   	</if>
+   	order by COALESCE(li.dict_loan_status,'0') desc
+  </select>
+</mapper>

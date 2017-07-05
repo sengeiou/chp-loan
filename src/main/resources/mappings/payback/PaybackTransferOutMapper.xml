@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.PaybackTransferOutDao">
+	<resultMap type="com.creditharmony.loan.borrow.payback.entity.PaybackTransferOut" id="auditedList">
+		<id column="id" property="id"/>
+		<result column="contract_code" property="contractCode" />
+		<result column="order_number" property="orderNumber" />
+		<result column="out_flow" property="outFlow" />
+		<result column="out_deposit_time" property="outDepositTime" />
+		<result column="out_enter_bank_account" property="outEnterBankAccount" />
+		<result column="out_really_amount" property="outReallyAmount" />
+		<result column="out_deposit_name" property="outDepositName" />
+		<result column="out_audit_status" property="outAuditStatus" />
+		<result column="out_time_check_account" property="outTimeCheckAccount" />
+		<result column="out_remark" property="outRemark" />
+		<result column="relation_type" property="relationType" />
+		<result column="r_payback_apply_id" property="rPaybackApplyId" />
+		<result column="transfer_accounts_id" property="transferAccountsId" />
+		<result column="bank_card_no" property="middlePerson.bankCardNo" />
+		<result column="mid_bank_name" property="middlePerson.midBankName" />
+	</resultMap>
+	
+	<!--查询查账账款列表  -->
+	<select id="findList" resultMap="auditedList">
+		SELECT
+		pto.id,
+		pto.contract_code,
+		pto.out_flow,
+		pto.out_deposit_time,
+		pto.out_enter_bank_account,
+		pto.out_really_amount,
+		pto.out_deposit_name,
+		pto.out_audit_status,
+		pto.out_time_check_account,
+		pto.out_remark,
+		pto.order_number,
+		pto.relation_type,
+		pto.r_payback_apply_id,
+		pto.transfer_accounts_id,
+		mp.bank_card_no,
+		mp.mid_bank_name
+		FROM jk.t_jk_payback_transfer_out pto
+		<!--存入银行   -->
+		LEFT JOIN jk.t_jk_middle_person mp ON mp.bank_card_no=pto.out_enter_bank_account
+		where 1=1
+		<if test="id != null and id !=''">
+			AND pto.id = #{id}
+		</if>
+		<if test="rPaybackApplyId != null and rPaybackApplyId !=''">
+			AND pto.r_payback_apply_id = #{rPaybackApplyId}
+		</if>
+		<if test="contractCode!= null and contractCode != ''">
+			AND pto.contract_code =  #{contractCode} 
+		</if>
+		<if test="orderNumber != null and orderNumber != ''">
+			AND pto.order_number like '%'||#{orderNumber}||'%'
+		</if>
+		<if test="outAuditStatus!= null and outAuditStatus != ''">
+			AND pto.out_audit_status = #{outAuditStatus}
+		</if>
+		<if test="outDepositName!= null and outDepositName != ''">
+			AND (pto.out_deposit_name like '%'||#{outDepositName}||'%' or
+				pto.out_remark  like '%'||#{outDepositName}||'%')
+		</if>
+		<if test="outEnterBankAccount!= null and outEnterBankAccount!= ''">
+			AND pto.out_enter_bank_account = #{outEnterBankAccount}
+		</if>
+		<if test="transferAccountsId != null and transferAccountsId != ''">
+			AND pto.transfer_accounts_id = #{transferAccountsId}
+		</if>
+		<if test="relationType != null and !relationType.equals('')">
+			AND relation_type = #{relationType}
+		</if>
+		<if test="beginOutReallyAmount != null and beginOutReallyAmount != ''">
+			AND pto.out_really_amount &gt;= #{beginOutReallyAmount}
+		</if>
+		<if test="endOutReallyAmount != null and endOutReallyAmount != ''">
+			AND pto.out_really_amount &lt;= #{endOutReallyAmount}
+		</if>
+		<if test="startDepositdDate != null">
+			AND to_date(to_char(pto.out_deposit_time,'yyyy-mm-dd')) &gt;= #{startDepositdDate}
+		</if>
+		<if test="endDepositDate != null">
+			AND to_date(to_char(pto.out_deposit_time,'yyyy-mm-dd')) &lt;= #{endDepositDate}
+		</if>
+		<if test="startAuditedDate != null">
+			AND to_date(to_char(pto.out_time_check_account,'yyyy-mm-dd')) &gt;= #{startAuditedDate} 
+		</if>
+		<if test="endAuditedDate != null">
+			AND to_date(to_char(pto.out_time_check_account,'yyyy-mm-dd')) &lt;= #{endAuditedDate}
+		</if>
+		<if test="operateRole != null and operateRole!=''">
+			AND pto.operate_role=#{operateRole}
+		</if>
+		<if test="operateRole == null || operateRole==''">
+			AND pto.operate_role is null 
+		</if>
+		order by pto.order_number DESC nulls last;
+	</select>
+     
+     <!--自动匹配查询未匹配银行流水   -->
+     <select id="getAutoNoAuditedList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferOut" >
+		SELECT
+		pto.id,
+		pto.contract_code,
+		pto.out_flow,
+		pto.out_deposit_time,
+		pto.out_enter_bank_account,
+		pto.out_really_amount,
+		pto.out_deposit_name,
+		pto.out_audit_status,
+		pto.out_time_check_account,
+		pto.out_remark,
+		pto.order_number,
+		pto.relation_type,
+		pto.r_payback_apply_id,
+		pto.transfer_accounts_id
+		FROM jk.t_jk_payback_transfer_out pto
+		where 1=1
+		<if test="outAuditStatus!= null and outAuditStatus != ''">
+			AND pto.out_audit_status = #{outAuditStatus}
+		</if>
+		<if test="outDepositName!= null and outDepositName != ''">
+			AND pto.out_deposit_name =  #{outDepositName}
+		</if>
+		<if test="outEnterBankAccount != null and outEnterBankAccount != ''">
+			AND pto.out_enter_bank_account = #{outEnterBankAccount}
+		</if>
+		<if test="outReallyAmount != null">
+			AND pto.out_really_amount = #{outReallyAmount}
+		</if>
+		<if test="outDepositTime != null">
+			AND to_date(to_char(pto.out_deposit_time,'yyyy-mm-dd')) = #{outDepositTime}
+		</if>
+		<!--匹配 模糊备注是否包含存款人   -->
+		<if test="outRemark != null and outRemark != ''">
+			AND pto.out_remark like '%'||#{outRemark}||'%'
+		</if>
+		AND pto.transfer_accounts_id is null and pto.r_payback_apply_id is null;
+	</select>
+	
+	
+	<!--手动匹配匹配查询流水   -->
+     <select id="getNoAuditedList" resultMap="auditedList" >
+		SELECT
+		pto.id,
+		pto.contract_code,
+		pto.out_flow,
+		pto.out_deposit_time,
+		pto.out_enter_bank_account,
+		pto.out_really_amount,
+		pto.out_deposit_name,
+		pto.out_audit_status,
+		pto.out_time_check_account,
+		pto.out_remark,
+		pto.order_number,
+		pto.relation_type,
+		pto.r_payback_apply_id,
+		pto.transfer_accounts_id,
+		mp.bank_card_no,
+		mp.mid_bank_name
+		FROM jk.t_jk_payback_transfer_out pto
+		<!--存入银行   -->
+		LEFT JOIN jk.t_jk_middle_person mp ON mp.bank_card_no=pto.out_enter_bank_account
+		where 1=1
+		<if test="id != null and id !=''">
+			AND pto.id = #{id}
+		</if>
+		<if test="rPaybackApplyId != null and rPaybackApplyId !=''">
+			AND pto.r_payback_apply_id = #{rPaybackApplyId}
+		</if>
+		<if test="contractCode!= null and contractCode != ''">
+			AND pto.contract_code =  #{contractCode} 
+		</if>
+		<if test="orderNumber != null and orderNumber != ''">
+			AND pto.order_number like '%'||#{orderNumber}||'%'
+		</if>
+		<if test="outAuditStatus!= null and outAuditStatus != ''">
+			AND pto.out_audit_status = #{outAuditStatus}
+		</if>
+		<if test="outDepositName!= null and outDepositName != ''">
+			AND pto.out_deposit_name like  ||#{outDepositName}||'%'
+		</if>
+		<if test="outEnterBankAccount != null and outEnterBankAccount != ''">
+			AND pto.out_enter_bank_account = #{outEnterBankAccount}
+		</if>
+		<if test="outReallyAmount != null">
+			AND pto.out_really_amount = #{outReallyAmount}
+		</if>
+		<if test="transferAccountsId != null and transferAccountsId != ''">
+			AND pto.transfer_accounts_id = #{transferAccountsId}
+		</if>
+		<if test="relationType != null and !relationType.equals('')">
+			AND relation_type = #{relationType}
+		</if>
+		<if test="outDepositTime != null">
+			AND to_date(to_char(pto.out_deposit_time,'yyyy-mm-dd')) = #{outDepositTime}
+		</if>
+		AND transfer_accounts_id is null and r_payback_apply_id is null;
+	</select>
+	
+	
+	<!--查询是否存在查账成功的汇款单 -->
+	<select id="findAuditedList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferOut">
+		SELECT
+		pto.id,
+		pto.contract_code,
+		pto.out_flow,
+		pto.out_deposit_time,
+		pto.out_enter_bank_account,
+		pto.out_really_amount,
+		pto.out_deposit_name,
+		pto.out_audit_status,
+		pto.out_time_check_account,
+		pto.out_remark,
+		pto.order_number,
+		pto.relation_type
+		FROM jk.t_jk_payback_transfer_out pto
+		where 1=1
+		<if test="outAuditStatus != null and outAuditStatus != ''">
+			AND pto.out_audit_status = #{outAuditStatus}
+		</if>
+		<if test="outDepositName != null and outDepositName != ''">
+			AND pto.out_deposit_name = #{outDepositName}
+		</if>
+		<if test="outEnterBankAccount!= null and outEnterBankAccount != ''">
+			AND pto.out_enter_bank_account = #{outEnterBankAccount}
+		</if>
+		<if test="outReallyAmount != null and outReallyAmount != ''">
+			AND pto.out_really_amount = #{outReallyAmount} 
+		</if>
+		<if test="outDepositTime != null">
+			AND to_date(to_char(pto.out_deposit_time,'yyyy-mm-dd')) = #{outDepositTime}
+		</if>
+	</select>
+	
+	<!--匹配更新流水表查账状态   -->
+	<update id="updateOutStatuById">
+		UPDATE jk.t_jk_payback_transfer_out 
+		<set>
+		 	transfer_accounts_id=#{transferAccountsId},
+		 	r_payback_apply_id=#{rPaybackApplyId},
+		 	contract_code=#{contractCode},
+		 	out_time_check_account=#{outTimeCheckAccount},
+		 <if test="outAuditStatus != null and outAuditStatus != ''"> 
+		 	out_audit_status=#{outAuditStatus},
+		 </if>
+		 <if test="modifyTime != null and modifyTime != ''"> 
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </set>
+		WHERE  id = #{id}
+	</update>
+	
+	<!--匹配更新流水表查账状态   -->
+	<update id="updateOutStatuByApplyId">
+		UPDATE jk.t_jk_payback_transfer_out 
+		<set>
+		<if test="outAuditStatus != null and outAuditStatus != ''"> 
+		 	out_audit_status=#{outAuditStatus},
+		 </if>
+		 <if test="contractCode != null and contractCode != ''"> 
+		 	contract_code=#{contractCode},
+		 </if>
+		 <if test="outTimeCheckAccount != null and outTimeCheckAccount != ''"> 
+		 	out_time_check_account=#{outTimeCheckAccount},
+		 </if>
+		 <if test="transferAccountsId != null and transferAccountsId != ''"> 
+		 	transfer_accounts_id=#{transferAccountsId},
+		 </if>
+		 <if test="relationType != null and relationType != ''"> 
+		 	relation_type=#{relationType},
+		 </if>
+		 <if test="modifyTime != null and modifyTime != ''"> 
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null and modifyBy != ''"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </set>
+		WHERE  r_payback_apply_id = #{rPaybackApplyId}
+	</update>
+
+	<!--导入EXCEL   -->
+	<insert id="insert" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" >
+		INSERT INTO jk.t_jk_payback_transfer_out(
+		id, 
+		contract_code, 
+		out_flow, 
+		out_deposit_time, 
+		out_enter_bank_account,
+		out_really_amount, 
+		out_deposit_name, 
+		out_audit_status,
+		out_time_check_account,
+		out_remark, 
+		create_by, 
+		create_time, 
+		order_number,
+		operate_role)
+		VALUES
+		   (#{item.id}, 
+			#{item.contractCode},
+			#{item.outFlow}, 
+			#{item.outDepositTime}, 
+			#{item.outEnterBankAccount},
+			#{item.outReallyAmount}, 
+			#{item.outDepositName}, 
+			#{item.outAuditStatus}, 
+			#{item.outTimeCheckAccount},
+			#{item.outRemark}, 
+			#{item.createBy},
+			#{item.createTime},
+			#{item.orderNumber},
+			#{item.operateRole});
+		</foreach>
+	</insert>
+	
+	<!--导出查账账款列表  -->
+	<select id="exportAuditedList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferOut">
+		SELECT
+		pto.contract_code as contractCode,
+		pto.out_deposit_time as outDepositTime,
+		ROUND(pto.out_really_amount,2) as outReallyAmount,
+		pto.out_deposit_name as outDepositName,
+		pto.out_audit_status as outAuditStatus,
+		pto.out_time_check_account as outTimeCheckAccount,
+		pto.out_remark as outRemark,
+		pto.order_number as orderNumber,
+		mp.mid_bank_name as "outEnterBankAccount"
+		FROM jk.t_jk_payback_transfer_out pto
+		LEFT JOIN jk.t_jk_middle_person mp ON mp.bank_card_no=pto.out_enter_bank_account
+		where 1=1
+		<if test="id != null and id !=''">
+			AND pto.id in (${id})
+		</if>
+		<if test="rPaybackApplyId != null and rPaybackApplyId !=''">
+			AND pto.r_payback_apply_id = #{rPaybackApplyId}
+		</if>
+		<if test="contractCode!= null and contractCode != ''">
+			AND pto.contract_code =  #{contractCode} 
+		</if>
+		<if test="orderNumber != null and orderNumber != ''">
+			AND pto.order_number like '%'||#{orderNumber}||'%'
+		</if>
+		<if test="outAuditStatus!= null and outAuditStatus != ''">
+			AND pto.out_audit_status = #{outAuditStatus}
+		</if>
+		<if test="outDepositName!= null and outDepositName != ''">
+			AND pto.out_deposit_name like '%'||#{outDepositName}||'%'
+		</if>
+		<if test="outEnterBankAccount!= null and outEnterBankAccount!= ''">
+			AND pto.out_enter_bank_account = #{outEnterBankAccount}
+		</if>
+		<if test="beginOutReallyAmount != null and endOutReallyAmount != null">
+			AND pto.out_really_amount between #{beginOutReallyAmount} and #{endOutReallyAmount}
+		</if>
+		<if test="transferAccountsId != null and transferAccountsId != ''">
+			AND pto.transfer_accounts_id = #{transferAccountsId}
+		</if>
+		<if test="relationType != null and !relationType.equals('')">
+			AND pto.relation_type = #{relationType}
+		</if>
+		<if test="startDepositdDate != null">
+			AND to_date(to_char(pto.out_deposit_time,'yyyy-mm-dd')) &gt;= #{startDepositdDate}
+		</if>
+		<if test="endDepositDate != null">
+			AND to_date(to_char(pto.out_deposit_time,'yyyy-mm-dd')) &lt;= #{endDepositDate}
+		</if>
+		<if test="startAuditedDate != null">
+			AND to_date(to_char(pto.out_time_check_account,'yyyy-mm-dd')) &gt;= #{startAuditedDate} 
+		</if>
+		<if test="endAuditedDate != null">
+			AND to_date(to_char(pto.out_time_check_account,'yyyy-mm-dd')) &lt;= #{endAuditedDate}
+		</if>
+		<if test="operateRole != null and !operateRole.equals('')">
+			AND pto.operate_role = #{operateRole}
+		</if>
+		<if test="operateRole == null or operateRole.equals('')">
+			AND mp.way_flag!='Y'
+		</if>
+		order by pto.out_deposit_time DESC, pto.create_time DESC;
+	</select>
+</mapper>

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.outvisit.dao.OutVisitDao">
+	<!-- 共借人基本信息START -->
+	<resultMap id="BaseLoanInfoMap"
+		type="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+		<result column="id" property="id" />
+		<result column="apply_id" property="applyId" />
+		<result column="loan_code" property="loanCode" />
+		<result column="product_type" property="productType" />
+		<result column="loan_apply_amount" property="loanApplyAmount" />
+		<result column="loan_months" property="loanMonths" />
+		<result column="loan_apply_time" property="loanApplyTime" />
+		<result column="dict_loan_use" property="dictLoanUse" />
+		<result column="realy_use" property="realyUse" />
+		<result column="loan_urgent_flag" property="loanUrgentFlag" />
+		<result column="loaninfo_oldornew_flag" property="loanInfoOldOrNewFlag" />
+		<result column="dict_loan_use_new_other" property="dictLoanUseNewOther" />
+	</resultMap>
+	<sql id="Base_Loan_List">
+		id,apply_id,loan_code, prod.product_name as product_type,loan_apply_amount,loan_months
+		,loan_apply_time,dict_loan_use,realy_use,loan_urgent_flag,loaninfo_oldornew_flag,dict_loan_use_new_other
+	</sql>
+	<select id="findLoan" parameterType="map" resultMap="BaseLoanInfoMap">
+		select
+		<include refid="Base_Loan_List" />
+		from jk.t_jk_loan_info as loan
+		left join jk.t_gl_jk_product as prod on prod.product_code = loan.product_type
+		where 1=1 
+		<if test="applyId != null">
+			and apply_id=#{applyId}
+		</if>
+		<if test="loanCode">
+			and loan_code=#{loanCode}
+		</if>
+		
+
+	</select>
+	<!-- 借款基本信息END -->
+
+	<!-- 客户基本信息START -->
+	<resultMap id="BaseCustomerMap"
+		type="com.creditharmony.loan.borrow.applyinfo.entity.Customer">
+		<result column="customer_code" property="customerCode" />
+		<result column="id" property="id" />
+		<result column="apply_id" property="applyId" />
+		<result column="loan_code" property="loanCode" />
+		<result column="customer_code" property="customerCode" />
+		<result column="customer_name" property="customerName" />
+		<result column="customer_sex" property="customerSex" />
+		<result column="dict_cert_type" property="dictCertType" />
+		<result column="customer_cert_num" property="customerCertNum" />
+		<result column="customer_birthday" property="customerBirthday" />
+		<result column="dict_customer_diff" property="dictCustomerLoanType" />
+		<result column="dict_education" property="dictEducation" />
+		<result column="dict_marry_status" property="dictMarry" />
+		<result column="dict_customer_source" property="dictCustomerSource" />
+	</resultMap>
+	<sql id="Base_Customer_List">
+		id,apply_id,loan_code,customer_code,customer_name,customer_sex
+		,dict_cert_type,customer_cert_num,customer_birthday,dict_customer_diff
+		,dict_education,dict_marry_status,dict_customer_source
+	</sql>
+	<select id="findCustomer" parameterType="map" resultMap="BaseCustomerMap">
+		select
+		<include refid="Base_Customer_List" />
+		from jk.t_jk_loan_customer
+		where loan_code = #{loanCode}
+	</select>
+	<!-- 客户基本信息 END -->
+
+	<!-- 共借人基本信息START -->
+	<resultMap id="BaseCoBorrowerMap"
+		type="com.creditharmony.loan.borrow.applyinfo.entity.LoanCoborrower">
+		<result column="id" property="id" />
+		<result column="loan_code" property="loanCode" />
+		<result column="cobo_name" property="coboName" />
+		<result column="cobo_mobile" property="coboMobile" />
+		<result column="dict_cert_type" property="dictCertType" />
+		<result column="cobo_cert_num" property="coboCertNum" />
+		<result column="cobo_sex" property="coboSex" />
+	</resultMap>
+	<sql id="Base_CoBorrower_List">
+		id,loan_code,cobo_name,cobo_mobile,dict_cert_type,cobo_cert_num,cobo_sex
+	</sql>
+	<select id="findCoBorrower" parameterType="map" resultMap="BaseCoBorrowerMap">
+		select
+		<include refid="Base_CoBorrower_List" />
+		from jk.t_jk_loan_coborrower
+		where loan_code = #{loanCode}
+	</select>
+	<!-- 共借人基本信息END -->
+	<update id="updateOutVisit" parameterType="com.creditharmony.loan.borrow.outvisit.enity.OutsideTaskList">
+		update jk.t_jk_outside_task_list set 
+		survey_emp_id = #{surveyEmpId}
+		,survey_end_time=#{surveyEndTime}
+		,item_distance = #{itemDistance}
+		,modify_time = #{modifyTime}
+		,modify_by = #{modifyBy}
+		where id = (select id from jk.t_jk_outside_task_list where loan_code =#{loanCode} order by create_time desc limit 1)
+	</update>
+	
+	<!-- 外访明细 -->
+  <resultMap type="com.creditharmony.loan.common.workFlow.view.LoanFlowDictEx" id="dictMap">
+  	 <id column="id" property="id" jdbcType="VARCHAR" />
+	 <result column="value" property="value" jdbcType="VARCHAR" />
+	 <result column="label" property="label" jdbcType="VARCHAR" />
+	 <result column="type" property="type" jdbcType="VARCHAR" />
+	 <collection property="dictExs" resultMap="secondDictMap" javaType="java.util.ArrayList"></collection>
+  </resultMap>
+  
+  <resultMap type="com.creditharmony.loan.common.workFlow.view.LoanFlowDictEx" id="secondDictMap">
+  	 <id column="secondId" property="id" jdbcType="VARCHAR" />
+	 <result column="secondValue" property="value" jdbcType="VARCHAR" />
+	 <result column="secondLabel" property="label" jdbcType="VARCHAR" />
+	 <result column="secondType" property="type" jdbcType="VARCHAR" />
+	 <collection property="dictExs" resultMap="thirdDictMap" javaType="java.util.ArrayList"></collection>
+  </resultMap>
+  
+  <resultMap type="com.creditharmony.loan.common.workFlow.view.LoanFlowDictEx" id="thirdDictMap">
+  	 <id column="thirdId" property="id" jdbcType="VARCHAR" />
+	 <result column="thirdValue" property="value" jdbcType="VARCHAR" />
+	 <result column="thirdLabel" property="label" jdbcType="VARCHAR" />
+	 <result column="thirdType" property="type" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <select id="getDictsByType" resultMap="dictMap" parameterType="java.lang.String">
+  	SELECT 
+  		a.id,
+  		a.value,
+  		a.label,
+  		a.type,
+  		b.id as secondId,
+  		b.value as secondValue,
+  		b.label as secondLabel,
+  		b.type as secondType,
+  		c.id as thirdId,
+  		c.value as thirdValue,
+  		c.label as thirdLabel,
+  		c.type as thirdType
+  	FROM jk.t_gl_dict a
+  	LEFT JOIN jk.t_gl_dict b on concat(a.type,'_',a.value) = b.type
+  	LEFT JOIN jk.t_gl_dict c on concat(b.type,'_',b.value) = c.type
+  	WHERE a.type = #{type}
+  	ORDER by a.sort,b.sort,c.sort
+  </select>
+  
+  <!-- 根据历史ID获取外访清单 -->
+  <select id="getInfosByRid" resultType="com.creditharmony.loan.common.workFlow.view.OutsideCheckWFInfo" parameterType="java.lang.String">
+  	SELECT
+  		a.check_json,
+  		a.dict_customer_type,
+  		lp.area_name as "liveProvince",
+  		lc.area_name as "liveCity",
+  		la.area_name as "liveArea",
+  		a.live_address,
+  		hp.area_name as "houseProvince",
+  		hc.area_name as "houseCity",
+  		ha.area_name as "houseArea",
+  		a.house_address,
+  		wp.area_name as "workUnitProvince",
+  		wc.area_name as "workUnitCity",
+  		wa.area_name as "workUnitArea",
+  		a.work_unit_address,
+  		op.area_name as "operationProvince",
+  		oc.area_name as "operationCity",
+  		oa.area_name as "operationArea",
+  		a.operation_address,
+  		a.customer_name,
+  		a.remark
+  	FROM 
+	jk.t_jk_outside_task_info a
+	LEFT JOIN jk.t_jk_outside_task_list b ON a.task_id = b.id
+	LEFT JOIN jk.t_gl_province_city lp ON a.live_province = lp.area_code
+	LEFT JOIN jk.t_gl_province_city lc ON a.live_city = lc.area_code
+	LEFT JOIN jk.t_gl_province_city la ON a.live_area = la.area_code
+	LEFT JOIN jk.t_gl_province_city hp ON a.house_province = hp.area_code
+	LEFT JOIN jk.t_gl_province_city hc ON a.house_city = hc.area_code
+	LEFT JOIN jk.t_gl_province_city ha ON a.house_area = ha.area_code
+	LEFT JOIN jk.t_gl_province_city wp ON a.work_uinit_province = wp.area_code
+	LEFT JOIN jk.t_gl_province_city wc ON a.work_unit_city = wc.area_code
+	LEFT JOIN jk.t_gl_province_city wa ON a.work_unit_area = wa.area_code
+	LEFT JOIN jk.t_gl_province_city op ON a.operation_province = op.area_code
+	LEFT JOIN jk.t_gl_province_city oc ON a.operation_city = oc.area_code
+	LEFT JOIN jk.t_gl_province_city oa ON a.operation_area = oa.area_code
+	WHERE b.loan_code = #{relationId}  order by b.create_time desc limit 1;
+  </select>
+  <select id="selectVisitType" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT visit_type
+		FROM jk."t_jk_outside_task_info" info 
+		inner join jk.t_jk_outside_task_list list on list.id=info.task_id
+		WHERE list.loan_code = #{loanCode}
+		order by list.create_time desc limit 1
+	</select>
+	
+	<resultMap type="com.creditharmony.loan.borrow.outvisit.enity.OutsideTaskList" id="outsideTaskListMap">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+		<result column="survey_emp_id" property="surveyEmpId" jdbcType="VARCHAR" />
+		<result column="item_distance" property="itemDistance" jdbcType="VARCHAR" />
+		<result column="dict_survey_status" property="dictSurveyStatus" jdbcType="VARCHAR" />
+		<result column="dict_check_type" property="dictCheckType" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="VARCHAR" />
+		<result column="create_by" property="createBy" jdbcType="VARCHAR" />
+		<result column="modify_time" property="modifyTime" jdbcType="VARCHAR" />
+		<result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+		<result column="survey_start_time" property="surveyStartTime" jdbcType="VARCHAR" />
+		<result column="survey_end_time" property="surveyEndTime" jdbcType="VARCHAR" />
+		<result column="r_status_his_id" property="rId" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="outsideTaskList">
+		id, 
+		loan_code, 
+		survey_emp_id,
+		item_distance,
+		dict_survey_status,
+		dict_check_type,
+		create_time,
+		create_by,
+		modify_time,
+		modify_by,
+		survey_start_time,
+		survey_end_time,
+		r_status_his_id
+	</sql>
+	<select id="findFinishOutsideTaskListByLoanCode" resultMap="outsideTaskListMap" parameterType="map">
+		select 	
+			<include refid="outsideTaskList"/>	
+		from jk.t_jk_outside_task_list where loan_code = #{loanCode, jdbcType=VARCHAR} and survey_end_time is not null order by survey_end_time 
+	</select>
+	<!-- 查询最新的一次外访 -->
+	<select id="selectOutsideTaskListByLoanCode" resultType="String" resultMap="outsideTaskListMap">
+		select 	
+			<include refid="outsideTaskList"/>	
+		from
+			jk.t_jk_outside_task_list
+		where
+			loan_code = #{loanCode}
+		order by
+			create_time desc
+		limit 1
+	</select>
+	<!-- 查询外访任务详情 -->
+	<select id="selectOutsideTaskInfoByTaskId" parameterType="String" resultType="com.creditharmony.loan.borrow.outvisit.enity.LoanOutsideTaskInfo">
+		select
+			id,
+			task_id,
+			dict_customer_type,
+			check_json,
+			(select area_name from jk.t_gl_province_city where id = live_province) as liveProvince,
+			(select area_name from jk.t_gl_province_city where id = live_city) as liveCity,
+			(select area_name from jk.t_gl_province_city where id = live_area) as liveArea,
+			live_address,
+			(select area_name from jk.t_gl_province_city where id = work_uinit_province) as workUinitProvince,
+			(select area_name from jk.t_gl_province_city where id = work_unit_city) as workUnitCity,
+			(select area_name from jk.t_gl_province_city where id = work_unit_area) as workUnitArea,
+			work_unit_address,
+			(select area_name from jk.t_gl_province_city where id = operation_province) as operationProvince,
+			(select area_name from jk.t_gl_province_city where id = operation_city) as operationCity,
+			(select area_name from jk.t_gl_province_city where id = operation_area) as operationArea,
+			operation_address,
+			create_by,
+			create_time,
+			modify_by,
+			modify_time,
+			customer_name,
+			telephone,
+			remark,
+			visit_work_remark,
+			visit_type
+		from 
+			jk.t_jk_outside_task_info
+		where
+			task_id = #{taskId}
+	</select>
+</mapper>

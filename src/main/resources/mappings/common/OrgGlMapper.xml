@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.OrgGlDao">
+	<sql id="orgColumns">
+		a.id,
+		a.parent_id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		a.grade,
+		a.address,
+		a.zip_code,
+		a.master,
+		a.phone,
+		a.fax,
+		a.email,
+		a.remarks,
+		a.create_by AS
+		"createBy",
+		a.create_time,
+		a.modify_by AS "modifyBy",
+		a.modify_time
+	</sql>
+
+	<select id="findByParams" resultType="com.creditharmony.loan.common.entity.OrgGl">
+		SELECT
+		<include refid="orgColumns" />
+		FROM jk.t_gl_org a
+		WHERE 1=1
+		<if test="code!=null and code!=''">
+			AND a.code = #{code}
+		</if>
+		<if test="name!=null and name!=''">
+			AND a.name = #{name}
+		</if>
+	</select>
+
+	<select id="findByParamss" resultType="com.creditharmony.loan.common.entity.OrgGl">
+		SELECT
+		<include refid="orgColumns" />
+		FROM jk.t_gl_org a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="id !=null and id!=''">
+			AND (a.id= #{id} or a.parent_id = #{id}) or a.parent_id=
+			#{rootParentId}
+		</if>
+		<if test="id==null or id==''">
+			AND a.parent_ids LIKE #{parentIds}
+		</if>
+		ORDER BY a.id
+	</select>
+
+	<insert id="insert">
+		INSERT INTO jk.t_gl_org(
+		id,
+		parent_id,
+		parent_ids,
+		area_id,
+		code,
+		name,
+		sort,
+		type,
+		grade,
+		address,
+		zip_code,
+		master,
+		phone,
+		fax,
+		email,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time,
+		remarks,
+		del_flag,
+		useable,
+		province_id,
+		city_id,
+		district_id
+		) VALUES (
+		#{id},
+		#{parent.id},
+		#{parentIds},
+		#{area.id},
+		#{code},
+		#{name},
+		#{sort},
+		#{type},
+		#{grade},
+		#{address},
+		#{zipCode},
+		#{master},
+		#{phone},
+		#{fax},
+		#{email},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime},
+		#{remarks},
+		#{delFlag},
+		#{useable},
+		#{provinceId},
+		#{cityId},
+		#{districtId}
+		)
+	</insert>
+
+<!-- 获取无纸化标识，其他需要自动可在添加Strat -->
+	<select id="get" parameterType="java.lang.String"
+		resultType="com.creditharmony.loan.common.entity.OrgGl">
+		select id,credit_paperless,car_paperless from jk.t_gl_org
+		where id =#{orgId}
+	</select>
+<!-- 获取无纸化标识，其他需要自动可在添加End -->
+
+	<update id="update">
+
+	</update>
+
+	<update id="updateParentIds">
+
+	</update>
+
+	<update id="delete">
+
+	</update>
+
+</mapper>

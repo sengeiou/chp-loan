@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.revisit.dao.ReVisitDao">
+ <resultMap type="com.creditharmony.loan.borrow.revisit.view.RevisitAndPersonInfo" id="revisitAndPersonInfo">
+     <id column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="store_name" jdbcType="VARCHAR" property="storeName" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="product_name" jdbcType="VARCHAR" property="replyProductName" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coborrowerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="identityCode" />
+    
+    <result column="loan_audit_months" jdbcType="VARCHAR" property="replyMonth" />
+    <result column="fee_month_rate" jdbcType="NUMERIC" property="monthRate" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractMoney" />
+    <result column="grant_amount" jdbcType="NUMERIC" property="lendingMoney" />
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="urgeServiceFee" />
+    
+    <result column="bank_name" jdbcType="VARCHAR" property="depositBank" />
+    <result column="bank_branch" jdbcType="VARCHAR" property="bankBranchName" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccountNumber" />
+    <result column="revisit_status" jdbcType="VARCHAR" property="revisitStatus" />
+    
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="urgentFlag" />
+    <result column="model" jdbcType="VARCHAR" property="modelLabel" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="channelName" />
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion" />
+    <result column="revisit_reason" jdbcType="VARCHAR" property="revisitReason" />
+    <result column="paperless_flag" jdbcType="VARCHAR" property="paperLessFlag" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="telesalesFlag" />
+    <result column="risklevel" jdbcType="VARCHAR" property="riskLevel" />
+    <result column="loaninfo_oldornew_flag" jdbcType="VARCHAR" property="loanInfoOldOrNewFlag" />
+    <result column="frozen_code" jdbcType="VARCHAR" property="frozenFlag" />
+    <result column="revisit_flag" jdbcType="VARCHAR" property="revisitFlag" />
+    <result column="bank_account_name" jdbcType="VARCHAR" property="accountName" />
+    <result column="bank_account_name" jdbcType="VARCHAR" property="accountName" />
+    <result column="rowid" jdbcType="VARCHAR" property="rowId" />
+    <result column="is_register" jdbcType="VARCHAR" property="ensureManFlag" />
+    <result column="bestCoborrower" property="bestCoborrower"/>
+</resultMap> 
+
+  
+  <!-- 回访失败列表 -->
+  <select id="findList"  resultMap="revisitAndPersonInfo" parameterType="com.creditharmony.loan.borrow.revisit.view.RevisitAndPersonInfo">
+		select 
+		 ROW_NUMBER() OVER() AS rowid,
+		 a.loan_code,
+         a.contract_code,
+         a.apply_id,
+         a.contract_version,
+         a.model,
+         a.cobo_name,
+         e.name as store_name,
+         d.customer_name,
+         f.product_name,
+         d.customer_cert_num,
+         b.loan_audit_months,
+         trunc(fe.fee_month_rate,3) fee_month_rate,
+         a.contract_amount,
+         g.grant_amount,
+         fe.fee_urged_service,
+         bank.bank_name,
+         bank.bank_branch,
+         bank.bank_account,
+         bank.bank_account_name,
+         b.loan_urgent_flag,
+         b.loan_flag,
+         a.revisit_status,
+         a.revisit_reason,
+         a.paperless_flag,
+         d.customer_telesales_flag,
+         (case when rating.reconsider_risk_level is null then rating.verify_risk_level else rating.reconsider_risk_level end) risklevel,
+         b.loaninfo_oldornew_flag,
+         '失败' revisit_flag ,
+         (case when a.is_register is null then 0 else 1 end) is_register,
+         (select lb.cobo_name from jk.t_jk_audit_result re left join jk.t_jk_loan_coborrower lb on re.best_coborrower_id = lb.id where re.loan_code  = b.loan_code order by re.create_time desc limit 1) as bestCoborrower <!-- 最优自然保证人 -->   
+         from (SELECT a.loan_code, a.contract_code, a.contract_version, a.apply_id, a.model, a.contract_amount,a.push_time,a.legal_man,
+			    string_agg( c.cobo_name,',') cobo_name, a.revisit_status,a.revisit_reason, a.paperless_flag,a.is_register
+			FROM jk.t_jk_contract A LEFT JOIN jk.t_jk_loan_coborrower C ON a.loan_code = c.loan_code GROUP BY a.loan_code,a.contract_code) a 
+      	 left join jk.t_jk_loan_info b on a.loan_code=b.loan_code
+      	 left join jk.t_gl_org e on b.loan_store_orgid=e.id 
+      	 left join jk.t_jk_loan_customer d on a.loan_code=d.loan_code
+      	 left join jk.t_gl_jk_product f on b.loan_audit_product=f.product_code
+      	 left join jk.t_jk_contract_fee fe on a.contract_code=fe.contract_code
+      	 left join jk.t_jk_loan_grant g on a.contract_code=g.contract_code
+      	 left join jk.t_jk_loan_bank bank on bank.loan_code=a.loan_code
+      	 left join jk.t_jk_audit_rating rating on rating.loan_code= a.loan_code
+      	 where  a.revisit_status='-1' and b.dict_loan_status='74' 
+      	 <if test="customerName != null  and customerName!=''">
+	        and d.customer_name LIKE '%${customerName}%'
+	     </if> 
+	     <if test="contractCode != null  and contractCode!=''">
+	        and a.contract_code = #{contractCode}
+	     </if>
+	     <if test="channelName != null  and channelName!=''">
+	        and b.loan_flag = #{channelName}
+	     </if>
+	     <if test="contractVersion != null  and contractVersion!=''">
+	        and a.contract_version = #{contractVersion}
+	     </if> 
+	     <if test="identityCode != null  and identityCode!=''">
+	        and d.customer_cert_num = #{identityCode}
+	     </if>
+	     <if test="replyProductName != null  and replyProductName!=''">
+	        and b.loan_audit_product = #{replyProductName}
+	      </if>
+	      <if test="urgentFlag != null  and urgentFlag!=''">
+	        and b.loan_urgent_flag = #{urgentFlag}
+	      </if>
+	      <if test="storeOrgId != null and storeOrgId !=''">
+	        and b.loan_store_orgid in  
+	        <foreach item="item" index="index" collection="storeOrgId" open="(" separator="," close=")">  
+	       			 #{item}  
+	      	</foreach> 
+      	</if> 
+      	<if test="modelLabel != null  and modelLabel !=''">
+	        and a.model = #{modelLabel}
+	    </if>
+	    <if test="riskLevel != null  and riskLevel!=''">
+	        and rating.verify_risk_level = #{riskLevel}
+	    </if> 
+	    <if test="telesalesFlag != null  and telesalesFlag!=''">
+	        and d.customer_telesales_flag = #{telesalesFlag}
+	    </if> 
+	    <if test="paperLessFlag != null  and paperLessFlag!=''">
+	        and a.paperless_flag = #{paperLessFlag}
+	    </if>
+	    <if test="frozenFlag != null and frozenFlag !='-1' and frozenFlag =='1'.toString()">
+	  		and (trim(b.frozen_code)!='' or  b.frozen_code is not null)
+	    	
+	    </if>
+	    <if test="frozenFlag != null and frozenFlag !='-1' and frozenFlag =='0'.toString()">
+	  		and (trim(b.frozen_code)='' or  b.frozen_code is null)
+	    	
+	    </if>
+	    <if test="monthRate != null and monthRate !=''">
+	        and fe.fee_month_rate=#{monthRate}
+      	</if> 
+      	<if test="registFlag != null and registFlag !=''">
+	        and a.is_register=#{registFlag}
+      	</if> 
+      	<if test="ensureManFlag != null and ensureManFlag !='' and ensureManFlag =='1'.toString()">
+	      	 
+		        and a.legal_man is not null
+		      
+      	</if> 
+      	<if test="ensureManFlag != null and ensureManFlag !='' and ensureManFlag =='0'.toString()">
+	      		and a.legal_man is  null
+	        
+      	</if>
+      	<if test="loanCode != null and loanCode !=''">
+	        and b.loan_code =#{loanCode}  
+      	</if>
+      	<if test="applyId != null and applyId !=''">
+	        and a.apply_id =#{applyId}  
+      	</if>
+      	<if test="monthRateAll != null and monthRateAll !=''">
+	        and trim(to_char(fe.fee_month_rate,'9990D999')) in  
+	        <foreach item="item" index="index" collection="monthRateAll" open="(" separator="," close=")">  
+	       			 #{item}  
+	      	</foreach> 
+      	</if> 
+      	order by a.push_time desc 
+  </select>
+  
+   <!-- 回访失败列表 -->
+  <select id="findExportList"  resultMap="revisitAndPersonInfo" parameterType="com.creditharmony.loan.borrow.revisit.view.RevisitAndPersonInfo">
+		select 
+		 ROW_NUMBER() OVER() AS rowid,
+		 a.loan_code,
+         a.contract_code,
+         a.apply_id,
+         a.contract_version,
+         a.model,
+         a.cobo_name,
+         e.name as store_name,
+         d.customer_name,
+         f.product_name,
+         d.customer_cert_num,
+         b.loan_audit_months,
+         fe.fee_month_rate,
+         a.contract_amount,
+         g.grant_amount,
+         fe.fee_urged_service,
+         bank.bank_name,
+         bank.bank_branch,
+         bank.bank_account,
+         bank.bank_account_name,
+         b.loan_urgent_flag,
+         b.loan_flag,
+         a.revisit_status,
+         a.revisit_reason,
+         a.paperless_flag,
+         d.customer_telesales_flag,
+         (case when rating.reconsider_risk_level is null then rating.verify_risk_level else rating.reconsider_risk_level end) risklevel,
+         b.loaninfo_oldornew_flag,
+         '失败' revisit_flag ,
+         (case when a.is_register is null then 0 else 1 end) is_register   
+         from (SELECT a.loan_code, a.contract_code, a.contract_version, a.apply_id, a.model, a.contract_amount,a.push_time,a.legal_man,
+			    string_agg( c.cobo_name,',') cobo_name, a.revisit_status,a.revisit_reason, a.paperless_flag,a.is_register
+			FROM jk.t_jk_contract A LEFT JOIN jk.t_jk_loan_coborrower C ON a.loan_code = c.loan_code GROUP BY a.loan_code,a.contract_code) a 
+      	 left join jk.t_jk_loan_info b on a.loan_code=b.loan_code
+      	 left join jk.t_gl_org e on b.loan_store_orgid=e.id 
+      	 left join jk.t_jk_loan_customer d on a.loan_code=d.loan_code
+      	 left join jk.t_gl_jk_product f on b.loan_audit_product=f.product_code
+      	 left join jk.t_jk_contract_fee fe on a.contract_code=fe.contract_code
+      	 left join jk.t_jk_loan_grant g on a.contract_code=g.contract_code
+      	 left join jk.t_jk_loan_bank bank on bank.loan_code=a.loan_code
+      	 left join jk.t_jk_audit_rating rating on rating.loan_code= a.loan_code
+      	 where  a.revisit_status='-1' and b.dict_loan_status='74' 
+      	 <if test="customerName != null  and customerName!=''">
+	        and d.customer_name LIKE '%${customerName}%'
+	     </if> 
+	     <if test="contractCode != null  and contractCode!=''">
+	        and a.contract_code = #{contractCode}
+	     </if>
+	     <if test="channelName != null  and channelName!=''">
+	        and b.loan_flag = #{channelName}
+	     </if>
+	     <if test="contractVersion != null  and contractVersion!=''">
+	        and a.contract_version = #{contractVersion}
+	     </if> 
+	     <if test="identityCode != null  and identityCode!=''">
+	        and d.customer_cert_num = #{identityCode}
+	     </if>
+	     <if test="replyProductName != null  and replyProductName!=''">
+	        and b.loan_audit_product = #{replyProductName}
+	      </if>
+	      <if test="urgentFlag != null  and urgentFlag!=''">
+	        and b.loan_urgent_flag = #{urgentFlag}
+	      </if>
+	      <if test="storeOrgId != null and storeOrgId !=''">
+	        and b.loan_store_orgid in  
+	        <foreach item="item" index="index" collection="storeOrgId" open="(" separator="," close=")">  
+	       			 #{item}  
+	      	</foreach> 
+      	</if> 
+      	<if test="modelLabel != null  and modelLabel !=''">
+	        and a.model = #{modelLabel}
+	    </if>
+	    <if test="riskLevel != null  and riskLevel!=''">
+	        and rating.verify_risk_level = #{riskLevel}
+	    </if> 
+	    <if test="telesalesFlag != null  and telesalesFlag!=''">
+	        and d.customer_telesales_flag = #{telesalesFlag}
+	    </if> 
+	    <if test="paperLessFlag != null  and paperLessFlag!=''">
+	        and a.paperless_flag = #{paperLessFlag}
+	    </if>
+	    <if test="frozenFlag != null and frozenFlag !='-1' and frozenFlag =='1'.toString()">
+	  		and (trim(b.frozen_code)!='' or  b.frozen_code is not null)
+	    	
+	    </if>
+	    <if test="frozenFlag != null and frozenFlag !='-1' and frozenFlag =='0'.toString()">
+	  		and (trim(b.frozen_code)='' or  b.frozen_code is null)
+	    	
+	    </if>
+	    <if test="monthRate != null and monthRate !=''">
+	        and fe.fee_month_rate=#{monthRate}
+      	</if> 
+      	<if test="registFlag != null and registFlag !=''">
+	        and a.is_register=#{registFlag}
+      	</if> 
+      	<if test="ensureManFlag != null and ensureManFlag !='' and ensureManFlag =='1'.toString()">
+	      	 
+		        and a.legal_man is not null
+		      
+      	</if> 
+      	<if test="ensureManFlag != null and ensureManFlag !='' and ensureManFlag =='0'.toString()">
+	      		and a.legal_man is  null
+	        
+      	</if>
+      	<if test="loanCode != null and loanCode !=''">
+	        and b.loan_code =#{loanCode}  
+      	</if>
+      	<if test="applyId != null and applyId !=''">
+	        and a.apply_id =#{applyId}  
+      	</if>
+      	<if test="monthRateAll != null and monthRateAll !=''">
+	        and trim(to_char(fe.fee_month_rate,'9990D999')) in  
+	        <foreach item="item" index="index" collection="monthRateAll" open="(" separator="," close=")">  
+	       			 #{item}  
+	      	</foreach> 
+      	</if> 
+      	 order by a.push_time desc
+  </select>
+ 
+</mapper>
+	

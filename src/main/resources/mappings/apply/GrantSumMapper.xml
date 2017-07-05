@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.GrantSumDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.GrantSumEx">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="sequenceNumber"  property="sequenceNumber" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coboName" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="audit_amount" jdbcType="NUMERIC" property="auditAmount" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractAmount" />
+    <result column="fee_payment_amount" jdbcType="NUMERIC" property="feePaymentAmount" />
+    <result column="fee_petition" jdbcType="NUMERIC" property="feePetition" />
+    <result column="fee_consult" jdbcType="NUMERIC" property="feeConsult" />
+    <result column="fee_audit_amount" jdbcType="NUMERIC" property="feeAuditAmount" />
+    <result column="fee_service" jdbcType="NUMERIC" property="feeService" />
+    <result column="fee_info_service" jdbcType="NUMERIC" property="feeInfoService" />
+    <result column="fee_count" jdbcType="NUMERIC" property="feeCount" />
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="feeUrgedService" />
+    <result column="product_name" jdbcType="VARCHAR" property="productType" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag" />
+    <result column="contract_months" jdbcType="NUMERIC" property="contractMonths" />
+    <result column="fee_all_raio" jdbcType="NUMERIC" property="feeAllRaio" />
+    <result column="fee_month_rate" jdbcType="NUMERIC" property="feeMonthRate" />
+    <result column="fee_expedited" jdbcType="NUMERIC" property="feeExpedited" />
+    <result column="contract_fact_day" jdbcType="TIMESTAMP" property="contractFactDay" />
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion"/>
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="loanUrgentFlag" />
+    <result column="name" jdbcType="VARCHAR" property="storeName" />
+    <result column="riskLevel" jdbcType="VARCHAR" property="riskLevel" />
+  </resultMap>
+  <!-- 根据放款id查询要导出的汇总表列表信息 -->
+  <select id="getSumList" resultMap="BaseResultMap">
+	select ROW_NUMBER() OVER(order by d.order_field) sequenceNumber,
+		a.id,
+		d.apply_id,
+		a.contract_code,
+		(c.customer_name || 
+                 CASE  when  w.cobo_name is not null then ';'|| w.cobo_name else '' end ) as customerName,    
+		round(audit_amount,2) as auditAmount,
+		round(contract_amount,2) as contractAmount,
+		round(fee_payment_amount,2) as feePaymentAmount,
+		round(fee_petition,2) as feePetition,
+		round(fee_consult,2) as feeConsult,
+		round(fee_audit_amount,2) as feeAuditAmount,
+		round(fee_service,2) as feeService,
+		round(fee_info_service,2) as feeInfoService,
+        round(fee_count,2) as feeCount,
+        round(fee_urged_service,2) as feeUrgedService,
+        product_name,
+        loan_flag,
+        loan_urgent_flag,
+        contract_months,
+        (case when rat.reconsider_risk_level is null then rat.verify_risk_level else rat.reconsider_risk_level end) as riskLevel,
+        round(fee_all_raio,3) fee_all_raio,
+        round(fee_month_rate,3) fee_month_rate,
+        round(fee_expedited,2) as feeExpedited,
+        contract_due_day as contract_fact_day,
+        CONTRACTVERSION.LABEL contract_version,
+        o.name as storeName,
+        e.paperless_flag,
+    	case when e.company_name is not null 
+    	 then '有' else '无' end as ensure_flag,
+    	 e.contract_replay_day AS CONTRACTREPLAYDAY
+    	 ,NVL(f.MONTH_FEE_SERVICE,0)   MONTH_FEE_SERVICE
+    	 ,BANK.bank_signing_platform
+    	 ,(SELECT DICT.LABEL FROM JK.T_GL_DICT DICT WHERE DICT.TYPE= 'jk_deduct_plat' AND DICT.VALUE = BANK.BANK_SIGNING_PLATFORM) BANK_SIGNING_PLATFORM_STRING
+    	 ,C.CUSTOMER_TELESALES_FLAG
+    	 ,(SELECT DICT.LABEL FROM JK.T_GL_DICT DICT WHERE DICT.TYPE= 'jk_telemarketing' AND DICT.VALUE = nvl(C.CUSTOMER_TELESALES_FLAG,0)) CUSTOMER_TELESALES_FLAG_STRING
+    	 ,NVL(F.MONTH_FEE_NXD,0) MONTH_FEE_NXD
+    	 ,NVL(e.CONTRACT_MONTH_REPAY_TOTAL,0) AS CONTRACT_MONTH_REPAY_TOTAL
+	from
+		jk.t_jk_loan_grant a 
+		LEFT JOIN jk.t_jk_loan_info d ON d.loan_code = a.loan_code
+		LEFT JOIN jk.t_gl_org o ON o.id = d.loan_store_orgid 
+		LEFT JOIN jk.t_jk_loan_customer c ON c.loan_code = a.loan_code
+		LEFT JOIN  
+		(select loan_code,STRING_AGG(cobo_name,';') as cobo_name from jk.t_jk_loan_coborrower group by loan_code) w on w.loan_code = a.loan_code  
+		LEFT JOIN jk.t_jk_contract e ON e.contract_code  =a.contract_code
+		LEFT JOIN JK.t_jk_contract_fee f ON f.contract_code=a.contract_code
+		LEFT JOIN jk.t_gl_jk_product p ON p.product_code=e.product_type
+		LEFT JOIN jk.t_jk_audit_rating rat ON rat.loan_code=a.loan_code
+		LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_contract_ver') CONTRACTVERSION ON e.CONTRACT_VERSION = CONTRACTVERSION.VALUE
+		LEFT JOIN JK.T_JK_LOAN_BANK BANK ON BANK.LOAN_CODE = D.LOAN_CODE and BANK.bank_top_flag = '1'   AND BANK.repayment_flag = '0'   <!--  BANK_TOP_FALG 1 置顶，dict_maintain-status 2 以维护，repayment_falg 0 放款  -->
+		
+	where e.apply_id in
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+       	order by d.order_field asc 
+  </select>
+  
+  <!-- 根据放款id查询要导出的打款表列表信息 -->
+  <select id="getSumListByloanCodes" resultMap="BaseResultMap">
+	select ROW_NUMBER() OVER(order by d.order_field) sequenceNumber,
+		a.id,
+		d.apply_id,
+		a.contract_code,
+		case loaninfo_oldornew_flag when '1' then c.customer_name else (c.customer_name || 
+                 CASE  when  w.cobo_name is not null then ';'|| w.cobo_name else '' end ) end as customerName,
+		round(audit_amount,2) as auditAmount,
+		round(contract_amount,2) as contractAmount,
+		round(fee_payment_amount,2) as feePaymentAmount,
+		round(fee_petition,2) as feePetition,
+		round(fee_consult,2) as feeConsult,
+		round(fee_audit_amount,2) as feeAuditAmount,
+		round(fee_service,2) as feeService,
+		round(fee_info_service,2) as feeInfoService,
+        round(fee_count,2) as feeCount,
+        round(fee_urged_service,2) as feeUrgedService,
+        product_name,
+        loan_flag,
+        loan_urgent_flag,
+        contract_months,
+        (case when rat.reconsider_risk_level is null then rat.verify_risk_level else rat.reconsider_risk_level end) as riskLevel,
+        round(fee_all_raio,3) fee_all_raio,
+        round(fee_month_rate,3) fee_month_rate,
+        round(fee_expedited,2) as feeExpedited,
+        contract_due_day contract_fact_day,
+        e.contract_version,
+        o.name as storeName,
+        M6.LABEL,
+        M7.LABEL CHANELL_FLAG,Ff.LABEL PAPERLESS,
+    	   case e.is_register when '1' then '是'
+    	     else '否' end as ensureman,
+    	e.contract_replay_day AS CONTRACTREPLAYDAY,
+    	DEDUCTPLAT.label AS BANKSIGNINGPLATFORM,
+    	(select cobo_name from jk.t_jk_loan_coborrower where id=(
+		  select best_coborrower_id from jk.t_jk_audit_result t where loan_code=d.loan_code order by create_time desc limit 1
+		 )) naturalPersonName,
+		round(month_fee_service,2) as month_fee_service,
+        round(contract_month_repay_total,2) as contract_month_repay_total,
+        c.customer_telesales_flag
+	from
+		jk.t_jk_loan_grant a 
+		LEFT JOIN jk.t_jk_loan_info d ON d.loan_code = a.loan_code 
+		LEFT JOIN jk.t_gl_org o ON o.id = d.loan_store_orgid 
+		LEFT JOIN jk.t_jk_loan_customer c ON c.loan_code = a.loan_code
+		LEFT JOIN (select loan_code,STRING_AGG(cobo_name,';') as cobo_name from jk.t_jk_loan_coborrower group by loan_code) w on w.loan_code = a.loan_code		
+		LEFT JOIN jk.t_jk_contract e ON e.contract_code =a.contract_code
+		LEFT JOIN JK.t_jk_contract_fee f ON f.contract_code=a.contract_code
+		LEFT JOIN jk.t_jk_audit_rating rat ON rat.loan_code=d.old_loan_code
+		LEFT JOIN jk.t_gl_jk_product p ON p.product_code=e.product_type
+		LEFT JOIN JK.T_GL_DICT M6 ON D.LOAN_URGENT_FLAG = M6.VALUE AND M6.TYPE = 'jk_urgent_flag'
+		LEFT JOIN JK.T_GL_DICT M7 ON D.loan_flag = M7.VALUE AND M7.TYPE = 'jk_channel_flag'
+		LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'yes_no') Ff ON E.PAPERLESS_FLAG = Ff.VALUE
+		LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'yes_no') S ON E.IS_REGISTER = S.VALUE
+		LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_contract_ver') CONTRACTVERSION ON E.CONTRACT_VERSION = CONTRACTVERSION.VALUE
+		LEFT JOIN jk.t_jk_loan_bank b ON (b.repayment_flag = '0' or b.repayment_flag is null) AND b.bank_top_flag ='1' and b.loan_code=d.loan_code
+		LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_deduct_plat') DEDUCTPLAT ON b.bank_signing_platform = DEDUCTPLAT.VALUE
+	<where>
+		a.loan_code IN
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+	  		#{item}
+		</foreach>
+  	</where>
+  	    order by order_field 
+  </select>
+</mapper>

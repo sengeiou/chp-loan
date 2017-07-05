@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.EarlyFinishConfirmDao">
+	<!-- 获取提前结清待确认的数据列表 --> 
+    <select id="findPayback" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackCharge">
+    SELECT * FROM (
+    	SELECT 
+    		b.id,m1.name "loanInfo.loanStoreOrgName",a.contract_code contractCode,d.LOAN_CUSTOMER_NAME "loanCustomer.customerName",
+    		c.CONTRACT_AMOUNT "contract.contractAmount",e.URGE_DECUTE_MOENY "urgeServicesMoney.urgeDecuteMoeny",
+    		f.GRANT_AMOUNT "loanGrant.grantAmount",c.CONTRACT_MONTHS "contract.contractMonths",c.CONTRACT_REPLAY_DAY "contract.contractReplayDay",
+			a.PAYBACK_MAX_OVERDUEDAYS "payback.paybackMaxOverduedays",
+			b.apply_bule_amount "applyBuleAmount",a.PAYBACK_DAY "payback.paybackDay",b.create_time "createTime",
+			m2.label "loanInfo.dictLoanStatusLabel",a.PAYBACK_BULE_AMOUNT "payback.paybackBackAmount",
+			m3.label "loanInfo.loanFlagLabel",CASE WHEN d.model='1' THEN 'TG' ELSE NULL END "loanInfo.modelLabel",
+			CASE WHEN g.CUSTOMER_TELESALES_FLAG='1' THEN '是' ELSE '否' END "loanCustomer.customerTelesalesFlagLabel",
+			round(SUM(COALESCE(h.MONTH_INTEREST_PUNISHSHOULD,0)+COALESCE(CASE WHEN c.contract_version >= '4' THEN 0 ELSE h.MONTH_PENALTY_SHOULD END,0)+
+				COALESCE(h.MONTH_LATE_FEE,0)-COALESCE(h.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(h.MONTH_PUNISH_REDUCTION,0)-
+			    COALESCE(h.MONTH_PENALTY_ACTUAL,0)-COALESCE(h.MONTH_PENALTY_REDUCTION,0)-COALESCE(h.ACTUAL_MONTH_LATE_FEE,0)-COALESCE(h.MONTH_LATE_FEE_REDUCTION,0)),2) penaltyTotalAmount,
+			MAX(CASE WHEN h.DICT_MONTH_STATUS='0' THEN h.MONTH_BEFORE_FINISH_AMOUNT ELSE 0 END) settleTotalAmount
+		FROM jk.t_jk_payback a left join jk.t_jk_payback_charge b on a.contract_code=b.contract_code and b.charge_status='2' AND b.dict_offset_type = '3'
+			left join jk.t_jk_contract c on a.contract_code=c.contract_code
+			left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+			left join jk.T_JK_URGE_SERVICES_AMOUNT e on a.contract_code=e.contract_code AND (e.return_logo='0' or e.return_logo is null)
+			left join jk.T_JK_LOAN_GRANT f on a.contract_code=f.contract_code
+			left join jk.t_jk_loan_customer g on d.loan_code=g.loan_code
+			left join jk.T_JK_PAYBACK_MONTH h on a.contract_code=h.contract_code
+			left join jk.t_gl_org m1 on d.LOAN_STORE_ORGID=m1.id
+			left join jk.t_gl_dict m2 on m2.type='jk_loan_apply_status' and m2.value=d.dict_loan_status
+			left join jk.t_gl_dict m3 on m3.type='jk_channel_flag' and m3.value=d.loan_flag
+		WHERE a.dict_pay_status='6'
+		<if test="contractCode!= null and !contractCode.equals('')">
+			AND a.contract_code  = #{contractCode}
+		</if>
+		<if test="payback !=null and  payback.paybackDay!= null">
+			AND a.payback_day = #{payback.paybackDay}
+		</if>
+		<if test="loanCustomer!= null and loanCustomer.customerName!=null and ! loanCustomer.customerName.equals('')">
+			AND g.customer_name like '%'||#{loanCustomer.customerName}||'%'
+		</if>
+		<if test="loanInfo != null and loanInfo.loanFlag!= null and !loanInfo.loanFlag.equals('')">
+			AND d.loan_flag = #{loanInfo.loanFlag}
+		</if>
+		<if test="loanInfo != null and loanInfo.model != null and !loanInfo.model.equals('')">
+			AND d.model = #{loanInfo.model}
+		</if>
+		<if test=" loanInfo != null and  loanInfo.dictSourceType!= null and !loanInfo.dictSourceType.equals('')">
+			AND a.dict_source_type = #{loanInfo.dictSourceType}
+		</if>
+		<if test="loanCustomer!= null and loanCustomer.customerTelesalesFlag!= null and !loanCustomer.customerTelesalesFlag.equals('')">
+			AND g.customer_telesales_flag = #{loanCustomer.customerTelesalesFlag}
+		</if>
+		<!-- 下边三条日期的查询条件 -->
+		<if test="beginDate != null">
+		   <![CDATA[AND b.create_time >= #{beginDate}]]>
+		</if>
+		<if test="endDate != null">
+		   <![CDATA[AND b.create_time <= #{endDate}]]>
+		</if>
+		<if test="beginDate != null  and endDate != null ">
+			AND b.create_time between #{beginDate} and #{endDate}
+		</if>
+		<if test="orgList !=null and orgList.length > 0">
+  			AND d.loan_store_orgid IN 
+  			<foreach item="item" index="index" collection="orgList" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+	  	</if>
+	  	<if test="idList !=null and idList.length > 0">
+			and b.id in 
+			<foreach item="item" index="index" collection="idList" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	  	GROUP BY b.id,m1.name,a.contract_code,d.LOAN_CUSTOMER_NAME,c.CONTRACT_AMOUNT,e.URGE_DECUTE_MOENY,f.GRANT_AMOUNT,
+			c.CONTRACT_MONTHS,c.CONTRACT_REPLAY_DAY,a.PAYBACK_MAX_OVERDUEDAYS,b.settle_total_amount,b.apply_bule_amount,
+			a.PAYBACK_DAY,b.create_time,m2.label,g.CUSTOMER_TELESALES_FLAG,m3.label,d.model,a.PAYBACK_BULE_AMOUNT
+		) tb WHERE 1=1
+		<if test="publishStart != null">
+		   <![CDATA[AND tb.penaltyTotalAmount >= #{publishStart}]]>
+		</if>
+		<if test="publishEnd != null">
+		   <![CDATA[AND tb.penaltyTotalAmount <= #{publishEnd}]]>
+		</if>
+		
+	</select>
+	
+	<!-- 获取提前结清待确认的明细信息 --> 
+    <select id="findPaybackBy" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackCharge">
+    	SELECT b.id,a.id "payback.id",c.CONTRACT_VERSION "contract.contractVersion",i.id "paybackMonth.id",c.CONTRACT_MONTHS "contract.contractMonths",
+    		d.dict_loan_status "loanInfo.dictLoanStatus",a.dict_pay_status "payback.dictPayStatus",c.loan_code "contract.loanCode",
+    		d.loan_flag "loanInfo.loanFlag",d.id "loanInfo.id",a.payback_current_month "payback.paybackCurrentMonth",
+    		a.contract_code contractCode,d.LOAN_CUSTOMER_NAME "loanCustomer.customerName",m1.name "loanInfo.loanStoreOrgName",
+    		c.CONTRACT_AMOUNT "contract.contractAmount",f.GRANT_AMOUNT "loanGrant.grantAmount",m2.label "loanInfo.dictLoanStatusLabel",
+    		a.PAYBACK_MONTH_AMOUNT "payback.paybackMonthAmount",h.MonthAmountPayactual "paybackMonth.monthsAomuntPaybacked",
+    		e.URGE_DECUTE_MOENY "urgeServicesMoney.urgeDecuteMoeny",a.PAYBACK_MAX_OVERDUEDAYS "payback.paybackMaxOverduedays",
+    		h.penaltyInterest "paybackMonth.penaltyInterest",h.PaybackedSum "paybackMonth.overDueAmontPaybackedSum",
+    		b.create_time "createTime",
+    		CASE WHEN COALESCE(h.FinishAmount,0)+COALESCE(h.penaltyInterest,0)-COALESCE(a.PAYBACK_BULE_AMOUNT,0)>0 
+     			 THEN COALESCE(h.FinishAmount,0)+COALESCE(h.penaltyInterest,0)-COALESCE(a.PAYBACK_BULE_AMOUNT,0) ELSE 0 END "paybackMonth.monthBeforeReductionAmount",
+     		h.creditAmount "paybackMonth.creditAmount",
+			(COALESCE(h.FinishAmount,0)+COALESCE(h.penaltyInterest,0)) "settleTotalAmount",b.apply_bule_amount applyBuleAmount,
+			a.PAYBACK_BULE_AMOUNT "payback.paybackBuleAmount",h.FinishAmount "paybackMonth.monthBeforeFinishAmount"
+		FROM jk.t_jk_payback_charge b left join jk.t_jk_payback a on a.contract_code=b.contract_code
+			left join jk.t_jk_contract c on a.contract_code=c.contract_code
+			left join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+			left join jk.T_JK_URGE_SERVICES_AMOUNT e on a.contract_code=e.contract_code 
+			and (e.return_logo='0' or e.return_logo is null)
+			left join jk.T_JK_LOAN_GRANT f on a.contract_code=f.contract_code
+			left join jk.t_jk_loan_customer g on d.loan_code=g.loan_code
+			left join (
+					SELECT MM.CONTRACT_CODE,SUM(COALESCE(MONTH_CAPITAL_PAYACTUAL,0)+COALESCE(MONTH_INTEREST_PAYACTUAL,0)+COALESCE(ACTUAL_MONTH_FEE_SERVICE,0)) MonthAmountPayactual,
+						round(SUM(COALESCE(MONTH_INTEREST_PUNISHSHOULD,0)+
+						COALESCE(CASE WHEN CC.CONTRACT_VERSION >= '4' THEN 0 ELSE MONTH_PENALTY_SHOULD END,0)+
+						COALESCE(MONTH_LATE_FEE,0)-COALESCE(MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(MONTH_PUNISH_REDUCTION,0)-
+						COALESCE(MONTH_PENALTY_ACTUAL,0)-COALESCE(MONTH_PENALTY_REDUCTION,0)-COALESCE(ACTUAL_MONTH_LATE_FEE,0)-COALESCE(MONTH_LATE_FEE_REDUCTION,0)),2) penaltyInterest,
+						SUM(COALESCE(MONTH_INTEREST_PUNISHACTUAL,0)+COALESCE(MONTH_PENALTY_ACTUAL,0)+COALESCE(ACTUAL_MONTH_LATE_FEE,0)) PaybackedSum,
+						SUM(COALESCE(MONTH_PUNISH_REDUCTION,0)+COALESCE(MONTH_PENALTY_REDUCTION,0)+COALESCE(MONTH_LATE_FEE_REDUCTION,0)) creditAmount,
+						MAX(CASE WHEN DICT_MONTH_STATUS='0' THEN MONTH_BEFORE_FINISH_AMOUNT ELSE 0 END) FinishAmount
+					FROM jk.T_JK_PAYBACK_MONTH MM,JK.T_JK_CONTRACT CC WHERE MM.CONTRACT_CODE = CC.CONTRACT_CODE
+					 AND MM.CONTRACT_CODE=#{contractCode} 
+					GROUP BY MM.CONTRACT_CODE
+				) h on b.contract_code=h.contract_code
+			left join jk.T_JK_PAYBACK_MONTH i on h.contract_code=i.contract_code and h.FinishAmount=i.MONTH_BEFORE_FINISH_AMOUNT
+			left join jk.t_gl_org m1 on d.LOAN_STORE_ORGID=m1.id
+			left join jk.t_gl_dict m2 on m2.type='jk_loan_apply_status' and m2.value=d.dict_loan_status
+		WHERE b.contract_code=#{contractCode} and b.id=#{id} and b.charge_status='2' AND b.dict_offset_type = '3'	
+	</select>
+	
+	<!-- 获取当前期及以后所有期的期供 -->
+	<select id="getAllPaybackMonth"
+		resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+		select
+		pm.id,
+		pm.contract_code,
+		pm.months,
+		pm.month_penalty_should,<!-- 应还违约金 -->
+		pm.month_penalty_actual,<!-- 实还违约金 -->
+		pm.month_fee_service,<!-- 应还分期服务费 -->
+		pm.month_pay_amount,<!-- 应还本金 -->
+		pm.month_interest_backshould,<!-- 应还利息 -->
+		pm.month_capital_payactual,<!-- 实还本金 -->
+		pm.month_interest_payactual,<!-- 实还利息 -->
+		pm.actual_month_fee_service,<!-- 实还分期服务费 -->
+		pm.month_before_finish_amount,<!-- 一次性提前结清金额 -->
+		pm.month_pay_day,<!-- 还款日 -->
+		pm.month_pay_actualday,
+		pm.is_overdue,
+		pm.month_before_reduction_amount,
+		pm.month_interest_punishshould,
+		pm.month_interest_punishactual,
+		pm.month_punish_reduction,
+		pm.month_penalty_reduction,
+		pm.month_overdue_days,
+		pm.dict_month_status,
+		pm.month_fee_consult,
+		pm.month_mid_fee_service,
+		pm.month_late_fee,
+		pm.actual_month_late_fee,
+		pm.month_late_fee_reduction,
+		pm.month_pay_total,
+		pm.month_residue_payactual,
+		pm.modify_time
+		from jk.t_jk_payback_month pm 
+		where pm.dict_month_status = '0'
+		and pm.contract_code=#{contractCode} order by months
+	</select>
+	<!-- 修改期供表中的提前结清实还违约金 -->
+	<update id="updateMonthPenalty">
+		UPDATE jk.t_jk_payback_month
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="monthPenaltyActual != null and monthPenaltyActual != '' ">
+				month_penalty_actual = #{monthPenaltyActual},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</trim>
+		WHERE id = #{id}
+	</update>
+	<!-- 修改期供的实还分期服务费和实还本金和实还利息 -->
+	<update id="updatePaybackMonth">
+		UPDATE jk.t_jk_payback_month
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="monthCapitalPayactual != null ">
+				month_capital_payactual=#{monthCapitalPayactual},
+			</if>
+			<if test="monthInterestPayactual != null">
+				month_interest_payactual=#{monthInterestPayactual},
+			</if>
+			<if test="monthPayActualday != null">
+			    month_pay_actualday=#{monthPayActualday},
+			</if>
+			<if test="dictMonthStatus != null and dictMonthStatus != ''">
+				dict_month_status = #{dictMonthStatus},
+			</if>
+			<if test="reductionBy != null">
+			    reduction_by = #{reductionBy},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</trim>
+		WHERE id = #{id}
+	</update>
+
+	<!-- 修改期供的状态 -->
+	<!--<update id="updateMonthStatus">
+		UPDATE jk.t_jk_payback_month
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="dictMonthStatus != null and dictMonthStatus != ''">
+				dict_month_status = #{dictMonthStatus},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</trim>
+		WHERE id = #{id}
+	</update>
+    -->
+	<!-- 修改冲抵申请表中的冲抵申请状态为 已冲抵3 -->
+	<update id="updateChargeStatus">
+		UPDATE jk.t_jk_payback_charge
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="chargeStatus != null and chargeStatus != ''">
+				charge_status=#{chargeStatus},
+			</if>
+			<if test="returnReason != null and returnReason != '' ">
+				return_reason=#{returnReason},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</trim>
+		WHERE id = #{id}
+	</update>
+
+	<!-- 修改蓝补金额 -->
+	<update id="updateBuleAmount" parameterType="com.creditharmony.loan.borrow.payback.entity.Payback">
+		UPDATE jk.t_jk_payback
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="paybackBuleAmount != null ">
+				payback_bule_amount=#{paybackBuleAmount},
+			</if>
+			<if test="paybackCurrentMonth != null">
+				payback_current_month = #{paybackCurrentMonth},
+			</if>
+			<if test="dictPayStatus != null and dictPayStatus != ''">
+				dict_pay_status=#{dictPayStatus},
+			</if>
+			<if test="settleMoney != null">
+				square_moeny = #{settleMoney},
+			</if>
+			<if test="modifyTime != null and settleMoney != null">
+				settlement_date = #{modifyTime},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</trim>
+		WHERE id=#{id}
+	</update>
+
+	<!-- 保存返款金额 -->
+	<insert id="insertBackAmount">
+		insert into jk.t_jk_urge_services_backamount(id, r_payback_id,contract_code,
+		dict_pay_status,
+		settlement_time,payback_back_amount,create_by,create_time)
+		VALUES(#{id},#{rPaybackId},#{contractCode},#{dictPayStatus},#{settlementTime},
+		#{paybackBackMoney},#{createBy},#{createTime})
+	</insert>
+
+	<!-- 添加蓝补交易明细记录 -->
+	<select id="insertPaybackBuleAmont">
+		insert into t_jk_payback_bule_amont(
+		id, r_month_id, deal_time, trade_type, operator, dict_deal_use,
+		trade_amount, surplus_bule_amount, create_by,
+		create_time,modify_by,modify_time,dict_offset_type,contract_code)
+		values (#{id}, #{rMonthId}, #{createTime}, #{tradeType}, #{createBy},
+		#{dictDealUse},
+		#{tradeAmount}, #{surplusBuleAmount}, #{createBy},
+		#{createTime},#{modifyBy},#{modifyTime},#{dictOffsetType},#{contractCode}
+		)
+	</select>
+
+	<!-- 保存减免的提前结清金额 -->
+	<update id="updateMonthBeforeReductionAmount">
+		UPDATE jk.t_jk_payback_month
+		<trim prefix="SET" suffixOverrides=",">
+			<if
+				test="monthBeforeReductionAmount != null and monthBeforeReductionAmount != ''">
+				month_before_reduction_amount = #{monthBeforeReductionAmount},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</trim>
+		WHERE id = #{id}
+	</update>
+
+
+	<!-- 保存提前结清应还款总额 -->
+	<update id="updatePaybackApply"
+		parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		update jk.t_jk_payback_apply set settle_total_amount=#{settleTotalAmount}
+		where id=#{id}
+	</update>
+
+	<!-- 修改减免金额(输入的减免金额小于或等于应还违约金) -->
+	<select id="updateMonthPenaltyReduction">
+		UPDATE t_jk_payback_month
+		SET
+		month_penalty_reduction=#{penaltyInterest},
+		month_punish_reduction= '0',
+		modify_by = #{modifyBy},
+		modify_time = #{modifyTime}
+		WHERE id=#{id}
+	</select>
+	<!-- 修改减免金额(输入的减免金额大于应还违约金) -->
+	<select id="updateMonthPunishReduction">
+		UPDATE t_jk_payback_month
+		SET
+		month_penalty_reduction=#{monthPenaltyReduction},
+		month_punish_reduction= #{monthPunishReduction},
+		modify_by = #{modifyBy},
+		modify_time = #{modifyTime}
+		WHERE id=#{id}
+	</select>
+	<!-- 剩余的减免金额添加到蓝补金额 -->
+	<select id="updatePaybackBuleAmount">
+		UPDATE t_jk_payback
+		SET payback_bule_amount = #{paybackBuleAmount},
+		modify_by = #{modifyBy},
+		modify_time = #{modifyTime}
+		WHERE id=#{rPaybackId}
+	</select>
+
+	<!-- 提前结清发送到财富端的数据 -->
+	<select id="tranInfoCf" resultType="com.creditharmony.core.claim.dto.SyncClaim">
+		select
+		p.id,
+		p.contract_code,
+		p.payback_day as loanBakcmoneyDay,<!-- 还款日 -->
+		c.loan_code as loanCode,
+		c.contract_replay_day as loanBackmoneyFirday,<!-- 起始还款日期,首次还款日期 -->
+		c.contract_end_day as loanBackmoneyLastday,<!-- 合同到期日，最后一期还款日 -->
+		c.contract_months as loanMonths,<!-- 批借期数 -->
+		c.audit_amount as loanQuota,<!-- 批复金额 借款金额 -->
+		li.class_type as dictLoanType,<!-- 借款类型 -->
+		li.dict_loan_use as loanPurpose,<!-- 借款用途 -->
+		li.loan_flag as loanTrusteeFlag,<!-- 资金托管标识 -->
+		lcu.id as loanId,<!-- 借款人id -->
+		lcu.customer_name as loanName,<!-- 借款人姓名 -->
+		lcu.customer_cert_num as loanIdcard,<!-- 借款人身份证号 -->
+		lco.dict_comp_industry as loanJob,<!-- 借款人职业 -->
+		lg.lending_time as loanOutmoneyDay,<!-- 放款时间 -->
+		cf.fee_month_rate as loanMonthRate,<!--月利率 -->
+		m.middle_name as loanMiddleMan,<!-- 中间人 -->
+		pro.product_name as loanProduct<!--借款产品类型 -->
+
+		from t_jk_payback p
+		left join t_jk_contract c on p.contract_code = c.contract_code
+		left join t_jk_loan_info li on li.loan_code = c.loan_code
+		left join t_jk_loan_customer lcu on lcu.loan_code=c.loan_code
+		left join t_jk_loan_company lco on lco.loan_code=c.loan_code and
+		lco.dict_r_customter_type='0'
+		left join t_jk_loan_grant lg on lg.loan_code=c.loan_code
+		left join t_jk_contract_fee cf on cf.contract_code=c.contract_code
+		left join t_jk_middle_person m on m.id=lg.mid_id
+		left join t_gl_jk_product pro on pro.product_code=li.product_type
+		where p.id=#{id}
+	</select>
+	
+	<!-- 更新 t_jk_big_finance  credit_type 字段的状态为  3 -->
+		<update id="updateBigFinance">
+	  update t_jk_big_finance 
+	  <trim prefix="SET" suffixOverrides=",">
+	    <if test="creditType != null">
+	    credit_type = #{creditType},
+	    </if>
+	    <if test="modifyTime != null">
+	     modify_time = #{modifyTime},
+	    </if>
+	    <if test="modifyBy != null">
+	     modify_by = #{modifyBy}
+	    </if>
+	  </trim>
+	  where loan_code = #{loanCode}
+	</update>
+	
+	<update id="updateLoanInfoSettle" parameterType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+		UPDATE jk.t_jk_loan_info
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="modifyTime != null">
+				settled_date = #{modifyTime},
+			</if>
+			<if test="dictLoanStatus != null">
+			    dict_loan_status = #{dictLoanStatus},
+			</if>
+			<if test="modifyTime != null">
+				modify_time=#{modifyTime},
+			</if>
+			<if test="modifyBy != null">
+				modify_by=#{modifyBy}
+			</if>
+		</trim>
+		WHERE loan_code = 
+		(select loan_code from jk.t_jk_contract where contract_code=#{contractCode} limit 1)
+	</update>
+	<!-- 根据合同编号查找对应的客户信息 -->
+	<select id="findCustomerByContractCode" resultType="com.creditharmony.loan.borrow.applyinfo.entity.Customer" >
+		select cm.id,cm.customer_name customerName
+		from jk.t_jk_loan_customer cm,jk.t_jk_contract jc
+		where cm.loan_code = jc.loan_code 
+		and jc.contract_code=#{contractCode}
+	</select>
+	
+	<!-- 查询剩余未还本金 -->
+	<select id="findResiduePayactual" resultType="java.math.BigDecimal">
+		select sum(month_pay_amount-month_capital_payactual) from jk.t_jk_payback_month
+		where contract_code=#{contractCode}
+	</select>
+	
+	<!-- 根据合同编号查找对应的提前结清信息 -->
+	<!-- <select id="findDataByContractCode" parameterType="java.lang.String" resultType="java.util.HashMap">
+		select c.contract_code,
+			c.contract_amount,
+			c.contract_months,
+			m.month_before_finish_amount,
+			to_char(m.month_pay_day+ interval '1 month','yyyy-mm-dd') month_pay_day,
+			u.customer_name
+		from jk.t_jk_contract c,jk.t_jk_payback p,jk.t_jk_payback_month m,jk.t_jk_loan_customer u
+		where c.contract_code=p.contract_code and p.contract_code=m.contract_code and p.payback_current_month=m.months and c.loan_code=u.loan_code
+		and c.contract_code=#{contractCode}
+	</select> -->
+	
+	<!-- 判断该合同编号是否是财富需要推送给金信的数据 -->
+	<select id="findDataByContractCode" parameterType="java.lang.String" resultType="java.lang.String">
+		select contract_code
+			from jk.t_jk_caifu_to_jinxin
+		where contract_code=#{contract_code}
+	</select>
+	<!-- 更新发送标识 -->
+	<update id="updateSendFlag" parameterType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+		update jk.t_jk_loan_info i set send_flag=#{sendFlag} from jk.t_jk_contract c 
+		where i.loan_code = c.loan_code and c.contract_code=#{contractCode}
+	</update>
+</mapper>
+	

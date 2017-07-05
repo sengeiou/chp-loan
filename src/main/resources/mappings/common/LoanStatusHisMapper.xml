@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.LoanStatusHisDao">
+	<resultMap id="BaseResultMap"
+		type="com.creditharmony.loan.common.entity.LoanStatusHis">
+		<result column="id" jdbcType="VARCHAR" property="id" />
+		<result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+		<result column="loan_code" jdbcType="VARCHAR" property="loanCode" />
+		<result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+		<result column="operate_step" jdbcType="VARCHAR" property="operateStep" />
+		<result column="dict_sys_flag" jdbcType="VARCHAR" property="dictSysFlag" />
+		<result column="operate_result" jdbcType="VARCHAR" property="operateResult" />
+		<result column="operator" jdbcType="VARCHAR" property="operator" />
+		<result column="operate_role_id" jdbcType="VARCHAR" property="operateRoleId" />
+		<result column="org_code" jdbcType="VARCHAR" property="orgCode" />
+		<result column="operate_time" jdbcType="VARCHAR" property="operateTime" />
+		<result column="remark" jdbcType="VARCHAR" property="remark" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, apply_id, loan_code, dict_loan_status, operate_step,
+		dict_sys_flag,
+		operate_result, operator,
+		operate_role_id,org_code,
+		operate_time, remark
+	</sql>
+	<!-- 根据applyId进行查询 -->
+	<select id="findPage" resultType="com.creditharmony.loan.common.entity.LoanStatusHis"
+		parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		select h.id as id,
+		apply_id,
+		operate_step,
+		operate_result,
+		operator,
+		operate_time,
+		remark
+		from jk.t_jk_loan_status_his h
+		where apply_id
+		= #{applyId} and dict_Sys_Flag = #{dictSysFlag} order by
+		operate_time
+		desc
+	</select>
+	<select id="findWantedNoteByLoanCode" resultType="com.creditharmony.loan.common.entity.LoanStatusHis"
+		parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		select h.id as id,
+		apply_id,
+		operate_step,
+		dict_loan_status,
+		operate_result,
+		operator,
+		operate_time,
+		remark
+		from jk.t_jk_loan_status_his h
+		where loan_code
+		= #{loanCode} and dict_Sys_Flag = #{dictSysFlag} and dict_loan_status = #{dictLoanStatus} order by
+		operate_time
+		desc limit 1 
+	</select>
+	<select id="findWantedNoteByApplyId" resultType="com.creditharmony.loan.common.entity.LoanStatusHis"
+		parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		select h.id as id,
+		apply_id,
+		operate_step,
+		dict_loan_status,
+		operate_result,
+		operator,
+		operate_time,
+		remark
+		from jk.t_jk_loan_status_his h
+		where apply_id
+		= #{applyId} and dict_Sys_Flag = #{dictSysFlag} and dict_loan_status = #{dictLoanStatus} order by
+		operate_time
+		desc limit 1 
+	</select>
+	<select id="findWantedNoteByLoanCode2" resultType="com.creditharmony.loan.common.entity.LoanStatusHis"
+		parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		select h.id as id,
+		apply_id,
+		operate_step,
+		dict_loan_status,
+		operate_result,
+		operator,
+		operate_time,
+		remark
+		from jk.t_jk_loan_status_his h
+		where loan_code
+		= #{loanCode} and dict_Sys_Flag = #{dictSysFlag} and dict_loan_status = #{dictLoanStatus} order by
+		operate_time
+		asc limit 1 
+	</select>
+    <select id="findByLoanCodeAndStatus" resultType="com.creditharmony.loan.common.entity.LoanStatusHis"
+		parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		select h.id as id,
+		apply_id,
+		operate_step,
+		operate_result,
+		operator,
+		operate_time,
+		remark
+		from jk.t_jk_loan_status_his h
+		where loan_code
+		= #{loanCode} and dict_Sys_Flag = #{dictSysFlag} 
+		  and dict_loan_status in (${dictLoanStatus}) 
+		 order by
+		operate_time
+		desc
+    </select>
+	<select id="findHisPageByLoanCode" resultMap="BaseResultMap"
+		parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		select h.id as id,
+		apply_id,
+		operate_step,
+		operate_result,
+		operator,
+		operate_time,
+		remark
+		from jk.t_jk_loan_status_his h
+		where loan_code = #{loanCode} 
+		<if test="dictSysFlag != null and dictSysFlag!=''">
+			and dict_Sys_Flag = #{dictSysFlag} 
+		</if>
+		order by operate_time
+		desc
+	</select>
+	<select id="searchAllFieldByLoanCode" parameterType="string" resultType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		SELECT 
+			id, apply_id, loan_code,
+			dict_loan_status,
+			operate_step, dict_sys_flag,
+			operate_result, operator, operate_role_id,
+			org_code, operate_time, remark,
+			create_by, create_time, modify_by,
+			modify_time
+		FROM jk.t_jk_loan_status_his
+		WHERE loan_code = #{loanCode}
+	</select>
+	<!-- 插入全部 -->
+	<insert id="insert" parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		insert into
+		jk.t_jk_loan_status_his (id, apply_id, loan_code,
+		dict_loan_status,
+		operate_step, dict_sys_flag,
+		operate_result, operator, operate_role_id,
+		org_code, operate_time, remark,
+		create_by, create_time, modify_by,
+		modify_time)
+		values (#{id,jdbcType=NUMERIC},
+		#{applyId,jdbcType=VARCHAR},
+		#{loanCode,jdbcType=VARCHAR},
+		#{dictLoanStatus,jdbcType=VARCHAR}, #{operateStep,jdbcType=VARCHAR},
+		#{dictSysFlag,jdbcType=VARCHAR},
+		#{operateResult,jdbcType=VARCHAR},
+		#{operator,jdbcType=VARCHAR},
+		#{operateRoleId,jdbcType=VARCHAR},
+		#{orgCode,jdbcType=VARCHAR}, now(),
+		#{remark,jdbcType=VARCHAR},
+		#{createBy,jdbcType=VARCHAR},
+		now(),
+		#{modifyBy,jdbcType=VARCHAR},
+		now())
+	</insert>
+	<!-- 有选择的插入 -->
+	<insert id="insertSelective" parameterType="com.creditharmony.loan.common.entity.LoanStatusHis">
+		insert into jk.t_jk_loan_status_his
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="applyId != null and applyId!=''">
+				apply_id,
+			</if>
+			<if test="loanCode != null">
+				loan_code,
+			</if>
+			<if test="dictLoanStatus != null">
+				dict_loan_status,
+			</if>
+			<if test="operateStep != null">
+				operate_step,
+			</if>
+			<if test="dictSysFlag != null">
+				dict_sys_flag,
+			</if>
+			<if test="operateResult != null">
+				operate_result,
+			</if>
+			<if test="operator != null">
+				operator,
+			</if>
+			<if test="operateRoleId != null">
+				operate_role_id,
+			</if>
+			<if test="orgCode != null">
+				org_code,
+			</if>
+			<if test="operateTime != null">
+				operate_time,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+			<if test="createBy != null">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="modifyBy != null">
+				modify_by,
+			</if>
+			<if test="modifyTime!= null">
+				modify_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=NUMERIC},
+			</if>
+			<if test="applyId != null and applyId!=''">
+				#{applyId,jdbcType=VARCHAR},
+			</if>
+			<if test="loanCode != null">
+				#{loanCode,jdbcType=VARCHAR},
+			</if>
+			<if test="dictLoanStatus != null">
+				#{dictLoanStatus,jdbcType=VARCHAR},
+			</if>
+			<if test="operateStep != null">
+				#{operateStep,jdbcType=VARCHAR},
+			</if>
+			<if test="dictSysFlag != null">
+				#{dictSysFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="operateResult != null">
+				#{operateResult,jdbcType=VARCHAR},
+			</if>
+			<if test="operator != null">
+				#{operator,jdbcType=VARCHAR},
+			</if>
+			<if test="operateRoleId != null">
+				#{operateRoleId,jdbcType=VARCHAR},
+			</if>
+			<if test="orgCode != null">
+				#{orgCode,jdbcType=VARCHAR},
+			</if>
+			<if test="operateTime != null">
+				#{operateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="createBy != null">
+				#{createBy,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyBy != null">
+				#{modifyBy,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyTime != null">
+				#{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<select id="findLastApproveNote" parameterType="map" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from jk.t_jk_loan_status_his
+		where 1=1
+		<if test="dictSysFlag!=null and dictSysFlag!=''">
+			and dict_sys_flag = #{dictSysFlag,jdbcType=VARCHAR}
+		</if>
+		and apply_id=#{applyId,jdbcType=VARCHAR}
+		order by create_time desc limit 1;
+	</select>
+
+	<!--还款操作流水添加 -->
+	<insert id="insertPaybackOpe">
+		INSERT INTO jk.t_jk_payback_ope(
+		id,
+		r_payback_id,
+		r_payback_apply_id,
+		dict_loan_status,
+		dict_r_deduct_type,
+		operate_result,
+		operator,
+		operator_code,
+		operate_time,
+		remark,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time)
+		VALUES (
+		#{id},
+		#{rPaybackId},
+		#{rPaybackApplyId},
+		#{dictLoanStatus},
+		#{dictRDeductType},
+		#{operateResult},
+		#{operator},
+		#{operateCode},
+		#{operateTime},
+		#{remarks},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime});
+	</insert>
+	<select id="getPaybackOpe" parameterType="map" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+		SELECT a.id,
+		a.r_payback_id, a.dict_loan_status, a.dict_r_deduct_type,
+		a.operate_result,
+		case when b.name is null then a.operator else b.name end as operator,
+	    a.operator_code, a.operate_time, a.remark,
+		a.create_by, a.create_time,
+		a.modify_by, a.modify_time, a.r_payback_apply_id
+		FROM
+		jk.t_jk_payback_ope a left join jk.t_gl_user b 
+		on a.operator = b.id
+		where 1=1
+		<if test="dictRDeductType != null and dictRDeductType != ''">
+			and a.dict_r_deduct_type = #{dictRDeductType,jdbcType=VARCHAR}
+		</if>
+		<if test="rPaybackId != null">
+			and a.r_payback_id = #{rPaybackId,jdbcType=VARCHAR}
+		</if>
+		<if test="rPaybackApplyId != null">
+			and a.r_payback_apply_id = #{rPaybackApplyId,jdbcType=VARCHAR}
+		</if>
+		<if test="operateResult != null and operateResult != '' ">
+			and a.operate_result  in (${operateResult})
+		</if>
+		<if test="dictLoanStatus != null and dictLoanStatus != '' ">
+			and a.dict_loan_status  = #{dictLoanStatus}
+		</if>
+		order by create_time DESC 	
+	</select>
+	<select id="getPaybackSplit" parameterType="map" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+		SELECT a.id,
+		       a.split_amount AS splitAmount,
+		       a.split_back_result  as  splitBackResult,
+		       a.splitback_date   as  splitBackDate,
+		       a.split_fail_result as  splitFailResult,
+		       a.dict_deal_type  as  dictDealType,
+		       case when b.name is null then 'FinanceBatch' else b.name end as createBy 
+		    FROM
+		  jk.t_jk_payback_split a left join jk.t_gl_user b  on a.create_by = b.id
+		  where  r_payback_apply_id = #{paybackApplyId}
+			
+	</select>
+	<select id="showPaybackHistory" parameterType="string" resultType="com.creditharmony.loan.borrow.refund.entity.PaybackHistory">
+		select 
+			id,
+			contract_code as contractCode,
+			oper_name as operName,
+			oper_result as operResult,
+			oper_notes as operNotes,
+			(
+				select u.name from jk.t_gl_user u
+				where u.id = h.create_by
+			) as createBy,
+			create_Time as createTime,
+			modify_by as modifyBy,
+			modify_time as modifyTime
+		from jk.t_jk_loan_payback_history h
+		where contract_code = #{contractCode} ORDER BY
+    createtime desc
+	</select>
+	
+	<!-- 邮件历史 -->
+	<select id="showEmailOpe" parameterType="map" resultType="com.creditharmony.loan.common.entity.EmailOpe">
+		select ope.id,
+			ope.operate_step,
+			ope.operate_result,
+			ope.operator,
+			ope.operate_time,
+			ope.remark
+		from jk.t_jk_email_ope ope
+			left join jk.t_jk_payback_month_sending_email email on ope.r_email_id=email.id
+		where 1=1
+		<if test="emailId != null and emailId != ''">
+			and ope.r_email_id=#{emailId}
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and email.contract_code=#{contractCode} 
+			and email.email_type in('2','3','4','5','6','7')
+		</if>
+		 order by operate_time desc
+	</select>
+	<!-- 插入邮件历史操作 -->
+	<insert id="insertEmailOpe">
+		INSERT INTO jk.t_jk_email_ope(
+		id,
+		r_email_id,
+		operate_step,
+		operate_result,
+		operator,
+		operator_code,
+		operate_time,
+		remark,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time)
+		VALUES (
+		#{id},
+		#{emailId},
+		#{operateStep},
+		#{operateResult},
+		#{operator},
+		#{operateCode},
+		now(),
+		#{remark},
+		#{createBy},
+		now(),
+		#{modifyBy},
+		now());
+	</insert>
+</mapper>

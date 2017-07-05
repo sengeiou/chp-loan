@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.contractAudit.dao.ContractAuditModuleDao" >
+ 	<select id="findList" resultType="com.creditharmony.loan.borrow.contractAudit.entity.ContractAuditDatas"  parameterType="com.creditharmony.loan.borrow.contractAudit.entity.ContractAuditDatas">
+ 		 SELECT  DISTINCT
+ 		 INFO.LOAN_CODE
+ 	  ,CON.APPLY_ID applyId
+	  ,CON.contract_code contractCode
+	  ,CUS.customer_name customerName
+	  ,INFO.loaninfo_oldornew_flag loanInfoOldOrNewFlag
+	  ,(SELECT D.label FROM JK.T_GL_DICT D WHERE D."type"='jk_channel_flag' AND D.VALUE = INFO.loan_flag) channelName
+	  ,INFO.MODEL model
+	  ,(SELECT PRO.product_name FROM jk.t_gl_jk_product PRO where PRO.product_code=CON.product_type) replyProductName
+	  ,CON.contract_amount contractMoney
+	  ,FEE.fee_payment_amount lendingMoney
+	  ,INFO.loan_code loanCode
+	  ,INFO.frozen_flag frozenFlag
+	  ,(SELECT COBO.COBO_NAME FROM JK.T_JK_LOAN_COBORROWER COBO WHERE LOAN_CODE = INFO.OLD_LOAN_CODE AND COBO.ID = AUDIT.best_coborrower_id) coborrowerName
+	  ,PROVINCE.area_name provinceName
+	  ,CITY.area_name cityName
+	  ,ORG.name storeName
+	  ,decode(INFO.dict_loan_status,'64','',CON.contract_back_result) backReason
+	  ,CON.contract_months replyMonth
+	  ,(SELECT D.label FROM JK.T_GL_DICT D WHERE D."type"='jk_loan_apply_status' AND D.VALUE = INFO.dict_loan_status) loanStatusName
+	  ,INFO.dict_loan_status loanStatusCode
+	  ,CON.back_flag backFlag
+	  ,(SELECT D.label FROM JK.T_GL_DICT D WHERE D."type"='jk_deduct_plat' AND D.VALUE = BANK.bank_signing_platform) signPlatform
+	  ,INFO.customer_into_time intoLoanTime
+	  ,to_char(INFO.modify_time,'yyyy-MM-dd HH24:MI:ss') lastDealTime
+	  ,to_char(INFO.loan_audit_time,'yyyy-MM-dd HH24:MI:ss') outApproveTime
+	  ,INFO.loan_raise_flag raiseFlag
+	  ,INFO.loan_urgent_flag urgentFlag
+	  ,case INFO.MODEL when '0' then '' ELSE 'TG' END  modelLabel
+	  ,CON.paperless_flag paperLessFlag
+	  ,CON.audit_amount replyMoney
+	  ,CON.contract_version contractVersion
+	  ,CON.is_register registFlag
+	  ,CON.sign_up_flag signUpFlag
+	  ,NVL(RATING.reconsider_risk_level,RATING.verify_risk_level)   riskLevel
+	  ,BANK.cj_authen cjAuthen
+	  ,BANK.cj_authen_failure cjAuthenFailure  
+	  ,FILENET.WOB_NUM   wobNum
+	  ,FILENET.TOKEN 
+	  ,INFO.ISSPLIT 
+	  ,INFO.ORDER_FIELD
+	  ,CON.CONTRACT_DUE_DAY
+	  , nvl(INFO.loan_urgent_flag,'0') DESC1
+	  , nvl(INFO.frozen_flag,'0') DESC2
+	  , NVL(CON.back_flag,'0') DESC3
+	  , (CASE INFO.dict_loan_status 
+	   		WHEN  '104' THEN '0'
+	   		WHEN  '75'  THEN '2'
+	   		WHEN  '95'  THEN '4'
+	   		WHEN  '105' THEN '6'
+	   		WHEN  '64'  THEN '8'
+	   		WHEN  '72'  THEN '10'
+	   		ELSE  '12'
+	   	END) ASC4
+	  ,INFO.modify_time ASC5
+	  FROM JK.T_JK_LOAN_INFO INFO 
+	  INNER JOIN JK.T_JK_CONTRACT CON ON INFO.LOAN_CODE = CON.LOAN_CODE
+	  INNER JOIN JK.T_JK_LOAN_CUSTOMER CUS ON CUS.LOAN_CODE = INFO.LOAN_CODE
+	  INNER JOIN JK.T_JK_CONTRACT_FEE FEE ON FEE.CONTRACT_CODE = CON.CONTRACT_CODE
+	  INNER JOIN 
+	  (SELECT  AUT1.LOAN_CODE,AUT1.BEST_COBORROWER_ID FROM JK.T_JK_AUDIT_RESULT AUT1 WHERE AUT1.CREATE_TIME = 
+	  (SELECT MAX(AUT.CREATE_TIME) FROM JK.T_JK_AUDIT_RESULT AUT WHERE AUT.LOAN_CODE = AUT1.LOAN_CODE)) 
+	  AUDIT ON AUDIT.LOAN_CODE = INFO.LOAN_CODE
+	  INNER JOIN JK.T_GL_ORG ORG ON ORG.ID = INFO.LOAN_STORE_ORGID
+	  INNER JOIN JK.T_GL_PROVINCE_CITY PROVINCE ON PROVINCE.ID = ORG.PROVINCE_ID
+	  INNER JOIN JK.T_GL_PROVINCE_CITY CITY ON CITY.ID = ORG.CITY_ID
+	  INNER JOIN JK.T_JK_LOAN_BANK BANK ON BANK.LOAN_CODE = INFO.LOAN_CODE AND BANK.BANK_TOP_FLAG = '1'  AND BANK.REPAYMENT_FLAG = '0'
+ 	  INNER JOIN JK.T_JK_AUDIT_RATING RATING ON RATING.LOAN_CODE = INFO.OLD_LOAN_CODE
+ 	  LEFT JOIN JK.t_jk_filenet_info FILENET ON FILENET.apply_id = CON.apply_id
+ 	  LEFT JOIN JK.T_JK_LOAN_GRANT GR ON GR.loan_code = INFO.loan_code
+	  WHERE 
+	  (INFO.dict_loan_status in ('64','95','72','75','105') 
+	  OR
+	    <!-- 104大金融拒绝的时候 要判断标识  -->
+	  (INFO.dict_loan_status ='104' and GR.zcj_reject_flag  = '1' )
+	  )
+	  AND  (INFO.IF_DISPATCH IS NULL OR INFO.IF_DISPATCH ='1' )
+	  	<if test="ownerTaskCondition =='ownerTaskCondition'.toString()">
+	  	   AND	INFO.PRESENT_AUDIT_OPERATOR = #{userCode}
+	  	</if>
+	  <!--   64-待合同审核 95-金信退回 72-放款退回 75-待款项确认退回 104-大金融拒绝 105-大金融退回   -->
+	  <!--   下面是页面输入查询   -->
+	   	<if test="customerName != null and customerName !=''">
+	  		AND CUS.customer_name like '%'||#{customerName}||'%'
+	  	</if>
+	  	<if test="contractCode!=null and contractCode !=''">
+	  		AND CON.contract_code=#{contractCode}
+	  	</if>
+	  	<if test="storeOrgIds !=null and storeOrgIds.length !=0">
+	  		AND 
+	  			<foreach collection="storeOrgIds" close=")" open="(" separator="OR" item="storeOrgId">
+	  				INFO.LOAN_STORE_ORGID = #{storeOrgId}
+	  			</foreach>
+	  	</if>
+	  	<if test="identityCode !=null and identityCode !=''">
+	  		AND CUS.CUSTOMER_CERT_NUM = #{identityCode}
+	  	</if>
+	  	<if test="model !=null and model !='' ">
+	  		AND INFO.MODEL  = #{model}
+	  	</if>
+	  	<if test="channelCode !=null and channelCode !='' ">
+	  		AND INFO.loan_flag =  #{channelCode}
+	  	</if>
+	  	<if test="replyProductCode !=null and replyProductCode !='' ">
+	  		AND CON.product_type = #{replyProductCode}
+	  	</if>
+	  	<if test="additionalFlag !=null and  additionalFlag != ''">
+	  		AND INFO.DICT_IS_ADDITIONAL = #{additionalFlag}
+	  	</if>
+	  	<if test="telesalesFlag!=null and telesalesFlag !=''">
+	  		AND  CUS.CUSTOMER_TELESALES_FLAG= #{telesalesFlag}
+	  	</if>
+	  	<if test="urgentFlag!=null and urgentFlag!=''">
+	  		AND  INFO.loan_urgent_flag= #{urgentFlag}
+	  	</if>
+	  	<if test="contractVersion!=null and contractVersion !=''">
+	  		AND CON.contract_version = #{contractVersion}
+	  	</if> 
+	  	<if test="loanStatusCode!= null and loanStatusCode !=''">
+	  		AND INFO.dict_loan_status = #{loanStatusCode}
+	  	</if>
+	  	<if test="riskLevel!=null and riskLevel!=''">
+	  		AND NVL(RATING.reconsider_risk_level,RATING.verify_risk_level) = #{riskLevel}
+	  	</if>
+	  	<if test="cjAuthen!=null and cjAuthen!=''">
+	  		AND  BANK.cj_authen= #{cjAuthen}
+	  	</if>
+	  	<if test="cjAuthenFailure !=null and cjAuthenFailure !=''">
+	  		AND  BANK.cj_authen_failure= #{cjAuthenFailure}
+	  	</if>
+	  	<if test="startContractDueDay != null and startContractDueDay != ''">
+	     	AND CON.CONTRACT_DUE_DAY >= #{startContractDueDay}
+	    </if>
+	    <if test="endContractDueDay != null and endContractDueDay != ''">
+	     	AND #{endContractDueDay} >= CON.CONTRACT_DUE_DAY
+	    </if>
+	    ORDER BY   DESC1 desc,
+				   DESC2 DESC,
+				   DESC3 DESC,
+				   ASC4 ASC,
+				   ASC5 ASC
+ 	</select>
+  
+ 	<select id="getContractAudit" parameterType="com.creditharmony.loan.borrow.contractAudit.entity.ContractAuditDatas" resultType="com.creditharmony.loan.borrow.contractAudit.entity.ContractAuditBanli">
+ 				SELECT 
+					 CON.apply_id
+					,INFO.loan_code loanCode
+					,INFO.old_loan_code oldLoanCode
+					,INFO.issplit isSplit
+					,INFO.LOAN_FLAG loanFlag
+					,INFO.loaninfo_oldornew_flag loanInfoOldOrNewFlag
+					,(select d.label from jk.t_gl_dict d where d."value" = info.LOAN_FLAG and d."type" = 'jk_channel_flag') loanFlagName
+					,info.loan_store_orgid loanStoreOrgId
+					,info.frozen_code  frozenCode
+					,case when info.model='1' then 'TG' else '' end modelName 
+					,CUST.customer_name   mainLoaner
+					,CUST.customer_cert_num mainCertNum
+					,case when cust.trusteeship_no is null 
+					                    or char_length(ltrim(cust.trusteeship_no))=0 
+					                    then 0 
+					                    else 1 
+					               end trusteeshipFlag
+					,(select d.label from jk.t_gl_dict d where d."value" = CUST.customer_sex and d."type" = 'jk_sex') mainCertSexName
+					,CUST.id customerId
+					,CUST.app_sign_flag appSignFlag 
+					,CUST.compose_photo_id composePhotoId
+					,CUST.id_valid_score  idValidScore
+					,resultA.audit_ensure_name auditEnsureName
+					,resultA.audit_legal_man auditLegalMan
+					,resultA.ensureman_business_place ensuremanBusinessPlace
+					,case when pp.area_name =pc.area_name then pc.area_name ||  pa.area_name || resultA.ensureman_business_place else pp.area_name || pc.area_name ||  pa.area_name || resultA.ensureman_business_place
+					  				end AS  maddressName
+					,PRODUCT.product_name productName 
+					,pk.payback_day  billDay
+					,nvl(AUTRAT.reconsider_risk_level,AUTRAT.verify_risk_level) riskLevel
+					FROM JK.T_JK_LOAN_INFO INFO
+					INNER JOIN JK.T_JK_CONTRACT CON ON CON.loan_code = INFO.loan_code
+					INNER JOIN JK.T_JK_LOAN_CUSTOMER CUST ON CUST.loan_code = INFO.LOAN_CODE
+					INNER JOIN jk.t_jk_audit_result resultA on resultA.loan_code = info.loan_code
+					INNER JOIN  jk.t_gl_jk_product PRODUCT ON PRODUCT.product_code = CON.product_type
+					INNER JOIN (select max(b.create_time) max_create_time,B.apply_id,B.loan_code from jk.t_jk_audit_result b where  b.audit_result = '0'  GROUP BY B.apply_id,B.loan_code) resultMax  on resultA.create_time = resultMax.max_create_time
+						and resultA.loan_code =  resultMax.loan_code
+					left join   jk.t_gl_province_city pa on resultA.ensureman_business_area=pa.id
+					left join   jk.t_gl_province_city pc on pc.id=pa.parent_id
+					left join   jk.t_gl_province_city pp on pp.id=pc.parent_id
+					left join   jk.t_jk_audit_rating AUTRAT ON  AUTRAT.loan_code = INFO.old_loan_code
+					left join jk.t_jk_payback pk on pk.contract_code=CON.contract_code
+					where info.loan_code = #{loanCode}
+ 	
+ 	</select>
+</mapper>

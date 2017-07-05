@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.channel.bigfinance.dao.BfSendDataDao">
+	<!--债权基本信息  -->
+	<resultMap id="debtBaseInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorBaseInfoInBean">
+		<result property="unfreezePush" column="unfreeze_Push"></result>  <!-- 是否解冻重推 -->
+		<result property="debtorsName" column="customer_name"></result>  <!-- 借款人姓名 -->
+		<result property="papersType" column="dict_cert_type"></result>  <!-- 证件类型 -->
+		<result property="debtNo" column="contract_code"></result>  <!-- 合同编号 -->
+		<result property="debtorsId" column="customer_cert_num"></result>  <!-- 证件号码 -->
+		<result property="mobile" column="customer_phone_first"></result>  <!-- 手机号 -->
+		<result property="mail" column="customer_email"></result>  <!-- 邮箱 -->
+		<result property="debtMoney" column="loan_audit_amount"></result>  <!-- 借款金额 -->
+		<result property="giveMoney" column="contract_amount"></result>  <!-- 合同金额 -->
+		<result property="debtPeriod" column="contract_months"></result>  <!-- 借款期限 -->
+		<result property="debtYearRate" column="fee_loan_rate"></result>  <!-- 借款利率 -->
+		<result property="loanType" column="loan_Type"></result>  <!-- 借款类型 -->
+		<result property="productType" column="product_type"></result>  <!-- 产品类型 -->
+		<result property="idUrgent" column="loan_urgent_flag"></result>  <!-- 是否加急 -->
+		<result property="creationTime" column="creation_Time"></result>  <!-- 创建时间 -->
+		<result property="earlyServiceFee" column="fee_info_service"></result>  <!-- 前期服务费 -->
+		<result property="outServiceFee" column="fee_petition"></result>  <!-- 外访服务费(外访费) -->
+		<result property="collectionServicfee" column="fee_urged_service"></result>  <!-- 催收服务费 -->
+		<result property="urgentServiceFee" column="fee_expedited"></result>  <!-- 加急服务费(加急费) -->
+		<result property="rateResult" column="verify_risk_level"></result>  <!-- 评级结果 -->
+		
+		<collection property="mobileParam" resultMap="baseSecurityMap"></collection>
+	</resultMap>
+	
+	<resultMap type="com.creditharmony.adapter.bean.in.djrcreditor.DjrCreditSecurityBean" id="baseSecurityMap">
+		<result property="flg" column="base_flg"></result>
+		<result property="ids" column="base_ids"></result>
+		<result property="userCode" column="base_user_code"></result>
+		<result property="createUser" column="base_create_user"></result>
+		<result property="createTime" column="base_create_time"></result>
+		<result property="objSig" column="base_obj_sig"></result>
+		<result property="dbName" column="base_db_name"></result>
+		<result property="tabName" column="base_tab_name"></result>
+		<result property="encCols" column="base_enc_cols"></result>
+	</resultMap>
+	
+	<select id="getDebtBaseInfo" parameterType="String" resultMap="debtBaseInfoMap">
+		select
+			CASE nvl(info.frozen_code,'') WHEN '' THEN '2'  ELSE '1' END AS unfreeze_Push,	--是否解冻（1是，2不是）
+			customer.customer_name,	--客户姓名
+			customer.dict_cert_type, --证件类型
+			contract.contract_code,	--合同编号
+			customer.customer_cert_num,	--证件号码
+			customer.customer_phone_first,	--移动电话
+			customer.customer_email,	--电子邮箱
+			info.loan_audit_amount,	--批复金额
+			contract.contract_amount, --合同金额
+			contract.contract_months,	--批借期限
+			fee.fee_month_rate*12 fee_loan_rate,	--借款利率
+			'1'	as loan_Type, --信用贷
+			contract.product_type,	--产品类型
+			case when info.loan_urgent_flag='0'  then '2' else '1' end as loan_urgent_flag,	--是否加急
+			fee.fee_count fee_info_service,	--综合服务费
+			fee.fee_petition,	--信访费
+			fee.fee_urged_service,	--催收服务费
+			fee.fee_expedited,	--加急费
+			sysdate as creation_Time,--创建时间（及推送时间）
+			rating.verify_risk_level,  --评分等级
+			'' AS base_flg,     
+			'ID' AS base_ids,    
+			'USERCODE' AS base_user_code,
+			customer.create_by AS base_create_user,
+			to_char(customer.create_time,'yyyy-MM-dd hh24:mi:ss') AS base_create_time,
+			'qweasdzx1234' AS base_obj_sig,
+			'loanxj' AS base_db_name,
+			'T_JK_LOAN_CUSTOMER' AS base_tab_name,
+			'customer_phone_first' AS base_enc_cols
+		from jk.t_jk_loan_info info --借款信息
+			left join jk.t_jk_loan_customer customer on info.loan_code=customer.loan_code --借款客户信息
+			left join jk.t_jk_contract contract on info.loan_code=contract.loan_code --合同表
+			left join jk.t_jk_contract_fee fee on contract.contract_code=fee.contract_code--合同费率
+			left join jk.t_jk_audit_rating rating on info.old_loan_code=rating.loan_code--信审评分结果表
+		where contract.channel_flag='5'  and info.loan_code=#{loanCode}
+	</select>
+	<!-- 还款计划表 (多条) -->
+	<resultMap id="repaymentPlanTablesMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorRepayPlanInBean">
+		<result property="contractCode"  column="contract_code"></result>  <!--合同编号-->
+		<result property="counstorName"  column="customer_name"></result>  <!--客户姓名-->
+		<result property="paybackMonthId"  column="Payback_MonthId"></result>  <!--明细id-->
+		<result property="months"  column="months"></result>  <!--期数-->
+		<result property="payDay"  column="month_pay_day"></result>  <!--还款日-->
+		<result property="payActualday"  column="month_pay_actualday"></result>  <!--实际还款日-->
+		<result property="payAmount"  column="month_pay_amount"></result>  <!--应还本金-->
+		<result property="interestBackshould"  column="month_interest_backshould"></result>  <!--应还利息-->
+		<result property="capitalPayactual"  column="month_capital_payactual"></result>  <!--实还本金-->
+		<result property="interestPayactual"  column="month_interest_payactual"></result>  <!--实还利息-->
+		<result property="isOverdue"  column="is_overdue"></result>  <!--是否逾期-->
+		<result property="beforeFinishAmount"  column="month_before_finish_amount"></result>  <!--一次性提前结清应还总额-->
+		<result property="interestPunishshould"  column="month_interest_punishshould"></result>  <!--应还罚息-->
+		<result property="interestPunishactual"  column="month_interest_punishactual"></result>  <!--实还罚息-->
+		<result property="punishReduction"  column="month_punish_reduction"></result>  <!--减免罚息-->
+		<result property="penaltyShould"  column="month_penalty_should"></result>  <!--应还违约金-->
+		<result property="penaltyActual"  column="month_penalty_actual"></result>  <!--实还违约金-->
+		<result property="penaltyReduction"  column="month_penalty_reduction"></result>  <!--减免违约金-->
+		<result property="overdueDays"  column="month_overdue_days"></result>  <!--当前逾期天数-->
+		<result property="monthStatus"  column="dict_month_status"></result>  <!--期供状态-->
+		<result property="feeConsult"  column="month_fee_consult"></result>  <!--分期咨询费-->
+		<result property="midFeeService"  column="month_mid_fee_service"></result>  <!--分期居间服务费-->
+		<result property="feeService"  column="month_fee_service"></result>  <!--分期服务费-->
+		<result property="actualFeeService"  column="actual_month_fee_service"></result>  <!--分期服务费实还金额-->
+		<result property="lateFee"  column="month_late_fee"></result>  <!--滞纳金-->
+		<result property="actualLateFee"  column="actual_month_late_fee"></result>  <!--实还滞纳金-->
+		<result property="lateFeeReduction"  column="month_late_fee_reduction"></result>  <!--减免滞纳金-->
+		<result property="payTotal"  column="month_pay_total"></result>  <!--应还总额（当期所有的应还总额）-->
+		<result property="residuePayactual"  column="month_residue_payactual"></result>  <!--当期剩余本金-->
+		<result property="modifyTime"  column="modify_Time"></result>  <!--创建时间-->
+	</resultMap>
+	<select id="getRepaymentPlanTables" parameterType="String" resultMap="repaymentPlanTablesMap">
+		select
+			contract.contract_code,--合同编号
+			contract.loan_name customer_name,--客户姓名
+			payback.id Payback_MonthId,--ID
+			payback.months,--期数
+			payback.month_pay_day,--还款日
+			payback.month_pay_actualday,--实际还款日
+			payback.month_pay_amount,--应还本金
+			payback.month_interest_backshould,--应还利息
+			payback.month_capital_payactual,--实还本金
+			payback.month_interest_payactual,--实还利息
+			(select label from jk.t_gl_dict dict where  dict.type= 'jk_yes_or_no' and  dict.value=payback.is_overdue) as is_overdue,--是否逾期
+			payback.month_before_finish_amount,--一次性应还总额
+			payback.month_interest_punishshould,--应还罚息(1.3系统单算罚息,1.4罚息为1.3违约金罚息合计)
+			payback.month_interest_punishactual,--实还罚息
+			payback.month_punish_reduction,--减免罚息
+			payback.month_penalty_should,--应还违约金(1.3系统单算罚息,1.4一次性还款违约罚金)
+			payback.month_penalty_actual,--实还违约金
+			payback.month_penalty_reduction,--减免违约金
+			payback.month_overdue_days,--当前逾期天数
+			payback.dict_month_status,--期供状态
+			payback.month_fee_consult,--分期咨询费
+			payback.month_mid_fee_service,--分期居间服务费
+			payback.month_fee_service,--分期服务费
+			payback.actual_month_fee_service,--分期服务费实还金额
+			payback.month_late_fee,--滞纳金
+			payback.actual_month_late_fee,--实还滞纳金
+			payback.month_late_fee_reduction,--减免滞纳金
+			payback.month_pay_total,--应还总额
+			payback.MONTH_RESIDUE_PAYACTUAL AS month_residue_payactual,--还款后剩余本金
+			payback.modify_time --修改时间
+		from jk.t_jk_contract contract --合同表
+			inner join jk.t_jk_payback_month payback on contract.contract_code=payback.contract_code  --还款期供
+		where contract.contract_code=#{contractCode}
+	</select>
+	<!-- 个人资料信息 personalInfo -->
+	<resultMap id="personalInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorPersonalInBean">
+		<result property="sex"  column="customer_sex"></result>  <!--性别-->
+		<result property="contractCode"  column="contract_code"></result>  <!--合同编号-->
+		<result property="age"  column="age"></result>  <!--年龄-->
+		<result property="marriageCase"  column="dict_marry_status"></result>  <!--婚姻状况-->
+		<result property="idChild"  column="customer_have_children"></result>  <!--有无子女-->
+		<result property="papersType"  column="dict_cert_type"></result>  <!--证件类型-->
+		<result property="papersNumber"  column="customer_cert_num"></result>  <!--证件号码-->
+		<result property="certificateInstitu"  column="customer_cert_org"></result>  <!--发证机关-->
+		<result property="phone"  column="customer_tel"></result>  <!--固定电话-->
+		<result property="mail"  column="customer_email"></result>  <!--电子邮箱-->
+		<result property="mobile"  column="customer_phone_first"></result>  <!--移动手机-->
+		<result property="birthdayDate"  column="customer_birthday"></result>  <!--出生日期-->
+		<result property="education"  column="dict_education"></result>  <!--学历-->
+		<result property="register"  column="customer_register_province"></result>  <!--户籍-->
+		<result property="registerDetail"  column="customer_register_address"></result>  <!--户籍详细地址-->
+		<result property="liveAddress"  column="customer_live_province"></result>  <!--居住地址-->
+		<result property="liveAddressDetail"  column="customer_address"></result>  <!--详细居住地址-->
+		<result property="isFamilyKnow"  column="customer_contact_is_know"></result>  <!--家人是否知息本贷款-->
+		
+		<collection property="mobileParam" resultMap="baseSecurityMap"></collection>
+	</resultMap>
+	<select id="getpersonalInfo" parameterType="String" resultMap="personalInfoMap">
+		select
+			(select label from jk.t_gl_dict dict where  dict.type= 'jk_sex' and  dict.value=customer.customer_sex) customer_sex,--性别
+			contract.contract_code,--合同编号
+			'' as age,--年龄
+			(select label from jk.t_gl_dict dict where  dict.type= 'jk_marriage' and  dict.value=customer.dict_marry_status) dict_marry_status,--婚姻状况
+			CASE customer.customer_have_children WHEN '1' THEN '有' ELSE '无' END customer_have_children,--是否有子女
+			customer.dict_cert_type,--证件类型
+			customer.customer_cert_num,--证件号码
+			customer.customer_cert_org,--发证机关
+			customer.customer_tel,--固定电话
+			customer.customer_email,--电子邮箱
+			customer.customer_phone_first,--移动电话
+			customer.customer_birthday,--出生日期
+			(select label from jk.t_gl_dict dict where  dict.type= 'jk_degree' and  dict.value=customer.dict_education) dict_education,--学历
+			(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =customer.customer_register_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =customer.customer_register_city) customer_register_province,
+			(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =customer.customer_register_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =customer.customer_register_city)||customer.customer_register_address customer_register_address,--户籍地址
+			(select case area_name when '北京市' then '' when '天津市' then '' when '上海市' then '' when '重庆市' then '' else  area_name end from jk.t_gl_province_city where area_type = '1' and area_code =customer.customer_live_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =customer.customer_live_city) customer_live_province,--居住省
+			(select case area_name when '北京市' then '' when '天津市' then '' when '上海市' then '' when '重庆市' then '' else  area_name end from jk.t_gl_province_city where area_type = '1' and area_code =customer.customer_live_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =customer.customer_live_city)||customer.customer_address customer_address,--详细地址
+			(select label from jk.t_gl_dict dict where  dict.type= 'jk_yes_or_no' and  dict.value=customer.customer_contact_is_know) as customer_contact_is_know, --家人是否知息此借款
+			'' AS base_flg,     
+			'ID' AS base_ids,    
+			'USERCODE' AS base_user_code,
+			customer.create_by AS base_create_user,
+			to_char(customer.create_time,'yyyy-MM-dd hh24:mi:ss') AS base_create_time,
+			'qweasdzx1234' AS base_obj_sig,
+			'loanxj' AS base_db_name,
+			'T_JK_LOAN_CUSTOMER' AS base_tab_name,
+			'customer_phone_first' AS base_enc_cols
+		from jk.t_jk_contract contract  --合同表
+			inner join jk.t_jk_loan_info info on info.loan_code = contract.loan_code
+			inner join jk.t_jk_loan_customer customer on info.loan_code=customer.loan_code --借款客户信息
+		where contract.contract_code=#{contractCode}
+	</select>
+	<!-- 配偶资料 -->
+	<resultMap id="spouseInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorPersonalPartnerInBean">
+		<result property="mateName"  column="mate_name"></result>  <!--配偶姓名-->
+		<result property="age"  column="mate_age"></result>  <!--年龄-->
+		<result property="birthdayDate"  column="mate_birthday"></result>  <!--出生日期-->
+		<result property="mobile"  column="mate_tel"></result>  <!--移动电话-->
+		<result property="papersType"  column="dict_cert_type"></result>  <!--证件类型-->
+		<result property="papersNumber"  column="mate_cert_num"></result>  <!--证件号码-->
+		<result property="contractCode"  column="contract_code"></result>  <!--合同编号-->
+		
+		<collection property="mobileParam" resultMap="baseSecurityMap"></collection>
+	</resultMap>
+	<select id="getSpouseInfo" parameterType="String" resultMap="spouseInfoMap">
+		select 
+			mate.mate_name,--姓名
+			mate.mate_age,--年龄
+			mate.mate_birthday,--出生日期
+			mate.mate_tel,--手机
+			mate.dict_cert_type,--证件类型
+			mate.mate_cert_num,--证件号码
+			contract.contract_code, --合同编号
+			'' AS base_flg,     
+			'ID' AS base_ids,    
+			'USERCODE' AS base_user_code,
+			mate.create_by AS base_create_user,
+			to_char(mate.create_time,'yyyy-MM-dd hh24:mi:ss') AS base_create_time,
+			'qweasdzx1234' AS base_obj_sig,
+			'loanxj' AS base_db_name,
+			'T_JK_LOAN_MATE' AS base_tab_name,
+			'mate_tel' AS base_enc_cols
+		from jk.t_jk_contract contract --合同表
+			inner join  jk.t_jk_loan_mate mate on contract.loan_code = mate.loan_code --配偶表 
+		where contract.contract_code = #{contractCode}
+	</select>
+	<!-- 申请信息 -->
+	<resultMap id="applicationInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorAppInBean">
+		<result property="borrowDeadline"  column="loan_months"></result>  <!--借款期限-->  
+		<result property="repaymentType"  column="dict_repay_method"></result>  <!--还款方式-->
+		<result property="borrowType"  column="loan_type"></result>  <!--借款类型-->
+		<result property="productType"  column="product_type"></result>  <!--产品类型-->
+		<result property="applyTime"  column="loan_apply_time"></result>  <!--申请时间-->
+		<result property="borrowMoney"  column="loan_apply_amount"></result>  <!--申请借款金额-->
+		<result property="borrowUse"  column="realy_use"></result>  <!--借款用途-->
+		<result property="isTogetherBorrow"  column="loan_common_repayment_flag"></result>  <!--是否共同借款人(文本)-->
+		<result property="rateResult"  column="apply_risk_level"></result>  <!--评级结果-->
+		<result property="giveMoney"  column="grant_amount"></result>  <!--放款金额-->
+		<result property="giveTime"  column="loan_audit_time"></result>  <!--批复时间-->
+		<result property="giveDeadline"  column="loan_audit_months"></result>  <!--批复期限-->
+		<result property="giveProduct"  column="loan_audit_product"></result>  <!--批复产品-->
+		<result property="giveTimeRecon"  column="loan_second_finishtime"></result>  <!--复议批复时间-->
+		<result property="borrowAccountType"  column="dict_is_cycle"></result>  <!--借款账户类型(是否循环借)-->
+		<result property="customerManagerNo"  column="loan_managercode"></result>  <!--客户经理编号-->
+		<result property="teamManagerNo"  column="loan_team_managercode"></result>  <!--团队经理编号-->
+	</resultMap>
+	<select id="getApplicationInfo" parameterType="String" resultMap="applicationInfoMap">
+		select
+			info.loan_months,--借款期限
+			info.dict_repay_method,--还款方式
+			1 as loan_type, --借款类型(信用贷)
+			info.loan_audit_product AS product_type,--产品类型
+			info.loan_apply_time,--申请时间
+			info.loan_apply_amount,--借款金额
+			(select t.label from jk.t_gl_dict t where t.type = 'jk_loan_use' and t."value" = info.dict_loan_use )  realy_use,--实际用途
+			(select case count(coborrower.id) when  0 then '否' else '是' end from jk.t_jk_loan_coborrower coborrower where coborrower.loan_code=info.loan_code) loan_common_repayment_flag,--是否有共同还款人
+			rating.apply_risk_level,--进件评分风险等级
+			gr.grant_amount,--放款金额
+			info.loan_audit_time,--批复时间
+			info.loan_audit_months,--批借期限
+			info.loan_audit_product,--批复产品
+			info.loan_second_finishtime,--复议批复时间
+			(select label from jk.t_gl_dict dict where dict.type= 'jk_circle_loan_flag' and dict.value=info.dict_is_cycle)  dict_is_cycle,--循环借标识:字典201
+			info.loan_managercode,--客户经理编号
+			info.loan_team_managercode --团队经理编号
+		from jk.t_jk_loan_info info --借款信息
+			left join jk.t_jk_audit_rating rating on info.old_loan_code=rating.loan_code  --信审评分结果表
+			left join jk.t_jk_loan_grant gr on info.loan_code=gr.loan_code --放款表
+		where info.loan_code=#{loanCode}
+	</select>
+	<!-- 共同借款人（只传一个）-->
+	<resultMap id="coborrowerMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorCoborrowerInBean">
+		<result property="togetherName"  column="cobo_name"></result>  <!--	共借人姓名	-->
+		<result property="age"  column="cobo_age"></result>  <!--	年龄	-->
+		<result property="sex"  column="cobo_sex"></result>  <!--	性别(文本)	-->
+		<result property="marriageCase"  column="dict_marry_status"></result>  <!--	婚姻状况（文本）	-->
+		<result property="idChild"  column="cobo_have_child_flag"></result>  <!--	有无子女（文本）	-->
+		<result property="papersType"  column="dict_cert_type"></result>  <!--	证件类型（文本）	-->
+		<result property="papersNumber"  column="cobo_cert_num"></result>  <!--	证件号码	-->
+		<result property="certificateInstitu"  column="certificateInstitu"></result>  <!--	发证机关	-->
+		<result property="chone"  column="cobo_family_tel"></result>  <!--	固定电话	-->
+		<result property="mail"  column="cobo_email"></result>  <!--	邮箱	-->
+		<result property="mobile"  column="cobo_mobile"></result>  <!--	移动电话	-->
+		<result property="birthdayDate"  column="cobo_birthday"></result>  <!--	出生日期	-->
+		<result property="education"  column="dict_education"></result>  <!--	学历（文本）	-->
+		<result property="graduationDate"  column="customer_graduation_day"></result>  <!--	毕业时间	-->
+		<result property="register"  column="cobo_household_province"></result>  <!--	户籍	-->
+		<result property="registerDetail"  column="cobo_household_address"></result>  <!--	户籍详细地址	-->
+		<result property="liveAddress"  column="cobo_liveing_province"></result>  <!--	居住地址	-->
+		<result property="liveAddressDetail"  column="cobo_now_address"></result>  <!--	详细居住地址	-->
+		<result property="isFamilyKnow"  column="cobo_contact_is_know"></result>  <!--	家人是否知息本贷款（文本）	-->
+		
+		<collection property="mobileParam" resultMap="baseSecurityMap"></collection>
+	</resultMap>
+	<select id="getCoborrower" parameterType="String" resultMap="coborrowerMap">
+	select
+	(select listagg(c.cobo_name,',') from jk.t_jk_loan_coborrower c where c.loan_code=#{loanCode}) AS cobo_name,--姓名
+		coborrower.cobo_age,--年龄
+		(select label from jk.t_gl_dict dict where  dict.type= 'jk_sex' and  dict.value=coborrower.cobo_sex) cobo_sex,--性别
+		(select label from jk.t_gl_dict dict where  dict.type= 'jk_marriage' and  dict.value=coborrower.dict_marry_status) dict_marry_status,--婚姻状况
+		CASE coborrower.cobo_have_child_flag WHEN '1' THEN '有' ELSE '无' END cobo_have_child_flag,--是否有子女
+		coborrower.dict_cert_type,--证件类型
+		coborrower.cobo_cert_num,--证件号码
+		'' as certificateInstitu,--发证机关
+		coborrower.cobo_family_tel,--固定电话
+		coborrower.cobo_email,--电子邮箱
+		coborrower.cobo_mobile,--手机号1
+		coborrower.cobo_birthday,--出生日期
+		(select label from jk.t_gl_dict dict where  dict.type= 'jk_degree' and  dict.value=coborrower.dict_education) dict_education,--学历
+		coborrower.customer_graduation_day,--毕业日期
+		 (select area_name from jk.t_gl_province_city where area_type = '1' and area_code =coborrower.cobo_household_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =coborrower.cobo_household_city) cobo_household_province,--户籍省
+		(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =coborrower.cobo_household_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =coborrower.cobo_household_city)||coborrower.cobo_household_address cobo_household_address,--户籍地址
+			(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =coborrower.cobo_liveing_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =coborrower.cobo_liveing_city) cobo_liveing_province,--现住址省
+			(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =coborrower.cobo_liveing_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =coborrower.cobo_liveing_city) ||coborrower.cobo_now_address cobo_now_address,--现住址
+		(select label from jk.t_gl_dict dict where  dict.type= 'jk_yes_or_no' and  dict.value=coborrower.cobo_contact_is_know) as cobo_contact_is_know, --家人是否知息此借款
+		'' AS base_flg,     
+		'ID' AS base_ids,    
+		'USERCODE' AS base_user_code,
+		coborrower.create_by AS base_create_user,
+		to_char(coborrower.create_time,'yyyy-MM-dd hh24:mi:ss') AS base_create_time,
+		'qweasdzx1234' AS base_obj_sig,
+		'loanxj' AS base_db_name,
+		'T_JK_LOAN_COBORROWER' AS base_tab_name,
+		'cobo_mobile' AS base_enc_cols
+	from jk.t_jk_loan_coborrower coborrower
+	where coborrower.loan_code=#{loanCode}
+	</select>
+	<!-- 信用资料 -->
+	<resultMap id="creditInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorPersonalCreditInBean">
+		<result property="pledgeType"  column="dict_mortgage_type"></result>  <!--抵押类型（文本）-->
+		<result property="pledgeGoods"  column="credit_mortgage_goods"></result>  <!--抵押物品-->
+		<result property="monthMoney"  column="credit_months_amount"></result>  <!--每月供额度-->
+		<result property="blueCardCount"  column="credit_card_num"></result>  <!--信用卡总数-->
+	</resultMap>
+	<select id="getcreditInfo" parameterType="String" resultMap="creditInfoMap">
+	select
+		(select label from jk.t_gl_dict dict where  dict.type= 'jk_pledge_flag' and  dict.value=info.dict_mortgage_type) dict_mortgage_type,--抵押类型
+		info.credit_mortgage_goods,--抵押物品
+		info.credit_months_amount,--每月共额度
+		info.credit_card_num --信用卡总数
+	from jk.t_jk_loan_credit_info info
+	where info.loan_code=#{loanCode}
+	</select>
+	<!-- 职业信息 -->
+	<resultMap id="occupationalInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorPersonalJobInBean">
+		<result property="companyName"  column="comp_name"></result>  <!--"单位名称-->
+		<result property="companyType"  column="dict_comp_type"></result>  <!--"单位类型（文本）-->
+		<result property="zipCode"  column="comp_post_code"></result>  <!--"邮编-->
+		<result property="companyUrl"  column="comp_website"></result>  <!--"单位网址-->
+		<result property="companyPhone"  column="comp_tel"></result>  <!--"单位电话-->
+		<result property="companyScale"  column="comp_unit_scale"></result>  <!--"单位规模（文本）-->
+		<result property="branchPlace"  column="comp_department"></result>  <!--"所在部门-->
+		<result property="workYear"  column="comp_work_experience"></result>  <!--"工作年限-->
+		<result property="vocationType"  column="dict_comp_industry"></result>  <!--"行业类别（文本）-->
+		<result property="duty"  column="comp_post"></result>  <!--"职务-->
+		<result property="monthMoney"  column="comp_salary"></result>  <!--"每月收入-->
+		<result property="payDate"  column="comp_salary_day"></result>  <!--"支薪日期-->
+		<result property="otherMoney"  column="comp_other_amount"></result>  <!--"其他收入-->
+		<result property="entryDate"  column="comp_entry_day"></result>  <!--"入职时间-->
+		<result property="paymentType"  column="dict_salary_pay"></result>  <!--"支付方式（文本）-->
+	</resultMap>
+	<select id="getOccupationalInfo" parameterType="String" resultMap="occupationalInfoMap">
+	select
+		company.comp_name,--单位名称
+ 		(select label from jk.t_gl_dict dict where dict.type= 'jk_unit_type' and dict.value=company.dict_comp_type)  dict_comp_type,--单位类型
+		company.comp_post_code,--邮编
+		company.comp_website,--单位网址
+		company.comp_tel,--单位电话
+		company.comp_unit_scale,--单位规模
+		company.comp_department,--部门
+		company.comp_work_experience,--工作年限
+		(select label from jk.t_gl_dict dict where dict.type= 'jk_industry_type' and dict.value=company.dict_comp_industry) dict_comp_industry,--行业类别
+		(select label from jk.t_gl_dict dict where dict.type= 'jk_job_type' and dict.value=company.comp_post) AS comp_post,--职务
+		company.comp_salary,--每月收入
+		company.comp_salary_day,--支薪日
+		company.comp_other_amount,--其他收入
+		company.comp_entry_day,--入职时间
+		(select label from jk.t_gl_dict dict where dict.type= 'jk_pay_way' and dict.value=company.dict_salary_pay) as  dict_salary_pay --工资支付方式
+	from jk.t_jk_loan_customer customer --借款客户信息
+		inner join jk.t_jk_loan_company company on company.r_id=customer.id and company.loan_code=customer.loan_code--职业信息记录表
+	where customer.loan_code=#{loanCode}
+	</select>
+	<!-- 居住信息  -->
+	<resultMap id="residenceInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorPersonalAddrInBean">
+		<result property="buildDate"  column="house_create_day"></result>  <!--"建筑日期-->
+		<result property="buyDate"  column="house_buyday"></result>  <!--"购买日期-->
+		<result property="pledgeCall"  column="house_pledge_mark"></result>  <!--"抵押情况-->
+		<result property="equitiesGetdate"  column="property_get_day"></result>  <!--"产权取得日期-->
+		<result property="notSpareMoney"  column="house_less_amount"></result>  <!--"尚欠余款-->
+		<result property="floorSpace"  column="house_builing_area"></result>  <!--"房屋面积-->
+		<result property="mortgageMoney"  column="house_loan_amount"></result>  <!--"按揭总金额-->
+		<result property="mortgageYear"  column="house_loan_year"></result>  <!--"按揭年限-->
+		<result property="houseMoney"  column="house_amount"></result>  <!--"房屋购买价格-->
+		<result property="ownedallRelation"  column="house_property_relation"></result>  <!--"与共有人关系（文本）-->
+		<result property="housePlace"  column="house_province"></result>  <!--"房产地址-->
+		<result property="housePlaceDetail"  column="house_address"></result>  <!--"详细地址-->
+		<result property="gocityDate"  column="customer_firt_arrive_year"></result>  <!--"出来本市时间-->
+		<result property="residenceType"  column="dict_house_type"></result>  <!--"居住类型（文本）-->
+		<result property="houseMonthMoney"  column="customer_month_repay_amount"></result>  <!--"月还款额-->
+		<result property="monthRent"  column="customer_rent_month"></result>  <!--"月租金-->
+		<result property="liveCount"  column="customer_living_num"></result>  <!--"居住人数-->
+	</resultMap>
+	<select id="getResidenceInfo" parameterType="String" resultMap="residenceInfoMap">
+	select 
+		house.house_create_day,--建筑日期
+		house.house_buyday,--购买日期
+		house.house_pledge_mark,--抵押情况
+		house.property_get_day,--产权取得日期
+		house.house_less_amount,--房屋贷款尚欠余额
+		house.house_builing_area,--房屋面积
+		house.house_loan_amount,--按揭总金额
+		house.house_loan_year,--按揭年限
+		house.house_amount,--房屋购买价格
+		(select t.label from jk.t_gl_dict t where t."type" = 'jk_house_common_type' and t."value" = house.house_property_relation) house_property_relation,--与共有人关系
+		(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =house.house_province)||(select area_name from jk.t_gl_province_city where area_type = '2' and area_code =house.house_city) as house_province,--房产所在省
+		house.house_address,--房产地址
+		livings.customer_firt_arrive_year,--初来本市年份
+		(select label from jk.t_gl_dict dict where dict.type= 'jk_house_type' and dict.value=livings.dict_house_type) dict_house_type,--住宅类型(关联字典表)
+		livings.customer_month_repay_amount,--月还款额
+		livings.customer_rent_month,--月租金
+		livings.customer_living_num --居住人数
+	from jk.t_jk_loan_customer customer --借款客户信息
+		inner join jk.t_jk_loan_house house on customer.id=house.r_customer_coborrower_id and customer.loan_code=house.loan_code and house.loan_customter_type='0'
+		inner join jk.t_jk_customer_livings livings on customer.id=livings.r_customer_coborrower_id and customer.loan_code=livings.loan_code and loan_customter_type='0'
+	where customer.loan_code=#{loanCode}
+	</select>
+	<!-- 联系人资料（只传一个） -->
+	<resultMap id="contactInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorContactInBean">
+		<result property="linkmanName"  column="contact_name"></result>  <!--"联系人姓名-->
+		<result property="selfRelation"  column="contact_relation"></result>  <!--"和本人关系（文本）-->
+		<result property="workPlace"  column="contact_sex"></result>  <!--"工作单位（文本）-->
+		<result property="monadPhone"  column="contact_unit_tel"></result>  <!--"单位电话-->
+		<result property="mobile"  column="contact_mobile"></result>  <!--"移动电话-->
+		<result property="nowPlace"  column="contact_now_address"></result>  <!--"现住址-->
+		<result property="email"  column="contact_email"></result>  <!--"邮箱-->
+		
+		<collection property="mobileParam" resultMap="baseSecurityMap"></collection>
+	</resultMap>
+	<select id="getContactInfo" parameterType="String" resultMap="contactInfoMap">
+	select
+		contact.contact_name,--姓名
+		(select d.label from jk.t_gl_dict d where d.type='jk_relation_type' and d.value = contact.contact_relation ) contact_relation,--和本人关系
+		contact.contact_sex,--工作单位
+		contact.contact_unit_tel,--单位电话
+		contact.contact_mobile,--MOBILE
+		contact.contact_now_address,--现住址
+		contact.contact_email, --EMAIL
+		'' AS base_flg,     
+		'ID' AS base_ids,    
+		'USERCODE' AS base_user_code,
+		contact.create_by AS base_create_user,
+		to_char(contact.create_time,'yyyy-MM-dd hh24:mi:ss') AS base_create_time,
+		'qweasdzx1234' AS base_obj_sig,
+		'loanxj' AS base_db_name,
+		'T_JK_CONTACT' AS base_tab_name,
+		'contact_mobile' AS base_enc_cols
+	from jk.t_jk_loan_customer customer --借款客户信息
+	inner join jk.t_jk_contact contact on customer.id=contact.r_customer_coborrower_id and customer.loan_code=contact.loan_code and contact.loan_customter_type='0'--联系人信息
+	where customer.loan_code=#{loanCode}
+	</select>
+	<!-- 银行卡资料  -->
+	<resultMap id="bankCardInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorBankCardInBean">
+		<result property="subbranchBank"  column="bank_branch"></result>  <!--"具体支行-->
+		<result property="cardType"  column="bank_no"></result>  <!--"银行类型（文本）-->
+		<result property="openName"  column="bank_account_name"></result>  <!--"开户姓名-->
+		<result property="cardBreak"  column="dict_crea_type"></result>  <!--"卡or折（文本）-->
+		<result property="cardNo"  column="bank_account"></result>  <!--"银行卡号-->
+		<result property="bankCardPlace"  column="bank_province"></result>  <!--"银行卡所在-->
+		<result property="detailedAddress"  column="bank_orc"></result>  <!--"详细地址-->
+	</resultMap>
+	<select id="getBankCardInfo" parameterType="String" resultMap="bankCardInfoMap">
+	select 
+		CONCAT((select label from jk.t_gl_dict dict where  dict.type= 'jk_open_bank' and  dict.value=bank.bank_name),bank.bank_branch) bank_branch,--开户行+具体支行
+		(select t."label" from jk.t_gl_dict t where t.type = 'jk_open_bank' and t."value" = bank.bank_name) bank_no ,--开户行行号
+		bank.bank_account_name,--开户姓名
+		(select t."label" from jk.t_gl_dict t where t.type = 'com_card_type' and t."value" = bank.dict_crea_type) as dict_crea_type,--卡或折
+		bank.bank_account,--账户
+		(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =bank.bank_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =bank.bank_city) bank_province,--银行卡所在城市省市
+		(select area_name from jk.t_gl_province_city where area_type = '1' and area_code =bank.bank_province) || (select area_name from jk.t_gl_province_city where area_type = '2' and area_code =bank.bank_city)||bank.bank_branch bank_orc--银行卡ocr地址
+	from  jk.t_jk_loan_bank bank --账户信息
+	where bank.bank_top_flag='1' and bank.repayment_flag = '0' and bank.loan_code=#{loanCode}
+	</select>
+	<!-- 车借补充（如果借款类型为车借） -->
+	<resultMap id="debtToCarInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorCarInfoInBean">
+	</resultMap>
+	<!-- 合同 -->
+	<resultMap id="contractInfoMap" type="com.creditharmony.adapter.bean.in.djrcreditor.DjrSendCreditorContractSubInBean">
+		<result property="fileName"  column="contract_file_name"></result>  <!--"合同名-->
+		<result property="docId"  column="doc_id"></result>  <!--"文件-->
+		<result property="fileSuffix"  column="fileSuffix"></result>  <!--"文件类型-->
+	</resultMap>
+	<select id="getContractInfo" parameterType="java.util.Map" resultMap="contractInfoMap">
+	select
+		_file.contract_file_name, --合同名
+		_file.doc_id, --文件编号
+		'pdf' AS fileSuffix --文件类型
+	from jk.t_jk_contract contract --合同表
+		left join jk.t_jk_contract_file _file on contract.contract_code=_file.contract_code --合同文件
+	where contract.contract_code =  #{contractCode} and 
+		<foreach collection="contract_djr_filename" open="(" close=")" item="filename" separator="or">
+			_file.contract_file_name='${filename}'
+		</foreach>
+	</select>
+	
+	<select id="getInfoIsNew" parameterType="String" resultType="Map">
+		select
+			info.loaninfo_oldornew_flag --是否是新版数据
+		from jk.t_jk_loan_info info --借款信息
+		where info.loan_code=#{loanCode}
+	</select>
+	
+</mapper>

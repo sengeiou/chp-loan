@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.DoStoreDao">
+	<!--门店待办更改还款申请信息   -->
+	<update id="updateApplyPayback">
+	UPDATE jk.t_jk_payback_apply
+ 	<trim prefix="SET" suffixOverrides=","> 
+		<if test="dictRepayMethod != null and dictRepayMethod != ''"> 
+		 	dict_repay_method=#{dictRepayMethod},
+		 </if>
+		 <if test="dictPaybackStatus != null and dictPaybackStatus != ''"> 
+		 	dict_payback_status=#{dictPaybackStatus},
+		 </if>
+		 <if test="applyAmount != null"> 
+		 	apply_amount=#{applyAmount},
+		 </if>
+		 <if test="dictDealType != null and dictDealType != ''"> 
+		 	dict_deal_type=#{dictDealType},
+		 </if>
+		 <if test="loanBank.bankAccountName != null and loanBank.bankAccountName != ''"> 
+		 	apply_account_name=#{loanBank.bankAccountName},
+		 </if>
+		 <if test="loanBank.bankAccount != null and loanBank.bankAccount != ''"> 
+		 	apply_deduct_account=#{loanBank.bankAccount},
+		 </if>
+		 <if test="loanBank.bankName != null and loanBank.bankName != ''"> 
+		 	apply_bank_name=#{loanBank.bankName},
+		 </if>
+		 <if test="applyReallyAmount != null"> 
+		 	apply_really_amount=#{applyReallyAmount},
+		 </if>
+		 <if test="dictDepositAccount != null and dictDepositAccount !=''"> 
+		 	dict_deposit_account=#{dictDepositAccount},
+		 </if>
+		  <if test="splitBackResult !=''"> 
+		 	split_back_result=#{splitBackResult},
+		 </if>
+		  <if test="applyBackMes !=''"> 
+		 	apply_back_mes=#{applyBackMes},
+		 </if>
+		 <if test="operateRole !=null and operateRole !=''"> 
+		 	operate_role=#{operateRole},
+		 </if>
+		 <if test="modifyTime != null"> 
+		 	modify_time=#{modifyTime},
+		 </if>
+		 <if test="modifyBy != null"> 
+		 	modify_by=#{modifyBy}
+		 </if>
+		 </trim>
+		WHERE id = #{id} and cast(extract(epoch from modify_time) as varchar) = #{reqTime}
+	</update>
+	
+	<!--门店待办更新汇款信息   -->
+	<delete id="deletePaybackTransferInfo">
+		DELETE FROM jk.t_jk_payback_transfer_info
+		WHERE r_payback_apply_id = #{rPaybackApplyId}
+	</delete>
+
+	<!--保存新增还款转账记录信息 -->
+	<insert id="insertPayBackTransferInfo">
+		INSERT INTO jk.t_jk_payback_transfer_info (
+			id,
+			r_payback_apply_id,
+			contract_code,
+			dict_deposit,
+			tran_deposit_time,
+			stores_in_account,
+			stores_in_accountname,
+			really_amount,
+			deposit_name,
+			audit_status,
+			upload_name,
+			upload_date,
+			upload_filename,
+			upload_path,
+			relation_type,
+			create_by,
+			create_time,
+			modify_by, 
+			modify_time
+			)
+			VALUES(
+			#{id},
+			#{rPaybackApplyId},
+			#{contractCode},
+			#{dictDeposit},
+			#{tranDepositTime},
+			#{storesInAccount},
+			#{storesInAccountname},
+			#{reallyAmount},
+			#{depositName},
+			#{auditStatus},
+			#{uploadName},
+			#{uploadDate},
+			#{uploadFilename},
+			#{uploadPath},
+			#{relationType},
+			#{createBy},
+			#{createTime},
+			#{modifyBy},
+			#{modifyTime})
+	</insert>
+	
+	<select id="getPaybackChargeList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackCharge">
+	SELECT 
+		pc.id, 
+		pc.apply_amount_payback, 
+		pc.contract_code, 
+		pc.apply_amount_violate, 
+		pc.apply_amount_punish, 
+		pc.dict_offset_type, 
+		pc.penalty_total_amount, 
+		pc.settle_total_amount,
+		pc.month_overdue_mes, 
+		pc.charge_status, 
+		pc.return_reason
+	  FROM t_jk_payback_charge pc
+	  where 1=1
+  	<if test="id != null and id != ''">
+		and pc.id=#{id}
+	</if>
+	<if test="contractCode != null and contractCode != ''">
+		and pc.contract_code = #{contractCode}
+	</if>
+	<if test="dictOffsetType != null and dictOffsetType != ''">
+	and pc.dict_offset_type = #{dictOffsetType}
+	</if>
+	<if test="chargeStatus != null and chargeStatus != ''">
+	and pc.charge_status = #{chargeStatus}
+	</if>
+  
+	</select>
+</mapper>

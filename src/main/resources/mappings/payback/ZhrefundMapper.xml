@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.ZhrefundDao">
+<resultMap type="com.creditharmony.loan.borrow.payback.entity.Zhrefund" id="zhrefund">
+    <id column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    
+</resultMap>
+
+  <!-- 获取中和数据 -->
+  <select id="getZhrefundList" parameterType="com.creditharmony.loan.borrow.payback.entity.Zhrefund" 
+  	resultType="com.creditharmony.loan.borrow.payback.entity.Zhrefund">
+  	select c.contract_code contractCode,
+  		i.loan_customer_name customerName,
+  		o.name storeName,
+  		i.dict_loan_status dictLoanStatus,
+  		p.payback_bule_amount paybackBuleAmount,
+  		p.payback_month_amount paybackMonthAmount,
+  		z.zhrefund_status zhrefundStatus
+  	from jk.t_jk_contract c,
+  		jk.t_jk_payback p,
+  		jk.t_jk_loan_info i,
+  		jk.t_jk_zhrefund z,
+  		jk.t_gl_org o
+  	where c.contract_code=p.contract_code
+  			and c.loan_code=i.loan_code
+  			and i.loan_store_orgid=o.id
+  			and c.contract_code=z.contract_code
+  	<if test="contractCode!=null and contractCode!=''">
+     	and c.contract_code = #{contractCode} 
+    </if>
+    <if test="customerName!=null and customerName!=''">
+     	and i.loan_customer_name = #{customerName} 
+    </if>
+    <if test="storeId!=null and storeId!=''">
+     	and i.loan_store_orgid in (${storeId}) 
+    </if>
+    <if test="dictLoanStatus!=null and dictLoanStatus!=''">
+     	and i.dict_loan_status = #{dictLoanStatus} 
+    </if>
+    <if test="zhrefundStatus!=null and zhrefundStatus!=''">
+     	and z.zhrefund_status = #{zhrefundStatus} 
+    </if>
+    order by z.create_time desc
+  </select>
+  <!-- 修改中和不可退款状态 -->
+  <update id="updateZhrefundStatus" parameterType="com.creditharmony.loan.borrow.payback.entity.Zhrefund" >
+  	update jk.t_jk_zhrefund set zhrefund_status=#{zhrefundStatus}
+  		<if test="modifyTime!=null and modifyTime!=''">
+	     	,modify_time = #{modifyTime} 
+	    </if>
+	    <if test="modifyBy!=null and modifyBy!=''">
+	     	,modify_by = #{modifyBy} 
+	    </if>
+	    where zhrefund_status is not null
+	    <if test="contractCode!=null and contractCode!=''">
+	    	and contract_code in(${contractCode})
+	    </if>
+	    
+  </update>
+  <!-- 插入中和东方数据 -->
+  <insert id="insertZhrefund"  parameterType="java.util.List">
+  	<foreach collection="list" item="item" index="index" >
+	  	insert into jk.t_jk_zhrefund (id
+	  		,contract_code
+	  		,zhrefund_status
+	  		,create_by
+	  		,modify_by)
+	  	values(
+	  		#{item.id}
+	  		,#{item.contractCode}
+	  		,#{item.zhrefundStatus}
+	  		,#{item.createBy}
+	  		,#{item.modifyBy}
+	  		);
+  	</foreach>
+  </insert>
+  <!-- 根据合同编号查找对应的中和东方数据 -->
+  <select id="findByContractCode" resultType="zhrefund">
+  	select contract_code from jk.t_jk_zhrefund 
+  	where contract_code=#{contractCode}
+  	<if test="zhrefundStatus!=null and zhrefundStatus!=''">
+	    	and zhrefund_status =#{zhrefundStatus}
+	</if>
+  </select>
+</mapper>
+	

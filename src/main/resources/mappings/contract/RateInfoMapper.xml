@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.RateInfoDao">
+ <resultMap type="com.creditharmony.loan.borrow.contract.entity.RateInfo" id="baseColumnMap">
+   <result column="id" property="id" jdbcType="VARCHAR"/>
+   <result column="rate" property="rate" jdbcType="VARCHAR"/>
+   <result column="effective_flag" property="effectiveFlag" jdbcType="VARCHAR"/>
+   <result column="start_date" property="startDate" jdbcType="VARCHAR"/>
+   <result column="end_date" property="endDate" jdbcType="VARCHAR"/>
+   <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+   <result column="create_time" property="createTime" jdbcType="VARCHAR"/>
+   <result column="modify_by" property="modifyBy" jdbcType="VARCHAR"/>
+   <result column="modify_time" property="modifyTime" jdbcType="VARCHAR"/>
+ </resultMap>
+ <sql id="baseColumn">
+    id,rate,
+    effective_flag,
+    start_date,
+    end_date,
+    create_by,
+    create_time,
+    modify_by,
+    modify_time
+ </sql>
+ <select id="findList" resultMap="baseColumnMap">
+   select 
+     <include refid="baseColumn"/> 
+   from jk.t_jk_rate_info 
+   where 
+   1=1 
+   <if test="effectiveFlag!=null and effectiveFlag!=''">
+     and effective_flag = #{effectiveFlag,jdbcType=VARCHAR}
+   </if>
+   <if test="riskLevel!=null and riskLevel!=''">
+     and risk_level = #{riskLevel,jdbcType=VARCHAR}
+   </if>
+   <if test="curDate!=null and curDate!=''">
+    and start_date <![CDATA[<=]]> #{curDate,jdbcType=VARCHAR}
+   </if>
+   <if test="loanMonths!=null and loanMonths!=''">
+    and loan_months = #{loanMonths,jdbcType=INTEGER}
+   </if>
+    <if test="curDate!=null and curDate!=''">
+    and end_date <![CDATA[>=]]> #{curDate,jdbcType=VARCHAR}
+   </if>
+ </select> 
+ <select id="findRateInfoByMonths" resultMap="baseColumnMap">
+   select 
+     <include refid="baseColumn"/> 
+   from jk.t_jk_rate_info 
+   where  1=1 and loan_months = #{loanMonths,jdbcType=INTEGER}
+ </select> 
+ <update id="updEffctiveDateById" parameterType="com.creditharmony.loan.borrow.contract.entity.RateInfo">
+    update jk.t_jk_rate_info 
+    <set>
+      <if test="effectiveFlag!=null and effectiveFlag!=''">
+        effective_flag = #{effectiveFlag,jdbcType=VARCHAR},
+      </if>
+       start_date = #{startDate,jdbcType=VARCHAR},
+       end_date = #{endDate,jdbcType=VARCHAR},
+       modify_by = #{modifyBy,jdbcType=VARCHAR},
+       modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+    </set>
+       where id=#{id,jdbcType=VARCHAR} 
+ </update> 
+ <select id="getRiskLevel" parameterType="String" resultType="Map">
+ 	select verify_risk_level as verifyRiskLevel,reconsider_risk_level as reconsiderRiskLevel from t_jk_audit_rating where loan_code=#{loan_code}
+ </select>
+</mapper>

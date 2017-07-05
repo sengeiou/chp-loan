@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.LoanNosDao">
+	<sql id="numColumns">
+		no_type
+		,no_keys
+		,no_count
+	</sql>
+	
+	<select id="get" resultType="com.creditharmony.loan.common.entity.LoanNos">
+		select
+		<include refid="numColumns" />
+		from jk.t_gl_jk_loan_nos
+		where 1=1
+		<if test="noType!=null and noType !=''">
+			and no_type = #{noType}
+		</if>
+		<if test="noKeys!=null and noKeys !=''">
+			and no_keys = #{noKeys}
+		</if>
+		<if test="noCount!=null and noCount !=''">
+			and no_count = #{noCount}
+		</if>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO jk.t_gl_jk_loan_nos(
+		<include refid="numColumns" />
+		) VALUES (
+		#{noType},
+		#{noKeys},
+		#{noCount}
+		)
+	</insert>
+
+	<update id="update">
+		update jk.t_gl_jk_loan_nos set no_count =
+		#{noCount}
+		where no_type = #{noType} and no_keys =#{noKeys}
+	</update>
+	
+</mapper>
+	

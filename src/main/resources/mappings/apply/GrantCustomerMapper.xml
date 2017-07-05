@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.GrantCustomerDao">
+  <resultMap id="GrantCustomer" type="com.creditharmony.loan.borrow.grant.entity.ex.GrantCustomerEx">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="product_name" jdbcType="VARCHAR" property="productName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+    <result column="customer_sex" jdbcType="VARCHAR" property="customerSex" />
+    <result column="contract_months" jdbcType="VARCHAR" property="contractMonths" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="customerTelesalesFlag"/>
+    <result column="contract_replay_day" jdbcType="DATE" property="contractReplayDay"/>
+    <result column="contract_end_day" jdbcType="DATE" property="contractEndDay"/>
+    <result column="manager_name" jdbcType="VARCHAR" property="managerName"/><!-- 客户经理 -->
+    <result column="team_manager_name" jdbcType="VARCHAR" property="teamManagerName"/><!-- 团队经理 -->
+    <result column="service_user_name" jdbcType="VARCHAR" property="serviceUserName"/><!-- 客服人员 -->
+    <result column="survey_empId" jdbcType="VARCHAR" property="surveyEmpId"/><!-- 外访人员 -->
+    <result column="contract_fact_day" jdbcType="DATE" property="contractFactDay"/>
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractAmount"/>
+    <result column="fee_payment_amount" jdbcType="NUMERIC" property="feePaymentAmount"/>
+    <result column="contract_month_repay_total" jdbcType="NUMERIC" property="contractMonthRepayAmount"/>
+    <result column="loan_flag" jdbcType="VARCHAR" property="loanFlag"/>
+    <result column="id_start_day" jdbcType="DATE" property="idStartDay"/>
+    <result column="id_end_day" jdbcType="DATE" property="idEndDay"/>
+    <result column="bank_signing_platform" jdbcType="VARCHAR" property="bankSigningPlatform"/>
+    <result column="contract_version" jdbcType="VARCHAR" property="contractVersion"/>
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="feeUrgedService"/>
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccount"/>
+    <result column="bank_name" jdbcType="VARCHAR" property="bankName"/>
+    <result column="contract_back_result" jdbcType="VARCHAR" property="backReason"/><!-- 最后一次退回原因 -->
+    <result column="check_id" jdbcType="VARCHAR" property="checkId"/>
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="loanUrgentFlag" />
+    <result column="audit_count" jdbcType="VARCHAR" property="checkCount" />
+    <result column="riskLevel" jdbcType="VARCHAR" property="riskLevel" />
+  </resultMap>
+  
+  <!-- 根据放款id查询客户信息表 -->
+  <select id="getCustomerList" resultMap="GrantCustomer">
+	select distinct
+		auditing_time as contractAuditDate,
+		a.id,
+		d.apply_id,
+		a.contract_code,
+		a.loan_code,
+		t.product_name,
+		round(grant_amount,2) as grantAmount,
+		customer_name,
+		customer_cert_num,
+		loan_flag,
+		loan_urgent_flag,
+		contract_months,
+		customer_telesales_flag,
+		bank_name,
+		o.name as stores_name,
+		bank_account,
+		round(fee_urged_service,2) as feeUrgedService,
+		contract_version,
+		bank_signing_platform,
+		id_end_day,
+		id_start_day,
+		round(contract_month_repay_total,2) as contractMonthRepayAmount,
+		round(fee_payment_amount,2) as feePaymentAmount,
+		round(contract_amount,2) as contractAmount,
+		contract_due_day contract_fact_day,
+		auditing_by as check_id,  
+		contract_end_day,
+		contract_replay_day,
+		customer_address,
+		customer_sex,
+		audit_count,			
+		contract_back_result,  	
+		round(c.fee_petition,2) as feePetition
+		,e.contract_due_day
+		,e.model
+		,pb.payback_day as billDay,
+		(case when rat.reconsider_risk_level is null then rat.verify_risk_level else rat.reconsider_risk_level end) as riskLevel,
+		e.revisit_status 
+	from
+		jk.t_jk_loan_grant a
+		LEFT JOIN jk.t_jk_loan_info d ON d.loan_code=a.loan_code
+		LEFT JOIN jk.t_jk_contract_fee c ON c.contract_code=a.contract_code
+		LEFT JOIN jk.t_jk_contract e ON e.contract_code=a.contract_code 
+		LEFT JOIN jk.t_gl_jk_product t ON t.product_code=e.product_type
+		LEFT JOIN jk.t_jk_loan_customer m ON m.loan_code=d.loan_code
+		LEFT JOIN jk.t_jk_loan_bank n ON n.loan_code=d.loan_code
+		LEFT JOIN jk.t_gl_org o ON o.id = d.loan_store_orgid
+		LEFT JOIN jk.t_jk_payback pb ON pb.contract_code=e.contract_code
+		LEFT JOIN jk.t_jk_audit_rating rat ON rat.loan_code=a.loan_code
+	where n.bank_top_flag = '1' and n.repayment_flag = '0' 
+       and 
+	   e.apply_id in 
+	  <foreach collection="ids" index="index" item="item" open="(" close=")" separator=",">
+	  		#{item}
+		</foreach> 
+  </select>
+  
+  <!-- 根据借款编号查询客户信息表，金信待款项确认列表和大金融待款项确认列表 -->
+  <select id="getCustomerByLoanCodes" resultMap="GrantCustomer">
+	SELECT 
+		A.LOAN_CODE,
+		C.CUSTOMER_NAME,
+		C.CUSTOMER_CERT_NUM,
+		SEX.LABEL AS CUSTOMER_SEX,
+		M5.PRODUCT_NAME,
+		D.CONTRACT_CODE,
+		M6.NAME AS STORESNAME,
+		E.BANK_ACCOUNT,
+		BANK.LABEL AS BANK_NAME,
+		ROUND(G.FEE_PAYMENT_AMOUNT,2) AS FEEPAYMENTAMOUNT,
+		ROUND(D.CONTRACT_AMOUNT,2) AS CONTRACTAMOUNT,
+		ROUND(H.payback_month_amount,2) AS CONTRACTMONTHREPAYAMOUNT,
+		D.CONTRACT_MONTHS,
+		UF.LABEL AS loan_urgent_flag,
+		D.CONTRACT_REPLAY_DAY,
+		D.CONTRACT_END_DAY,
+		H.PAYBACK_DAY,
+		c1.NAME as check_id,
+		D.auditing_time contractAuditDate,
+		D.AUDIT_COUNT,
+		D.CONTRACT_BACK_RESULT,
+		CL.LABEL AS LOAN_FLAG,
+		D.contract_due_day CONTRACT_FACT_DAY,
+		TL.LABEL AS CUSTOMER_TELESALES_FLAG,
+		C.ID_END_DAY,
+		C.ID_START_DAY,
+		DP.LABEL AS BANK_SIGNING_PLATFORM,
+		CV.LABEL AS CONTRACT_VERSION,
+		ROUND(G.FEE_URGED_SERVICE,2) AS FEEURGEDSERVICE,
+		ROUND(G.FEE_PETITION,2) AS FEEPETITION,
+		(case when rat.reconsider_risk_level is null then rat.verify_risk_level else rat.reconsider_risk_level end) as riskLevel,
+		d.revisit_status 
+	     FROM (SELECT * FROM JK.T_JK_LOAN_INFO WHERE DICT_LOAN_STATUS = '65' AND LOAN_FLAG = #{channelCode}) B 
+	     INNER JOIN JK.T_JK_LOAN_GRANT A ON A.LOAN_CODE=B.LOAN_CODE
+		 INNER JOIN JK.T_JK_LOAN_CUSTOMER C ON C.LOAN_CODE=B.LOAN_CODE
+		 INNER JOIN JK.T_JK_CONTRACT D ON A.LOAN_CODE=D.LOAN_CODE
+		 LEFT JOIN JK.T_JK_LOAN_BANK E ON A.LOAN_CODE=E.LOAN_CODE AND E.BANK_TOP_FLAG='1' and E.REPAYMENT_FLAG = '0'
+		 LEFT JOIN JK.T_JK_CONTRACT_FEE G ON D.CONTRACT_CODE=G.CONTRACT_CODE
+		 LEFT JOIN JK.T_JK_PAYBACK H ON H.CONTRACT_CODE = D.CONTRACT_CODE
+		 LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_sex') SEX ON SEX.VALUE = C.CUSTOMER_SEX
+		 LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_open_bank') BANK ON BANK.VALUE = E.BANK_NAME
+		 LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_channel_flag') CL ON CL.VALUE = B.LOAN_FLAG
+		 LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_telemarketing') TL ON TL.VALUE = CUSTOMER_TELESALES_FLAG
+		 LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_urgent_flag') UF ON UF.VALUE = loan_urgent_flag
+		 LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_deduct_plat') DP ON DP.VALUE = BANK_SIGNING_PLATFORM
+		 LEFT JOIN (SELECT LABEL,VALUE FROM JK.T_GL_DICT WHERE TYPE = 'jk_contract_ver') CV ON CV.VALUE = contract_version
+		 LEFT JOIN JK.T_GL_JK_PRODUCT M5 ON M5.PRODUCT_CODE=D.PRODUCT_TYPE
+		 LEFT JOIN JK.T_GL_ORG M6 ON M6.ID = B.LOAN_STORE_ORGID 
+		 LEFT JOIN jk.t_jk_audit_rating rat ON rat.loan_code=B.loan_code
+		 LEFT JOIN JK.T_GL_USER c1 ON c1.ID = D.auditing_by
+	<where>
+		<if test="goldCreditStatus != null and goldCreditStatus != ''">
+			A.gold_credit_status= #{goldCreditStatus}
+		</if>
+		<if test="loanCodes != null">
+			and A.LOAN_CODE IN
+			<foreach collection="loanCodes" item="item" open="(" close=")" separator=",">
+		  		#{item}
+			</foreach>
+		</if>
+	  <if test="loanStatusCode != null and loanStatusCode == '1'.toString()">
+			and B.frozen_flag = '1'
+	  </if>
+	  <if test="loanStatusCode!= null and loanStatusCode == '65'.toString()">
+			and B.frozen_flag != '1'
+	  </if>
+      <if test="identityCode != null and identityCode != ''" >
+        and C.customer_cert_num LIKE CONCAT('%', #{identityCode}, '%')
+      </if>
+      <if test="customerName != null and customerName != ''" >
+        and B.loan_customer_name LIKE CONCAT('%', #{customerName}, '%')
+      </if>
+      <if test="contractCode != null and contractCode != ''" >
+        and A.contract_code = #{contractCode}
+      </if>
+      <if test="storeOrgIds != null and storeOrgIds != ''" > <!-- 门店id -->
+      	and B.loan_store_orgid in
+		<foreach item="item" index="index" collection="storeOrgIds" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+      </if>
+      <if test="revisitStatus != null and revisitStatus != '' and revisitQueryName=='kong'.toString()" > <!-- 回访状态 -->
+      	and (D.revisit_status in
+		<foreach item="item" index="index" collection="revisitStatus" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+       	 or D.revisit_status is null )
+      </if>
+      <if test="revisitStatus != null and revisitStatus != '' and revisitQueryName!='kong'.toString()" > <!-- 回访状态 -->
+      	and D.revisit_status in
+		<foreach item="item" index="index" collection="revisitStatus" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+      </if>
+      <if test="additionalFlag != null and additionalFlag != ''">
+      	and dict_is_additional = #{additionalFlag}
+      </if>
+	  <if test="telesalesFlag != null and telesalesFlag != ''">
+	  	and customer_telesales_flag =#{telesalesFlag}
+	  </if>
+	  <if test="urgentFlag != null and urgentFlag != ''">
+	  	and loan_urgent_flag = #{urgentFlag}
+	  </if>
+	  <if test="riskLevel != null and riskLevel != ''">
+	  	and (case when reconsider_risk_level is not null then reconsider_risk_level = #{riskLevel} else verify_risk_level = #{riskLevel} end)
+	  </if>
+	  <if test="paperLessFlag != null and paperLessFlag != ''">
+	  	and paperless_flag = #{paperLessFlag}
+	  </if>
+	  <if test="replyProductCode != null and replyProductCode != ''">
+	  	and M5.product_code = #{replyProductCode}
+	  </if>
+	  <if test="contractVersion != null and contractVersion != ''">
+	  	and contract_version = #{contractVersion}
+	  </if>
+	  <if test = "ensureManFlag != null and ensureManFlag != ''">
+	  	and (case when #{ensureManFlag} ='1' then company_name is not null else company_name is null end)
+	  </if>
+	  <if test = "registFlag != null and registFlag != ''">
+	  	and is_register = #{registFlag}
+	  </if>
+	  <if test = "signUpFlag != null and signUpFlag != ''">
+	  	and sign_up_flag = #{signUpFlag}
+	  </if>
+	  <if test = "checkTime != null and checkTime != ''">
+	  	and to_date(to_char(auditing_time,'yyyy-MM-dd')) = #{checkTime}
+	  </if>
+  	</where>
+  	order by b.order_field
+  </select>
+</mapper>

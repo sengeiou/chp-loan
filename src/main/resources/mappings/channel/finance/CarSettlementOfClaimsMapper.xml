@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.creditharmony.loan.channel.finance.dao.CarSettlementOfClaimsDao">
+	<resultMap
+		type="com.creditharmony.loan.channel.finance.entity.CarSettlementOfClaimsEntity"
+		id="settlementOfClaimsMap">
+		<result property="loanCode" column="contract_code"></result><!-- 借款ID -->
+		<result property="loanCustomerName" column="loan_customer_name"></result><!--债务人 -->
+		<result property="loanStartDate" column="contract_fact_day"></result><!-- 原始借款开始日期 -->
+		<result property="feeMonthRate" column="fee_month_rate"></result><!-- 债权月利率（%） -->
+		<result property="contractAmount" column="contract_amount"></result><!-- 债权转入金额（元） -->
+		<result property="settleDate" column="settled_date"></result><!-- 提前结清日期 -->
+	</resultMap>
+	
+	<sql id="selectCondition">
+		<if test="params.cid != null and params.cid != ''">
+			and id in (${params.cid})
+		</if>
+		<if test="params.loanCode != null and params.loanCode != ''">
+			and contract_code = #{params.loanCode}
+		</if>
+		<if test="params.settleStartDate != null and params.settleStartDate != ''">
+			and loan_info.settled_date &gt;=#{params.settleStartDate}
+		</if>
+		<if test="params.settleEndDate != null and params.settleEndDate != ''">
+			and loan_info.settled_date &lt;=#{params.settleEndDate}
+		</if>
+		<if test="params.id != null and params.id != ''">
+			and id = #{params.id}
+		</if>
+		and channel_Type = '2'
+	</sql>
+	
+	
+	<select id="findCarSettlementOfClaimsList"
+		parameterType="com.creditharmony.loan.channel.finance.view.SettlementOfClaimsParams"
+		resultMap="settlementOfClaimsMap">
+		select 
+			id,
+			contract_code, 
+			loan_customer_name, 
+			contract_fact_day,
+			fee_month_rate,
+			primeval_worth contract_amount,
+			settled_date 
+		FROM
+		    t_cj_creditor_right_info 
+		where credit_type = #{params.creditType} 
+		<include refid="selectCondition"></include>
+		order by contract_fact_day desc
+	</select>
+	
+	
+	<update id="updateCarSettlementOfClaims"
+		parameterType="com.creditharmony.loan.channel.finance.view.CarSettlementOfClaimsParams">
+		update t_cj_big_finance
+		<if test="params.settleConfirmDate != null and params.settleConfirmDate != ''">
+			set credit_type = '4'
+			,settle_confirm_date = #{params.settleConfirmDate}
+		</if>
+		<if test="params.creditExportDate != null and params.creditExportDate != ''">
+			set credit_export_date = #{params.creditExportDate}
+		</if>
+		where loan_code =
+		any(select big_finance.loan_code from t_cj_big_finance big_finance,T_JK_CONTRACT
+		contract ,T_CJ_LOAN_INFO loan_info
+		where big_finance.loan_code =
+		contract.loan_code and contract.loan_code = loan_info.loan_code
+		and
+		loan_info.LOAN_FLAG = #{params.status}
+		<include refid="selectCondition" />
+		)
+	</update>
+	
+	
+	<select id="exportCarSettlementOfClaimsList" resultMap="settlementOfClaimsMap">
+		select loan_info.id,
+		contract.contract_code,
+		(customer.customer_name || ';'||
+		STRING_AGG(coborrower.cobo_name,';'))loan_customer_name,
+		contract.contract_fact_day,
+		contract_fee.fee_month_rate,
+		contract.contract_amount,
+		loan_info.settled_date
+		from t_cj_big_finance big_finance
+		left join T_JK_LOAN_INFO loan_info on big_finance.loan_code = loan_info.loan_code
+		left join T_JK_LOAN_CUSTOMER customer on loan_info.loan_code = customer.loan_code 
+		left join T_JK_LOAN_COBORROWER coborrower on customer.loan_code = coborrower.loan_code
+		left join T_JK_CONTRACT contract on loan_info.loan_code = contract.loan_code 
+		left join T_JK_CONTRACT_FEE contract_fee on contract.CONTRACT_CODE
+		= contract_fee.CONTRACT_CODE
+		where loan_info.LOAN_FLAG = #{params.status}
+		and
+		big_finance.credit_type !='4'
+		<include refid="selectCondition"></include>
+		group by contract.contract_code,loan_info.id,
+		customer.customer_name,
+		customer.customer_cert_num,
+		contract.contract_fact_day,
+		contract_fee.fee_month_rate,
+		contract.contract_amount,
+		loan_info.settled_date
+		order by contract.contract_fact_day desc
+	</select>
+	
+	<!-- 车借债权结清(确认) -->
+	<update id="updateCarSettlementConfirm"
+		parameterType="com.creditharmony.loan.channel.finance.view.SettlementOfClaimsParams">
+		update t_cj_creditor_right_info  
+		<set>
+			<if test="params.settleConfirmDate != null">
+			 credit_type = #{params.status}, settle_confirm_date = #{params.settleConfirmDate}
+		</if>
+		</set> 
+		where credit_type = #{params.creditType}
+		<include refid="selectCondition" />
+	</update>
+</mapper>

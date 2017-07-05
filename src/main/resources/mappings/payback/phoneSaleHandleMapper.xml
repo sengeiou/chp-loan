@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.PhoneSaleHandleDao">
+  <!-- 获取待集中划扣申请的数据列表 -->
+  <select id="queryPage" resultType="com.creditharmony.loan.borrow.payback.entity.PhoneSale" 
+	parameterType="java.util.Map">
+    select
+	a.id,
+	a.contract_code,
+	a.customer_name,
+	a.stores_name,
+	e.bank_name as apply_bank_name,
+	cus.customer_phone_first as tel,
+	a.months,
+	b.payback_day as monthDay,
+	a.bule_amount,
+	a.status,
+	a.mark,
+	ROUND(a.month_pay_total,2) as monthlySupplyAmount,
+	
+	case when g.apply_really_amount is not null then ROUND(g.apply_really_amount,2)
+	     when  h.apply_really_amount is not null then ROUND(h.apply_really_amount,2)
+	   else   
+	ROUND(a.complete_amount,2) end  as complete_amount,
+	ROUND(a.repay_amount,2) as repay_amount,
+	case when  g.dict_deal_type is not null then g.dict_deal_type
+	     when  h.dict_deal_type is not null then h.dict_deal_type 
+	     else a.dict_deal_type end as dict_deal_type,
+	f.name as commissioner,
+	d.dict_loan_status as dictLoanStatus
+	from jk.t_jk_payback_phone a 
+    inner join jk.t_jk_payback b on a.contract_code = b.contract_code
+    inner join jk.t_jk_contract c on  a.contract_code =c.contract_code
+    inner join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+    inner join jk.t_jk_loan_bank e on d.loan_code = e.loan_code AND e.bank_top_flag ='1' AND e.repayment_flag='1'
+    inner join jk.t_gl_user f on d.loan_managercode = f.id
+    inner join jk.t_jk_loan_customer cus on cus.loan_code = d.loan_code
+    left join jk.t_jk_deducts_payback_apply g on a.id = g.id 
+    left join jk.t_jk_deducts_payback_apply_his h on a.id = h.id
+    where  1=1
+    <if test="customerName != null and !customerName.equals('')">
+		AND a.customer_name LIKE '%${customerName}%'
+	</if>
+	<if test="contractCode != null and !contractCode.equals('')">
+		AND a.contract_code = #{contractCode}
+	</if>
+	<if test="monthPayDay!= null and !monthPayDay.equals('')">
+       and cast(b.payback_day as integer) = cast(#{monthPayDay} as integer)
+	</if>
+	<if test="commissioner!= null and !commissioner.equals('')">
+		AND f.name like '%${commissioner}%'
+	</if>
+    <if test="dictDealType!= null and !dictDealType.equals('')">
+		AND a.dict_deal_type = #{dictDealType}
+	</if>
+	 <if test="status != null and !status.equals('')">
+		AND a.status = #{status}
+	</if>
+	
+	 <if test="idList != null and !idList.equals('')">
+	   AND a.id in 
+	   	<foreach collection="idList" item="item" open="(" separator="," close=")">
+	   #{item}
+	    </foreach>
+     </if>
+     order by  a.create_time desc
+</select>
+
+
+ <!-- 获取待集中划扣申请的数据列表 -->
+  <select id="queryList" resultType="com.creditharmony.loan.borrow.payback.entity.PhoneSale" 
+	parameterType="java.util.Map">
+	select
+	a.id,
+	a.contract_code,
+	a.customer_name,
+	a.stores_name,
+	e.bank_name as apply_bank_name,
+	a.tel,
+	a.months,
+	b.payback_day as monthDay,
+	a.bule_amount,
+	a.status,
+	a.mark,
+	ROUND(a.month_pay_total,2) as monthlySupplyAmount,
+	ROUND(a.repay_amount,2) as repay_amount,
+	f.name as commissioner,
+	d.dict_loan_status as dictLoanStatus
+	from jk.t_jk_payback_phone a 
+    inner join jk.t_jk_payback b on a.contract_code = b.contract_code
+    inner join jk.t_jk_contract c on  a.contract_code =c.contract_code
+    inner join jk.t_jk_loan_info d on c.loan_code=d.loan_code
+    inner join jk.t_jk_loan_bank e on d.loan_code = e.loan_code AND e.bank_top_flag ='1' AND e.repayment_flag='1'
+    inner join jk.t_gl_user f on d.loan_managercode = f.id
+    where  1=1
+    <if test="customerName != null and !customerName.equals('')">
+		AND a.customer_name LIKE '%${customerName}%'
+	</if>
+	<if test="contractCode != null and !contractCode.equals('')">
+		AND a.contract_code = #{contractCode}
+	</if>
+	<if test="monthPayDay!= null and !monthPayDay.equals('')">
+       and cast(b.payback_day as integer) = cast(#{monthPayDay} as integer)
+	</if>
+	<if test="commissioner!= null and !commissioner.equals('')">
+		AND f.name like '%${commissioner}%'
+	</if>
+    <if test="dictDealType!= null and !dictDealType.equals('')">
+		AND a.dict_deal_type = #{dictDealType}
+	</if>
+	 <if test="status != null and !status.equals('')">
+		AND a.status = #{status}
+	</if>
+	
+	 <if test="idList != null and !idList.equals('')">
+	   AND a.id in 
+	   	<foreach collection="idList" item="item" open="(" separator="," close=")">
+	   #{item}
+	    </foreach>
+     </if>
+     order by  a.create_time desc
+</select>
+
+   <!-- 更新提醒状态 -->
+   <update id="signRemindupdate">
+      update   jk.t_jk_payback_phone  set status = #{status},modify_time =#{modifyTime}
+      where id = #{id}
+   </update>
+   
+   
+   <!--还款操作流水添加 -->
+	<insert id="insertRemindOpe">
+		INSERT INTO jk.t_jk_payback_remind_ope(
+		id,
+		r_payback_id,
+		r_payback_apply_id,
+		dict_loan_status,
+		dict_r_deduct_type,
+		operate_result,
+		operator,
+		operator_code,
+		operate_time,
+		remark,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time)
+		VALUES (
+		#{id},
+		#{rPaybackId},
+		#{rPaybackApplyId},
+		#{dictLoanStatus},
+		#{dictRDeductType},
+		#{operateResult},
+		#{operator},
+		#{operateCode},
+		#{operateTime},
+		#{remarks},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime});
+	</insert>
+	
+	
+	<select id="getPaybackRemindOpe" parameterType="map" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+		SELECT a.id,
+		a.r_payback_id, a.dict_loan_status, a.dict_r_deduct_type,
+		a.operate_result,
+		case when b.name is null then a.operator else b.name end as operator,
+	    a.operator_code, a.operate_time, a.remark,
+		a.create_by, a.create_time,
+		a.modify_by, a.modify_time, a.r_payback_apply_id
+		FROM
+		jk.t_jk_payback_remind_ope a left join jk.t_gl_user b 
+		on a.operator = b.id
+		where 1=1
+		<if test="dictRDeductType != null and dictRDeductType != ''">
+			and a.dict_r_deduct_type = #{dictRDeductType,jdbcType=VARCHAR}
+		</if>
+		<if test="rPaybackId != null">
+			and a.r_payback_id = #{rPaybackId,jdbcType=VARCHAR}
+		</if>
+		<if test="rPaybackApplyId != null">
+			and a.r_payback_apply_id = #{rPaybackApplyId,jdbcType=VARCHAR}
+		</if>
+		<if test="operateResult != null and operateResult != '' ">
+			and a.operate_result  in (${operateResult})
+		</if>
+		<if test="dictLoanStatus != null and dictLoanStatus != '' ">
+			and a.dict_loan_status  = #{dictLoanStatus}
+		</if>
+		order by create_time DESC 	
+	</select>
+</mapper>

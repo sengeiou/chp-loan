@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanCompManageDao">
+	<resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanCompManage">
+		<id column="id"  property="id" />
+	    <result column="loan_code" property="loanCode"/>
+	    <result column="business_licence_register_num"  property="businessLicenseRegisterNum" />
+	    <result column="comp_create_date" property="compCreateDate" />
+	    <result column="comp_type"  property="compType" />
+	    <result column="average_month_turnover"  property="averageMonthTurnover" />
+	    <result column="manage_business"  property="managerBusiness" />
+	    <result column="comp_register_capital"  property="compRegisterCapital" />
+	    <result column="customer_ratio_comp"  property="customerRatioComp" />
+	    <result column="corporate_represent"  property="corporateRepresent" />
+	    <result column="cert_num"  property="certNum" />
+	    <result column="corporate_represent_mobile"  property="corporateRepresentMobile" />
+	    <result column="comp_email"  property="compEmail" />
+	    <result column="business_area"  property="businessArea" />
+	    <result column="manage_place"  property="managePlace" />
+	    <result column="manage_address_province"  property="manageAddressProvince" />
+	    <result column="manage_address_city"  property="manageAddressCity" />
+	    <result column="manage_address_area"  property="manageAddressArea" />
+	    <result column="manage_address"  property="manageAddress" />
+	    <result column="month_rent_money"  property="monthRentMoney" />
+	    <result column="month_pay_money"  property="monthPayMoney" />
+	    <result column="comp_type_remark"  property="compTypeRemark" />  
+	    <result column="credit_code"  property="creditCode" />
+	    <result column="org_code"  property="orgCode" />
+	    <result column="id_start_day" property="idStartDay"/>
+    	<result column="id_end_day" property="idEndDay"/>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id,loan_code,business_licence_register_num,comp_create_date,comp_type,average_month_turnover,manage_business,comp_register_capital,customer_ratio_comp,
+		corporate_represent,cert_num,corporate_represent_mobile,comp_email,business_area,manage_place,manage_address_province,manage_address_city,manage_address_area,
+		manage_address,month_rent_money,month_pay_money,comp_type_remark,credit_code,org_code,id_start_day,id_end_day
+	</sql>
+	
+	<!-- 根据loanCode查询经营信息 -->
+	<select id="findCompManageByLoanCode" parameterType="string"  resultMap="BaseResultMap">
+		select 
+	    <include refid="Base_Column_List" />
+	    from jk.t_jk_comp_manage
+	    where loan_code = #{loanCode}
+	</select>
+	
+	<!-- 根据loanCode查询经营信息 -->
+	<select id="get" parameterType="string"  resultMap="BaseResultMap">
+		select 
+	    <include refid="Base_Column_List" />
+	    from jk.t_jk_comp_manage
+	    where id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 根据营业执照注册号 查借款笔数 -->
+	<select id="queryLoanCompManageCountByBusinessLicenseRegisterNum" parameterType="map"  resultType="Long">
+		select count(distinct li.loan_code) from jk.t_jk_comp_manage as cm inner join jk.t_jk_loan_info as li on cm.loan_code = li.loan_code where business_licence_register_num = #{businessLicenseRegisterNum,jdbcType=VARCHAR} and li.loan_code != #{loanCode,jdbcType=VARCHAR} and (li.dict_loan_status is null or li.dict_loan_status not in ('8', '34', '35', '36', '52', '53', '54', '55', '56', '57', '73', '81', '811', '97', '74', '89', '90', '101'))
+	</select>
+	
+	<!-- 保存经营信息 -->
+	<insert id="insert">
+		INSERT INTO jk.t_jk_comp_manage(
+			id,
+			loan_code,
+			business_licence_register_num,  
+			comp_create_date,
+			comp_type,
+			average_month_turnover,
+			manage_business,
+			comp_register_capital,
+			customer_ratio_comp,
+			corporate_represent,
+			cert_num,
+			corporate_represent_mobile,
+			comp_email,
+			business_area,
+			manage_place,
+			manage_address_province,
+			manage_address_city,
+			manage_address_area,
+			manage_address,
+			month_rent_money,
+			month_pay_money,
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time,
+			comp_type_remark,
+			credit_code,
+			org_code,
+			id_start_day,
+			id_end_day
+		) VALUES (
+			#{id},
+			#{loanCode}, 
+			#{businessLicenseRegisterNum}, 
+			#{compCreateDate}, 
+			#{compType}, 
+			#{averageMonthTurnover},
+			#{managerBusiness}, 
+			#{compRegisterCapital},
+			#{customerRatioComp},
+			#{corporateRepresent}, 
+			#{certNum},
+			#{corporateRepresentMobile}, 
+			#{compEmail}, 
+			#{businessArea},
+			#{managePlace}, 
+			#{manageAddressProvince},
+			#{manageAddressCity},
+			#{manageAddressArea},
+			#{manageAddress},
+			#{monthRentMoney},
+			#{monthPayMoney},
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy},
+			#{modifyTime},
+			#{compTypeRemark},
+			#{creditCode},
+			#{orgCode},
+			#{idStartDay},
+			#{idEndDay}
+		)
+	</insert>
+	
+	<!-- 更新经营信息 -->
+	<update id="update">
+		UPDATE jk.t_jk_comp_manage 
+		<trim prefix="SET" suffixOverrides=",">
+		 <if test="loanCode != null and loanCode != ''"> 
+		 	 loan_code = #{loanCode},
+		 </if>
+		 <!-- <if test="businessLicenseRegisterNum != null and businessLicenseRegisterNum != ''"> 
+		 	 business_licence_register_num = #{businessLicenseRegisterNum},
+		 </if> -->
+		 business_licence_register_num = #{businessLicenseRegisterNum},
+		 <!-- <if test="compCreateDate != null and compCreateDate != ''"> 
+		 	 comp_create_date = #{compCreateDate},
+		 </if> -->
+		 comp_create_date = #{compCreateDate},
+		 <!-- <if test="compType != null and compType != ''"> 
+		 	 comp_type = #{compType},
+		 </if> -->
+		 comp_type = #{compType},
+		  <!-- <if test="averageMonthTurnover != null and averageMonthTurnover != ''"> 
+		 	 average_month_turnover = #{averageMonthTurnover},
+		 </if> -->
+		 average_month_turnover = #{averageMonthTurnover},
+		  <!-- <if test="managerBusiness != null and managerBusiness != ''"> 
+		 	 manage_business = #{managerBusiness},
+		 </if> -->
+		  manage_business = #{managerBusiness},
+		<!--  <if test="compRegisterCapital != null and compRegisterCapital != ''"> 
+		 	 comp_register_capital = #{compRegisterCapital},
+		 </if> -->
+		  comp_register_capital = #{compRegisterCapital},
+		 <!-- <if test="customerRatioComp != null and customerRatioComp != ''"> 
+		 	 customer_ratio_comp = #{customerRatioComp},
+		 </if> -->
+		 customer_ratio_comp = #{customerRatioComp},
+		<!--  <if test="corporateRepresent !=null and corporateRepresent !=''">
+		      corporate_represent = #{corporateRepresent},
+		 </if> -->
+		 corporate_represent = #{corporateRepresent},
+		 <!-- <if test="certNum !=null and certNum !=''">
+		    cert_num = #{certNum},
+		 </if> -->
+		 cert_num = #{certNum},
+		 <!-- <if test="corporateRepresentMobile != null and corporateRepresentMobile != ''"> 
+			 corporate_represent_mobile = #{corporateRepresentMobile},
+		 </if> -->
+		  corporate_represent_mobile = #{corporateRepresentMobile},
+		 <!-- <if test="compEmail !=null and compEmail !=''">
+		     comp_email = #{compEmail},
+		 </if> -->
+		  comp_email = #{compEmail},
+		 <!-- <if test="businessArea !=null and businessArea !=''">
+		    business_area = #{businessArea}, 
+		 </if> -->
+		 business_area = #{businessArea}, 
+		 <!-- <if test="managePlace !=null">
+			manage_place = #{managePlace},
+		 </if> -->
+		 manage_place = #{managePlace},
+		 <!-- <if test="manageAddressProvince !=null and manageAddressProvince !=''">
+			manage_address_province = #{manageAddressProvince},
+		 </if> -->
+		 manage_address_province = #{manageAddressProvince},
+		 <!-- <if test="manageAddressCity !=null and manageAddressCity !=''">
+			manage_address_city = #{manageAddressCity},
+		 </if> -->
+		 manage_address_city = #{manageAddressCity},
+		 <!-- <if test="manageAddressArea !=null and manageAddressArea !=''">
+			manage_address_area = #{manageAddressArea},
+		 </if> -->
+		 manage_address_area = #{manageAddressArea},
+		 <!-- <if test="manageAddress !=null and manageAddress !=''">
+			manage_address = #{manageAddress},
+		 </if> -->
+		 manage_address = #{manageAddress},
+		<!--  <if test="monthRentMoney !=null and monthRentMoney !=''">
+			month_rent_money = #{monthRentMoney},
+		 </if> -->
+		 month_rent_money = #{monthRentMoney},
+		 <!-- <if test="monthPayMoney !=null and monthPayMoney !=''">
+			month_pay_money = #{monthPayMoney},
+		 </if> -->
+		 month_pay_money = #{monthPayMoney},
+		 <if test="modifyBy != null and modifyBy != ''"> 
+			 modify_by = #{modifyBy},
+		 </if>
+		 <if test="modifyTime != null"> 
+			 modify_time = #{modifyTime},
+		 </if> 
+		 <!-- <if test="compTypeRemark != null">
+			 comp_type_remark = #{compTypeRemark}
+		 </if> -->
+		 comp_type_remark = #{compTypeRemark},
+		 credit_code = #{creditCode},
+		 org_code = #{orgCode},
+		 id_start_day = #{idStartDay},
+		 id_end_day = #{idEndDay}
+		 </trim>
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

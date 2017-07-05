@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.creditharmony.loan.channel.finance.dao.SettlementOfClaimsDao">
+	<resultMap
+		type="com.creditharmony.loan.channel.finance.entity.SettlementOfClaimsEntity"
+		id="settlementOfClaimsMap">
+		<result property="loanCode" column="contract_code"></result><!-- 借款ID -->
+		<result property="loanCustomerName" column="loan_customer_name"></result><!--债务人 -->
+		<result property="customerCertNum" column="loan_customer_num"></result><!-- 身份证号 -->
+		<result property="dictLoanUse" column="dict_loan_use"></result><!-- 借款用途 -->
+		<result property="classType" column="product_type"></result><!-- 借款类型 -->
+		<result property="loanMonths" column="loan_months"></result><!-- 原始期限 -->
+		<result property="loanStartDate" column="contract_fact_day"></result><!-- 原始借款开始日期 -->
+		<result property="loanEndDate" column="contract_end_day"></result><!-- 原始借款到期日期 -->
+		<result property="payMethod" column="dict_repay_method"></result><!-- 还款方式!! -->
+		<result property="replayDay" column="contract_replay_day"></result><!-- 还款日 -->
+		<result property="contractMonthRepayAmount" column="contract_month_repay_amount"></result><!-- 
+			还款金额 -->
+		<result property="contractAmount" column="contract_amount"></result><!-- 债权金额 -->
+		<result property="feeMonthRate" column="fee_month_rate"></result><!-- 债权月利率（%） -->
+		<result property="contractAmount" column="contract_amount"></result><!-- 债权转入金额（元） -->
+		<result property="loanInMonths" column="loan_months"></result><!-- 债权转入期限(月) -->
+		<result property="creditor" column="middle_name"></result><!-- 债权人 -->
+		<result property="loanContractEndDay" column="contract_end_day"></result><!-- 债权转出日期 -->
+		<result property="settleDate" column="settled_date"></result><!-- 提前结清日期 -->
+	</resultMap>
+	<sql id="selectCondition">
+		<if test="params.loanCode != null and params.loanCode != ''">
+			and contract.contract_code = #{params.loanCode}
+		</if>
+
+		<if test="params.settleStartDate != null and params.settleStartDate != ''">
+			and loan_info.settled_date &gt;=#{params.settleStartDate}
+		</if>
+		<if test="params.settleEndDate != null and params.settleEndDate != ''">
+			and loan_info.settled_date &lt;=#{params.settleEndDate}
+		</if>
+
+		<if test="params.id != null and params.id != ''">
+			and contract.contract_code = #{params.id}
+		</if>
+		<if test="params.loanCodes != null and params.loanCodes !=''">
+		    and contract.contract_code IN 
+			<foreach collection="loanCodes" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	<select id="findSettlementOfClaimsList"
+		parameterType="com.creditharmony.loan.channel.finance.view.SettlementOfClaimsParams"
+		resultMap="settlementOfClaimsMap">
+		select loan_info.apply_id id,
+		contract.contract_code,
+		(customer.customer_name || 
+		 COALESCE(';'||STRING_AGG(coborrower.cobo_name,';'),''))loan_customer_name,
+		contract.contract_due_day contract_fact_day,
+		round(contract_fee.fee_month_rate,2)fee_month_rate,
+		round(contract.contract_amount,2)contract_amount,
+		loan_info.settled_date
+		from t_jk_big_finance big_finance
+		left join T_JK_LOAN_INFO loan_info on big_finance.loan_code = loan_info.loan_code
+		left join T_JK_LOAN_CUSTOMER customer on loan_info.loan_code = customer.loan_code 
+		left join T_JK_LOAN_COBORROWER coborrower on customer.loan_code = coborrower.loan_code
+		left join T_JK_CONTRACT contract on loan_info.loan_code = contract.loan_code 
+		left join T_JK_CONTRACT_FEE contract_fee on contract.CONTRACT_CODE
+		= contract_fee.CONTRACT_CODE
+		where loan_info.LOAN_FLAG = #{params.status}
+		and
+		big_finance.credit_type ='3'
+		<include refid="selectCondition"></include>
+		group by contract.contract_code,loan_info.apply_id,
+		customer.customer_name,
+		customer.customer_cert_num,
+		contract.contract_due_day,
+		contract_fee.fee_month_rate,
+		contract.contract_amount,
+		loan_info.settled_date
+		order by contract.contract_due_day desc
+	</select>
+	<update id="updateSettlementOfClaims"
+		parameterType="com.creditharmony.loan.channel.finance.view.SettlementOfClaimsParams">
+		update t_jk_big_finance
+		<if test="params.settleConfirmDate != null and params.settleConfirmDate != ''">
+			set credit_type = '4'
+			,settle_confirm_date = #{params.settleConfirmDate}
+		</if>
+		<if test="params.creditExportDate != null and params.creditExportDate != ''">
+			set credit_export_date = #{params.creditExportDate}
+		</if>
+		where loan_code =
+		any(select big_finance.loan_code from t_jk_big_finance big_finance,T_JK_CONTRACT
+		contract ,T_JK_LOAN_INFO loan_info
+		where big_finance.loan_code =
+		contract.loan_code and contract.loan_code = loan_info.loan_code
+		and
+		loan_info.dict_loan_status = #{params.status}
+		<include refid="selectCondition" />
+		)
+	</update>
+	<select id="exportSettlementOfClaimsList" resultMap="settlementOfClaimsMap">
+		select  
+				min(loan_info.id) id,
+				min(contract.contract_code) contract_code,
+				(min(customer.customer_name) || coalesce(';'||string_agg(coborrower.cobo_name,';'),'')) loan_customer_name,
+				(min(customer.customer_cert_num) || coalesce(';'||string_agg(coborrower.cobo_cert_num,';'),'')) loan_customer_num,
+				min(dict.label) dict_loan_use,
+				min(productInfo.product_name) product_type,
+				min(contract.contract_due_day) contract_fact_day,
+				min(contract.contract_end_day) contract_end_day,
+				extract(day from min(contract.contract_replay_day)) contract_replay_day,
+				round(max(contract.contract_month_repay_amount),2) contract_month_repay_amount,
+				round(max(contract.contract_amount),2) contract_amount,
+				round(max(contract_fee.fee_month_rate),2) fee_month_rate,
+				'等额本息' dict_repay_method,
+				min(persion.middle_name) middle_name,
+				min(contract.contract_months) contract_months,
+				min(contract.contract_months) loan_in_months
+		from t_jk_big_finance big_finance
+		left join t_jk_loan_info loan_info on big_finance.loan_code = loan_info.loan_code
+		left join t_jk_loan_customer customer on loan_info.loan_code = customer.loan_code 
+		left join t_jk_loan_coborrower coborrower on customer.loan_code = coborrower.loan_code
+		left join t_jk_contract contract on loan_info.loan_code = contract.loan_code 
+		left join t_jk_contract_fee contract_fee on contract.contract_code = contract_fee.contract_code
+		left join jk.t_jk_middle_person persion on contract.mid_id = persion.id
+		left join jk.T_GL_DICT dict on loan_info.dict_loan_use = dict.value and dict.type= 'jk_loan_use'
+		left join jk.t_gl_jk_product productInfo on productInfo.product_code = contract.product_type
+		where loan_info.LOAN_FLAG = #{params.status}
+		and
+		big_finance.credit_type ='3'
+		<include refid="selectCondition"></include>
+		group by contract.contract_code,loan_info.id,
+		customer.customer_name,
+		customer.customer_cert_num,
+		contract.contract_due_day,
+		contract_fee.fee_month_rate,
+		contract.contract_amount,
+		loan_info.settled_date
+		order by contract.contract_due_day desc
+	</select>
+	
+	<select id="findSumSettlementOfClaimsList"
+		parameterType="com.creditharmony.loan.channel.finance.view.SettlementOfClaimsParams"
+		resultType="java.util.Map">
+		select SUM(contract_amount) totalamount from
+		(
+			select loan_info.apply_id id,
+			contract.contract_code,
+			(customer.customer_name || 
+			 COALESCE(';'||STRING_AGG(coborrower.cobo_name,';'),''))loan_customer_name,
+			contract.contract_due_day,
+			round(contract_fee.fee_month_rate,2) fee_month_rate,
+			round(contract.contract_amount,2) contract_amount,
+			loan_info.settled_date
+			from t_jk_big_finance big_finance
+			left join T_JK_LOAN_INFO loan_info on big_finance.loan_code = loan_info.loan_code
+			left join T_JK_LOAN_CUSTOMER customer on loan_info.loan_code = customer.loan_code 
+			left join T_JK_LOAN_COBORROWER coborrower on customer.loan_code = coborrower.loan_code
+			left join T_JK_CONTRACT contract on loan_info.loan_code = contract.loan_code 
+			left join T_JK_CONTRACT_FEE contract_fee on contract.CONTRACT_CODE
+			= contract_fee.CONTRACT_CODE
+			where loan_info.LOAN_FLAG = #{params.status}
+			and
+			big_finance.credit_type ='3'
+			<include refid="selectCondition"></include>
+			group by contract.contract_code,loan_info.apply_id,
+			customer.customer_name,
+			customer.customer_cert_num,
+			contract.contract_due_day,
+			contract_fee.fee_month_rate,
+			contract.contract_amount,
+			loan_info.settled_date
+		) a
+	</select>
+</mapper>

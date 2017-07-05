@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarContractFileDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarContractFile">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="file_name" jdbcType="VARCHAR" property="fileName" />
+    <result column="doc_id" jdbcType="VARCHAR" property="docId" />
+    <result column="send_flag" jdbcType="VARCHAR" property="sendFlag" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="download_flag" jdbcType="VARCHAR" property="downloadFlag"/>
+    <result column="file_show_order" jdbcType="VARCHAR" property="fileShowOrder"/>
+    <result column="contract_file_name" jdbcType="VARCHAR" property="contractFileName"/>
+    <result column="sign_doc_id" jdbcType="VARCHAR" property="signDocId"/>
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, contract_code,file_name,doc_id,send_flag,remarks,download_flag,file_show_order,
+    contract_file_name,sign_doc_id,create_time, create_by, modify_by, modify_time 
+  </sql>
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.CarContractFile" >
+    insert into jk.t_cj_contract_file (id, contract_code, file_name, 
+      doc_id, send_flag, remarks, 
+      create_by, create_time, modify_by, 
+      modify_time,download_flag,contract_file_name,file_show_order)
+    values (#{id,jdbcType=VARCHAR}, #{contractCode,jdbcType=VARCHAR}, #{fileName,jdbcType=VARCHAR}, 
+      #{docId,jdbcType=VARCHAR}, #{sendFlag,jdbcType=VARCHAR}, #{remarks,jdbcType=VARCHAR}, 
+      #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP},#{downloadFlag,jdbcType=VARCHAR},#{contractFileName,jdbcType=VARCHAR},#{fileShowOrder,jdbcType=VARCHAR})
+  </insert>
+  <select id="findContractFileByContractCode" parameterType="string" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_cj_contract_file
+    where contract_code = #{contractCode,jdbcType=VARCHAR} 
+    order by file_show_order asc 
+  </select>
+ <select id="findContractFileByDocId" parameterType="string" resultMap="BaseResultMap">
+     select 
+      <include refid="Base_Column_List" />
+      from jk.t_cj_contract_file
+      where doc_id=#{docId,jdbcType=VARCHAR}
+ </select>
+ <update id="updateCtrFile" parameterType="com.creditharmony.loan.car.common.entity.CarContractFile">
+    update jk.t_cj_contract_file 
+      <set>
+       <if test="contractCode!=null and contractCode!=''">
+           contract_code = #{contractCode,jdbcType=VARCHAR}, 
+       </if>
+       <if test="fileName!=null and fileName!=''">
+           file_name = #{fileName,jdbcType=VARCHAR},
+       </if>
+       <if test="docId!=null and docId!=''">
+           doc_id = #{docId,jdbcType=VARCHAR},
+       </if>
+       <if test="sendFlag!=null and sendFlag!=''">
+           send_flag = #{sendFlag,jdbcType=VARCHAR},
+       </if>
+       <if test="remarks!=null and remarks!=''">
+           remarks = #{remarks,jdbcType=VARCHAR},
+       </if>
+       <if test="downloadFlag!=null and downloadFlag!=''">
+           download_flag = #{downloadFlag,jdbcType=VARCHAR},
+       </if>
+       <if test="fileShowOrder!=null and fileShowOrder!=''">
+           file_show_order = #{fileShowOrder,jdbcType=VARCHAR},
+       </if>
+       <if test="contractFileName!=null and contractFileName!=''">
+           contract_file_name = #{contractFileName,jdbcType=VARCHAR},
+       </if>
+       <if test="signDocId!=null and signDocId!=''">
+           sign_doc_id = #{signDocId,jdbcType=VARCHAR},
+       </if>
+       <if test="modifyBy!=null and modifyBy!=''">
+           modify_by = #{modifyBy,jdbcType=VARCHAR},
+       </if>
+       <if test="modifyTime!=null and modifyTime!=''">
+           modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+       </if>
+      </set>
+      where id = #{id,jdbcType=VARCHAR} 
+ </update>
+ <select id="getContractFileByParam" parameterType="map" resultMap="BaseResultMap">
+   select  a.* 
+      from jk.t_cj_contract_file a 
+      <if test="loanCode!=null and loanCode!=''">
+        left join jk.t_cj_contract b on a.contract_code = b.contract_code 
+      </if>
+      <where>
+       <if test="contractCode!=null and contractCode!=''">
+         and a.contract_code=#{contractCode,jdbcType=VARCHAR}
+       </if>
+       <if test="downloadFlag!=null and downloadFlag!=''">
+         and a.download_flag=#{downloadFlag,jdbcType=VARCHAR}
+       </if>
+       <if test="loanCode!=null and loanCode!=''">
+         and b.loan_code=#{loanCode,jdbcType=VARCHAR} 
+      </if>
+      </where>
+      order by file_show_order
+ </select>
+ <insert id="insertSelective" parameterType="com.creditharmony.loan.car.common.entity.CarContractFile" >
+    insert into jk.t_cj_contract_file
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="contractCode != null" >
+        contract_code,
+      </if>
+      <if test="fileName != null" >
+        file_name,
+      </if>
+      <if test="docId != null" >
+        doc_id,
+      </if>
+      <if test="sendFlag != null" >
+        send_flag,
+      </if>
+      <if test="remarks != null" >
+        remarks,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="downloadFlag != null" >
+        download_flag,
+      </if>
+      <if test="contractFileName != null" >
+        contract_file_name,
+      </if>
+      <if test="fileShowOrder != null" >
+        file_show_order,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="fileName != null" >
+        #{fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="docId != null" >
+        #{docId,jdbcType=VARCHAR},
+      </if>
+      <if test="sendFlag != null" >
+        #{sendFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="remarks != null" >
+        #{remarks,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="downloadFlag != null" >
+        #{downloadFlag,jdbcType=VARCHAR},
+      </if>
+       <if test="contractFileName != null" >
+        #{contractFileName,jdbcType=VARCHAR},
+      </if>
+       <if test="fileShowOrder != null" >
+        #{fileShowOrder,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <select id="findList" parameterType="com.creditharmony.loan.car.common.entity.CarContractFile" resultType="com.creditharmony.loan.car.common.entity.CarContractFile">
+   select  a.* 
+      from jk.t_cj_contract_file a
+      <where>
+       <if test="contractCode!=null and contractCode!=''">
+         and a.contract_code=#{contractCode,jdbcType=VARCHAR}
+       </if>
+       <if test="contractFileName!=null and contractFileName!=''">
+         and a.contract_file_name=#{contractFileName,jdbcType=VARCHAR} 
+      </if>
+     </where>
+      order by file_show_order
+ </select>
+</mapper>

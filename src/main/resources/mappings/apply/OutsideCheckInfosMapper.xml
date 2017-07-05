@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.common.dao.OutsideCheckInfoDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.common.entity.OutsideCheckInfo" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="survey_emp_id" property="surveyEmpId" jdbcType="VARCHAR" />
+    <result column="item_distance" property="itemDistance" jdbcType="NUMERIC" />
+    <result column="dict_survey_status" property="dictSurveyStatus" jdbcType="VARCHAR" />
+    <result column="dict_check_type" property="dictCheckType" jdbcType="VARCHAR"/>
+    <result column="survey_start_time" property="surveyStartTime" jdbcType="VARCHAR" />
+    <result column="survey_end_time" property="surveyEndTime" jdbcType="VARCHAR" />
+    <result column="dict_check_type" property="dictCheckType" jdbcType="VARCHAR" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, loan_code, survey_emp_id, item_distance,dict_survey_status,dict_check_type,
+    survey_start_time, survey_end_time,   create_time, create_by, 
+    modify_time, modify_by,r_status_his_id
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="string" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_outside_task_list
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectMaxDistance" resultMap="BaseResultMap" parameterType="string">
+     select max(item_distance) as item_distance 
+     from jk.t_jk_outside_task_list
+     where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByLoanCode" resultMap="BaseResultMap" parameterType="string" >
+    select  
+    <include refid="Base_Column_List" />
+    from jk.t_jk_outside_task_list
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="string" >
+    delete from jk.t_jk_outside_task_list
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertOutsideCheck" parameterType="com.creditharmony.loan.common.entity.OutsideCheckInfo" >
+    insert into jk.t_jk_outside_task_list (id, loan_code, check_department, 
+      survey_emp_id, item_distance, survey_start_time, 
+      survey_end_time, dict_survey_status, json, 
+      dict_check_type, create_time, create_by, 
+      modify_time, modify_by)
+    values (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{checkDepartment,jdbcType=VARCHAR}, 
+      #{surveyEmpId,jdbcType=VARCHAR}, #{itemDistance,jdbcType=NUMERIC}, #{surveyStartTime,jdbcType=VARCHAR}, 
+      #{surveyEndTime,jdbcType=VARCHAR}, #{dictSurveyStatus,jdbcType=VARCHAR}, #{json,jdbcType=VARCHAR}, 
+      #{dictCheckType,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{createBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.common.entity.OutsideCheckInfo" >
+    insert into jk.t_jk_outside_task_list
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="checkDepartment != null" >
+        check_department,
+      </if>
+      <if test="surveyEmpId != null" >
+        survey_emp_id,
+      </if>
+      <if test="itemDistance != null" >
+        item_distance,
+      </if>
+      <if test="surveyStartTime != null" >
+        survey_start_time,
+      </if>
+      <if test="surveyEndTime != null" >
+        survey_end_time,
+      </if>
+      <if test="dictSurveyStatus != null" >
+        dict_survey_status,
+      </if>
+      <if test="json != null" >
+        json,
+      </if>
+      <if test="dictCheckType != null" >
+        dict_check_type,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="checkDepartment != null" >
+        #{checkDepartment,jdbcType=VARCHAR},
+      </if>
+      <if test="surveyEmpId != null" >
+        #{surveyEmpId,jdbcType=VARCHAR},
+      </if>
+      <if test="itemDistance != null" >
+        #{itemDistance,jdbcType=NUMERIC},
+      </if>
+      <if test="surveyStartTime != null" >
+        #{surveyStartTime,jdbcType=VARCHAR},
+      </if>
+      <if test="surveyEndTime != null" >
+        #{surveyEndTime,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSurveyStatus != null" >
+        #{dictSurveyStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="json != null" >
+        #{json,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckType != null" >
+        #{dictCheckType,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.common.entity.OutsideCheckInfo" >
+    update jk.t_jk_outside_check_info
+    <set >
+      <if test="loanCode != null" >
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="checkDepartment != null" >
+        check_department = #{checkDepartment,jdbcType=VARCHAR},
+      </if>
+      <if test="surveyEmpId != null" >
+        survey_emp_id = #{surveyEmpId,jdbcType=VARCHAR},
+      </if>
+      <if test="itemDistance != null" >
+        item_distance = #{itemDistance,jdbcType=NUMERIC},
+      </if>
+      <if test="surveyStartTime != null" >
+        survey_start_time = #{surveyStartTime,jdbcType=VARCHAR},
+      </if>
+      <if test="surveyEndTime != null" >
+        survey_end_time = #{surveyEndTime,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSurveyStatus != null" >
+        dict_survey_status = #{dictSurveyStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="json != null" >
+        json = #{json,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckType != null" >
+        dict_check_type = #{dictCheckType,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.common.entity.OutsideCheckInfo" >
+    update jk.t_jk_outside_check_info
+    set loan_code = #{loanCode,jdbcType=VARCHAR},
+      check_department = #{checkDepartment,jdbcType=VARCHAR},
+      survey_emp_id = #{surveyEmpId,jdbcType=VARCHAR},
+      item_distance = #{itemDistance,jdbcType=NUMERIC},
+      survey_start_time = #{surveyStartTime,jdbcType=VARCHAR},
+      survey_end_time = #{surveyEndTime,jdbcType=VARCHAR},
+      dict_survey_status = #{dictSurveyStatus,jdbcType=VARCHAR},
+      json = #{json,jdbcType=VARCHAR},
+      dict_check_type = #{dictCheckType,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

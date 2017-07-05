@@ -1,0 +1,586 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.pushdata.dao.PaybackMonthMapper" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.pushdata.entity.PaybackMonth" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+    <result column="months" property="months" jdbcType="INTEGER" />
+    <result column="month_pay_day" property="monthPayDay" jdbcType="DATE" />
+    <result column="month_pay_actualday" property="monthPayActualday" jdbcType="DATE" />
+    <result column="month_pay_amount" property="monthPayAmount" jdbcType="NUMERIC" />
+    <result column="month_interest_backshould" property="monthInterestBackshould" jdbcType="NUMERIC" />
+    <result column="month_capital_payactual" property="monthCapitalPayactual" jdbcType="NUMERIC" />
+    <result column="month_interest_payactual" property="monthInterestPayactual" jdbcType="NUMERIC" />
+    <result column="is_overdue" property="isOverdue" jdbcType="VARCHAR" />
+    <result column="month_before_finish_amount" property="monthBeforeFinishAmount" jdbcType="NUMERIC" />
+    <result column="month_before_reduction_amount" property="monthBeforeReductionAmount" jdbcType="NUMERIC" />
+    <result column="month_interest_punishshould" property="monthInterestPunishshould" jdbcType="NUMERIC" />
+    <result column="month_interest_punishactual" property="monthInterestPunishactual" jdbcType="NUMERIC" />
+    <result column="month_punish_reduction" property="monthPunishReduction" jdbcType="NUMERIC" />
+    <result column="month_penalty_should" property="monthPenaltyShould" jdbcType="NUMERIC" />
+    <result column="month_penalty_actual" property="monthPenaltyActual" jdbcType="NUMERIC" />
+    <result column="month_penalty_reduction" property="monthPenaltyReduction" jdbcType="NUMERIC" />
+    <result column="month_overdue_days" property="monthOverdueDays" jdbcType="INTEGER" />
+    <result column="month_reduction_day" property="monthReductionDay" jdbcType="INTEGER" />
+    <result column="dict_month_status" property="dictMonthStatus" jdbcType="VARCHAR" />
+    <result column="month_overdue_mes" property="monthOverdueMes" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="month_fee_consult" property="monthFeeConsult" jdbcType="NUMERIC" />
+    <result column="month_mid_fee_service" property="monthMidFeeService" jdbcType="NUMERIC" />
+    <result column="month_fee_service" property="monthFeeService" jdbcType="NUMERIC" />
+    <result column="month_late_fee" property="monthLateFee" jdbcType="NUMERIC" />
+    <result column="month_pay_total" property="monthPayTotal" jdbcType="NUMERIC" />
+    <result column="month_residue_payactual" property="monthResiduePayactual" jdbcType="NUMERIC" />
+    <result column="actual_month_late_fee" property="actualMonthLateFee" jdbcType="NUMERIC" />
+    <result column="remind_logo" property="remindLogo" jdbcType="VARCHAR" />
+    <result column="actual_month_fee_service" property="actualMonthFeeService" jdbcType="NUMERIC" />
+    <result column="month_late_fee_reduction" property="monthLateFeeReduction" jdbcType="NUMERIC" />
+    <!-- 蓝补金额 -->
+    <result column="contract_version" property="contractVersion" jdbcType="VARCHAR" />
+    <result column="payback_bule_amount" property="paybackBuleAmount" jdbcType="NUMERIC"/>
+    <result column="maxMonths" property="maxMonths" jdbcType="INTEGER" />
+    <result column="max_month_overdue_days" property="maxMonthOverdueDays" jdbcType="INTEGER" />
+    <result column="payback_max_overduedays" property="paybackMaxOverduedays" jdbcType="INTEGER" />
+  </resultMap>
+  <select id="selectMonthPayDayBeforeThreeDays" resultType="com.creditharmony.loan.borrow.pushdata.entity.PaybackList" parameterType="java.util.Map">
+       SELECT
+          A.id AS month_id,
+          A.contract_code AS contract_code,
+          D.customer_name AS customer_name,
+          G."name" AS stores_name,
+          E.bank_name AS apply_bank_name,
+          CASE
+              WHEN D.customer_phone_first IS NULL
+              THEN D.customer_phone_second
+              ELSE D.customer_phone_first
+          END AS tel,
+          A.month_pay_day AS month_pay_day,
+          C.contract_months AS months,
+          (
+              A.month_pay_total - (COALESCE(A.month_capital_payactual,0) + COALESCE(A.month_interest_payactual,0) + COALESCE(A.actual_month_fee_service,0))
+          ) AS repay_amount,
+          (
+              COALESCE(A.month_capital_payactual,0) + COALESCE(A.month_interest_payactual,0) + COALESCE(A.actual_month_fee_service,0)
+          ) AS complete_amount,
+          A.month_pay_total  as  month_pay_total,
+          B.payback_bule_amount AS bule_amount,
+          A.dict_month_status AS dict_month_status,
+          I.loan_flag AS mark,
+          E.bank_signing_platform AS dict_deal_type
+      FROM
+          jk.t_jk_payback_month A -- 期供表 
+          inner join jk.t_jk_payback B -- 还款主表 
+            on A.contract_code = B.contract_code 
+          inner join jk.t_jk_contract C -- 合同表 
+            on B.contract_code = C.contract_code 
+          inner join jk.t_jk_loan_customer D -- 借款客户信息表 
+            on D.loan_code = C.loan_code 
+          inner join jk.t_jk_loan_bank E -- 客户账户信息表
+            on C.loan_code = E.loan_code 
+          inner join jk.t_jk_loan_info I -- 借款信息表 
+            ON C.loan_code = I.loan_code 
+          left join jk.t_gl_org G 
+            on loan_store_orgid =  G.id
+      WHERE 
+           (A.dict_month_status is null or A.dict_month_status = '' or A.dict_month_status = #{dictMonthStatus,jdbcType=VARCHAR}) 
+           AND A.month_pay_day = '${monthPayDay}'
+           AND E.bank_top_flag = 1  AND E.repayment_flag='1'
+           AND (B.dict_pay_status = '0' or B.dict_pay_status = '1')
+           and D.dict_source_type_pcl = '3'  <!--增加数据来源注释-->
+           and I.dict_source_type_pcl = '3'  <!--增加数据来源注释-->
+           and B.dict_source_type_pcl = '3'  <!--增加数据来源注释-->
+           and A.dict_source_type_pcl = '3'  <!-- 增加数据来源注释 -->
+  </select>
+         
+  <select id="selectCountBack" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+		select count(*) from jk.t_jk_payback_month
+		where contract_code = #{contractCode} and 
+		(dict_month_status = #{dictMonthStatus} or dict_month_status = #{dictMonthStatus2})
+  </select>
+  
+    <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.borrow.pushdata.entity.PaybackMonth" >
+    update jk.t_jk_payback_month
+    <set >
+      <if test="contractCode != null" >
+        contract_code = #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="months != null" >
+        months = #{months,jdbcType=INTEGER},
+      </if>
+      <if test="monthPayDay != null" >
+        month_pay_day = #{monthPayDay,jdbcType=DATE},
+      </if>
+      <if test="monthPayActualday != null" >
+        month_pay_actualday = #{monthPayActualday,jdbcType=DATE},
+      </if>
+      <if test="monthPayAmount != null" >
+        month_pay_amount = #{monthPayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestBackshould != null" >
+        month_interest_backshould = #{monthInterestBackshould,jdbcType=NUMERIC},
+      </if>
+      <if test="monthCapitalPayactual != null" >
+        month_capital_payactual = #{monthCapitalPayactual,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestPayactual != null" >
+        month_interest_payactual = #{monthInterestPayactual,jdbcType=NUMERIC},
+      </if>
+      <if test="isOverdue != null" >
+        is_overdue = #{isOverdue,jdbcType=VARCHAR},
+      </if>
+      <if test="monthBeforeFinishAmount != null" >
+        month_before_finish_amount = #{monthBeforeFinishAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthBeforeReductionAmount != null" >
+        month_before_reduction_amount = #{monthBeforeReductionAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestPunishshould != null" >
+        month_interest_punishshould = #{monthInterestPunishshould,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestPunishactual != null" >
+        month_interest_punishactual = #{monthInterestPunishactual,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPunishReduction != null" >
+        month_punish_reduction = #{monthPunishReduction,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPenaltyShould != null" >
+        month_penalty_should = #{monthPenaltyShould,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPenaltyActual != null" >
+        month_penalty_actual = #{monthPenaltyActual,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPenaltyReduction != null" >
+        month_penalty_reduction = #{monthPenaltyReduction,jdbcType=NUMERIC},
+      </if>
+      <if test="monthOverdueDays != null" >
+        month_overdue_days = #{monthOverdueDays,jdbcType=INTEGER},
+      </if>
+      <if test="monthReductionDay != null" >
+        month_reduction_day = #{monthReductionDay,jdbcType=INTEGER},
+      </if>
+      <if test="dictMonthStatus != null" >
+        dict_month_status = #{dictMonthStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="monthOverdueMes != null" >
+        month_overdue_mes = #{monthOverdueMes,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="monthFeeConsult != null" >
+        month_fee_consult = #{monthFeeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="monthMidFeeService != null" >
+        month_mid_fee_service = #{monthMidFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthFeeService != null" >
+        month_fee_service = #{monthFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthLateFee != null" >
+        month_late_fee = #{monthLateFee,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPayTotal != null" >
+        month_pay_total = #{monthPayTotal,jdbcType=NUMERIC},
+      </if>
+      <if test="monthResiduePayactual != null" >
+        month_residue_payactual = #{monthResiduePayactual,jdbcType=NUMERIC},
+      </if>
+      <if test="actualMonthLateFee != null" >
+        actual_month_late_fee = #{actualMonthLateFee,jdbcType=NUMERIC},
+      </if>
+      <if test="remindLogo != null" >
+        remind_logo = #{remindLogo,jdbcType=VARCHAR},
+      </if>
+      <if test="actualMonthFeeService != null" >
+        actual_month_fee_service = #{actualMonthFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthLateFeeReduction != null" >
+        month_late_fee_reduction = #{monthLateFeeReduction,jdbcType=NUMERIC},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+    and dict_source_type_pcl = '3' <!--增加数据来源注释-->
+  </update>
+	<select id="getPaybackMonthMoneyBYContractCode" resultType="java.lang.Integer" parameterType="java.lang.String">
+		select count(months) from jk.t_jk_payback_month where
+		contract_code=#{contractCode,jdbcType=VARCHAR}
+		and dict_source_type_pcl = '3' <!--增加数据来源注释-->
+	</select>
+	
+	<update id="selectIsOverdueMsg" statementType="CALLABLE">  
+	   {call overduecheck()}  
+	</update>  
+ 
+	<sql id="Base_Column_List1" >
+		a.id, a.contract_code, a.months, a.month_pay_day, a.month_pay_actualday, a.month_pay_amount, 
+	    a.month_interest_backshould, a.month_capital_payactual, a.month_interest_payactual, a.is_overdue, 
+	    a.month_before_finish_amount, a.month_before_reduction_amount, a.month_interest_punishshould, 
+	    a.month_interest_punishactual, a.month_punish_reduction, a.month_penalty_should, a.month_penalty_actual, 
+	    a.month_penalty_reduction, a.month_overdue_days, a.month_reduction_day, a.dict_month_status, 
+	    a.month_overdue_mes, a.create_by, a.create_time, a.modify_by, a.modify_time, a.month_fee_consult, 
+	    a.month_mid_fee_service, a.month_fee_service, a.month_late_fee, a.month_pay_total, a.month_residue_payactual, 
+	    a.actual_month_late_fee, a.remind_logo, a.actual_month_fee_service, a.month_late_fee_reduction, 
+	    <!-- a.month_before_penalty_should, a.month_before_penalty_actual, --> b.contract_version
+	</sql>
+	<sql id="Base_Column_List" >
+		id, contract_code, months, month_pay_day, month_pay_actualday, month_pay_amount, 
+	    month_interest_backshould, month_capital_payactual, month_interest_payactual, is_overdue, 
+	    month_before_finish_amount, month_before_reduction_amount, month_interest_punishshould, 
+	    month_interest_punishactual, month_punish_reduction, month_penalty_should, month_penalty_actual, 
+	    month_penalty_reduction, month_overdue_days, month_reduction_day, dict_month_status, 
+	    month_overdue_mes, create_by, create_time, modify_by, modify_time, month_fee_consult, 
+	    month_mid_fee_service, month_fee_service, month_late_fee, month_pay_total, month_residue_payactual, 
+	    actual_month_late_fee, remind_logo, actual_month_fee_service, month_late_fee_reduction
+	</sql>
+	<select id="selectByParam" resultMap="BaseResultMap" parameterType="com.creditharmony.loan.borrow.pushdata.entity.PaybackMonth">
+		select 
+		<include refid="Base_Column_List" />
+		from jk.t_jk_payback_month 
+		<where>
+			<if test="id != null">
+			  and id = #{id, jdbcType=VARCHAR}
+			</if>
+			<if test="contractCode != null">
+			  and contract_code = #{contractCode, jdbcType=VARCHAR}
+			</if>
+			<if test="months != null">
+			  and months = #{months, jdbcType=INTEGER}
+			</if>
+			<if test="monthPayDay != null">
+			  and month_pay_day = #{monthPayDay, jdbcType=DATE}
+			</if>
+			<if test="monthPayActualday != null">
+			  and month_pay_actualday = #{monthPayActualday, jdbcType=DATE}
+			</if>
+			<if test="monthPayAmount != null">
+			  and month_pay_amount = #{monthPayAmount, jdbcType=NUMERIC}
+			</if>
+			<if test="monthInterestBackshould != null">
+			  and month_interest_backshould = #{monthInterestBackshould, jdbcType=NUMERIC}
+			</if>
+			<if test="monthCapitalPayactual != null">
+			  and month_capital_payactual = #{monthCapitalPayactual, jdbcType=NUMERIC}
+			</if>
+			<if test="monthInterestPayactual != null">
+			  and month_interest_payactual = #{monthInterestPayactual, jdbcType=NUMERIC}
+			</if>
+			<if test="isOverdue != null">
+			  and is_overdue = #{isOverdue, jdbcType=VARCHAR}
+			</if>
+			<if test="monthBeforeFinishAmount != null">
+			  and month_before_finish_amount = #{monthBeforeFinishAmount, jdbcType=NUMERIC}
+			</if>
+			<if test="monthBeforeReductionAmount != null">
+			  and month_before_reduction_amount = #{monthBeforeReductionAmount, jdbcType=NUMERIC}
+			</if>
+			<if test="monthInterestPunishshould != null">
+			  and month_interest_punishshould = #{monthInterestPunishshould, jdbcType=NUMERIC}
+			</if>
+			<if test="monthInterestPunishactual != null">
+			  and month_interest_punishactual = #{monthInterestPunishactual, jdbcType=NUMERIC}
+			</if>
+			<if test="monthPunishReduction != null">
+			  and month_punish_reduction = #{monthPunishReduction, jdbcType=NUMERIC}
+			</if>
+			<if test="monthPenaltyShould != null">
+			  and month_penalty_should = #{monthPenaltyShould, jdbcType=NUMERIC}
+			</if>
+			<if test="monthPenaltyActual != null">
+			  and month_penalty_actual = #{monthPenaltyActual, jdbcType=NUMERIC}
+			</if>
+			<if test="monthPenaltyReduction != null">
+			  and month_penalty_reduction = #{monthPenaltyReduction, jdbcType=NUMERIC}
+			</if>
+			<if test="monthOverdueDays != null">
+			  and month_overdue_days = #{monthOverdueDays, jdbcType=INTEGER}
+			</if>
+			<if test="monthReductionDay != null">
+			  and month_reduction_day = #{monthReductionDay, jdbcType=INTEGER}
+			</if>
+			<if test="dictMonthStatus != null">
+			  and dict_month_status = #{dictMonthStatus, jdbcType=VARCHAR}
+			</if>
+			<if test="monthOverdueMes != null">
+			  and month_overdue_mes = #{monthOverdueMes, jdbcType=VARCHAR}
+			</if>
+			<if test="createBy != null">
+			  and create_by = #{createBy, jdbcType=VARCHAR}
+			</if>
+			<if test="createTime != null">
+			  and create_time = #{createTime, jdbcType=TIMESTAMP}
+			</if>
+			<if test="modifyBy != null">
+			  and modify_by = #{modifyBy, jdbcType=VARCHAR}
+			</if>
+			<if test="modifyTime != null">
+			  and modify_time = #{modifyTime, jdbcType=TIMESTAMP}
+			</if>
+			  and dict_source_type_pcl = '3' <!--增加数据来源注释-->
+		</where>
+	</select>
+  
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.pushdata.entity.PaybackMonth" >
+    insert into jk.t_jk_payback_month
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="contractCode != null" >
+        contract_code,
+      </if>
+      <if test="months != null" >
+        months,
+      </if>
+      <if test="monthPayDay != null" >
+        month_pay_day,
+      </if>
+      <if test="monthPayActualday != null" >
+        month_pay_actualday,
+      </if>
+      <if test="monthPayAmount != null" >
+        month_pay_amount,
+      </if>
+      <if test="monthInterestBackshould != null" >
+        month_interest_backshould,
+      </if>
+      <if test="monthCapitalPayactual != null" >
+        month_capital_payactual,
+      </if>
+      <if test="monthInterestPayactual != null" >
+        month_interest_payactual,
+      </if>
+      <if test="isOverdue != null" >
+        is_overdue,
+      </if>
+      <if test="monthBeforeFinishAmount != null" >
+        month_before_finish_amount,
+      </if>
+      <if test="monthBeforeReductionAmount != null" >
+        month_before_reduction_amount,
+      </if>
+      <if test="monthInterestPunishshould != null" >
+        month_interest_punishshould,
+      </if>
+      <if test="monthInterestPunishactual != null" >
+        month_interest_punishactual,
+      </if>
+      <if test="monthPunishReduction != null" >
+        month_punish_reduction,
+      </if>
+      <if test="monthPenaltyShould != null" >
+        month_penalty_should,
+      </if>
+      <if test="monthPenaltyActual != null" >
+        month_penalty_actual,
+      </if>
+      <if test="monthPenaltyReduction != null" >
+        month_penalty_reduction,
+      </if>
+      <if test="monthOverdueDays != null" >
+        month_overdue_days,
+      </if>
+      <if test="monthReductionDay != null" >
+        month_reduction_day,
+      </if>
+      <if test="dictMonthStatus != null" >
+        dict_month_status,
+      </if>
+      <if test="monthOverdueMes != null" >
+        month_overdue_mes,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="monthFeeConsult != null" >
+        month_fee_consult,
+      </if>
+      <if test="monthMidFeeService != null" >
+        month_mid_fee_service,
+      </if>
+      <if test="monthFeeService != null" >
+        month_fee_service,
+      </if>
+      <if test="monthLateFee != null" >
+        month_late_fee,
+      </if>
+      <if test="monthPayTotal != null" >
+        month_pay_total,
+      </if>
+      <if test="monthResiduePayactual != null" >
+        month_residue_payactual,
+      </if>
+      <if test="actualMonthLateFee != null" >
+        actual_month_late_fee,
+      </if>
+      <if test="remindLogo != null" >
+        remind_logo,
+      </if>
+      <if test="actualMonthFeeService != null" >
+        actual_month_fee_service,
+      </if>
+      <if test="monthLateFeeReduction != null" >
+        month_late_fee_reduction,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="months != null" >
+        #{months,jdbcType=INTEGER},
+      </if>
+      <if test="monthPayDay != null" >
+        #{monthPayDay,jdbcType=DATE},
+      </if>
+      <if test="monthPayActualday != null" >
+        #{monthPayActualday,jdbcType=DATE},
+      </if>
+      <if test="monthPayAmount != null" >
+        #{monthPayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestBackshould != null" >
+        #{monthInterestBackshould,jdbcType=NUMERIC},
+      </if>
+      <if test="monthCapitalPayactual != null" >
+        #{monthCapitalPayactual,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestPayactual != null" >
+        #{monthInterestPayactual,jdbcType=NUMERIC},
+      </if>
+      <if test="isOverdue != null" >
+        #{isOverdue,jdbcType=VARCHAR},
+      </if>
+      <if test="monthBeforeFinishAmount != null" >
+        #{monthBeforeFinishAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthBeforeReductionAmount != null" >
+        #{monthBeforeReductionAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestPunishshould != null" >
+        #{monthInterestPunishshould,jdbcType=NUMERIC},
+      </if>
+      <if test="monthInterestPunishactual != null" >
+        #{monthInterestPunishactual,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPunishReduction != null" >
+        #{monthPunishReduction,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPenaltyShould != null" >
+        #{monthPenaltyShould,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPenaltyActual != null" >
+        #{monthPenaltyActual,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPenaltyReduction != null" >
+        #{monthPenaltyReduction,jdbcType=NUMERIC},
+      </if>
+      <if test="monthOverdueDays != null" >
+        #{monthOverdueDays,jdbcType=INTEGER},
+      </if>
+      <if test="monthReductionDay != null" >
+        #{monthReductionDay,jdbcType=INTEGER},
+      </if>
+      <if test="dictMonthStatus != null" >
+        #{dictMonthStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="monthOverdueMes != null" >
+        #{monthOverdueMes,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="monthFeeConsult != null" >
+        #{monthFeeConsult,jdbcType=NUMERIC},
+      </if>
+      <if test="monthMidFeeService != null" >
+        #{monthMidFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthFeeService != null" >
+        #{monthFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthLateFee != null" >
+        #{monthLateFee,jdbcType=NUMERIC},
+      </if>
+      <if test="monthPayTotal != null" >
+        #{monthPayTotal,jdbcType=NUMERIC},
+      </if>
+      <if test="monthResiduePayactual != null" >
+        #{monthResiduePayactual,jdbcType=NUMERIC},
+      </if>
+      <if test="actualMonthLateFee != null" >
+        #{actualMonthLateFee,jdbcType=NUMERIC},
+      </if>
+      <if test="remindLogo != null" >
+        #{remindLogo,jdbcType=VARCHAR},
+      </if>
+      <if test="actualMonthFeeService != null" >
+        #{actualMonthFeeService,jdbcType=NUMERIC},
+      </if>
+      <if test="monthLateFeeReduction != null" >
+        #{monthLateFeeReduction,jdbcType=NUMERIC},
+      </if>
+    </trim>
+  </insert>
+  
+  <select id="queryCount" resultType="java.lang.String" parameterType="java.util.Map">
+       SELECT
+         count(*)
+      FROM
+          jk.t_jk_payback_month A -- 期供表 
+          inner join jk.t_jk_payback B -- 还款主表 
+            on A.contract_code = B.contract_code 
+          inner join jk.t_jk_contract C -- 合同表 
+            on B.contract_code = C.contract_code 
+          inner join jk.t_jk_loan_customer D -- 借款客户信息表 
+            on D.loan_code = C.loan_code 
+          inner join jk.t_jk_loan_bank E -- 客户账户信息表
+            on C.loan_code = E.loan_code 
+          inner join jk.t_jk_loan_info I -- 借款信息表 
+            ON C.loan_code = I.loan_code 
+          left join jk.t_gl_org G 
+            on loan_store_orgid =  G.id
+      WHERE 
+           (A.dict_month_status is null or A.dict_month_status = '' or A.dict_month_status = #{dictMonthStatus,jdbcType=VARCHAR}) 
+           AND A.month_pay_day = '${monthPayDay}'
+           AND E.bank_top_flag = 1  AND E.repayment_flag='1'
+           AND (B.dict_pay_status = '0' or B.dict_pay_status = '1')
+           and D.dict_source_type_pcl = '3'  <!--增加数据来源注释-->
+           and I.dict_source_type_pcl = '3'  <!--增加数据来源注释-->
+           and B.dict_source_type_pcl = '3'  <!--增加数据来源注释-->
+           and A.dict_source_type_pcl = '3'  <!-- 增加数据来源注释 -->
+  </select>
+  
+</mapper>

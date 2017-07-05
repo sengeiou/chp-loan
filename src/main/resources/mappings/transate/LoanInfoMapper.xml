@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.borrow.transate.dao.LoanInfoDao">
+	<!-- 映射关系配置   entity 与 sql 语句查询结果 的 映射关系-->
+	<resultMap id="loanInfo" type="com.creditharmony.loan.borrow.transate.entity.ex.TransateEx" >
+      	<result property="loanCode" column="LOAN_CODE"></result><!-- 借款编号 -->    	
+      	<result property="loanCustomerService" column="LOAN_CUSTOMER_SERVICE"></result><!-- 客服编号 -->
+     	<result property="contractVersion" column="CONTRACT_VERSION"></result><!-- 合同版本号 -->
+    	<result property="contractCode" column="CONTRACT_CODE"></result><!-- 合同编号 -->
+    	<result property="paperless" column="PAPERLESS_FLAG"></result><!--是否无纸化(0:否,1:是) -->
+        <result property="loanCustomerName" column="LOAN_CUSTOMER_NAME"></result><!-- 客户姓名 -->     	
+    	<result property="productName" column="PRODUCT_NAME"></result><!-- 产品名称 -->
+    	<result property="dictLoanStatus" column="DICT_LOAN_STATUS"></result><!-- 申请状态 -->
+    	<result property="dictPayStatus" column="DICT_PAY_STATUS"/><!-- 还款状态 -->
+    	<result property="money" column="LOAN_AUDIT_AMOUNT"></result><!-- 批复金额 -->
+    	<result property="contractMonths" column="LOAN_AUDIT_MONTHS"></result><!-- 批复分期 -->
+    	<result property="loanTeamManagercode" column="LOAN_TEAM_MANAGERCODE"></result><!-- 客户经理编号 -->
+    	<result property="userName" column="MANAGER_NAME"></result><!-- 客户经理姓名-->
+    	<result property="teamManagerName" column="TEAM_NAME"></result><!-- 团队经理姓名 -->
+  		<result property="customerIntoTime" column="CUSTOMER_INTO_TIME"></result><!-- 进件时间 -->
+  		<result property="loanApplyTime" column="loan_apply_time"></result><!-- 申请时间 -->
+      	<result property="loanIsRaise" column="LOAN_RAISE_FLAG"></result><!-- 上调标识 -->
+    	<result property="loanIsPhone" column="CUSTOMER_TELESALES_FLAG"></result><!-- 是否电销(0:否,1:是) -->
+      	<result property="loanIsUrgent" column="LOAN_URGENT_FLAG"></result><!-- 是否加急 -->
+    	<result property="loanMarking" column="LOAN_FLAG"></result><!-- 标识 --> 
+    	<result property="model" column="MODEL"></result><!-- 模式 --> 
+    	<result property="provinceId" column="PROVINCE_ID"></result><!-- 省份编号 -->
+    	<result property="cityId" column="CITY_ID"></result><!-- 城市编号 --> 	
+    	<result property="loanTeamOrgid" column="LOAN_TEAM_ORGID"></result><!-- 团队组织ID -->
+    	<result property="customerCertNum" column="CUSTOMER_CERT_NUM"></result><!-- 证件号码 -->
+    	<result property="dictSourceType" column="DICT_SOURCE_TYPE"></result><!-- 来源版本 -->
+    	<result property="dictIsAdditional" column="DICT_IS_ADDITIONAL"></result><!-- 是否追加借 -->    
+    	<result property="storeId" column="LOAN_STORE_ORGID"></result><!-- 门店ID --> 
+    	<result property="storeCode" column="STORE_CODE"></result><!-- 门店code --> 
+    	<result property="applyId" column="APPLY_ID"/><!-- applyId -->	
+    	<result property="frozenApplyTimes" column="frozen_apply_times"/><!-- 申请冻结次数 -->
+    	<result property="frozenLastApplyTime" column="frozen_last_apply_time"/><!-- 申请冻结时间 -->
+    	<result property="loanCustomerServiceName" column="servicename"></result><!-- 客服姓名 -->
+    	<result property="loanSurveyEmpName" column="empname"></result><!-- 外访人员姓名 -->
+    	<result property="loanSurveyEmpId" column="loan_survey_emp_id"></result><!-- 外访人员编号 -->
+    	<result property="frozenCode" column="frozen_code"></result><!-- 冻结原因 -->
+    	<!--<result property="consTelesalesOrgcode" column="cons_telesales_orgcode"></result> 电销组织机构ID -->
+    	<result property="auditProductName" column="AUDIT_PRODUCT_NAME"/><!-- 申请产品类型 -->
+    	<result property="loanInfoOldOrNewFlag" column="LOANINFO_OLDORNEW_FLAG"/><!-- 新旧版本查看切换标识 -->
+    	<result property="revisitStatus" column="revisit_status"/><!-- 回访状态 -->
+    	<result property="customerPhoneFirstTransate" column="customer_phone_first"/><!-- 手机号-->
+    	<result property="bestCoborrower" column="bestCoborrower"/><!-- 最优自然保证人 -->
+    	<result property="contractVersionShow" column="CONTRACT_VERSION_SHOW"/><!-- 版本号 -->
+    	<result property="coroName" column="coro_name"/><!-- 共借人或自然人保证人-->
+    	<result property="sendStatus" column="dict_mail_status"/><!-- 邮寄状态-->
+    	<result property="sendEmailStatus" column="send_email_status"/><!-- 邮寄状态-->
+    	<result property="issplit" column="issplit"/>
+    	<result property="zcjRejectFlag" column="zcjRejectFlag"/>
+    </resultMap>
+ 
+  	<!-- 信借数据列表 -->
+  	<select id="loanInfo" parameterType="com.creditharmony.loan.borrow.transate.entity.ex.LoanParamsEx" resultMap="loanInfo">
+  	select  
+		  a.id as id
+		, a.loan_apply_time						<!-- 申请时间 -->
+		, a.customer_into_time					<!-- 进件时间 -->
+		, a.LOAN_CODE							<!-- 借款编号 -->
+		, (select string_agg(cobo_name,',') from jk.t_jk_loan_coborrower where loan_code = a.loan_code) as coro_name	<!-- 共借人或自然人保证人 -->
+		, a.APPLY_ID							<!-- applyId -->
+		, a.CONTRACT_VERSION					<!-- 合同版本号 -->
+		, (select dd.label from jk.t_gl_dict dd where dd.value =a.CONTRACT_VERSION and dd.type='jk_contract_ver' ) CONTRACT_VERSION_SHOW					<!-- 合同版本号 显示 -->
+		, a.CONTRACT_CODE						<!-- 合同编号 -->
+		, a.PAPERLESS_FLAG                      <!-- 无纸化标识 -->
+		, a.LOAN_CUSTOMER_NAME					<!-- 客户姓名 -->
+		, a.frozen_apply_times					<!-- 申请冻结次数 -->
+		, a.frozen_last_apply_time				<!-- 申请冻结时间 -->
+		, trim(a.frozen_code) as frozen_code	<!-- 冻结原因 -->
+		, a.PROVINCE_ID							<!-- 省份编号 -->
+		, d5.area_name as PROVINCE_NAME			<!-- 省份名称 -->
+		, a.CITY_ID								<!-- 城市编号 -->
+		, d6.area_name as CITY_NAME				<!-- 城市名称 -->
+		, a.LOAN_TEAM_ORGID						<!-- 团队组织ID -->
+		, a.PRODUCT_NAME						<!-- 产品名称 -->
+		, a.AUDIT_PRODUCT_NAME					<!-- 批复产品名称 -->
+		, a.DICT_LOAN_STATUS					<!-- 申请状态 -->
+		, d1.label as dictLoanStatusLabel		<!-- 状态label -->
+		, a.LOAN_AUDIT_AMOUNT					<!-- 批复金额 -->
+		, a.LOAN_AUDIT_MONTHS					<!-- 批复分期 -->
+		, a.LOAN_RAISE_FLAG						<!-- 上调标识 -->
+		, d3.label as loanIsRaiseLable			<!-- 上调标识label-->
+		, a.CUSTOMER_TELESALES_FLAG				<!-- 是否电销 -->
+		, d2.label as loanIsPhoneLabel			<!-- 是否电销label -->
+		, a.LOAN_URGENT_FLAG					<!-- 是否加急 -->
+		, a.LOAN_FLAG							<!-- 渠道标识 --> 
+		, d4.label as loanMarkingLable	 		<!-- 渠道label-->
+		, a.LOAN_STORE_ORGID					<!-- 门店ID -->
+		, d7.name as LOAN_STORE_ORG_NAME		<!-- 门店名称 -->
+		, a.STORE_CODE							<!-- 门店code -->
+		, a.MODEL								<!-- 模式 -->
+		, a.DICT_PAY_STATUS						<!-- 还款状态 -->
+<!-- 		, a.LOAN_TEAM_MANAGERCODE				团队经理编号 -->		
+<!-- 		, a.loan_survey_emp_id					外访人员编号 -->
+		, a.servicename							<!-- 客服姓名 -->
+		, a.empname								<!-- 外访人员姓名 -->
+		, a.TEAM_NAME 							<!-- 团队经理姓名 -->
+		, a.MANAGER_NAME						<!-- 客户经理姓名 -->
+		, a.LOANINFO_OLDORNEW_FLAG             <!-- 新旧版本查看切换标识 -->
+		, a.revisit_status 						<!-- 回访状态 -->
+		, a.customer_phone_first				<!-- 手机号 -->
+		, a.bestCoborrower                      <!-- 最优自然保证人 -->
+		, a.dict_mail_status				    <!-- 邮寄状态 -->
+		, lg.zcj_reject_flag zcjRejectFlag
+		, a.issplit
+		, a.send_email_status
+		, a.customer_email
+		, a.email_if_confirm
+	from	
+		(	
+		select
+			  z.id
+			, z.PRODUCT_TYPE
+			, z.loan_customer_service
+			, z.loan_apply_time
+			, z.frozen_code						    <!-- 冻结原因 -->
+			, z.customer_into_time
+			, z.LOAN_CODE
+			, z.APPLY_ID
+			, z.LOAN_CUSTOMER_NAME
+			, z.frozen_apply_times
+			, z.frozen_last_apply_time
+			, z.DICT_LOAN_STATUS
+			, z.LOAN_AUDIT_AMOUNT
+			, z.LOAN_AUDIT_MONTHS
+			, z.LOAN_MANAGERCODE
+			, z.LOAN_TEAM_MANAGERCODE
+			, z.LOAN_RAISE_FLAG
+			, z.LOAN_URGENT_FLAG
+			, z.LOAN_FLAG
+			, z.LOAN_STORE_ORGID
+			, z.STORE_CODE
+			, z.MODEL 
+			, z.LOANINFO_OLDORNEW_FLAG              <!-- 新旧版本查看切换标识 -->
+			, u1.name as servicename				<!-- 客服姓名 -->
+			, u2.name as empname					<!-- 外访人员姓名 -->
+			, u3.name as TEAM_NAME 					<!-- 团队经理姓名 -->
+			, u4.name as MANAGER_NAME				<!-- 客户经理姓名 -->
+			, j.DICT_PAY_STATUS						<!-- 还款状态 -->
+			, g.CUSTOMER_TELESALES_FLAG				<!-- 是否电销 -->
+			, e.PRODUCT_NAME						<!-- 产品名称 -->
+			, e1.PRODUCT_NAME	AS AUDIT_PRODUCT_NAME					<!-- 批复产品名称 -->
+			, d.PROVINCE_ID							<!-- 省份编号 -->
+			, d.CITY_ID								<!-- 城市编号 -->
+			, d.NAME as LOAN_TEAM_ORGID				<!-- 团队组织ID -->
+			, b.CONTRACT_VERSION					<!-- 合同版本号 -->
+			, b.CONTRACT_CODE						<!-- 合同编号 -->
+			, b.PAPERLESS_FLAG                      <!-- 无纸化标识 -->
+			, b.revisit_status						<!-- 回访状态 -->
+			, g.customer_phone_first				<!-- 手机号 -->
+			, (select cobo_name from jk.t_jk_loan_coborrower where id = (select best_coborrower_id  from  jk.t_jk_audit_result where loan_code  = b.loan_code order by create_time desc limit 1)) as bestCoborrower <!-- 最优自然保证人 -->
+			, s.dict_mail_status					<!-- 邮寄状态 -->
+			, se.dict_mail_status AS send_email_status
+			, z.issplit
+			, g.customer_email
+			, g.email_if_confirm
+		from
+			jk.T_JK_LOAN_INFO z 
+			left join jk.T_JK_CONTRACT b
+				on z.LOAN_CODE = b.LOAN_CODE
+			left join jk.T_JK_CONTRACT_SENDING s
+				on b.CONTRACT_CODE = s.CONTRACT_CODE and s.dict_file_type = '0'
+			left join jk.T_JK_CONTRACT_SENDING_email se
+				on b.CONTRACT_CODE = se.CONTRACT_CODE and se.dict_file_type='0'
+			left join jk.T_GL_ORG d
+				on z.LOAN_STORE_ORGID = d.ID
+			left join jk.T_GL_JK_PRODUCT e
+				on z.PRODUCT_TYPE = e.PRODUCT_CODE	
+			left join jk.T_GL_JK_PRODUCT e1
+				on z.loan_audit_product = e1.PRODUCT_CODE						
+			left join jk.T_JK_LOAN_CUSTOMER g 
+				on z.LOAN_CODE = g.LOAN_CODE	
+			left join jk.t_jk_payback j
+				on b.CONTRACT_CODE = j.CONTRACT_CODE
+				
+			left join jk.t_gl_user u1 <!-- 客服姓名 -->
+				on z.loan_customer_service = u1.id
+			left join jk.t_gl_user u2 <!-- 外访人员 -->
+				on z.loan_survey_emp_id = u2.id	
+			left join jk.t_gl_user u3 <!-- 团队经理 -->
+				on z.loan_team_managercode = u3.id
+			left join jk.t_gl_user u4 <!-- 客户经理-->
+				on z.loan_managercode = u4.id
+		where z.issplit!='2'
+			<!-- 对门店人员查看权限约束 -->	
+			<if test="userCode != null and userCode != ''">
+				and z.STORE_CODE = 
+				(select code from t_gl_org where id = 
+				(select department_id from t_gl_user where user_code = #{userCode}))
+			</if>  
+			<!-- 根据客户姓名搜索 -->
+			<if test="loanCustomerName!=null and loanCustomerName!='' ">
+				and z.LOAN_CUSTOMER_NAME like '%${loanCustomerName}%'
+			</if>
+			<!-- 是否加急 -->
+			<if test="loanIsUrgent != null and loanIsUrgent != '' ">
+				and z.LOAN_URGENT_FLAG = #{loanIsUrgent}
+			</if>
+			<!-- 根据标识搜索 -->
+			<if test="loanMarking != null and loanMarking != '' ">
+				and z.LOAN_FLAG = #{loanMarking}
+			</if>
+			<!-- 是否追加借 -->
+			<if test="dictIsAdd != null and dictIsAdd != '' ">
+				and z.DICT_IS_ADDITIONAL = #{dictIsAdd}
+			</if>
+			<!-- 来源系统 -->
+			<if test="system != null and system != '' ">
+				and z.DICT_SOURCE_TYPE = #{system}
+			</if>
+			<!-- 根据门店搜索 -->
+			<if test="orgCode != null and orgCode != ''">
+				and z.LOAN_STORE_ORGID = #{orgCode}
+			</if>
+			<!--进件时间 -->
+			<if test="customerIntoTime != null and customerIntoTime != ''">
+				and to_date(to_char(z.CUSTOMER_INTO_TIME,'yyyy-mm-dd'),'yyyy-mm-dd hh24:mi:ss') = #{customerIntoTime}
+			</if>	
+			<!--是否冻结 -->
+			<if test="frozenCode == 1 and frozenCode!=null and frozenCode != ''">
+				and z.frozen_code is not null 
+			</if> 
+		    <if test="frozenCode == 0 and frozenCode!=null and frozenCode != ''">
+				and z.frozen_code is  null 
+			</if> 
+			<if test=" model !=null and model != ''">
+				and z.model = #{model} 
+			</if> 
+			<!--借款状态 -->
+			<if test="dictLoanStatus != null and dictLoanStatus != ''">
+				and z.DICT_LOAN_STATUS = #{dictLoanStatus}         
+			</if> 
+			<!--电销标识 -->
+				<if test="consTelesalesOrgcode != null and consTelesalesOrgcode != ''">
+				and z.cons_telesales_orgcode is not null      
+			</if>  
+			
+			<!-- 根据客服搜索 -->
+			<if test="loanCustomerServiceName!=null and loanCustomerServiceName!='' ">
+				and u1.name like '%${loanCustomerServiceName}%'
+			</if>
+			<!-- 根据外访人员搜索 -->
+			<if test="loanSurveyEmpName!=null and loanSurveyEmpName!='' ">
+				and u2.name like '%${loanSurveyEmpName}%'
+			</if>
+			<!-- 根据团队经理搜索 -->
+			<if test="teamManageName != null and teamManageName != '' ">
+				and u3.name like '%${teamManageName}%'
+			</if>
+			<!-- 根据客户经理搜索 -->
+			<if test="loanManageName != null and loanManageName != '' ">
+				and u4.name like '%${loanManageName}%'
+			</if>
+			<!-- 根据产品名称搜索 -->
+			<if test="products !=null and products !='' "> 
+				and e.PRODUCT_NAME = #{products }
+			</if>
+			<!-- 根据批复产品名称搜索 -->
+			<if test="auditProducts !=null and auditProducts !='' "> 
+				and e1.PRODUCT_NAME = #{auditProducts}
+			</if>
+			<!-- 根据证件号码搜索 -->
+			<if test="certNum != null and certNum != '' ">
+				and g.CUSTOMER_CERT_NUM like '%${certNum}%'
+			</if>
+			<!-- 是否电销 -->
+			<if test="loanIsPhone != null and loanIsPhone != '' ">
+				and g.CUSTOMER_TELESALES_FLAG = #{loanIsPhone}
+			</if>
+			<!-- 是否无纸化 -->
+			<if test="paperless != null and paperless != '' ">
+				<if test="paperless == 0 ">
+					and b.PAPERLESS_FLAG = #{paperless}
+				</if>
+				<if test="paperless != 0 ">
+					and (b.PAPERLESS_FLAG = #{paperless} or b.PAPERLESS_FLAG is null)
+				</if>
+			</if>
+			<!-- 有无邮箱 -->
+			<if test="emailFlag != null and emailFlag != '' ">
+				<if test="emailFlag == 0 ">
+					and g.customer_email is null
+				</if>
+				<if test="emailFlag == 1 ">
+					and g.customer_email is not null
+				</if>
+			</if>
+			<!-- 还款(借款)状态 -->
+			<if test="dictPayStatus != null and dictPayStatus != ''">
+				and j.DICT_PAY_STATUS = #{dictPayStatus}
+			</if>
+			<!-- 回访状态 -->
+			<if test="revisitStatus != null and revisitStatus != '' and revisitStatus != 'null'">
+				and b.revisit_status = #{revisitStatus}
+			</if>
+			<if test="customerPhoneFirstTransate != null and customerPhoneFirstTransate != ''">
+				and g.customer_phone_first = #{customerPhoneFirstTransate}
+			</if>
+			<if test="revisitStatus == 'null'">
+				and b.revisit_status is null
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus!=-1 and sendStatus!=0">
+				<if test="sendStatus == 1 or sendStatus == 2 or sendStatus==3 or sendStatus==8">
+					and s.dict_mail_status = #{sendStatus} and b.PAPERLESS_FLAG='0'
+				</if>
+				<if test="sendStatus == 4 or sendStatus == 5 or sendStatus == 6 or sendStatus==7">
+					and se.dict_mail_status = #{sendStatus} and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null)
+				</if>
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus==-1">
+				and (s.dict_mail_status is null or s.dict_mail_status='8') and b.PAPERLESS_FLAG='0'
+                 <!-- and b.contract_code not in(select contract_code from jk.T_JK_CONTRACT_SENDING where dict_mail_status!='8' and dict_file_type = '0') and b.PAPERLESS_FLAG='0' -->
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus==0">
+				and (se.dict_mail_status is null or se.dict_mail_status = '7') and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null)
+                 <!-- and b.contract_code not in(select contract_code from jk.T_JK_CONTRACT_SENDING_EMAIL where dict_mail_status!='7' and dict_file_type = '0') and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null) -->
+			</if>
+			<!-- <if test="sendStatus != null and sendStatus != '' and sendStatus!=-1">
+				and s.dict_mail_status = #{sendStatus}
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus==-1">
+				and s.dict_mail_status is null
+			</if> -->		 
+			<!-- 数据权限控制-->
+			${queryRight}	
+		
+		order by 
+			z.customer_into_time desc 
+		<if test="limit != null and offset != null">
+		    limit #{limit} offset #{offset}
+		</if>
+		) a	
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_loan_apply_status' and del_flag = '0') d1
+	    	on a.dict_loan_status = d1.value
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_telemarketing') d2
+	    	on a.customer_telesales_flag = d2.value
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_raise_flag') d3
+	    	on a.loan_raise_flag = d3.value
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_channel_flag') d4
+	    	on a.loan_flag = d4.value
+	    left join (select area_code, area_name from jk.t_gl_province_city) d5 on a.PROVINCE_ID = d5.area_code
+	    left join (select area_code, area_name from jk.t_gl_province_city) d6 on a.CITY_ID = d6.area_code
+	    left join (select id, "name" from jk.t_gl_org) as d7 on a.LOAN_STORE_ORGID = d7.id	
+	    left join jk.t_jk_loan_grant lg on lg.loan_code=a.loan_code	
+	order by 
+		a.customer_into_time desc nulls last				 
+  	</select> 	
+  	
+  	
+  	<!-- 信借数据列表count -->
+  	<select id="cnt" resultType="java.lang.Integer">
+	select
+		count(0) as cnt 
+    from
+    	(
+	  	select		
+			a.loan_code
+		from		
+			(
+			select 
+				  z.loan_store_orgid
+				, z.loan_code
+				,z.LOAN_TEAM_ORGID
+<!-- 				<if test="products != null and products != '' ">  -->
+<!-- 					, z.product_type  -->
+<!-- 				</if> -->
+<!-- 				<if test="(loanManageName != null and loanManageName != '') -->
+<!-- 				       or (loanCustomerServiceName != null and loanCustomerServiceName != '')"> -->
+<!-- 					, z.loan_customer_service -->
+<!-- 				</if> -->
+<!-- 				<if test="loanSurveyEmpName != null and loanSurveyEmpName != '' "> -->
+<!-- 					, z.loan_survey_emp_id	 -->
+<!-- 				</if> -->
+<!-- 				<if test="teamManageName != null and teamManageName != '' "> -->
+<!-- 					, z.loan_team_managercode  -->
+<!-- 				</if> -->
+<!-- 				<if test="loanManageName != null and loanManageName != '' "> -->
+<!-- 					, z.loan_managercode -->
+<!-- 				</if> -->
+			from 
+				jk.t_jk_loan_info z 
+				<if test="(dictPayStatus != null and dictPayStatus != '') or  revisitStatus != ''">
+					left join jk.t_jk_contract b
+						on z.loan_code = b.loan_code
+				</if>
+				<if test="dictPayStatus != null and dictPayStatus != '' ">
+					left join jk.t_jk_payback j
+						on b.contract_code = j.contract_code
+				</if>
+				<if test="(certNum != null and certNum != '')
+					   or (loanIsPhone != null and loanIsPhone != '') or (customerPhoneFirstTransate != null and customerPhoneFirstTransate != '') or (emailFlag != null and emailFlag != '')">
+					left join jk.t_jk_loan_customer g 
+						on z.loan_code = g.loan_code
+				</if>
+				<if test="products != null and products != '' "> 
+					left join jk.t_gl_jk_product e
+						on z.product_type = e.product_code	
+				</if>
+				<if test="auditProducts != null and auditProducts != '' "> 
+					left join jk.t_gl_jk_product e1
+						on z.loan_audit_product = e1.product_code	
+				</if>
+				<if test="(loanCustomerServiceName != null and loanCustomerServiceName != '')">
+					left join jk.t_gl_user u1 
+						on z.loan_customer_service = u1.id
+				</if>
+				<if test="loanSurveyEmpName != null and loanSurveyEmpName != '' ">
+					left join jk.t_gl_user u2 
+						on z.loan_survey_emp_id = u2.id	
+				</if>
+				<if test="teamManageName != null and teamManageName != '' ">
+					left join jk.t_gl_user u3 
+						on z.loan_team_managercode = u3.id	
+				</if>
+				<if test="loanManageName != null and loanManageName != '' ">
+					left join jk.t_gl_user u4 
+						on z.loan_managercode = u4.id	
+				</if>
+				<if test="sendStatus != null and sendStatus != '' ">
+					<if test="(dictPayStatus != null and dictPayStatus != '') or  revisitStatus != ''">
+						<if test="paperless != null and paperless != '' ">
+							left join jk.t_jk_contract b
+							on z.loan_code = b.loan_code
+						</if>
+						left join jk.T_JK_CONTRACT_SENDING s
+							on b.CONTRACT_CODE = s.CONTRACT_CODE AND s.dict_file_type = '0'
+						left join jk.T_JK_CONTRACT_SENDING_email se
+							on b.CONTRACT_CODE = se.CONTRACT_CODE AND se.dict_file_type = '0'
+					</if>
+					<if test="dictPayStatus == null or dictPayStatus == '' or  revisitStatus == ''">
+						left join jk.t_jk_contract b
+						on z.loan_code = b.loan_code
+						left join jk.T_JK_CONTRACT_SENDING s
+							on b.CONTRACT_CODE = s.CONTRACT_CODE AND s.dict_file_type = '0'
+						left join jk.T_JK_CONTRACT_SENDING_email se
+							on b.CONTRACT_CODE = se.CONTRACT_CODE AND se.dict_file_type = '0'
+					</if>
+				</if>
+				<if test="sendStatus == null or sendStatus == '' ">
+					<if test="paperless != null and paperless != '' ">
+							left join jk.t_jk_contract b
+							on z.loan_code = b.loan_code
+						</if>
+				</if>
+<!-- 				left join jk.t_gl_org d -->
+<!-- 					on z.loan_store_orgid = d.id -->
+			<where>
+				<!-- 对门店人员查看权限约束 -->	
+				<if test="userCode != null and userCode != ''">
+					and z.store_code = (select code from t_gl_org where id = (select department_id from t_gl_user where user_code = #{userCode}))
+				</if> 
+				<!-- 根据客户姓名搜索 -->
+				<if test="loanCustomerName!=null and loanCustomerName!='' ">
+					and z.loan_customer_name like '%${loanCustomerName}%'
+				</if>
+				<!-- 是否加急 -->
+				<if test="loanIsUrgent != null and loanIsUrgent != '' ">
+					and z.loan_urgent_flag = #{loanIsUrgent}
+				</if>
+				<!-- 根据标识搜索 -->
+				<if test="loanMarking != null and loanMarking != '' ">
+					and z.loan_flag = #{loanMarking}
+				</if>
+				<!-- 是否追加借 -->
+				<if test="dictIsAdd != null and dictIsAdd != '' ">
+					and z.dict_is_additional = #{dictIsAdd}
+				</if>
+				<!-- 来源系统 -->
+				<if test="system != null and system != '' ">
+					and z.dict_source_type = #{system}
+				</if>
+				<!-- 根据门店搜索 -->
+				<if test="orgCode != null and orgCode != ''">
+					and z.loan_store_orgid = #{orgCode}
+				</if>
+				<!--是否冻结 -->
+				<if test="frozenCode == 1 and frozenCode!=null and frozenCode != ''">
+					and z.frozen_code is not null 
+				</if> 	
+			    <if test="frozenCode == 0 and frozenCode!=null and frozenCode != ''">
+					and z.frozen_code is null 
+				</if> 
+				<if test="model !=null and model != ''">
+					and z.model = #{model} 
+				</if> 
+				<!--借款状态 -->
+				<if test="dictLoanStatus != null and dictLoanStatus != ''">
+					and z.dict_loan_status = #{dictLoanStatus}         
+				</if> 
+				<!--电销标识 -->
+					<if test="consTelesalesOrgcode != null and consTelesalesOrgcode != ''">
+					and z.cons_telesales_orgcode is not null      
+				</if>
+				<!-- 是否无纸化 -->
+				<if test="paperless != null and paperless != '' ">
+					<if test="paperless == 0 ">
+						and b.PAPERLESS_FLAG = #{paperless}
+					</if>
+					<if test="paperless != 0 ">
+						and (b.PAPERLESS_FLAG = #{paperless} or b.PAPERLESS_FLAG is null)
+					</if>
+				</if>
+				<!-- 有无邮箱 -->
+				<if test="emailFlag != null and emailFlag != '' ">
+					<if test="emailFlag == 0 ">
+						and g.customer_email is null
+					</if>
+					<if test="emailFlag == 1 ">
+						and g.customer_email is not null
+					</if>
+				</if>
+				<!--进件时间 -->
+				<if test="customerIntoTime != null and customerIntoTime != ''">
+					and to_date(to_char(z.CUSTOMER_INTO_TIME, 'yyyy-mm-dd'), 'yyyy-mm-dd hh24:mi:ss') = #{customerIntoTime}
+				</if>
+				<!-- 还款(借款)状态 -->
+				<if test="dictPayStatus != null and dictPayStatus != ''">
+					and j.dict_pay_status = #{dictPayStatus}
+				</if>	
+				<!-- 根据客服搜索 -->
+				<if test="loanCustomerServiceName!=null and loanCustomerServiceName!='' ">
+					and u1.name like '%${loanCustomerServiceName}%'
+				</if>
+				<!-- 根据外访人员搜索 -->
+				<if test="loanSurveyEmpName!=null and loanSurveyEmpName!='' ">
+					and u2.name like '%${loanSurveyEmpName}%'
+				</if>
+				<!-- 根据团队经理搜索 -->
+				<if test="teamManageName != null and teamManageName != '' ">
+					and u3.name like '%${teamManageName}%'
+				</if>
+				<!-- 根据客户经理搜索 -->
+				<if test="loanManageName != null and loanManageName != '' ">
+					and u4.name like '%${loanManageName}%'
+				</if>
+				<!-- 根据产品名称搜索 -->
+				<if test="products != null and products != '' "> 
+					and e.product_name = #{products}
+				</if>
+				<!-- 根据批复产品名称搜索 -->
+				<if test="auditProducts != null and auditProducts != '' "> 
+					and e1.product_name = #{auditProducts}
+				</if>
+				<!-- 根据证件号码搜索 -->
+				<if test="certNum != null and certNum != '' ">
+					and g.customer_cert_num like '%${certNum}%'
+				</if>
+				<!-- 是否电销 -->
+				<if test="loanIsPhone != null and loanIsPhone != '' ">
+					and g.customer_telesales_flag = #{loanIsPhone}
+				</if>
+				<!-- 回访状态 -->
+				<if test="revisitStatus != null and revisitStatus != '' and revisitStatus != 'null'">
+					and b.revisit_status = #{revisitStatus}
+				</if>
+				<if test="customerPhoneFirstTransate != null and customerPhoneFirstTransate != ''">
+					and g.customer_phone_first = #{customerPhoneFirstTransate}
+				</if>
+				<if test="revisitStatus == 'null'">
+					and b.revisit_status is null
+				</if>	
+				<if test="sendStatus != null and sendStatus != '' and sendStatus!=-1 and sendStatus!=0">
+					<if test="sendStatus == 1 or sendStatus == 2 or sendStatus==3 or sendStatus==8">
+						and s.dict_mail_status = #{sendStatus} and b.PAPERLESS_FLAG='0'
+					</if>
+					<if test="sendStatus == 4 or sendStatus == 5 or sendStatus == 6 or sendStatus==7">
+						and se.dict_mail_status = #{sendStatus} and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null)
+					</if>
+				</if>
+				<if test="sendStatus != null and sendStatus != '' and sendStatus==-1">
+					and (s.dict_mail_status is null or s.dict_mail_status='8') and b.PAPERLESS_FLAG='0'
+                 	<!-- and b.contract_code not in(select contract_code from jk.T_JK_CONTRACT_SENDING where dict_mail_status!='8' and dict_file_type = '0') and b.PAPERLESS_FLAG='0' -->
+				</if>
+				<if test="sendStatus != null and sendStatus != '' and sendStatus==0">
+					 and (se.dict_mail_status is null or se.dict_mail_status = '7') and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null)
+                 	<!-- and b.contract_code not in(select contract_code from jk.T_JK_CONTRACT_SENDING_EMAIL where dict_mail_status!='7' and dict_file_type = '0') and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null) -->
+				</if>
+				<!-- <if test="sendStatus != null and sendStatus != '' and sendStatus!=-1">
+					and s.dict_mail_status = #{sendStatus}
+				</if>
+				<if test="sendStatus != null and sendStatus != '' and sendStatus==-1">
+					and s.dict_mail_status is null
+				</if> -->		 
+				<!-- 数据权限控制-->
+				${queryRight} 
+			</where>
+			) a 	
+			<where>
+			</where>
+		) t	 
+  	</select> 
+  	
+  		<!-- 信借数据列表邮箱导出 -->
+  	<select id="loanInfoEmailExport" parameterType="com.creditharmony.loan.borrow.transate.entity.ex.LoanParamsEx" resultType="com.creditharmony.loan.borrow.transate.entity.ex.LoanInfoExport">
+  	select  
+		  a.id as id
+		, a.CONTRACT_CODE						
+		, a.LOAN_CUSTOMER_NAME					
+		, a.DICT_LOAN_STATUS
+		, a.loan_code
+		, d1.label as dictLoanStatusLabel		
+		, d7.name as LOAN_STORE_ORG_NAME		
+		, a.STORE_CODE							
+		, a.DICT_PAY_STATUS						
+		, a.customer_email
+		, (case when a.customer_email is null then '无' else '有' end) as emailFalg
+		, a.CUSTOMER_TELESALES_FLAG
+		, a.LOAN_RAISE_FLAG
+		, a.LOAN_FLAG
+		, a.LOAN_STORE_ORGID
+		, a.customer_into_time
+		, a.contract_end_day
+	from	
+		(	
+		select
+			 z.id
+			, z.LOAN_CUSTOMER_NAME
+			, z.DICT_LOAN_STATUS
+			, z.LOAN_CODE
+			, z.STORE_CODE
+			, j.DICT_PAY_STATUS
+			, g.CUSTOMER_TELESALES_FLAG	
+			, z.LOAN_RAISE_FLAG	
+			, b.CONTRACT_CODE						
+			, g.customer_email
+			, z.LOAN_FLAG
+			, z.LOAN_STORE_ORGID
+			, z.customer_into_time
+			, b.contract_end_day
+		from
+			jk.T_JK_LOAN_INFO z 
+			left join jk.T_JK_CONTRACT b
+				on z.LOAN_CODE = b.LOAN_CODE
+			left join jk.T_JK_CONTRACT_SENDING s
+				on b.CONTRACT_CODE = s.CONTRACT_CODE and s.dict_file_type = '0'
+			left join jk.T_JK_CONTRACT_SENDING_email se
+				on b.CONTRACT_CODE = se.CONTRACT_CODE and se.dict_file_type='0'
+			left join jk.T_GL_ORG d
+				on z.LOAN_STORE_ORGID = d.ID
+			left join jk.T_GL_JK_PRODUCT e
+				on z.PRODUCT_TYPE = e.PRODUCT_CODE	
+			left join jk.T_GL_JK_PRODUCT e1
+				on z.loan_audit_product = e1.PRODUCT_CODE						
+			left join jk.T_JK_LOAN_CUSTOMER g 
+				on z.LOAN_CODE = g.LOAN_CODE	
+			left join jk.t_jk_payback j
+				on b.CONTRACT_CODE = j.CONTRACT_CODE
+				
+			left join jk.t_gl_user u1 <!-- 客服姓名 -->
+				on z.loan_customer_service = u1.id
+			left join jk.t_gl_user u2 <!-- 外访人员 -->
+				on z.loan_survey_emp_id = u2.id	
+			left join jk.t_gl_user u3 <!-- 团队经理 -->
+				on z.loan_team_managercode = u3.id
+			left join jk.t_gl_user u4 <!-- 客户经理-->
+				on z.loan_managercode = u4.id
+		where z.issplit!='2'
+			<!-- 对门店人员查看权限约束 -->	
+			<if test="userCode != null and userCode != ''">
+				and z.STORE_CODE = 
+				(select code from t_gl_org where id = 
+				(select department_id from t_gl_user where user_code = #{userCode}))
+			</if>  
+			<!-- 根据客户姓名搜索 -->
+			<if test="loanCustomerName!=null and loanCustomerName!='' ">
+				and z.LOAN_CUSTOMER_NAME like '%${loanCustomerName}%'
+			</if>
+			<!-- 是否加急 -->
+			<if test="loanIsUrgent != null and loanIsUrgent != '' ">
+				and z.LOAN_URGENT_FLAG = #{loanIsUrgent}
+			</if>
+			<!-- 根据标识搜索 -->
+			<if test="loanMarking != null and loanMarking != '' ">
+				and z.LOAN_FLAG = #{loanMarking}
+			</if>
+			<!-- 是否追加借 -->
+			<if test="dictIsAdd != null and dictIsAdd != '' ">
+				and z.DICT_IS_ADDITIONAL = #{dictIsAdd}
+			</if>
+			<!-- 来源系统 -->
+			<if test="system != null and system != '' ">
+				and z.DICT_SOURCE_TYPE = #{system}
+			</if>
+			<!-- 根据门店搜索 -->
+			<if test="orgCode != null and orgCode != ''">
+				and z.LOAN_STORE_ORGID = #{orgCode}
+			</if>
+			<!--进件时间 -->
+			<if test="customerIntoTime != null and customerIntoTime != ''">
+				and to_date(to_char(z.CUSTOMER_INTO_TIME,'yyyy-mm-dd'),'yyyy-mm-dd hh24:mi:ss') = #{customerIntoTime}
+			</if>	
+			<!--是否冻结 -->
+			<if test="frozenCode == 1 and frozenCode!=null and frozenCode != ''">
+				and z.frozen_code is not null 
+			</if> 
+		    <if test="frozenCode == 0 and frozenCode!=null and frozenCode != ''">
+				and z.frozen_code is  null 
+			</if> 
+			<if test=" model !=null and model != ''">
+				and z.model = #{model} 
+			</if> 
+			<!--借款状态 -->
+			<if test="dictLoanStatus != null and dictLoanStatus != ''">
+				and z.DICT_LOAN_STATUS = #{dictLoanStatus}         
+			</if> 
+			<!--电销标识 -->
+				<if test="consTelesalesOrgcode != null and consTelesalesOrgcode != ''">
+				and z.cons_telesales_orgcode is not null      
+			</if>  
+			
+			<!-- 根据客服搜索 -->
+			<if test="loanCustomerServiceName!=null and loanCustomerServiceName!='' ">
+				and u1.name like '%${loanCustomerServiceName}%'
+			</if>
+			<!-- 根据外访人员搜索 -->
+			<if test="loanSurveyEmpName!=null and loanSurveyEmpName!='' ">
+				and u2.name like '%${loanSurveyEmpName}%'
+			</if>
+			<!-- 根据团队经理搜索 -->
+			<if test="teamManageName != null and teamManageName != '' ">
+				and u3.name like '%${teamManageName}%'
+			</if>
+			<!-- 根据客户经理搜索 -->
+			<if test="loanManageName != null and loanManageName != '' ">
+				and u4.name like '%${loanManageName}%'
+			</if>
+			<!-- 根据产品名称搜索 -->
+			<if test="products !=null and products !='' "> 
+				and e.PRODUCT_NAME = #{products }
+			</if>
+			<!-- 根据批复产品名称搜索 -->
+			<if test="auditProducts !=null and auditProducts !='' "> 
+				and e1.PRODUCT_NAME = #{auditProducts}
+			</if>
+			<!-- 根据证件号码搜索 -->
+			<if test="certNum != null and certNum != '' ">
+				and g.CUSTOMER_CERT_NUM like '%${certNum}%'
+			</if>
+			<!-- 是否电销 -->
+			<if test="loanIsPhone != null and loanIsPhone != '' ">
+				and g.CUSTOMER_TELESALES_FLAG = #{loanIsPhone}
+			</if>
+			<!-- 是否无纸化 -->
+			<if test="paperless != null and paperless != '' ">
+				<if test="paperless == 0 ">
+					and b.PAPERLESS_FLAG = #{paperless}
+				</if>
+				<if test="paperless != 0 ">
+					and (b.PAPERLESS_FLAG = #{paperless} or b.PAPERLESS_FLAG is null)
+				</if>
+			</if>
+			<!-- 有无邮箱 -->
+			<if test="emailFlag != null and emailFlag != '' ">
+				<if test="emailFlag == 0 ">
+					and g.customer_email is null
+				</if>
+				<if test="emailFlag == 1 ">
+					and g.customer_email is not null
+				</if>
+			</if>
+			<!-- 还款(借款)状态 -->
+			<if test="dictPayStatus != null and dictPayStatus != ''">
+				and j.DICT_PAY_STATUS = #{dictPayStatus}
+			</if>
+			<!-- 回访状态 -->
+			<if test="revisitStatus != null and revisitStatus != '' and revisitStatus != 'null'">
+				and b.revisit_status = #{revisitStatus}
+			</if>
+			<if test="customerPhoneFirstTransate != null and customerPhoneFirstTransate != ''">
+				and g.customer_phone_first = #{customerPhoneFirstTransate}
+			</if>
+			<if test="revisitStatus == 'null'">
+				and b.revisit_status is null
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus!=-1 and sendStatus!=0">
+				<if test="sendStatus == 1 or sendStatus == 2 or sendStatus==3 or sendStatus==8">
+					and s.dict_mail_status = #{sendStatus} and b.PAPERLESS_FLAG='0'
+				</if>
+				<if test="sendStatus == 4 or sendStatus == 5 or sendStatus == 6 or sendStatus==7">
+					and se.dict_mail_status = #{sendStatus} and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null)
+				</if>
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus==-1">
+				and (s.dict_mail_status is null or s.dict_mail_status='8') and b.PAPERLESS_FLAG='0'
+                 <!-- and b.contract_code not in(select contract_code from jk.T_JK_CONTRACT_SENDING where dict_mail_status!='8' and dict_file_type = '0') and b.PAPERLESS_FLAG='0' -->
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus==0">
+				and (se.dict_mail_status is null or se.dict_mail_status = '7') and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null)
+                 <!-- and b.contract_code not in(select contract_code from jk.T_JK_CONTRACT_SENDING_EMAIL where dict_mail_status!='7' and dict_file_type = '0') and (b.PAPERLESS_FLAG='1' or b.PAPERLESS_FLAG is null) -->
+			</if>
+			<!-- <if test="sendStatus != null and sendStatus != '' and sendStatus!=-1">
+				and s.dict_mail_status = #{sendStatus}
+			</if>
+			<if test="sendStatus != null and sendStatus != '' and sendStatus==-1">
+				and s.dict_mail_status is null
+			</if> -->		 
+			<!-- 数据权限控制-->
+			${queryRight}	
+		
+		order by 
+			z.customer_into_time desc 
+			limit 100000
+			
+		) a	
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_loan_apply_status' and del_flag = '0') d1
+	    	on a.dict_loan_status = d1.value
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_telemarketing') d2
+	    	on a.customer_telesales_flag = d2.value
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_raise_flag') d3
+	    	on a.loan_raise_flag = d3.value
+	  	left join (select value, label from jk.t_gl_dict where type = 'jk_channel_flag') d4
+	    	on a.loan_flag = d4.value
+	    left join (select id, "name" from jk.t_gl_org) as d7 on a.LOAN_STORE_ORGID = d7.id	
+	    left join jk.t_jk_loan_grant lg on lg.loan_code=a.loan_code	
+	order by 
+		a.customer_into_time desc nulls last				 
+  	</select> 	
+  	
+  	
+  	
+  	
+  	<!--  获得产品列表 -->
+  	<select id="products" resultType="java.lang.String" >
+  		select PRODUCT_NAME from jk.T_GL_JK_PRODUCT where product_type = 'products_type_loan_credit' and product_status = '1'
+  	</select>
+ 	<!-- 通过借款编码查询共借人 -->
+	<select id="getCobos" parameterType="java.lang.String" resultType="java.lang.String">
+		select cobo_name from jk.t_jk_loan_coborrower where loan_code = #{loanCode}
+	</select>
+	<select id="selectEmailByLoanCode" parameterType="string" resultType="com.creditharmony.loan.borrow.transate.entity.ex.LoanEmailEdit">
+  	select 
+  	    lc.id,
+  		lc.customer_name,		--客户姓名
+  		lc.customer_cert_num,		--身份证号
+  		ct.contract_code, 			--合同编号
+  		ct.loan_code				--借款编号
+	from  jk.t_jk_loan_customer lc left join jk.t_jk_contract ct  on lc.loan_code = ct.loan_code
+	where lc.loan_code = #{loanCode}
+  </select>
+   <update id="updateCustomer" parameterType="com.creditharmony.loan.borrow.transate.entity.ex.LoanEmailEdit">
+  	update jk.t_jk_loan_customer set customer_email =#{email} where loan_code=#{loanCode}
+  </update>
+</mapper>

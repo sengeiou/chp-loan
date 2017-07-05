@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.app.consult.dao.AppConsultDao">
+
+    <resultMap id="AppConsultMap" type="com.creditharmony.loan.app.consult.entity.AppConsult">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="CUSTOMER_ID" property="customerId" jdbcType="VARCHAR" />
+		<result column="FINANCING_ID" property="financingId" jdbcType="VARCHAR" />
+		<result column="LOAN_POSITION" property="loanPosition" jdbcType="DECIMAL" />
+		<result column="LOAN_USE" property="loanUse" jdbcType="VARCHAR" />
+		<result column="LOAN_TYPE" property="loanType" jdbcType="VARCHAR" />
+		<result column="LOAN_RECORD" property="loanRecord" jdbcType="VARCHAR" />
+		<result column="LOAN_STATUS" property="loanStatus" jdbcType="VARCHAR" />
+		<result column="COMMUNICATE_DATE" property="communicateDate" jdbcType="DATE" />
+		<result column="TEAM_EMPCODE" property="teamEmpcode" jdbcType="VARCHAR" />
+		<result column="TEAM_ORG_ID" property="teamOrgId" jdbcType="VARCHAR" />
+		<result column="PHONE_ORG_ID" property="phoneOrgId" jdbcType="VARCHAR" />
+		<result column="PHONE_SOURCE" property="phoneSource" jdbcType="VARCHAR" />
+		<result column="IS_PHONE" property="isPhone" jdbcType="VARCHAR" />
+		<result column="CUSTOMER_SERVICE" property="customerService" jdbcType="VARCHAR" />
+		<result column="CONSULTATION_SOURCE" property="consultationSource" jdbcType="VARCHAR" />
+		<result column="IS_DX_QD" property="isDxQd" jdbcType="VARCHAR" />
+		<result column="APPLY_TYPE" property="applyType" jdbcType="VARCHAR" />
+		<result column="LOAN_MONTH" property="loanMonth" jdbcType="VARCHAR" />
+		<result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR" />
+		<result column="IS_NEW" property="isNew" jdbcType="VARCHAR" />
+		<result column="FIRST_CREATE_TIME" property="firstCreateTime" jdbcType="DATE" />
+		<result column="CERT_NUM" property="certNum" jdbcType="VARCHAR" />
+		<result column="CUSTOMER_NAME" property="customerName" jdbcType="VARCHAR" />
+		<result column="SEX" property="sex" jdbcType="VARCHAR" />
+		<result column="HUKOU_ADDRESS" property="hukouAddress" jdbcType="VARCHAR" />
+		<result column="CERT_ORG" property="certOrg" jdbcType="VARCHAR" />
+		<result column="ID_START_DATE" property="idStartDate" jdbcType="VARCHAR" />
+		<result column="ID_END_DATE" property="idEndDate" jdbcType="VARCHAR" />
+		<result column="MOBILEPHONE" property="mobilephone" jdbcType="VARCHAR" />
+		<result column="SOURCE" property="source" jdbcType="VARCHAR" />
+		<result column="INDUSTRY" property="industry" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_BANK" property="accountBank" jdbcType="VARCHAR" />
+		<result column="BRANCH" property="branch" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_ID" property="accountId" jdbcType="VARCHAR" />
+		<result column="NAMEPIC" property="namepic" jdbcType="VARCHAR" />
+		<result column="CERT_NUM_PIC" property="certNumPic" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_ID_PIC" property="accountIdPic" jdbcType="VARCHAR" />
+		<result column="NAME_PIC_NAME" property="namePicName" jdbcType="VARCHAR" />
+		<result column="CERT_NUM_PIC_NAME" property="certNumPicName" jdbcType="VARCHAR" />
+		<result column="ACCOUNTID_PIC_NAME" property="accountidPicName" jdbcType="VARCHAR" />
+		<result column="PRODUCT_NAME" property="productName" jdbcType="VARCHAR" />
+		<result column="CERT_TYPE" property="certType" jdbcType="VARCHAR" />
+		<result column="INDUSTRY_NAME" property="industryName" jdbcType="VARCHAR" />
+		<result column="LOAN_USE_NAME" property="loanUseName" jdbcType="VARCHAR" />
+		<result column="STORE_NAME" property="storeName" jdbcType="VARCHAR" />
+		<result column="BIRTHDAY" property="birthday" jdbcType="DATE" />
+		<result column="BANK_ID" property="bankId" jdbcType="VARCHAR" />
+		<result column="BANK_PROVINCE" property="bankProvince" jdbcType="VARCHAR" />
+		<result column="BANK_CITY" property="bankCity" jdbcType="VARCHAR" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="MODIFY_BY" property="modifyBy" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="STORE_ID" property="storeId" jdbcType="VARCHAR" />
+		<result column="SOURCE_TYPE" property="sourceType" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+      ID, CUSTOMER_ID, FINANCING_ID, LOAN_POSITION, LOAN_USE, LOAN_TYPE, 
+      LOAN_RECORD, LOAN_STATUS, COMMUNICATE_DATE, TEAM_EMPCODE,TEAM_ORG_ID,
+      PHONE_ORG_ID,PHONE_SOURCE,IS_PHONE,CUSTOMER_SERVICE,CONSULTATION_SOURCE,
+      IS_DX_QD,APPLY_TYPE,LOAN_MONTH,PRODUCT_CODE,IS_NEW,FIRST_CREATE_TIME,
+      CERT_NUM,CUSTOMER_NAME,SEX,HUKOU_ADDRESS,CERT_ORG,ID_START_DATE,ID_END_DATE,
+      MOBILEPHONE,SOURCE,INDUSTRY,ACCOUNT_BANK,BRANCH,ACCOUNT_ID,NAMEPIC,CERT_NUM_PIC,
+      ACCOUNT_ID_PIC,NAME_PIC_NAME,CERT_NUM_PIC_NAME,ACCOUNTID_PIC_NAME,PRODUCT_NAME,
+      CERT_TYPE,INDUSTRY_NAME,LOAN_USE_NAME,STORE_NAME,BIRTHDAY,BANK_ID,BANK_PROVINCE,
+      BANK_CITY,CREATE_BY,MODIFY_BY,CREATE_TIME,MODIFY_TIME,STORE_ID,SOURCE_TYPE
+    </sql>
+
+  <!-- 查询app客户咨询列表信息 -->
+  <select id="findList" resultType="com.creditharmony.loan.app.consult.entity.AppConsult">
+	  select 
+	     b.id,
+	     b.financing_id,
+	     b.customer_name,
+	     b.cert_num,
+	     b.loan_position,
+	     b.team_empcode,
+	     b.first_create_time
+	  from 
+		  jk.t_jk_app_consultation b
+		  left join jk.t_gl_user financing ON financing.id = b.financing_id
+      <!-- 表示为新数据 ,同时来源为app,操作状态不为【门店放弃】的，为默认状态的进行操作-->
+      where loan_status = '0' and apply_type = '2'
+      <if test = "teamEmpcode != null and teamEmpcode != ''">
+      	and team_empcode = #{teamEmpcode}
+      </if>
+	 <if test="customerName != null and customerName != ''"> 
+		and customer_name LIKE CONCAT('%', #{customerName}, '%')
+	 </if>
+	 <if test="certNum != null and certNum != ''"> 
+		and cert_num LIKE CONCAT('%', #{certNum}, '%')
+	 </if>	
+	 <if test="financingName != null and financingName != ''"> 
+		and financing.name LIKE CONCAT('%', #{financingName}, '%')
+	 </if>
+  </select>
+  
+  	<!-- 查询ocr客户咨询列表数据 -->
+	<select id="findAssistantConsult" resultType="com.creditharmony.loan.app.consult.entity.AppConsult">
+	   select 
+	     ac.id,
+	     financing_id,
+	     customer_name,
+	     cert_num,
+	     loan_position,
+	     team_empcode,
+	     first_create_time
+	   from jk.t_jk_app_consultation ac
+	   inner join jk.t_gl_user users on ac.financing_id = users.id
+	   where 1=1
+	  <if test="applyType != null and applyType != ''">
+	   		and  apply_type = #{applyType}
+	  </if>
+	  <if test="customerName != null and customerName != ''">
+	   		and customer_name like  CONCAT('%',#{customerName},'%')
+	  </if>
+	  <if test="certNum != null and certNum != ''">
+	        and cert_num like CONCAT('%',#{certNum},'%')
+	  </if>
+	  <if test="financingName != null and financingName != ''">
+	        and users.name = #{financingName}
+	  </if>
+	  <if test="teamEmpcode != null and teamEmpcode != ''">
+	        and team_empcode = #{teamEmpcode}
+	  </if>
+	  <if test="loanStatus != null and loanStatus != ''">
+	        and loan_status = #{loanStatus}
+	  </if>
+	  order by loan_status,first_create_time desc
+	</select>
+  
+  <!-- 查询客户咨询详细页面,根据id -->
+  <select id="getConsult" resultType="com.creditharmony.loan.app.consult.entity.AppConsult">
+	  select 
+	  <include refid="Base_Column_List" />
+	  from jk.t_jk_app_consultation 
+	  where id = #{id}
+  </select>
+  
+  <!-- 更新app咨询表 -->
+  <update id="updateAppConsult" parameterType = "com.creditharmony.loan.app.consult.entity.AppConsult">
+	  update jk.t_jk_app_consultation 
+	  <set>
+	  	<if test="customerId != null and customerId != ''">
+	  		customer_id = #{customerId},
+	  	</if>
+	  	<if test="applyType != null and applyType != ''">
+	  		apply_type = #{applyType},
+	  	</if>
+	  	<if test="loanRecord != null and loanRecord != ''">
+	  		loan_record = #{loanRecord},
+	  	</if>
+	  	<if test="loanStatus != null and loanStatus != ''">
+	  		loan_status = #{loanStatus}
+	  	</if>
+	  </set>
+	    where id = #{id}
+   </update>
+   
+   <!-- ocr更新 -->
+   <update id="updateAssistantConsult">
+      update jk.t_jk_app_consultation 
+      <trim prefix="SET" suffixOverrides=",">
+        <if test="customerId != null and customerId != ''">
+           customer_id = #{customerId},
+        </if>
+        <if test="loanRecord != null and loanRecord != ''">
+           loan_record = #{loanRecord},
+        </if>
+        <if test="applyType != null and applyType != ''">
+	  		apply_type = #{applyType},
+	  	</if>
+        <if test="loanStatus != null and loanStatus != ''">
+           loan_status = #{loanStatus},
+        </if>
+        <if test="isNew != null and isNew !=''">
+           is_new = #{isNew},
+        </if>
+        <if test="modifyBy != null and modifyBy !=''">
+           modify_by = #{modifyBy},
+        </if>
+        <if test="modifyTime != null and modifyTime !=''">
+           modify_time = #{modifyTime}
+        </if>
+      </trim>
+      where id = #{id}
+    </update>
+    
+</mapper>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.zcj.dao.ZcjDao">
+
+	<select id='getAmountSum' parameterType="com.creditharmony.loan.borrow.zcj.view.ZcjEntity" resultType="com.creditharmony.loan.borrow.zcj.view.ZcjEntity">
+	SELECT
+		nvl(sum(con.contract_amount),0) AS contractAmountSum,
+		nvl(sum(gr.grant_amount),0) AS grantAmountSum,
+		sum(i.loan_audit_amount) AS loanAuditAmountSum
+	FROM
+		t_jk_loan_info i LEFT JOIN jk.T_GL_ORG o
+		ON i.LOAN_STORE_ORGID = o.ID LEFT JOIN t_jk_loan_customer c
+		ON c.LOAN_code = i.loan_code LEFT JOIN t_jk_contract con
+		ON con.loan_code = i.loan_code LEFT jOIN t_jk_contract_fee fee
+		ON fee.contract_code = con.contract_code LEFT JOIN jk.t_jk_loan_grant gr
+		ON gr.contract_code = con.contract_code
+		<include refid="financeInfoWhere" />
+	</select>
+	
+	<select id='getFinanceInfo' parameterType="com.creditharmony.loan.borrow.zcj.view.ZcjEntity" resultType="com.creditharmony.loan.borrow.zcj.view.ZcjEntity" >
+		SELECT 
+	i.id AS id,
+    o.name AS orgName,
+    to_char(gr.submissiondate,'yyyy-MM-dd') AS pushDate,
+    i.loan_customer_name AS loanCustomerName,
+    c.customer_cert_num AS customerCertNum,
+    (select t.label from jk.t_gl_dict t where t.type = 'jk_open_bank' and t.value=(select b.bank_name from t_jk_loan_bank b where b.LOAN_code = i.loan_code AND (b.repayment_flag = '0' OR b.repayment_flag IS NULL) AND b.bank_top_flag = '1')) AS bankName,
+    (select b.bank_account from t_jk_loan_bank b where b.LOAN_code = i.loan_code AND (b.repayment_flag = '0' OR b.repayment_flag IS NULL) AND b.bank_top_flag = '1') AS bankAccount,
+    i.loan_audit_amount AS loanAuditAmount,
+    con.contract_amount AS contractAmount,
+    fee.fee_petition AS feePetition,
+    fee.fee_expedited AS feeExpedited,
+    gr.grant_amount AS grantAmount,
+    (select d.label from t_gl_dict d where d.type='jk_contract_ver' and d.value=con.contract_version) as contractVersion,
+    con.contract_months AS contractMonths,
+     (select d.label from t_gl_dict d where d.type='jk_loan_apply_status' and d.value=i.dict_loan_status and d.del_flag = '0') AS LoanStatus,
+     to_char(gr.lending_time,'yyyy-MM-dd') AS lendingTime,
+     (select d.label from t_gl_dict d where d.type='jk_channel_flag' and d.value=i.loan_flag) as loanFlag,
+     (select d.label from t_gl_dict d where d.type='jk_loan_model' and d.value=i.model) as model,
+     con.contract_code AS contractCode,
+     i.loan_code AS loanCode,
+     case when trim(i.frozen_code)='' or i.frozen_code is null then '0' else '1' end AS frozenFlag
+FROM
+    t_jk_loan_info i LEFT JOIN jk.T_GL_ORG o
+        ON i.LOAN_STORE_ORGID = o.ID LEFT JOIN t_jk_loan_customer c
+        ON c.LOAN_code = i.loan_code LEFT JOIN t_jk_contract con
+        ON con.loan_code = i.loan_code LEFT jOIN t_jk_contract_fee fee
+        ON fee.contract_code = con.contract_code LEFT JOIN jk.t_jk_loan_grant gr 
+        ON gr.contract_code = con.contract_code
+        <include refid="financeInfoWhere"/>
+	</select>
+	
+	<select id='getConfirmInfo' parameterType="com.creditharmony.loan.borrow.zcj.view.ZcjEntity" resultType="com.creditharmony.loan.borrow.zcj.view.ZcjEntity" >
+		SELECT 
+	i.id AS id,
+    o.name AS orgName,
+    to_char(gr.submissiondate,'yyyy-MM-dd') AS pushDate,
+    i.loan_customer_name AS loanCustomerName,
+    c.customer_cert_num AS customerCertNum,
+    (select t.label from jk.t_gl_dict t where t.type = 'jk_open_bank' and t.value=(select b.bank_name from t_jk_loan_bank b where b.LOAN_code = i.loan_code AND (b.repayment_flag = '0' OR b.repayment_flag IS NULL) AND b.bank_top_flag = '1')) AS bankName,
+    (select b.bank_account from t_jk_loan_bank b where b.LOAN_code = i.loan_code AND (b.repayment_flag = '0' OR b.repayment_flag IS NULL) AND b.bank_top_flag = '1') AS bankAccount,
+    i.loan_audit_amount AS loanAuditAmount,
+    con.contract_amount AS contractAmount,
+    fee.fee_petition AS feePetition,
+    fee.fee_expedited AS feeExpedited,
+    gr.grant_amount AS grantAmount,
+    (select d.label from t_gl_dict d where d.type='jk_contract_ver' and d.value=con.contract_version) as contractVersion,
+    con.contract_months AS contractMonths,
+     (select d.label from t_gl_dict d where d.type='jk_loan_apply_status' and d.value=i.dict_loan_status and d.del_flag = '0') AS LoanStatus,
+      to_char(gr.lending_time,'yyyy-MM-dd') AS lendingTime,
+     (select d.label from t_gl_dict d where d.type='jk_channel_flag' and d.value=i.loan_flag) as loanFlag,
+     (select d.label from t_gl_dict d where d.type='jk_loan_model' and d.value=i.model) as model,
+     con.contract_code AS contractCode,
+     i.loan_code AS loanCode,
+     con.cobo_name AS coboName,
+     ( SELECT t_gl_jk_product.product_name
+           FROM jk.t_gl_jk_product
+          WHERE t_gl_jk_product.product_code = con.product_type) AS productType,
+     (select b.bank_branch from t_jk_loan_bank b where b.LOAN_code = i.loan_code AND (b.repayment_flag = '0' OR b.repayment_flag IS NULL) AND b.bank_top_flag = '1') AS bankBranch,
+     (select d.label from t_gl_dict d where d.type='yes_no' and d.value=i.loan_urgent_flag) AS loanUrgentFlag,
+     (select d.label from t_gl_dict d where d.type='yes_no' and d.value=con.paperless_flag) AS paperlessFlag,
+     case when con.legal_man!=null then '有' else '无' end AS legalMan,
+     (select d.label from t_gl_dict d where d.type='yes_no' and d.value=con.is_register) AS isRegister,
+case when (select count(id) from jk.t_jk_contract_file f where f.contract_code=con.contract_code and sign_doc_id is not null)>0 then '是' else '否' end AS isStamp     
+FROM
+    t_jk_loan_info i LEFT JOIN jk.T_GL_ORG o
+        ON i.LOAN_STORE_ORGID = o.ID LEFT JOIN t_jk_loan_customer c
+        ON c.LOAN_code = i.loan_code LEFT JOIN t_jk_contract con
+        ON con.loan_code = i.loan_code LEFT jOIN t_jk_contract_fee fee
+        ON fee.contract_code = con.contract_code LEFT JOIN jk.t_jk_loan_grant gr 
+        ON gr.contract_code = con.contract_code
+        <include refid="financeInfoWhere"/>
+	</select>
+	
+	<select id="getRecommend" parameterType="map" resultType="Map">
+		select max(SUBSTR(g.grant_pch,#{num})::integer) as num from jk.t_jk_loan_grant g left join jk.t_jk_contract c on c.loan_code=g.loan_code where
+		to_char(g.submissiondate,'yyyy-MM-dd')=#{recommendTime} and channel_Flag=#{channelFlag} and g.grant_pch like #{batch}||'%'
+	</select>
+	
+	<select id="getIsFrozenInfo" parameterType="String" resultType="Map">
+		SELECT i.frozen_code
+			FROM jk.t_jk_loan_info i LEFT JOIN jk.t_jk_contract c
+        	ON c.loan_code = i.loan_code
+		WHERE (trim(i.frozen_code) = '' OR i.frozen_code IS NULL)
+    		AND c.contract_code = #{contractCode}
+	</select>
+	
+	<sql id="financeInfoWhere">
+	<where>
+		i.loan_flag='5' 
+		<if test="pushDate != null and pushDate != ''">
+			 and to_char(gr.submissiondate,'yyyy-MM-dd') = #{pushDate} 
+		</if>
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			and i.loan_customer_name like '%'||#{loanCustomerName}||'%' 
+		</if>
+		<if test="storeId != null and storeId != ''">
+			and o.id in 
+  		<foreach item="item" index="index" collection="orgIds" open="(" separator="," close=")">
+				#{item}
+		</foreach>
+		</if>
+		<if test="loanStatus != null and loanStatus != ''">
+			and i.dict_loan_status = #{loanStatus}
+		</if>
+		<if test="lendingTime != null and lendingTime != ''">
+			and to_char(gr.lending_time,'yyyy-MM-dd') = #{lendingTime}
+		</if>
+		<if test="paperlessFlag != null and paperlessFlag != ''">
+			<if test="paperlessFlag == 0">
+			and (con.paperless_flag = #{paperlessFlag} or con.paperless_flag is null)
+			</if>
+			<if test="paperlessFlag == 1">
+			and con.paperless_flag = #{paperlessFlag}
+			</if>
+		</if>
+		<if test="legalMan != null and legalMan != ''">
+			<if test="legalMan == 0">
+				and con.legal_man is null
+			</if>
+			<if test="legalMan == 1">
+				and con.legal_man is not null
+			</if>
+		</if>
+		<if test="contractVersion != null and contractVersion != ''">
+			and con.contract_version = #{contractVersion}
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and con.contract_code = #{contractCode}
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and c.customer_cert_num = #{customerCertNum}
+		</if>
+		<if test="productType != null and productType != ''">
+			and con.product_type = #{productType}
+		</if>
+		<if test="loanUrgentFlag != null and loanUrgentFlag != ''">
+			and i.loan_urgent_flag = #{loanUrgentFlag}
+		</if>
+		<if test="isAdditional != null and isAdditional != ''">
+			and i.dict_is_additional = #{isAdditional}
+		</if>
+		<if test="isTelesales != null and isTelesales != ''">
+			<if test="isTelesales == 0">
+				and i.cons_telesales_orgcode is null
+			</if>
+			<if test="isTelesales == 1">
+				and i.cons_telesales_orgcode is not null
+			</if>
+		</if>
+		<if test="isRegister != null and isRegister != ''">
+			and con.is_register = #{isRegister}
+		</if>
+		<if test="isStamp != null and isStamp != ''">
+			<!-- and con.is_register = #{isStamp} -->
+		</if>
+	</where>
+	</sql>
+</mapper>

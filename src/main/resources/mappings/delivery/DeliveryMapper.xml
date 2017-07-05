@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.borrow.delivery.dao.DeliveryDao">
+     <!-- 映射关系配置   entity 与 sql 语句查询结果 的 映射关系-->
+      <resultMap id="deliveryApply" type="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewExNew" >  
+     		<result property="contractCode" column="CONTRACT_CODE" /><!-- 合同编号 -->
+      		<result property="loanCustomerName" column="LOAN_CUSTOMER_NAME" /><!-- 客户姓名 -->
+      		<result property="loanCode" column="LOAN_CODE" /><!-- 借款编码 -->
+      		<result property="dictLoanStatus" column="DICT_LOAN_STATUS" /><!-- 借款状态 --> 
+      		<result property="orgName" column="ORG_NAME" /><!-- 机构名（门店名称） -->
+      		<result property="orgCode" column="LOAN_STORE_ORGID" /><!-- 机构编号 -->
+      		<result property="teamManagerCode" column="LOAN_TEAM_MANAGERCODE" /><!-- 团队经理编号 -->
+      		<result property="teamManagerName" column="TEAM_MANAGER_NAME" /><!-- 团队经理 -->
+	      	<result property="managerCode" column="LOAN_MANAGERCODE" /><!-- 客户经理编号 -->
+	      	<result property="managerName" column="MANAGER_NAME" /><!-- 客户经理 -->
+	      	<result property="customerServicesCode" column="LOAN_CUSTOMER_SERVICE" /><!-- 客服人员编号-->
+	      	<result property="customerServicesName" column="CUSTOMER_SERVICE_NAME" /><!-- 客服人员 -->
+	      	<result property="outbountByCode" column="LOAN_SURVEY_EMP_ID" /><!-- 外访人员编号-->
+	      	<result property="outbountByName" column="OUTBOUNT_bY_NAME" /><!-- 外访人员 -->
+      	  	<result property="teamName" column="NAME" /><!-- 团队名称-->
+      	  	<result property="deliveryResult" column="DELIVERY_RESULT" /><!-- 交割状态 --> 
+      	  	<result property="loanStoreOrgId" column="LOAN_STORE_ORGID" /><!-- 门店id -->
+      	  	<result property="loanTeamOrgId" column="LOAN_TEAM_ORGID" /><!-- 团队机构 -->
+     </resultMap>
+     
+    <!-- 待交割列表查询 -->
+  	<select id="deliveryList" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryReq" resultMap="deliveryApply">
+	  	select distinct
+	  		 b.LOAN_CODE,
+	  		 c.CONTRACT_CODE,
+		  	 b.LOAN_CUSTOMER_NAME,
+		  	 b.DICT_LOAN_STATUS,
+		  	 b.loan_store_orgid,
+		  	 d.NAME ORG_NAME,
+		  	 i.NAME teamName,
+		  	 b.loan_team_managercode,
+		  	 e.NAME TEAM_MANAGER_NAME,
+		  	 b.loan_team_orgid,
+		  	 b.loan_managercode,
+		  	 f.NAME MANAGER_NAME,
+		  	 b.loan_customer_service,
+		  	 g.NAME CUSTOMER_SERVICE_NAME,
+		  	 b.loan_survey_emp_id,
+		  	 h.NAME OUTBOUNT_bY_NAME,
+		  	 b.DELIVERY_RESULT
+		  	 from jk.T_JK_LOAN_INFO b
+		  	 left join jk.T_JK_CONTRACT c on b.LOAN_CODE = c.LOAN_CODE
+		  	 left join jk.T_GL_ORG d on b.loan_store_orgid = d.ID
+		  	 left join jk.T_GL_USER e on b.loan_team_managercode = e.id
+		  	 left join jk.T_GL_USER f on b.loan_managercode = f.id
+		  	 left join jk.T_GL_USER g on b.loan_customer_service = g.id
+		  	 left join jk.T_GL_USER h on b.loan_survey_emp_id = h.id
+		  	 left join jk.T_GL_ORG i on e.department_id = i.id
+	  		where 1=1  and b.DICT_LOAN_STATUS in('70','87','88','89','90')
+	  		<if test="typeRole == 1 "> <!-- 客服-->
+		      and b.loan_customer_service =#{custCode }
+		      and g.name=#{custName}
+	        </if>
+	        <if test="typeRole == 2 "> <!-- 客户经理-->
+		      and b.loan_managercode =#{custCode }
+		      and f.name=#{custName}
+	        </if>
+	        <if test="typeRole == 3 "> <!-- 团队经理-->
+		      and b.loan_team_managercode =#{custCode }
+		      and e.name=#{custName}
+	        </if>
+	        <!-- 交割状态 -->
+	  		<if test="deliveryResult != null and deliveryResult !='' ">
+	  			and b.DELIVERY_RESULT=#{deliveryResult}
+	  		</if>
+  	</select> 
+  	    <!-- 待交割列表查询 -->
+  	<select id="deliveryListSingle" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryReq" resultMap="deliveryApply">
+	  	select distinct
+	  		 b.LOAN_CODE,
+	  		 c.CONTRACT_CODE,
+		  	 b.LOAN_CUSTOMER_NAME,
+		  	 b.DICT_LOAN_STATUS,
+		  	 b.loan_store_orgid,
+		  	 d.NAME ORG_NAME,
+		  	 i.NAME teamName,
+		  	 b.loan_team_managercode,
+		  	 e.NAME TEAM_MANAGER_NAME,
+		  	 b.loan_team_orgid,
+		  	 b.loan_managercode,
+		  	 f.NAME MANAGER_NAME,
+		  	 b.loan_customer_service,
+		  	 g.NAME CUSTOMER_SERVICE_NAME,
+		  	 b.loan_survey_emp_id,
+		  	 h.NAME OUTBOUNT_bY_NAME,
+		  	 b.DELIVERY_RESULT
+		  	 from jk.T_JK_LOAN_INFO b
+		  	 left join jk.T_JK_CONTRACT c on b.LOAN_CODE = c.LOAN_CODE
+		  	 left join jk.T_GL_ORG d on b.loan_store_orgid = d.ID
+		  	 left join jk.T_GL_USER e on b.loan_team_managercode = e.id
+		  	 left join jk.T_GL_USER f on b.loan_managercode = f.id
+		  	 left join jk.T_GL_USER g on b.loan_customer_service = g.id
+		  	 left join jk.T_GL_USER h on b.loan_survey_emp_id = h.id
+		  	 left join jk.T_GL_ORG i on e.department_id = i.id
+	  		where 1=1 
+	  		<!-- 单条交割 -->
+	  		<if test="typeRoleOne == 1 "> <!-- 客服-->
+		      and b.loan_customer_service =#{custCodeOne }
+		      and g.name=#{custNameOne}
+	        </if>
+	        <if test="typeRoleOne == 2 "> <!-- 客户经理-->
+		      and b.loan_managercode =#{custCodeOne }
+		      and f.name=#{custNameOne}
+	        </if>
+	        <if test="typeRoleOne == 3 "> <!-- 团队经理-->
+		      and b.loan_team_managercode =#{custCodeOne }
+		      and e.name=#{custNameOne}
+	        </if>
+  	</select> 
+  	<!-- 查询所有汇金业务部 -->
+  	<select id="orgs" parameterType="java.lang.String" resultType="com.creditharmony.loan.borrow.delivery.entity.ex.OrgView">
+  		select distinct 
+  		id orgCode,
+  		name orgName
+  		from 
+  		jk.T_GL_ORG 
+  		where type = #{orgKey}
+  		and useable='1' 
+  		and del_flag='0' order by id 	
+  	</select>
+  	 <!--查询loanInfo交割成功个数  -->
+ 	<select id="loanInfoByStoreId" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryCountReq" resultType="java.lang.Integer">
+ 		select count(b.LOAN_CODE) 
+		from jk.T_JK_LOAN_INFO b
+		where 1=1 and b.DELIVERY_RESULT='1'
+		<if test="loanStoreOrgid !=null and loanStoreOrgid !=''">	
+			and  b.loan_store_orgid=#{loanStoreOrgid,jdbcType=VARCHAR}
+		</if>	
+		<!-- 根据时间搜索 -->
+  		<if test="startDate !=null and startDate !=''">
+  			and b.delivery_time &gt;= #{startDate}
+  		</if>
+  		<if test="endDate !=null and endDate !=''">
+  			and b.delivery_time &lt;= #{endDate}
+  		</if>
+  </select>
+  	<!-- 插入交割记录 -->
+  	<insert id="insertDelivery" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewExNew">
+ 		INSERT INTO jk.t_jk_delivery(
+            id,loan_customer_name,contract_code,stores_name,team_managercode,team_managername, 
+            manager_code,manager_name, customer_servicescode,customer_servicesname,new_stores_name,new_team_managername,
+            new_team_managercode,new_managercode,new_managername,new_customer_servicescode, new_customer_servicesname,rejected_reason,
+            delivery_result,create_by,create_time, modify_by, modify_time)
+    	VALUES (#{id,jdbcType=VARCHAR},#{loanCustomerName,jdbcType=VARCHAR},#{contractCode,jdbcType=VARCHAR}, #{storesName,jdbcType=VARCHAR}, 
+    		#{teamManagerCode,jdbcType=VARCHAR},#{teamManagerName,jdbcType=VARCHAR},#{managerCode,jdbcType=VARCHAR},#{managerName,jdbcType=VARCHAR},
+             #{customerServicesCode,jdbcType=VARCHAR}, #{customerServicesName,jdbcType=VARCHAR}, #{newStoresName,jdbcType=VARCHAR}, 
+            #{newTeamManagerName,jdbcType=VARCHAR},#{newTeamManagerCode,jdbcType=VARCHAR},#{newManagerCode,jdbcType=VARCHAR}, #{newManagerName,jdbcType=VARCHAR},
+             #{newCustomerServicesCode,jdbcType=VARCHAR},#{newCustomerServicesName,jdbcType=VARCHAR}, 
+            #{rejectedReason,jdbcType=VARCHAR},#{deliveryResult,jdbcType=VARCHAR},#{createBy,jdbcType=VARCHAR}, 
+            #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})				
+ 	</insert>
+ 	<!--查询loanInfo信息  -->
+ 	<select id="loanInfoByLoanCode" parameterType="string" resultType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewExNew">
+ 		select
+ 		     b.DICT_LOAN_STATUS, 
+	  		 b.LOAN_CODE loanCode,
+		  	 b.LOAN_CUSTOMER_NAME loanCustomerName,
+		  	 b.loan_store_orgid loanStoreOrgId,
+		  	 b.loan_team_managercode teamManagerCode,
+		  	 b.loan_team_orgid loanTeamOrgId,
+		  	 b.loan_managercode managerCode,
+		  	 b.loan_customer_service customerServicesCode,
+		  	 b.loan_survey_emp_id outbountByCode,
+		  	 b.DELIVERY_RESULT deliveryResult,
+		  	 c.CONTRACT_CODE contractCode,
+		  	 d.NAME orgName,
+		  	 e.NAME teamManagerName,
+		  	 f.NAME managerName,
+		  	 g.NAME customerServicesName,
+		  	 h.NAME outbountByName,
+		  	 i.NAME teamName
+		  	 from jk.T_JK_LOAN_INFO b
+		  	 left join jk.T_JK_CONTRACT c on b.LOAN_CODE = c.LOAN_CODE
+		  	 left join jk.T_GL_ORG d on b.loan_store_orgid = d.ID
+		  	 left join jk.T_GL_USER e on b.loan_team_managercode = e.id
+		  	 left join jk.T_GL_USER f on b.loan_managercode = f.id
+		  	 left join jk.T_GL_USER g on b.loan_customer_service = g.id
+		  	 left join jk.T_GL_USER h on b.loan_survey_emp_id = h.id	
+		  	 left join jk.T_GL_ORG i on e.department_id = i.id
+ 		 where b.LOAN_CODE = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  
+  <!--  查询用户对应关系是否正确 -->
+	<select id="userByUserCode" parameterType="string" resultType="com.creditharmony.loan.users.entity.UserInfo">
+ 		select 
+	  		 u.NAME,
+	  		 u.USER_CODE userCode,
+	  		 u.DEPARTMENT_ID
+		  	 from jk.T_GL_USER u
+ 		 where u.USER_CODE = #{userCode,jdbcType=VARCHAR}
+  </select>
+  <!-- 查询门店是否正确 -->
+  <select id="orgByStoreName" parameterType="string" resultType="com.creditharmony.loan.users.entity.OrgInfo">
+		SELECT
+			a.id,
+			a.name
+		FROM jk.t_gl_org a
+		WHERE a.name = #{storeName,jdbcType=VARCHAR}
+	</select> 
+	<!-- 查询合同号 -->
+	<select id="findByContractCode" parameterType="string" resultType="com.creditharmony.loan.borrow.contract.entity.Contract">
+	    select contract_code contractCode,loan_code loanCode
+	    from jk.t_jk_contract
+	    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </select>
+</mapper>

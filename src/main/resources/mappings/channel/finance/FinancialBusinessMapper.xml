@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.creditharmony.loan.channel.finance.dao.FinancialBusinessDao">
+	<!-- 映射关系配置 entity 与 sql 语句查询结果 的 映射关系 -->
+	<resultMap id="financialBusinessMap"
+		type="com.creditharmony.loan.channel.finance.entity.FinancialBusinessEntity">
+		<result property="loanCode" column="contract_code"></result>
+		<result property="loanCustomerName" column="loan_customer_name"></result>
+		<result property="customerCertNum" column="loan_customer_num"></result>
+		<result property="dictLoanUse" column="dict_loan_use"></result>
+		<result property="classType" column="product_type"></result>
+		<result property="loanMonths" column="CONTRACT_MONTHS"></result>
+		<result property="loanStartDate" column="contract_fact_day"></result>
+		<result property="loanEndDate" column="contract_end_day"></result>
+		<result property="replayDay" column="contract_replay_day"></result>
+		<result property="contractMonthRepayAmount" column="contract_month_repay_amount"></result>
+		<result property="contractAmount" column="contract_amount"></result>
+		<result property="feeMonthRate" column="fee_month_rate"></result>
+		<result property="creditConfirmDate" column="credit_confirm_date"></result>
+		<result property="settleConfirmDate" column="settle_confirm_date"></result>
+		<result property="creditType" column="credit_type"></result>
+		<result property="settleDate" column="settled_date"></result>
+		<result property="loanProduct" column="class_type"></result>
+	</resultMap>
+	<!-- 查询大金融业务数据信息列表 -->
+	<sql id="FinancialBusinessColumns">
+		big_finance.id,
+		contract.contract_code,
+		(customer.customer_name || 
+		 COALESCE(';'||STRING_AGG(coborrower.cobo_name,';'),''))loan_customer_name,
+		(customer.customer_cert_num || 
+		 COALESCE(';'||STRING_AGG(coborrower.cobo_cert_num,';'),'')) loan_customer_num,
+		loan_info.dict_loan_use,
+		productInfo.product_name product_type,
+		contract.contract_months,
+		
+		case when 
+		contract.contract_due_day is null 
+		then contract.contract_fact_day 
+		else contract.contract_due_day end as contract_fact_day,
+		
+		contract.contract_end_day,
+		contract.contract_replay_day,
+		contract.contract_month_repay_amount,
+		contract.contract_amount,
+		contract_fee.fee_month_rate,
+		big_finance.credit_confirm_date,
+		big_finance.settle_confirm_date,
+		loan_info.settled_date,
+		big_finance.credit_type,
+		contract.class_type
+	</sql>
+	<sql id="selectCondition">
+
+		<if test="creditType == 1">
+			and big_finance.credit_type = '1'
+		</if>
+		<if test="creditType == 2">
+			and big_finance.credit_type = '2'
+		</if>
+		<if test="creditType == 4">
+			and big_finance.credit_type = '4'
+		</if>
+		<if test="loanCode != null and loanCode != ''">
+			and contract.contract_code = #{loanCode}
+		</if>
+		<if test="stratContractAmount != null and stratContractAmount != ''">
+			and contract.contract_amount &gt;=#{stratContractAmount}
+		</if>
+		<if test="endContractAmount != null and endContractAmount != ''">
+			and contract.contract_amount &lt;=#{endContractAmount}
+		</if>
+		<if
+			test="stratCreditorConfirmDate != null and stratCreditorConfirmDate != ''">
+			and big_finance.credit_confirm_date
+			&gt;=#{stratCreditorConfirmDate}
+		</if>
+		<if test="endCreditorConfirmDate != null and endCreditorConfirmDate != ''">
+			and big_finance.credit_confirm_date
+			&lt;=#{endCreditorConfirmDate}
+		</if>
+	</sql>
+	<select id="getFinancialBusinessList"
+		parameterType="com.creditharmony.loan.channel.finance.view.FinancialBusinessView"
+		resultMap="financialBusinessMap">
+		select * from (
+		select
+		<include refid="FinancialBusinessColumns" />
+		from jk.t_jk_big_finance big_finance 
+		left join jk.T_JK_LOAN_INFO loan_info 
+		on big_finance.loan_code = loan_info.loan_code 
+		left join jk.T_JK_LOAN_CUSTOMER customer
+		on loan_info.loan_code = customer.loan_code 
+		left join jk.T_JK_LOAN_COBORROWER
+		coborrower
+		on customer.loan_code = coborrower.loan_code
+		left join jk.T_JK_CONTRACT contract
+		on big_finance.loan_code
+		= contract.loan_code 
+		left join jk.T_JK_CONTRACT_FEE contract_fee
+		on contract.CONTRACT_CODE
+		= contract_fee.CONTRACT_CODE
+		left join jk.t_gl_jk_product productInfo on productInfo.product_code = contract.product_type
+		where 1 = 1 
+		
+		<if test="creditType == ''">
+			and big_finance.credit_type in ('1','2','4')
+		</if>
+		<if test="creditType == 3">
+			and big_finance.credit_type = '3'
+		</if>
+		<include refid="selectCondition" />
+		group by contract.contract_code,big_finance.id,
+		customer.customer_name,
+		customer.customer_cert_num,
+		loan_info.dict_loan_use,
+		contract.product_type,
+		contract.contract_months,
+		contract.contract_fact_day,
+		contract.contract_end_day,
+		contract.contract_replay_day,
+		contract.contract_month_repay_amount,
+		contract.contract_amount,
+		contract_fee.fee_month_rate,
+		big_finance.credit_confirm_date,
+		big_finance.settle_confirm_date,
+		loan_info.settled_date,
+		big_finance.credit_type,
+		productinfo.product_name
+		union
+		select
+		contract.contract_code,big_finance.id,
+		(customer.customer_name || ';'||
+
+
+		STRING_AGG(coborrower.cobo_name,';'))loan_customer_name,
+		(customer.customer_cert_num || ';'||
+		STRING_AGG(coborrower.cobo_cert_num,';')) loan_customer_num,
+		loan_info.dict_loan_use,
+		productInfo.product_name product_type,
+		loan_info.loan_months,
+		contract.contract_fact_day,
+		contract.contract_end_day,
+		contract.contract_replay_day,
+		contract.contract_month_repay_amount,
+		contract.contract_amount,
+		contract_fee.fee_month_rate,
+		big_finance.credit_confirm_date,
+		big_finance.settle_confirm_date,
+		loan_info.settled_date,
+		'3' credit_type
+		,contract.class_type
+		from jk.t_jk_big_finance big_finance 
+		left join jk.T_JK_LOAN_INFO loan_info 
+		on big_finance.loan_code = loan_info.loan_code 
+		left join jk.T_JK_LOAN_CUSTOMER customer
+		on loan_info.loan_code = customer.loan_code 
+		left join jk.T_JK_LOAN_COBORROWER
+		coborrower
+		on customer.loan_code = coborrower.loan_code
+		left join jk.T_JK_CONTRACT contract
+		on big_finance.loan_code
+		= contract.loan_code 
+		left join jk.T_JK_CONTRACT_FEE contract_fee
+		on contract.CONTRACT_CODE
+		= contract_fee.CONTRACT_CODE
+		left join jk.t_gl_jk_product productInfo on productInfo.product_code = contract.product_type
+		where
+		(big_finance.credit_type = '2' or big_finance.credit_type = '1')
+		and
+		loan_info.LOAN_FLAG = #{status}
+		<if test="creditType == 3">
+			and loan_info.LOAN_FLAG = '3'
+		</if>
+		<include refid="selectCondition" />
+		group  by contract.contract_code,big_finance.id,
+		customer.customer_name,
+		customer.customer_cert_num,
+		loan_info.dict_loan_use,
+		contract.product_type,
+		loan_info.loan_months,
+		contract.contract_fact_day,
+		contract.contract_end_day,
+		contract.contract_replay_day,
+		contract.contract_month_repay_amount,
+		contract.contract_amount,
+		contract_fee.fee_month_rate,
+		big_finance.credit_confirm_date,
+		big_finance.settle_confirm_date,
+		loan_info.settled_date,
+		big_finance.credit_type,
+		productinfo.product_name
+		)a
+		order by a.contract_fact_day desc
+	</select>
+	<insert id="insertFinancialBusiness">
+		insert into jk.t_jk_big_finance(id,loan_code,credit_type,create_by,create_time,modify_by,modify_time)
+		values(GETUUID32(),#{loanCode},'1','sys',
+		current_timestamp(0)::timestamp without time zone,'sys',current_timestamp(0)::timestamp without time zone) 
+	</insert>
+	
+	<select id="getSumFinancialBusinessList"
+		parameterType="com.creditharmony.loan.channel.finance.view.FinancialBusinessView"
+		resultType="java.util.Map">
+		select sum(contract_amount) as totalamount  from (
+		select
+		<include refid="FinancialBusinessColumns" />
+		from jk.t_jk_big_finance big_finance 
+		left join jk.T_JK_LOAN_INFO loan_info 
+		on big_finance.loan_code = loan_info.loan_code 
+		left join jk.T_JK_LOAN_CUSTOMER customer
+		on loan_info.loan_code = customer.loan_code 
+		left join jk.T_JK_LOAN_COBORROWER
+		coborrower
+		on customer.loan_code = coborrower.loan_code
+		left join jk.T_JK_CONTRACT contract
+		on big_finance.loan_code
+		= contract.loan_code 
+		left join jk.T_JK_CONTRACT_FEE contract_fee
+		on contract.CONTRACT_CODE
+		= contract_fee.CONTRACT_CODE
+		left join jk.t_gl_jk_product productInfo on productInfo.product_code = contract.product_type
+		where 1 = 1 
+		
+		<if test="creditType == ''">
+			and big_finance.credit_type in ('1','2','4')
+		</if>
+		<if test="creditType == 3">
+			and big_finance.credit_type = '3'
+		</if>
+		<include refid="selectCondition" />
+		group by contract.contract_code,big_finance.id,
+		customer.customer_name,
+		customer.customer_cert_num,
+		loan_info.dict_loan_use,
+		contract.product_type,
+		contract.contract_months,
+		contract.contract_fact_day,
+		contract.contract_end_day,
+		contract.contract_replay_day,
+		contract.contract_month_repay_amount,
+		contract.contract_amount,
+		contract_fee.fee_month_rate,
+		big_finance.credit_confirm_date,
+		big_finance.settle_confirm_date,
+		loan_info.settled_date,
+		big_finance.credit_type,
+		productinfo.product_name
+		union
+		select
+		contract.contract_code,big_finance.id,
+		(customer.customer_name || ';'||
+
+
+		STRING_AGG(coborrower.cobo_name,';'))loan_customer_name,
+		(customer.customer_cert_num || ';'||
+		STRING_AGG(coborrower.cobo_cert_num,';')) loan_customer_num,
+		loan_info.dict_loan_use,
+		productInfo.product_name product_type,
+		loan_info.loan_months,
+		contract.contract_fact_day,
+		contract.contract_end_day,
+		contract.contract_replay_day,
+		contract.contract_month_repay_amount,
+		contract.contract_amount,
+		contract_fee.fee_month_rate,
+		big_finance.credit_confirm_date,
+		big_finance.settle_confirm_date,
+		loan_info.settled_date,
+		'3' credit_type
+		,contract.class_type
+		from jk.t_jk_big_finance big_finance 
+		left join jk.T_JK_LOAN_INFO loan_info 
+		on big_finance.loan_code = loan_info.loan_code 
+		left join jk.T_JK_LOAN_CUSTOMER customer
+		on loan_info.loan_code = customer.loan_code 
+		left join jk.T_JK_LOAN_COBORROWER
+		coborrower
+		on customer.loan_code = coborrower.loan_code
+		left join jk.T_JK_CONTRACT contract
+		on big_finance.loan_code
+		= contract.loan_code 
+		left join jk.T_JK_CONTRACT_FEE contract_fee
+		on contract.CONTRACT_CODE
+		= contract_fee.CONTRACT_CODE
+		left join jk.t_gl_jk_product productInfo on productInfo.product_code = contract.product_type
+		where
+		(big_finance.credit_type = '2' or big_finance.credit_type = '1')
+		and
+		loan_info.LOAN_FLAG = #{status}
+		<if test="creditType == 3">
+			and loan_info.LOAN_FLAG = '3'
+		</if>
+		<include refid="selectCondition" />
+		group  by contract.contract_code,big_finance.id,
+		customer.customer_name,
+		customer.customer_cert_num,
+		loan_info.dict_loan_use,
+		contract.product_type,
+		loan_info.loan_months,
+		contract.contract_fact_day,
+		contract.contract_end_day,
+		contract.contract_replay_day,
+		contract.contract_month_repay_amount,
+		contract.contract_amount,
+		contract_fee.fee_month_rate,
+		big_finance.credit_confirm_date,
+		big_finance.settle_confirm_date,
+		loan_info.settled_date,
+		big_finance.credit_type,
+		productinfo.product_name
+		)a
+	</select>
+</mapper>

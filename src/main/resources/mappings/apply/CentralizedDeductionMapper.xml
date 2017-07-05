@@ -1,0 +1,745 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.CentralizedDeductionDao">
+	<sql id="allCentralizedDeductionList">
+		jpa.id as id, <!-- 还款申请ID -->
+		ROUND(jpa.apply_amount,2) as applyAmount, <!-- 划扣金额 （申请表中的申请金额）-->
+		jpa.modify_time as modifyTime, <!--划扣日期(申请表中的修改时间)-->
+		jpa.split_back_result as splitBackResult, <!--申请表中的回盘结果-->
+		jpa.apply_back_mes as applyBackMes, <!--申请表中的退回原因-->
+		jpa.contract_code as contractCode, <!--合同编号 -->
+		jpa.dict_repay_method as dictRepayMethod, <!--还款方式 -->
+		jpa.apply_bank_name as applyBankName, <!--开户行名称-->
+		jpa.dict_deal_type as dictDealType, <!--划扣平台-->
+		ROUND(jpa.apply_really_amount,2) as applyReallyAmount,<!-- 实际到账金额 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		gos.name as orgName, <!--门店名称-->
+		jc.contract_months as contractMonths, <!--批借期数-->
+		jc.contract_replay_day as contractReplayDay, <!--首期还款期-->
+		ROUND(jp.payback_month_amount,2) as paybackMonthAmount, <!--期供-->
+		jp.dict_pay_status as dictPayStatus, <!--还款状态-->
+		jp.payback_day as paybackDay, <!--还款日-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jli.dict_source_type as dictSourceType,<!-- 来源系统 -->
+		jp.payback_max_overduedays as paybackMaxOverduedays, <!-- 往期是否逾期（主表中的最长逾期 大于零为逾期 ） -->
+		jli.loan_flag as loanMark, <!--标识-->
+		ROUND(jp.payback_bule_amount,2) as paybackBuleAmount, <!--蓝补金额-->
+		ROUND(jpa.apply_amount,2) as applyDeductAmount, <!--申请划扣金额 -->
+		jc.contract_month_repay_amount as contractMonthRepayAmount, <!--期供金额-->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		bank.bank_account as bankAccount,
+		jpa.modify_time as modifyTime,
+	<!-- 	month.is_overdue as isOverdue, -->
+		(
+		   select 
+				ROUND(sum(jpa.apply_really_amount),2)  
+		   from  jk.t_jk_payback_apply jpa 
+			left join jk.t_jk_contract jc on jc.contract_code = jpa.contract_code
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_payback jp on jp.contract_code = jpa.contract_code
+			<!-- left join jk.t_jk_payback_month month on jp.contract_code = month.contract_code and month.months = jp.payback_current_month -->
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join jk.t_jk_loan_bank bank on jc.loan_code = bank.loan_code and bank.bank_top_flag = '1' 
+			and bank.repayment_flag='1'
+		where 1=1
+		<if test="splitBackResultArray != null and splitBackResultArray.length > 0 ">
+			and jpa.split_back_result in 
+			<foreach item="item" index="index" collection="splitBackResultArray" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		
+		<!-- (jpa.split_back_result = #{enumOne} or jpa.split_back_result = #{enumTwo}) 回盘结果：划扣失败1、划扣成功2 -->
+	    	 and jpa.dict_deduct_type = #{enumThree} and  jpa.dict_repay_method = #{enumFour}<!-- 处理状态：无效     操作类型：待集中划扣 -->
+	    <!-- 搜索条件 -->
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name LIKE '%${customerName}%'
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and jpa.contract_code =  #{contractCode}
+		</if>
+		<if test="model != null and model != ''">
+			and jli.model = #{model}  <!-- 模式 -->
+		</if>
+		<if test="dictDealType != null and dictDealType != ''">
+			and jpa.dict_deal_type in (${dictDealType})  <!-- 划扣平台 -->
+		</if>
+		<if test="storesId != null and storesId != ''">
+			and jli.loan_store_orgid  in  (${storesId})  <!-- 门店名称 -->
+		</if>
+		<if test="paybackDay !=null and ! paybackDay.equals('')">
+			and jp.payback_day in(${paybackDay})<!-- 还款日 -->
+		</if>
+		<if test="splitBackResult != null and splitBackResult != ''">
+			and jpa.split_back_result = #{splitBackResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="applyBackMes != null and applyBackMes != ''">
+			and jpa.apply_back_mes = #{applyBackMes}  <!-- 失败原因 -->
+		</if>
+		<if test="bankId != null and bankId != ''">
+			and jpa.apply_bank_name in(${bankId}) <!-- 开户行名称 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag = #{loanMark} <!-- 标识 -->
+		</if>
+		<if test="beginDate != null and beginDate != ''">
+			and jpa.modify_time &gt;= #{beginDate} <!-- 划扣日期 -->
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and jpa.modify_time &lt;=  #{endDate} <!-- 划扣日期 -->
+		</if>
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+			and jp.dict_pay_status = #{dictPayStatus} <!-- 还款状态 -->
+		</if>
+		<if test="alsoAmountOne != null and alsoAmountOne != ''">
+			and jpa.apply_really_amount &gt;= #{alsoAmountOne}
+		</if>
+		<if test="alsoAmountTwo!= null and alsoAmountTwo != ''">
+			and jpa.apply_really_amount &lt;= #{alsoAmountTwo}
+		</if>
+		<if test="ids != null and ids.length > 0 ">
+			and jpa.id in 
+			<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="failReason != null and !failReason.equals('')">
+		  AND jpa.fail_Reason like '%${failReason}%'
+	    </if>
+	    	${queryRight} 	
+		) as sumAmont,
+       <!--  count(*)  over() as sumNumber, -->
+        <!-- ROUND(COALESCE(month.month_capital_payactual,0)+COALESCE(month.month_interest_payactual,0)+COALESCE(actual_month_fee_service,0),2) as alsoPaybackMonthAmount, -->
+        jpa.fail_Reason as failReason,
+        jli.model as model
+	</sql>
+	<!-- 划扣已办列表-->
+	<select id="allCentralizedDeductionList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		select 
+			<include refid="allCentralizedDeductionList" />
+		from  jk.t_jk_payback_apply jpa 
+			left join jk.t_jk_contract jc on jc.contract_code = jpa.contract_code
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_payback jp on jp.contract_code = jpa.contract_code
+			<!-- left join jk.t_jk_payback_month month on jp.contract_code = month.contract_code and month.months = jp.payback_current_month -->
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join jk.t_jk_loan_bank bank on jc.loan_code = bank.loan_code and bank.bank_top_flag = '1' 
+			and bank.repayment_flag='1'
+		where 1=1
+		<if test="splitBackResultArray != null and splitBackResultArray.length > 0 ">
+			and jpa.split_back_result in 
+			<foreach item="item" index="index" collection="splitBackResultArray" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<!-- (jpa.split_back_result = #{enumOne} or jpa.split_back_result = #{enumTwo} or jpa.split_back_result = #{enumFive}) 回盘结果：划扣失败1、划扣成功2、划扣退回6、门店放弃8 -->
+	    	 and jpa.dict_deduct_type = #{enumThree} and  jpa.dict_repay_method = #{enumFour}<!-- 处理状态：无效     操作类型：待集中划扣 -->
+	    <!-- 搜索条件 -->
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name LIKE '%${customerName}%'
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and jpa.contract_code =  #{contractCode}
+		</if>
+		<if test="model != null and model != ''">
+			and jli.model = #{model}  <!-- 模式 -->
+		</if>
+		<if test="dictDealType != null and dictDealType != ''">
+			and jpa.dict_deal_type in (${dictDealType})  <!-- 划扣平台 -->
+		</if>
+		<if test="storesId != null and storesId != ''">
+			and jli.loan_store_orgid  in  (${storesId})  <!-- 门店名称 -->
+		</if>
+		<if test="paybackDay !=null and ! paybackDay.equals('')">
+			and jp.payback_day in(${paybackDay})<!-- 还款日 -->
+		</if>
+		<if test="splitBackResult != null and splitBackResult != ''">
+			and jpa.split_back_result = #{splitBackResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="applyBackMes != null and applyBackMes != ''">
+			and jpa.apply_back_mes = #{applyBackMes}  <!-- 失败原因 -->
+		</if>
+		<if test="bankId != null and bankId != ''">
+			and jpa.apply_bank_name in(${bankId}) <!-- 开户行名称 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag in (${loanMark}) <!-- 标识 -->
+		</if>
+		<if test="beginDate != null and beginDate != ''">
+			and jpa.modify_time &gt;= #{beginDate} <!-- 划扣日期 -->
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and jpa.modify_time &lt;=  #{endDate} <!-- 划扣日期 -->
+		</if>
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+			and jp.dict_pay_status = #{dictPayStatus} <!-- 还款状态 -->
+		</if>
+		<if test="alsoAmountOne != null and alsoAmountOne != ''">
+			and jpa.apply_really_amount &gt;= #{alsoAmountOne}
+		</if>
+		<if test="alsoAmountTwo!= null and alsoAmountTwo != ''">
+			and jpa.apply_really_amount &lt;= #{alsoAmountTwo}
+		</if>
+		<if test="ids != null and ids.length > 0 ">
+			and jpa.id in 
+			<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="failReason != null and !failReason.equals('')">
+		  AND jpa.fail_Reason like '%${failReason}%'
+	    </if>
+	    <if test="channelFlag != null and !channelFlag.equals('')">
+		  AND jc.channel_flag != #{channelFlag}
+	    </if>
+	    	${queryRight} 	
+	    <if test="limit != null and offset != null">
+		    limit #{limit} offset #{offset}
+	   </if>
+	</select>
+	
+	<!-- 划扣已办列表-->
+	<select id="getDhkCnt" resultType = "java.lang.Long">
+		select 
+			count(jpa.id)
+		from  jk.t_jk_payback_apply jpa 
+			left join jk.t_jk_contract jc on jc.contract_code = jpa.contract_code
+			<if test="customerName != null and customerName != ''">
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			</if>
+			<if test="(paybackDay !=null and paybackDay !='') or (dictPayStatus != null and dictPayStatus != '')">
+			left join jk.t_jk_payback jp on jp.contract_code = jpa.contract_code
+			</if>
+			<!-- left join jk.t_jk_payback_month month on jp.contract_code = month.contract_code and month.months = jp.payback_current_month -->
+			<if test="(model != null and model != '') 
+			or (dictSourceType != null and dictSourceType != '') 
+			or (loanMark != null and loanMark != '')
+			or (storesId != null and storesId != '')">
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			</if>
+			<!-- left join jk.t_jk_loan_bank bank on jc.loan_code = bank.loan_code and bank.bank_top_flag = '1' 
+			and bank.repayment_flag='1' -->
+		where 1=1
+		<if test="splitBackResultArray != null and splitBackResultArray.length > 0 ">
+			and jpa.split_back_result in 
+			<foreach item="item" index="index" collection="splitBackResultArray" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		
+		<!-- (jpa.split_back_result = #{enumOne} or jpa.split_back_result = #{enumTwo}) 回盘结果：划扣失败1、划扣成功2 -->
+	    	 and jpa.dict_deduct_type = #{enumThree} and  jpa.dict_repay_method = #{enumFour}<!-- 处理状态：无效     操作类型：待集中划扣 -->
+	    <!-- 搜索条件 -->
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name LIKE '%${customerName}%'
+		</if>
+		
+		<if test="paybackDay !=null and ! paybackDay.equals('')">
+			and jp.payback_day in(${paybackDay})<!-- 还款日 -->
+		</if>
+	    <if test="dictPayStatus != null and dictPayStatus != ''">
+			and jp.dict_pay_status = #{dictPayStatus} <!-- 还款状态 -->
+		</if>
+		
+		<if test="model != null and model != ''">
+			and jli.model = #{model}  <!-- 模式 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag in(${loanMark}) <!-- 标识 -->
+		</if>
+		<if test="storesId != null and storesId != ''">
+			and jli.loan_store_orgid  in  (${storesId})  <!-- 门店名称 -->
+		</if>
+		<if test="dictDealType != null and dictDealType != ''">
+			and jpa.dict_deal_type in (${dictDealType})  <!-- 划扣平台 -->
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and jpa.contract_code =  #{contractCode}
+		</if>
+		<if test="splitBackResult != null and splitBackResult != ''">
+			and jpa.split_back_result = #{splitBackResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="applyBackMes != null and applyBackMes != ''">
+			and jpa.apply_back_mes = #{applyBackMes}  <!-- 失败原因 -->
+		</if>
+		<if test="bankId != null and bankId != ''">
+			and jpa.apply_bank_name in(${bankId}) <!-- 开户行名称 -->
+		</if>
+		<if test="beginDate != null and beginDate != ''">
+			and jpa.modify_time &gt;= #{beginDate} <!-- 划扣日期 -->
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and jpa.modify_time &lt;=  #{endDate} <!-- 划扣日期 -->
+		</if>
+	
+		<if test="alsoAmountOne != null and alsoAmountOne != ''">
+			and jpa.apply_really_amount &gt;= #{alsoAmountOne}
+		</if>
+		<if test="alsoAmountTwo!= null and alsoAmountTwo != ''">
+			and jpa.apply_really_amount &lt;= #{alsoAmountTwo}
+		</if>
+		<if test="ids != null and ids.length > 0 ">
+			and jpa.id in 
+			<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="failReason != null and !failReason.equals('')">
+		  AND jpa.fail_Reason like '%${failReason}%'
+	    </if>
+	    <if test="channelFlag != null and !channelFlag.equals('')">
+		  AND jc.channel_flag != #{channelFlag}
+	    </if>
+	    	${queryRight} 	
+	</select>
+	
+	
+	
+	<!-- 集中划扣已办列表 -->
+	<select id="centerDeductionAgencyList" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+	select
+		jpa.id                                  as id, 
+		ROUND(jpa.apply_deduct_amount, 2)       as applyAmount, 
+		jpa.modify_time                         as modifyTime, 
+		jpa.dict_back_result                    as splitBackResult, 
+		jpa.apply_back_mes                      as applyBackMes, 
+		jpa.contract_code                       as contractCode, 
+		jpa.bank_code                           as applyBankName,
+		jpa.dict_deal_type                      as dictDealType,
+		ROUND(jpa.apply_really_amount, 2)       as applyReallyAmount,
+		jlc.customer_name                       as customerName,
+		gos.name                                as orgName, 
+		jc.contract_months                      as contractMonths, 
+		jc.contract_replay_day                  as contractReplayDay, 
+		ROUND(jp.payback_month_amount, 2)       as paybackMonthAmount, 
+		jp.dict_pay_status                      as dictPayStatus, 
+		jp.payback_day                          as billDay, 
+		jli.dict_loan_status                    as dictLoanStatus, 
+		jli.dict_source_type                    as dictSourceType,
+		COALESCE(jp.payback_max_overduedays, 0) as paybackMaxOverduedays, 
+		jli.loan_flag                           as loanMark,
+		ROUND(jp.payback_bule_amount, 2)        as paybackBuleAmount,
+		jp.id                                   as rPaybackId,
+		jpa.fail_Reason                         as failReason,
+		bank.bank_account                       as bankAccount,
+		ROUND(month.month_pay_total - month.month_capital_payactual - month.month_interest_payactual - actual_month_fee_service, 2) as notPaybackMonthAmount,
+		ROUND(month.month_capital_payactual + month.month_interest_payactual + actual_month_fee_service, 2) 						as alsoPaybackMonthAmount,
+		ROUND(sum(jpa.apply_deduct_amount) OVER (), 2) 																				as sumAmont,
+		ROUND(sum(ROUND(jpa.apply_really_amount, 2)) OVER (), 2) 		as sumReallyAmont,
+        jli.loan_managercode                    as loanManagerName,
+        jli.loan_team_managercode               as loanTeamManagerName,
+        jli.loan_survey_emp_id                  as loanSurveyEmpName,
+        jli.loan_customer_service               as loanCustomerService,
+        jli.model                               as model,
+        month.month_pay_day                     as monthPayDay
+	from 
+		(
+		select 
+			id
+			, contract_code 
+			, month_id
+			, apply_deduct_amount
+			, modify_time
+			, dict_back_result 
+			, apply_back_mes
+			, bank_code
+			, dict_deal_type
+			, apply_really_amount
+			, fail_Reason
+		from
+			t_jk_deducts_payback_apply_his 
+		<where>
+			<if test="contractCode != null and contractCode != ''">
+				and contract_code = #{contractCode}
+			</if>
+			<if test="dictDealType != null and dictDealType != ''">
+				and dict_deal_type in (${dictDealType})  					<!-- 划扣平台 -->
+			</if>
+			<if test="splitBackResult != null and splitBackResult != ''">
+				and dict_back_result = #{splitBackResult}  				<!-- 回盘结果 -->
+			</if>
+			<if test="applyBackMes != null and applyBackMes != ''">
+				and apply_back_mes = #{applyBackMes}  					<!-- 失败原因 -->
+			</if>
+			<if test="bankId != null and bankId != ''">
+				and bank_code in(${bankId}) 							<!-- 开户行名称 -->
+			</if>
+			<if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+				and modify_time between #{beginDate} and #{endDate} 	<!-- 划扣日期 -->
+			</if>
+			<if test="alsoAmountOne != null and alsoAmountOne != '' and alsoAmountTwo!= null and alsoAmountTwo != ''">
+				and apply_really_amount between #{alsoAmountOne} and #{alsoAmountTwo}
+			</if>
+			<if test="failReason != null and !failReason.equals('')">
+			   	and fail_Reason like '%${failReason}%'
+		    </if>
+		    <if test="id != null and !id.equals('')">
+			   	and id in (${id})
+			</if>
+		</where>
+		) jpa 
+		left join jk.t_jk_payback jp 
+			on jp.contract_code = jpa.contract_code 
+		left join jk.t_jk_payback_month month 
+			on month.id = jpa.month_id
+			
+		left join jk.t_jk_contract jc 
+			on jc.contract_code = jpa.contract_code
+		left join jk.t_jk_loan_customer jlc 
+			on jlc.loan_code = jc.loan_code
+		left join jk.t_jk_loan_info jli 
+			on jli.loan_code = jc.loan_code
+			
+		left join jk.t_gl_org gos 
+			on gos.id = jli.loan_store_orgid
+		left join jk.t_jk_loan_bank bank 
+			on jc.loan_code = bank.loan_code 
+			and bank.bank_top_flag = '1' 
+			and bank.repayment_flag='1'
+	<where>
+	    <!-- 搜索条件 -->
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name LIKE '%${customerName}%'
+		</if>
+		<if test="model != null and model != ''">
+			and jli.model = #{model}  						<!-- 模式 -->
+		</if>
+		<if test="storesId != null and storesId != ''">
+			and jli.loan_store_orgid in (${storesId})  		<!-- 门店名称 -->
+		</if>
+		<if test="paybackDay !=null and ! paybackDay.equals('')">
+			and jp.payback_day in(${paybackDay}) 			<!-- 还款日 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} 	<!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag in (${loanMark}) 				<!-- 标识 -->
+		</if>
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+			and jp.dict_pay_status = #{dictPayStatus} 		<!-- 还款状态 -->
+		</if>
+		<if test="monthPayDay != null and monthPayDay != '' ">
+			and month.month_pay_day = #{monthPayDay}
+		</if>
+		<if test="channelFlag != null and channelFlag != ''">
+			and con.channel_flag != #{channelFlag}
+		</if>
+	    ${queryRight} 
+    </where>	
+	order by 
+		jpa.modify_time desc
+	<if test="limit != null and offset != null">
+	    limit #{limit} offset #{offset}
+	</if>
+	</select>
+	
+	<!-- 集中划扣已办列表Count -->
+	<select id="centerDeductionAgencyListCnt" resultType="java.lang.Integer">
+	select
+		count(0) as cnt 
+    from
+		(
+		select
+			jpa.id as id 
+		from 
+			(
+			select 
+				id
+				, contract_code 
+				, month_id
+			from
+				t_jk_deducts_payback_apply_his 
+			<where>
+				<if test="contractCode != null and contractCode != ''">
+					and contract_code = #{contractCode}
+				</if>
+				<if test="dictDealType != null and dictDealType != ''">
+					and dict_deal_type in (${dictDealType})  					<!-- 划扣平台 -->
+				</if>
+				<if test="splitBackResult != null and splitBackResult != ''">
+					and dict_back_result = #{splitBackResult}  				<!-- 回盘结果 -->
+				</if>
+				<if test="applyBackMes != null and applyBackMes != ''">
+					and apply_back_mes = #{applyBackMes}  					<!-- 失败原因 -->
+				</if>
+				<if test="bankId != null and bankId != ''">
+					and bank_code in(${bankId}) 							<!-- 开户行名称 -->
+				</if>
+				<if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+					and modify_time between #{beginDate} and #{endDate} 	<!-- 划扣日期 -->
+				</if>
+				<if test="alsoAmountOne != null and alsoAmountOne != '' and alsoAmountTwo!= null and alsoAmountTwo != ''">
+					and apply_really_amount between #{alsoAmountOne} and #{alsoAmountTwo}
+				</if>
+				<if test="failReason != null and !failReason.equals('')">
+				   	and fail_Reason like '%${failReason}%'
+			    </if>
+			    <if test="id != null and !id.equals('')">
+				   	and id in (${id})
+				</if>
+			</where>
+			) jpa 
+			<if test="(paybackDay != null) 
+				   or (dictPayStatus != null and dictPayStatus != '') ">
+				left join jk.t_jk_payback jp 
+					on jp.contract_code = jpa.contract_code 
+			</if>
+			<if test="(monthPayDay != null and monthPayDay != '') 
+				   ">
+				left join jk.t_jk_payback_month month 
+					on month.id = jpa.month_id
+			</if>
+			<if test="(customerName != null and customerName != '') 
+				   or (model != null and model != '') 
+				   or (storesId != null and storesId != '') 
+				   or (dictSourceType != null and dictSourceType != '') 
+				   or (loanMark != null and loanMark != '') 
+				   or (queryRight != null and queryRight != '')
+				   or (channelFlag != null and channelFlag != '')">
+				left join jk.t_jk_contract jc 
+					on jc.contract_code = jpa.contract_code
+			</if>
+			<if test="(customerName != null and customerName != '')">
+				left join jk.t_jk_loan_customer jlc 
+					on jlc.loan_code = jc.loan_code
+			</if>	
+			<if test="(model != null and model != '') 
+				   or (storesId != null and storesId != '') 
+				   or (dictSourceType != null and dictSourceType != '') 
+				   or (loanMark != null and loanMark != '') 
+				   or (queryRight != null and queryRight != '')">
+				left join jk.t_jk_loan_info jli 
+					on jli.loan_code = jc.loan_code
+			</if>
+		<where>
+		    <!-- 搜索条件 -->
+			<if test="customerName != null and customerName != ''">
+				and jlc.customer_name LIKE '%${customerName}%'
+			</if>
+			<if test="model != null and model != ''">
+				and jli.model = #{model}  						<!-- 模式 -->
+			</if>
+			<if test="storesId != null and storesId != ''">
+				and jli.loan_store_orgid in (${storesId})  		<!-- 门店名称 -->
+			</if>
+			<if test="paybackDay !=null and ! paybackDay.equals('')">
+				and jp.payback_day in(${paybackDay}) 			<!-- 还款日 -->
+			</if>
+			<if test="dictSourceType != null and dictSourceType != ''">
+				and jli.dict_source_type = #{dictSourceType} 	<!-- 来源系统 -->
+			</if>
+			<if test="loanMark != null and loanMark != ''">
+				and jli.loan_flag in (${loanMark}) 				<!-- 标识 -->
+			</if>
+			<if test="dictPayStatus != null and dictPayStatus != ''">
+				and jp.dict_pay_status = #{dictPayStatus} 		<!-- 还款状态 -->
+			</if>
+			<if test="monthPayDay != null and monthPayDay != '' ">
+				and month.month_pay_day = #{monthPayDay}
+			</if>
+			<if test="channelFlag != null and channelFlag != ''">
+				and con.channel_flag != #{channelFlag}
+			</if>
+		    ${queryRight} 
+	    </where>
+		) t
+	</select>
+	
+	<!-- 划扣已办 查看页面数据 -->
+	<sql id="seeCentralizedColums">
+		jpa.contract_code as contractCode, <!--合同编号 -->
+		jlc.customer_cert_num as customerCertNum, <!--证件号码-->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jc.product_type as productType, <!--产品类型-->
+		jc.contract_amount as contractAmount, <!--合同金额-->
+		jc.contract_months as contractMonths, <!--借款期限-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jp.payback_month_amount as "payback.paybackMonthAmount", <!-- 期供 -->
+		jp.payback_bule_amount as paybackBuleAmount, <!--蓝补金额-->
+		jpa.apply_amount as applyDeductAmount, <!--申请划扣金额 -->
+		jpa.dict_deal_type as dictDealType, <!--划扣平台-->
+		jpa.apply_pay_day as applyPayDay, <!--还款申请日期 -->
+		jpa.apply_account_name as applyAccountName, <!--账号名称 -->
+		jpa.apply_deduct_account as applyDeductAccount, <!--划扣账号 -->
+		jpa.apply_bank_name as applyBankName <!--开户行全称-->
+	</sql>
+	<select id="seeCentralizedDeduction" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		select 
+		   <include refid="seeCentralizedColums" />
+		from t_jk_payback_apply jpa
+			left join jk.t_jk_contract jc on jc.contract_code = jpa.contract_code
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_payback jp on jp.contract_code = jc.contract_code
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+		where jpa.id = #{bId}
+	</select>
+	<!-- 导出集中划扣已办数据列表 -->
+	<select id="exportExcel" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		select 
+			distinct
+		jpa.id as id, 
+		jpa.apply_deduct_amount as applyAmount, 
+		jpa.modify_time as modifyTime, 
+		jpa.dict_back_result as splitBackResult, 
+		jpa.apply_back_mes as applyBackMes, 
+		jpa.contract_code as contractCode, 
+		jpa.apply_bank_name as applyBankName,
+		jpa.dict_deal_type as dictDealType,
+		jpa.apply_really_amount as applyReallyAmount,
+		jlc.customer_name as customerName,
+		gos.name as orgName, 
+		jc.contract_months as contractMonths, 
+		jc.contract_replay_day as contractReplayDay, 
+		jp.payback_month_amount as paybackMonthAmount, 
+		jp.dict_pay_status as dictPayStatus, 
+		jp.payback_day as monthPayDay, 
+		jli.dict_loan_status as dictLoanStatus, 
+		jli.dict_source_type as dictSourceType,
+		jp.payback_max_overduedays as paybackMaxOverduedays, 
+		jli.loan_flag as loanMark,
+		jp.payback_bule_amount as paybackBuleAmount,
+		jp.id as rPaybackId,
+		bank.bank_account as bankAccount,
+		jpa.fail_reason as failReason
+		from  t_jk_deducts_payback_apply_his jpa
+			left join jk.t_jk_contract jc on jc.contract_code = jpa.contract_code
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_payback jp on jp.contract_code = jpa.contract_code
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join jk.t_gl_org goss on goss.id = gos.parent_id
+			left join jk.t_jk_loan_bank bank on  jc.loan_code = bank.loan_code 
+			and bank.bank_top_flag = '1' and bank.repayment_flag='1'
+		where jpa.id = #{id}
+	</select>
+	<!-- 导出还款划扣已办数据列表 -->
+	<select id="redlineExportExcel" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		select 
+		jpa.id as id, <!-- 还款申请ID -->
+		ROUND(jpa.apply_amount,2) as applyAmount, <!-- 划扣金额 （申请表中的申请金额）-->
+		jpa.modify_time as modifyTime, <!--划扣日期(申请表中的修改时间)-->
+		jpa.split_back_result as splitBackResult, <!--申请表中的回盘结果-->
+		jpa.apply_back_mes as applyBackMes, <!--申请表中的退回原因-->
+		jpa.contract_code as contractCode, <!--合同编号 -->
+		jpa.dict_repay_method as dictRepayMethod, <!--还款方式 -->
+		jpa.apply_bank_name as applyBankName, <!--开户行名称-->
+		jpa.dict_deal_type as dictDealType, <!--划扣平台-->
+		ROUND(jpa.apply_really_amount,2) as applyReallyAmount,<!-- 实际到账金额 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		gos.name as orgName, <!--门店名称-->
+		jc.contract_months as contractMonths, <!--批借期数-->
+		jc.contract_replay_day as contractReplayDay, <!--首期还款期-->
+		ROUND(jp.payback_month_amount,2) as paybackMonthAmount, <!--期供-->
+		jp.dict_pay_status as dictPayStatus, <!--还款状态-->
+		jp.payback_day as paybackDay, <!--还款日-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jli.dict_source_type as dictSourceType,<!-- 来源系统 -->
+		jp.payback_max_overduedays as paybackMaxOverduedays, <!-- 往期是否逾期（主表中的最长逾期 大于零为逾期 ） -->
+		jli.loan_flag as loanMark, <!--标识-->
+		ROUND(jp.payback_bule_amount,2) as paybackBuleAmount, <!--蓝补金额-->
+		ROUND(jpa.apply_amount,2) as applyDeductAmount, <!--申请划扣金额 -->
+		jc.contract_month_repay_amount as contractMonthRepayAmount, <!--期供金额-->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		bank.bank_account as bankAccount,
+		jpa.modify_time as modifyTime,
+       <!--  count(*)  over() as sumNumber, -->
+        <!-- ROUND(COALESCE(month.month_capital_payactual,0)+COALESCE(month.month_interest_payactual,0)+COALESCE(actual_month_fee_service,0),2) as alsoPaybackMonthAmount, -->
+        jpa.fail_Reason as failReason,
+        jli.model as model
+		from  jk.t_jk_payback_apply jpa 
+			left join jk.t_jk_contract jc on jc.contract_code = jpa.contract_code
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_payback jp on jp.contract_code = jpa.contract_code
+			<!-- left join jk.t_jk_payback_month month on jp.contract_code = month.contract_code and month.months = jp.payback_current_month -->
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join jk.t_jk_loan_bank bank on jc.loan_code = bank.loan_code and bank.bank_top_flag = '1' 
+			and bank.repayment_flag='1'
+		where (jpa.split_back_result = #{enumOne} or jpa.split_back_result = #{enumTwo} or jpa.split_back_result = #{enumSix})<!-- 回盘结果：划扣失败1、划扣成功2 -->
+	    	 and jpa.dict_deduct_type = #{enumThree}  and  jpa.dict_repay_method = #{enumFour}<!-- 处理状态：无效     操作类型：待集中划扣 -->
+	    <!-- 搜索条件 -->
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name LIKE '%${customerName}%'
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and jpa.contract_code =  #{contractCode}
+		</if>
+		<if test="model != null and model != ''">
+			and jli.model = #{model}  <!-- 模式 -->
+		</if>
+		<if test="dictDealType != null and dictDealType != ''">
+			and jpa.dict_deal_type in (${dictDealType})  <!-- 划扣平台 -->
+		</if>
+		<if test="storesId != null and storesId != ''">
+			and jli.loan_store_orgid  in  (${storesId})  <!-- 门店名称 -->
+		</if>
+		<if test="paybackDay !=null and ! paybackDay.equals('')">
+			and jp.payback_day in(${paybackDay})<!-- 还款日 -->
+		</if>
+		<if test="splitBackResult != null and splitBackResult != ''">
+			and jpa.split_back_result = #{splitBackResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="applyBackMes != null and applyBackMes != ''">
+			and jpa.apply_back_mes = #{applyBackMes}  <!-- 失败原因 -->
+		</if>
+		<if test="bankId != null and bankId != ''">
+			and jpa.apply_bank_name in(${bankId}) <!-- 开户行名称 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag in (${loanMark}) <!-- 标识 -->
+		</if>
+		<if test="beginDate != null and beginDate != ''">
+			and jpa.modify_time &gt;= #{beginDate} <!-- 划扣日期 -->
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and jpa.modify_time &lt;=  #{endDate} <!-- 划扣日期 -->
+		</if>
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+			and jp.dict_pay_status = #{dictPayStatus} <!-- 还款状态 -->
+		</if>
+		<if test="alsoAmountOne != null and alsoAmountOne != ''">
+			and jpa.apply_really_amount &gt;= #{alsoAmountOne}
+		</if>
+		<if test="alsoAmountTwo!= null and alsoAmountTwo != ''">
+			and jpa.apply_really_amount &lt;= #{alsoAmountTwo}
+		</if>
+		<if test="ids != null and ids.length > 0 ">
+			and jpa.id in 
+			<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="failReason != null and !failReason.equals('')">
+		  AND jpa.fail_Reason like '%${failReason}%'
+	    </if>
+	    	${queryRight} 
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+

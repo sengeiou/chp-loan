@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.zhongjin.dao.ZhongJinDao">
+    
+    
+    
+    <select id="selectByParam"
+	parameterType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcnModel"
+	resultType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcn">
+	SELECT cpcn_id as id,
+	cpcn_id as cpcnId,serial_num as serialNum ,account_num as
+	accountNum,account_name as accountName,ROUND(deal_money,2) as
+	dealMoney,bank_name as bankName,bank_num as bankNum,account_type as
+	accountType,(select area_name from jk.t_gl_province_city where area_code =
+	accoun_provice) as accounProvice,accoun_provice as accounProviceNum,(select area_name from
+	jk.t_gl_province_city where area_code = accoun_city) as
+	accounCity,accoun_city as accounCityNum,cert_type as certType,cert_num as certNum,contract_code as
+	contractCode,note,appoint,creat_time as
+	creatTime,to_char(operate_time,'yyyy-MM-dd') as operateTime,creatuser_id as creatuserId,(select label from jk.t_gl_dict where  type = 'jk_cpcn_status' and value = status ) as status,
+	to_char(back_time,'yyyy-MM-dd') as backTimes,(select label from jk.t_gl_dict where  type = 'jk_counteroffer_result' and value = back_result ) as backResult,back_reason as backReason,deduct_Type
+	as deductType,
+	apply_really_amount as applyReallyAmount
+	FROM
+	jk.T_JK_LOAN_PAYBACK_CPCN LPC
+	WHERE 1=1 
+	<include refid="PagingConditions" />
+	ORDER BY LPC.SERIAL_NUM DESC
+</select>
+	
+	<select id="findByParams"
+	parameterType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcnModel"
+	resultType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcn">
+	SELECT cpcn_id as id,
+	cpcn_id as cpcnId,serial_num as serialNum ,account_num as
+	accountNum,account_name as accountName,ROUND(deal_money,2) as
+	dealMoney,bank_name as bankName,bank_num as bankNum,account_type as
+	accountType,(select area_name from jk.t_gl_province_city where area_code =
+	accoun_provice) as accounProvice,accoun_provice as accounProviceNum,(select area_name from
+	jk.t_gl_province_city where area_code = accoun_city) as
+	accounCity,accoun_city as accounCityNum,cert_type as certType,cert_num as certNum,contract_code as
+	contractCode,note,appoint,creat_time as
+	creatTime,to_char(operate_time,'yyyy-MM-dd') as operateTime,creatuser_id as creatuserId,(select label from jk.t_gl_dict where  type = 'jk_cpcn_status' and value = status ) as status,
+	to_char(back_time,'yyyy-MM-dd') as backTime,(select label from jk.t_gl_dict where  type = 'jk_counteroffer_result' and value = back_result ) as backResult,back_reason as backReason,deduct_Type
+	as deductType
+	FROM
+	jk.T_JK_LOAN_PAYBACK_CPCN LPC
+	WHERE 1=1 
+	<include refid="PagingConditions" />
+	ORDER BY LPC.SERIAL_NUM DESC
+</select>
+
+	<select id="exportList"
+	parameterType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcnModel"
+	resultType="com.creditharmony.loan.borrow.zhongjin.entity.PaybackCpcnOut">
+	SELECT cpcn_id as id,
+	cpcn_id as cpcnId,serial_num as serialNum ,account_num as
+	accountNum,account_name as accountName,ROUND(deal_money,2) as
+	dealMoney,bank_name as bankName,bank_num as bankNum,account_type as
+	accountType,(select area_name from t_gl_province_city where area_code =
+	accoun_provice) as accounProvice,accoun_provice as accounProviceNum,(select area_name from
+	t_gl_province_city where area_code = accoun_city) as
+	accounCity,accoun_city as accounCityNum,cert_type as certType,cert_num as certNum,contract_code as
+	contractCode,note,appoint,creat_time as
+	creatTime,to_char(operate_time,'yyyy-MM-dd') as operateTime,creatuser_id as creatuserId,(select label from t_gl_dict where  type = 'jk_cpcn_status' and value = status ) as status,
+	to_char(back_time,'yyyy-MM-dd') as backTime,(select label from t_gl_dict where  type = 'jk_counteroffer_result' and value = back_result ) as backResult,back_reason as backReason,deduct_Type
+	as deductType,
+	ROUND(LPC.apply_Really_Amount,2)  as applyReallyAmount
+	FROM
+	T_JK_LOAN_PAYBACK_CPCN LPC
+	WHERE 1=1 
+	<include refid="PagingConditions" />
+	ORDER BY LPC.SERIAL_NUM DESC
+</select>
+
+	<select id="getSelectCount" parameterType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcnModel" resultType="Map">
+    	select count(*) as count,ROUND(sum(deal_money),2),ROUND(sum(COALESCE(apply_really_amount,0)),2) as applyReallyAmount  from  
+	T_JK_LOAN_PAYBACK_CPCN LPC
+	WHERE 1=1 
+	<include refid="PagingConditions" />
+    </select>
+    
+	 <select id="getCount"
+	parameterType="String"
+	resultType="long">
+	SELECT count(*) 
+	FROM
+	T_JK_LOAN_PAYBACK_CPCN LPC
+	WHERE LPC.serial_num = '${serialNum}'
+	</select>
+
+ 	<select id="getBankValue"
+	parameterType="String"
+	resultType="String">
+	select value from t_gl_dict where type='jk_open_bank' and label='${bankName}'
+	</select>
+	
+	<select id="getCerTypeValue"
+	parameterType="String"
+	resultType="String">
+	select value from t_gl_dict where type='jk_certificate_type' and label='${cerName}'
+	</select>
+	
+	<select id="getProvinceName" parameterType="String" resultType="String">
+		select area_code from t_gl_province_city where area_name
+		='${provinceName}' and area_type='1'
+	</select>
+
+	<select id="getCityName" parameterType="String" resultType="String">
+	SELECT
+	area_code
+	FROM
+	t_gl_province_city t1
+	WHERE
+	t1.area_name = '${cityName}'
+	AND t1.parent_id = '${provinceName}'
+</select>
+	
+	<sql id="PagingConditions">
+	<if test="id!=null and id!=''">
+  		and LPC.cpcn_id = #{id}
+  	</if>
+  	<if test="serialnum!=null and serialnum!=''">
+  		and LPC.serial_num like '%${serialnum}%'
+  	</if>
+  	<if test="contractCode!=null and contractCode!=''">
+		and LPC.contract_code = #{contractCode}
+	</if>
+  	<if test="beginMoney!=null">
+  		<![CDATA[ and LPC.deal_money>=#{beginMoney}]]>
+  	</if>
+  	<if test="endMoney!=null">
+  		<![CDATA[ and LPC.deal_money<=#{endMoney}]]>
+  	</if>
+  	<if test="bankIds!=null and bankIds.length > 0">
+  		and LPC.bank_num in <!-- =#{banknum} -->
+  		<foreach item="item" index="index" collection="bankIds" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+  	</if>
+   	<if test="accountName!=null and accountName!=''">
+  		and LPC.account_name like '%${accountName}%'
+  	</if>
+  	<if test="backResult != null and backResult!=''">
+        and LPC.back_result = #{backResult}
+    </if>
+  	<if test="createTime!=null and createTime!=''">
+  		and to_char(LPC.creat_time,'yyyy-mm-dd')=#{createTime}
+  	</if>
+  	<if test="opearTime!=null and opearTime!=''">
+  		and to_char(LPC.operate_time,'yyyy-mm-dd')=#{opearTime}
+  	</if>
+  	<if test="beginBackTime!=null and beginBackTime!=''">
+  		<![CDATA[ and to_char(LPC.back_time,'yyyy-mm-dd')>=#{beginBackTime}]]>
+  	</if>
+  	<if test="endBackTime!=null and endBackTime!=''">
+  		<![CDATA[ and to_char(LPC.back_time,'yyyy-mm-dd')<=#{endBackTime}]]>
+  	</if>
+  	<if test="(deductBeginTime != null and deductBeginTime!='') or (deductEndTime != null and deductEndTime!='')">
+        AND LPC.STATUS = '4'
+        AND EXISTS (SELECT LPO.CPCNID FROM T_JK_LOAN_PAYBACK_ORDER LPO WHERE LPO.CPCNID = LPC.CPCN_ID
+        <if test="deductBeginTime != null and deductBeginTime!=''">
+          <![CDATA[ AND to_char(LPO.TASKTIME,'yyyy-mm-dd') >= #{deductBeginTime}]]>
+        </if>
+        <if test="deductEndTime != null and deductEndTime!=''">
+          <![CDATA[ AND to_char(LPO.TASKTIME,'yyyy-mm-dd') <= #{deductEndTime}]]>
+        </if>
+        )
+    </if>
+    <if test="checkIds!= null and checkIds!=''">
+		<foreach collection="checkIds" item="item"  open="AND (" close=")" separator="or" index="">
+            LPC.cpcn_id=#{item}
+		</foreach>
+    </if>
+    <if test="status!=null and status!=''">
+  		and LPC.STATUS=#{status}
+  	</if>
+  	<if test="status==null or status==''">
+  		<if test="deductStatus==1">
+  			and (LPC.STATUS='0' OR LPC.STATUS='5')
+  		</if>
+  		<if test="deductStatus==2">
+  			and (LPC.STATUS='1' OR LPC.STATUS='2' OR LPC.STATUS='4')
+  		</if>
+  	</if>
+  </sql>	
+
+	<insert id="insert" parameterType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcn">
+    INSERT INTO t_jk_loan_payback_cpcn 
+    (cpcn_id, serial_num, account_num, account_name, deal_money, bank_name, bank_num, account_type, accoun_provice, 
+    accoun_city, cert_type, cert_num, contract_code, note, creatuser_id, status, DEDUCT_TYPE, creat_time
+    )
+    
+    VALUES 
+    (
+      #{cpcnId}, 
+      <if test="serialNum != null">
+         #{serialNum},
+      </if>
+      <if test="serialNum == null">
+         (SELECT case when max(cast(serial_num as numeric)) is null then '${nowDate}0001' else max(cast(serial_num as numeric))+1 end FROM T_JK_LOAN_PAYBACK_CPCN t WHERE t.serial_num like '${nowDate}%'),
+      </if>
+      #{accountNum}, #{accountName}, 
+      #{dealMoney}, (select label from t_gl_dict where  type = 'jk_open_bank' and value = #{bankNum}), #{bankNum}, #{accountType}, 
+      #{accounProvice}, #{accounCity}, #{certType}, 
+      #{certNum}, #{contractCode}, #{note},
+      #{creatuserId},#{status},#{deductType},#{createTime}
+    )
+  </insert>
+  
+  <update id="update" parameterType="com.creditharmony.loan.borrow.zhongjin.view.PaybackCpcn">
+    UPDATE jk.t_jk_loan_payback_cpcn
+    <set>
+      <if test="accountNum != null and accountNum!=''">
+        account_num = #{accountNum,jdbcType=VARCHAR},
+      </if>
+      <if test="accountName != null and accountName!=''">
+        account_name = #{accountName,jdbcType=VARCHAR},
+      </if>
+      <if test="dealMoney != null">
+        deal_money = #{dealMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="bankNum != null and bankNum!=''">
+        bank_name = (select label from t_gl_dict where  type = 'jk_open_bank' and value = #{bankNum}),
+      </if>
+      <if test="bankNum != null and bankNum!=''">
+        bank_num = #{bankNum,jdbcType=VARCHAR},
+      </if>
+      <if test="accountType != null and accountType!=''">
+        account_type = #{accountType,jdbcType=VARCHAR},
+      </if>
+      <if test="accounProvice != null and accounProvice!=''">
+        accoun_provice = #{accounProvice,jdbcType=VARCHAR},
+      </if>
+      <if test="accounCity != null and accounCity!=''">
+        accoun_city = #{accounCity,jdbcType=VARCHAR},
+      </if>
+      <if test="certType != null and certType!=''">
+        cert_type = #{certType,jdbcType=VARCHAR},
+      </if>
+      <if test="certNum != null and certNum!=''">
+        cert_num = #{certNum,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null and contractCode!=''">
+        contract_code = #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null and note!=''">
+        NOTE = #{note,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        STATUS = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="backTime != null">
+        back_time = #{backTime},
+      </if>
+      <if test="opearTime != null">
+        operate_time = #{opearTime,jdbcType=VARCHAR},
+      </if>
+      <if test="backResult != null">
+        back_result = #{backResult,jdbcType=VARCHAR},
+      </if>
+      <if test="backReason != null and backReason!=''">
+        back_reason = #{backReason,jdbcType=VARCHAR},
+      </if>
+      <if test="deductType != null and deductType!=''">
+        DEDUCT_TYPE = #{deductType,jdbcType=VARCHAR},
+      </if>
+      <if test="batchSN != null and batchSN!=''">
+        BATCH_SN = #{batchSN,jdbcType=VARCHAR},
+      </if>
+       <if test="applyReallyAmount != null and applyReallyAmount!=''">
+        apply_really_amount = COALESCE(apply_really_amount,0) +  #{applyReallyAmount},
+      </if>
+    </set>
+    WHERE cpcn_id = #{cpcnId,jdbcType=VARCHAR}
+  </update>
+  
+  <insert id="insertPaybackOrder" parameterType="com.creditharmony.loan.borrow.zhongjin.view.PaybackOrder">
+        INSERT INTO T_JK_LOAN_PAYBACK_ORDER
+        (
+        ID,CPCNID,DEDUCTDATE,DEDUCTTIME,TASKTIME
+        )
+        VALUES
+        (
+        #{id},
+        #{cpcnId},
+        #{deductDate},
+        #{deductTime},
+        #{taskTime}
+        )
+    </insert>
+    
+    <insert id="addHistory"
+	parameterType="com.creditharmony.loan.borrow.zhongjin.view.History">
+	INSERT INTO jk.t_jk_loan_history
+	(id,
+	cpcn_id, 
+	oper_name,
+	oper_result, 
+	oper_notes,
+	create_by, 
+	modify_by)
+	VALUES(#{id},
+	#{cpcnId},
+	#{operName},
+	#{operResult},
+	#{operNotes},
+	#{createBy}, 
+	#{modifyBy});
+</insert>
+
+	<select id="getHistory" parameterType="String"
+	resultType="com.creditharmony.loan.borrow.zhongjin.view.History">
+	select
+	id,
+	cpcn_id as cpcnId,
+	oper_name as operName,
+	oper_result operResult,
+	oper_notes operNotes,
+	create_by as createBy,
+	modify_by as modifyBy,
+	to_char(create_time,'yyyy-mm-dd hh:mm:ss') as createTime,
+	to_char(modify_time,'yyyy-mm-dd hh:mm:ss') as modifyTime 
+	from jk.t_jk_loan_history where cpcn_id=#{cpcnId}
+	order by create_time desc
+</select>
+	
+	<delete id="delOrder" parameterType="String">
+	DELETE FROM  jk.t_jk_loan_payback_order
+	WHERE cpcnid = #{cpcnId}
+	</delete>
+	
+</mapper>

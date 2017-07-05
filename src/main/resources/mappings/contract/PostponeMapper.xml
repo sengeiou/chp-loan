@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.PostponeDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.contract.entity.PostponeEntity" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="apply_id" property="applyId" jdbcType="VARCHAR" />
+    <result column="contract_code" property="contractCode" jdbcType="VARCHAR" />
+    <result column="step_name" property="stepName" jdbcType="VARCHAR" />
+    <result column="timeOutPoint_time" property="timeoutpointTime" jdbcType="TIMESTAMP" />
+    <result column="postpone_time" property="postponeTime" jdbcType="TIMESTAMP" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, apply_id, contract_code, step_name, timeOutPoint_time, postpone_time, create_by, 
+    create_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_jk_postpone
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from t_jk_postpone
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.borrow.contract.entity.PostponeEntity" >
+    insert into t_jk_postpone (id, apply_id, contract_code, 
+      step_name, timeOutPoint_time, postpone_time, 
+      create_by, create_time)
+    values (#{id,jdbcType=VARCHAR}, #{applyId,jdbcType=VARCHAR}, #{contractCode,jdbcType=VARCHAR}, 
+      #{stepName,jdbcType=VARCHAR}, #{timeoutpointTime,jdbcType=TIMESTAMP}, #{postponeTime,jdbcType=TIMESTAMP}, 
+      #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.contract.entity.PostponeEntity" >
+    insert into t_jk_postpone
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="applyId != null" >
+        apply_id,
+      </if>
+      <if test="contractCode != null" >
+        contract_code,
+      </if>
+      <if test="stepName != null" >
+        step_name,
+      </if>
+      <if test="timeoutpointTime != null" >
+        timeOutPoint_time,
+      </if>
+      <if test="postponeTime != null" >
+        postpone_time,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId != null" >
+        #{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="stepName != null" >
+        #{stepName,jdbcType=VARCHAR},
+      </if>
+      <if test="timeoutpointTime != null" >
+        #{timeoutpointTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="postponeTime != null" >
+        #{postponeTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.borrow.contract.entity.PostponeEntity" >
+    update t_jk_postpone
+    <set >
+      <if test="applyId != null" >
+        apply_id = #{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="contractCode != null" >
+        contract_code = #{contractCode,jdbcType=VARCHAR},
+      </if>
+      <if test="stepName != null" >
+        step_name = #{stepName,jdbcType=VARCHAR},
+      </if>
+      <if test="timeoutpointTime != null" >
+        timeOutPoint_time = #{timeoutpointTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="postponeTime != null" >
+        postpone_time = #{postponeTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.borrow.contract.entity.PostponeEntity" >
+    update t_jk_postpone
+    set apply_id = #{applyId,jdbcType=VARCHAR},
+      contract_code = #{contractCode,jdbcType=VARCHAR},
+      step_name = #{stepName,jdbcType=VARCHAR},
+      timeOutPoint_time = #{timeoutpointTime,jdbcType=TIMESTAMP},
+      postpone_time = #{postponeTime,jdbcType=TIMESTAMP},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarPaybackTransferDetailDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarPaybackTransferDetail" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="transfer_id" property="transferId" jdbcType="VARCHAR" />
+    <result column="tran_deposit_time" property="tranDepositTime" jdbcType="TIMESTAMP" />
+    <result column="really_amount" property="reallyAmount" jdbcType="NUMERIC" />
+    <result column="deposit_name" property="depositName" jdbcType="VARCHAR" />
+    <result column="dict_deposit" property="dictDeposit" jdbcType="VARCHAR" />
+    <result column="upload_name" property="uploadName" jdbcType="VARCHAR" />
+    <result column="upload_date" property="uploadDate" jdbcType="TIMESTAMP" />
+    <result column="upload_filename" property="uploadFilename" jdbcType="VARCHAR" />
+    <result column="upload_path" property="uploadPath" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, transfer_id, tran_deposit_time, really_amount, deposit_name, dict_deposit,upload_name, upload_date, 
+    upload_filename, upload_path, create_by, create_time, modify_by, modify_time
+  </sql>
+  
+  <!-- 批量插入 申请查账凭条记录 -->
+  <insert id="saveOrUpdate" parameterType="java.util.List">
+  	insert into jk.t_cj_payback_transfer_detail (id, transfer_id, tran_deposit_time, 
+      really_amount, deposit_name,dict_deposit, upload_name, 
+      upload_date, upload_filename, upload_path, 
+      create_by, create_time, modify_by, 
+      modify_time) 
+      values 
+      <foreach collection="list" item="item" index="index" separator=",">
+      
+      (#{item.id,jdbcType=VARCHAR}, #{item.transferId,jdbcType=VARCHAR}, #{item.tranDepositTime,jdbcType=TIMESTAMP}, 
+      #{item.reallyAmount,jdbcType=NUMERIC}, #{item.depositName,jdbcType=VARCHAR}, #{item.dictDeposit,jdbcType=VARCHAR},#{item.uploadName,jdbcType=VARCHAR}, 
+      #{item.uploadDate,jdbcType=TIMESTAMP}, #{item.uploadFilename,jdbcType=VARCHAR}, #{item.uploadPath,jdbcType=VARCHAR}, 
+      #{item.createBy,jdbcType=VARCHAR}, #{item.createTime,jdbcType=TIMESTAMP}, #{item.modifyBy,jdbcType=VARCHAR}, 
+      #{item.modifyTime,jdbcType=TIMESTAMP})
+      
+      </foreach>
+  
+  </insert>
+  
+  <!--  根据   关联转账信息表ID（车借_还款转账信息记录表） 获取查账凭条明细 -->
+  <select id="findByTransferId" resultMap="BaseResultMap" parameterType="map">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_cj_payback_transfer_detail
+    where transfer_id = #{transfer_id,jdbcType=VARCHAR}
+  </select>
+  
+ 
+</mapper>

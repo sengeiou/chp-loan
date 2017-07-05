@@ -1,0 +1,1321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.PaybackSplitDao">
+	<sql id="topflag">'1'</sql>
+	<!--查询申请数据 -->
+	<select id="getAllList" resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+    select 
+  <!--   distinct -->
+       pa.id,
+       pa.month_id as "paybackMonth.id",
+       pa.contract_code as "payback.contract_code",
+       con.contract_code as "contract.contract_code",
+       pa.r_list_id as rId,
+       lc.customer_code as "loanCustomer.customer_code",
+       lc.customer_name as "loanCustomer.customer_Name",
+       lc.customer_phone_first "loanCustomer.customer_phone_first",
+       lb.bank_name as "loanBank.bank_name",
+       lb.bank_branch as "loanBank.bank_branch",
+       con.contract_months as "contract.contract_months",
+       con.contract_replay_day as "contract.contract_replay_day",
+       ROUND(pa.apply_deduct_amount,2)  as split_amount,
+       p.payback_month_amount as "payback.payback_month_amount",
+       p.payback_current_month as "payback.payback_current_month",
+       p.dict_pay_status as "payback.dict_pay_status",
+       p.payback_day as "payback.payback_day",
+       p.id as rPaybackId,
+       org.name as "org.name",
+       loin.loan_flag as "loanInfo.loan_flag",
+       loin.dict_loan_status as "loanInfo.dict_loan_status",
+       loin.loan_team_orgid as "loanInfo.loan_team_orgid",
+       loin.trust_recharge as "loanInfo.trust_recharge",
+      <!--  pm.month_pay_day as "paybackMonth.month_pay_day",
+       pm.month_capital_payactual as "paybackMonth.month_capital_payactual",
+       pm.month_interest_payactual as "paybackMonth.month_interest_payactual",
+       pm.actual_month_fee_service as "paybackMonth.actual_month_fee_service",
+       pm.months as "paybackMonth.months",  -->
+       pa.dict_back_result as splitBackResult,
+       pa.trust_recharge_result as trustRechargeResult,
+       pa.trust_recharge_failure_reason as trustRechargeFailReason,
+       lc.trusteeship_no as "loanCustomer.trusteeshipNo",
+        (sum(ROUND(pa.apply_deduct_amount,2)) OVER ()- sum(ROUND(COALESCE(pa.apply_really_amount,0),2)) OVER ())as  sumAmont,
+        sum(ROUND(COALESCE(pa.apply_really_amount,0),2)) OVER () as sumReallyAmont,
+       pa.fail_Reason as failReason,
+       cast (extract(epoch from pa.modify_time) as varchar) as verTime,
+       COALESCE(lb.bank_signing_platform,pa.dict_deal_type) as  dictDealType,
+       loin.model,
+       pa.apply_really_amount as applyReallyAmount,
+       COALESCE(pa.cpcn_count,0) as cpcnCount,
+       COALESCE(pa.tl_count,0) as tlCount,
+       COALESCE(lb.tl_sign,'0') as tlSign,
+       case when lb.kl_Sign ='0' then '未签约' when lb.kl_Sign ='1' then '已签约' else '签约失败' end  as  klSign,
+       case when lb.cj_Sign ='0' then '未签约' when lb.cj_Sign ='1' then '已签约' else '签约失败' end  as  cjSign,
+       case when lb.real_Authen ='0' then '否' when lb.kl_Sign ='1' then '是' else '认证中' end  as  realAuthen
+    from  jk.T_JK_DEDUCTS_PAYBACK_APPLY pa 
+     left join jk.t_jk_payback p  on p.contract_code = pa.contract_code
+     left join jk.t_jk_contract con on con.contract_code = p.contract_code
+     left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+     left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and lb.bank_top_flag = '1' AND lb.repayment_flag='1'
+     left join jk.t_jk_loan_customer lc on lc.loan_code = con.loan_code
+     <if test="(queryoverdueDaysString != null and !queryoverdueDaysString.equals(''))">
+      left join (
+      select contract_code, min(tt.months),
+      COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) overdueDays,min(tt.month_pay_day) overday
+      from jk.t_jk_payback_month tt where tt.dict_month_status = '1' group by tt.contract_code) pm  on pm.contract_code = pa.contract_code
+     </if>
+     <if test="(overCount != null and !overCount.equals(''))">
+      left join (
+      select contract_code, sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+      from jk.t_jk_payback_month tt where tt.is_overdue = '1' group by tt.contract_code) pmt  on pmt.contract_code = pa.contract_code
+     </if>
+     left join jk.t_gl_org org on loin.loan_store_orgid =  org.id
+    where 1=1 
+    	<if test="counteroffer != null and !counteroffer.equals('')">
+      		AND pa.dict_back_result in (${counteroffer})
+      	</if>
+		<if test="customerName != null and !customerName.equals('')">
+			AND lc .customer_name LIKE '%${customerName}%'
+
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND pa.contract_code = #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND lb.bank_signing_platform in 
+				<foreach collection="dictDealType" item="item" open="(" separator="," close=")">
+			       #{item} 
+			    </foreach>
+		</if>
+		<if test="splitBackResult !=null and !splitBackResult.equals('')">
+			AND pa.dict_back_result = #{splitBackResult}
+		</if>
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &gt;= cast(#{minsplitAmount} as numeric)
+		</if>
+
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &lt;= cast(#{maxsplitAmount} as numeric)
+		</if>
+
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type = #{dictSourceType}
+		</if>
+
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag = #{mark}
+		</if>
+		 
+		 <if test="monthPayDay != null and !monthPayDay.equals('')">
+		   AND pa.payback_day in 
+		   	<foreach collection="monthPayDay" item="item" open="(" separator="," close=")">
+		   #{item}
+		    </foreach>
+	     </if>
+		
+		<if test=" storesId!= null and !storesId.equals('')">
+		   AND loin.loan_store_orgid in (${storesId})
+	    </if>
+	    <if test="bankId != null and !bankId.equals('')">
+		   AND lb.bank_name in (${bankId})
+	   </if>
+	   <if test="trustRecharge != null and !trustRecharge.equals('')">
+		   AND loin.trust_recharge = #{trustRecharge}
+	   </if>
+	  <!--  导出全部数据或者导出选择数据用 -->
+	   <if test="ids != null and !ids.equals('')">
+		   AND pa.id in 
+		   	<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	   </if>
+	    <if test="failReason != null and !failReason.equals('')">
+		  AND  ${failReason}
+	   </if>
+	   <if test="model != null and !model.equals('')">
+		  AND loin.model  = #{model}
+	   </if>
+      <if test="queryoverdueDaysString != null and !queryoverdueDaysString.equals('')">
+	      and  COALESCE(pm.overdueDays,0)  ${queryoverdueDaysString}
+      </if>
+       <if test="overCount != null and !overCount.equals('')">
+	      and  COALESCE(pmt.overCount,0)  = cast (#{overCount} as integer)
+       </if>
+     
+       <if test="tlSign != null and !tlSign.equals('')">
+	      and  lb.tl_Sign  = #{tlSign}
+       </if>
+       
+       <if test="klSign != null and klSign != ''">
+          and   lb.kl_Sign = #{klSign}
+	  </if>
+	 
+	  <if test="cjSign != null and cjSign != ''">
+        and   lb.cj_Sign = #{cjSign}
+      </if>
+	  <if test="realAuthen != null and realAuthen != ''">
+         and   lb.real_Authen = #{realAuthen}
+	  </if>
+      
+       <if test="cpcnCount != null and !cpcnCount.equals('')">
+	     and  pa.cpcn_Count  = cast(#{cpcnCount} as integer)
+       </if>
+        <if test="loanStatus != null and loanStatus != ''">
+         and   loin.dict_loan_status = #{loanStatus}
+		</if>
+		 <if test="tlCount != null and !tlCount.equals('')">
+	      and  pa.tl_Count  = cast(#{tlCount} as integer)
+        </if>
+		 <if test="failReasonText != null and !failReasonText.equals('')">
+		  AND  COALESCE(pa.fail_Reason,'')  like  '%${failReasonText}%'
+	    </if>
+		<if test="channelFlag!=null and !channelFlag.equals('')">
+			and con.channel_flag != #{channelFlag}
+		</if>
+	  	<if test="limit != null and offset != null">
+			    limit #{limit} offset #{offset}
+		</if>
+		
+		 
+	</select>
+	
+	 <!--查询申请条数 -->
+	<select id="getCnt" resultType = "java.lang.Long">
+    select 
+    count(pa.id)
+    from  jk.T_JK_DEDUCTS_PAYBACK_APPLY pa 
+     left join jk.t_jk_payback p  on p.contract_code = pa.contract_code
+     left join jk.t_jk_contract con on con.contract_code = pa.contract_code
+     left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+     <if test=" storesId!= null and !storesId.equals('')">
+     left join jk.t_gl_org org on loin.loan_store_orgid =  org.id
+     </if>
+     <if test="(bankId != null and !bankId.equals('')) or (dictDealType !=null and !dictDealType.equals('')) or
+      (tlSign !=null and !tlSign.equals('')) 
+      or (realAuthen !=null and !realAuthen.equals(''))  or (cjSign !=null and !cjSign.equals(''))
+      or (klSign !=null and !klSign.equals(''))" 
+      >
+     left join jk.t_jk_loan_bank lb on con.loan_code = lb.loan_code and lb.bank_top_flag = '1' AND lb.repayment_flag='1'
+     </if>
+     <if test="customerName != null and !customerName.equals('')">
+     left join jk.t_jk_loan_customer lc on lc.loan_code = con.loan_code
+     </if>
+     <if test="(queryoverdueDaysString != null and !queryoverdueDaysString.equals(''))">
+      left join (
+      select contract_code, min(tt.months),
+      COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) overdueDays,min(tt.month_pay_day) overday
+      from jk.t_jk_payback_month tt where tt.dict_month_status = '1' group by tt.contract_code) pm  on pm.contract_code = pa.contract_code
+     </if>
+     <if test="(overCount != null and !overCount.equals(''))">
+      left join (
+      select contract_code, sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+      from jk.t_jk_payback_month tt where tt.is_overdue = '1' group by tt.contract_code) pmt  on pmt.contract_code = pa.contract_code
+     </if>
+    where 1=1 
+    	<if test="counteroffer != null and !counteroffer.equals('')">
+      		AND pa.dict_back_result in (${counteroffer})
+      	</if>
+		<if test="customerName != null and !customerName.equals('')">
+			AND lc.customer_name LIKE '%${customerName}%'
+
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND pa.contract_code = #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND lb.bank_signing_platform in 
+			<foreach collection="dictDealType" item="item" open="(" separator="," close=")">
+		       #{item} 
+		    </foreach>
+		</if>
+		<if test="splitBackResult !=null and !splitBackResult.equals('')">
+			AND pa.dict_back_result = #{splitBackResult}
+		</if>
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &gt;= cast(#{minsplitAmount} as numeric)
+		</if>
+
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &lt;= cast(#{maxsplitAmount} as numeric)
+		</if>
+
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type = #{dictSourceType}
+		</if>
+
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag = #{mark}
+		</if>
+	
+		 <if test="monthPayDay != null and !monthPayDay.equals('')">
+		   AND pa.payback_day in 
+		   	<foreach collection="monthPayDay" item="item" open="(" separator="," close=")">
+		       #{item} 
+		    </foreach>
+	     </if>
+		
+		<if test=" storesId!= null and !storesId.equals('')">
+		   AND loin.loan_store_orgid in (${storesId})
+	    </if>
+	    <if test="bankId != null and !bankId.equals('')">
+		   AND lb.bank_name in (${bankId})
+	   </if>
+	   <if test="trustRecharge != null and !trustRecharge.equals('')">
+		   AND loin.trust_recharge = #{trustRecharge}
+	   </if>
+	  <!--  导出全部数据或者导出选择数据用 -->
+	   <if test="ids != null and !ids.equals('')">
+		   AND pa.id in 
+		   	<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	   </if>
+	    <if test="failReason != null and !failReason.equals('')">
+		  AND    ${failReason}
+	   </if>
+	   <if test="model != null and !model.equals('')">
+		  AND loin.model  = #{model}
+	   </if>
+    <if test="queryoverdueDaysString != null and !queryoverdueDaysString.equals('')">
+	    and COALESCE(pm.overdueDays,0)  ${queryoverdueDaysString}
+    </if>
+    <if test="overCount != null and !overCount.equals('')">
+	     and  COALESCE(pmt.overCount,0)  = cast (#{overCount} as integer)
+    </if>
+    <if test="tlSign != null and !tlSign.equals('')">
+       and  lb.tl_Sign  = #{tlSign}
+    </if>
+    <if test="klSign != null and klSign != ''">
+        and   lb.kl_Sign = #{klSign}
+    </if>
+    <if test="cjSign != null and cjSign != ''">
+        and   lb.cj_Sign = #{cjSign}
+    </if>
+    <if test="realAuthen != null and realAuthen != ''">
+        and   lb.real_Authen = #{realAuthen}
+    </if>
+    <if test="cpcnCount != null and !cpcnCount.equals('')">
+      and  pa.cpcn_Count  = cast(#{cpcnCount} as integer)
+    </if>
+    <if test="loanStatus != null and loanStatus != ''">
+         and   loin.dict_loan_status = #{loanStatus}
+	</if>
+	<if test="tlCount != null and !tlCount.equals('')">
+	      and  pa.tl_Count  = cast(#{tlCount} as integer)
+    </if>
+
+	 <if test="failReasonText != null and !failReasonText.equals('')">
+	  AND  COALESCE(pa.fail_Reason,'')  like  '%${failReasonText}%'
+    </if>
+	<if test="channelFlag!=null and !channelFlag.equals('')">
+			and con.channel_flag != #{channelFlag}
+	</if>
+
+   </select>
+   
+    <!-- 给批处理要划扣的数据  -->
+	<select id="queryDeductReqList"   resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+	 select 
+	 distinct
+       pa.id as batId,<!-- 请求批次ID -->
+       p.id as businessId,<!--还款主表id -->
+       pa.month_id as refId,<!-- 关联id -->
+       lb.bank_name as bankId,
+     case when   lb.bank_signing_platform is null or lb.bank_signing_platform ='' then pa.dict_deal_type else lb.bank_signing_platform end as signPlate ,
+       province.area_name as bankProv,
+       city.area_name as bankCity,
+       lb.bank_branch as bankName,  
+       lb.bank_account as accountNo,
+       lb.bank_account_name as accountName,               
+       lc.dict_cert_type as idType,
+       lc.customer_cert_num as idNo,
+       lc.customer_phone_first as mobile,
+       '00' as accountType,   <!-- 账户类型 -->
+       (pa.apply_deduct_amount - COALESCE(pa.apply_really_amount,0)) as amount,
+       pa.contract_code || '_' || '集中'  as remarks,
+       pa.dict_back_result as counterofferResult,
+	   cast (extract(epoch from pa.modify_time) as varchar) as verTime,
+	   pa.dict_back_result as status,
+	   COALESCE(pa.cpcn_count,0) as cpcnCount,
+	   COALESCE(pmo.overdueDays,0) as overdueDays,
+	   lb.bank_no as branchCode,
+	   pa.tl_Count as tlCount,
+	   '00' as busObjType,
+	   lb.protocol_Number as protocolNo
+  from  jk.t_jk_deducts_payback_apply pa 
+   left join jk.t_jk_payback p  on p.contract_code = pa.contract_code
+   left join jk.t_jk_contract con on con.contract_code = p.contract_code
+   left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+   left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and lb.bank_top_flag = '1' and lb.repayment_flag='1'
+   left join jk.t_jk_loan_customer lc on lc.loan_code = con.loan_code
+  <!--  left join jk.t_jk_payback_month pm on  pm.id = pa.month_id -->
+   left join jk.t_gl_province_city_cmb  province on lb.bank_province = province.id 
+   left join jk.t_gl_province_city_cmb  city on lb.bank_city = city.id  
+   left join (
+      select contract_code, min(tt.months),
+      COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) overdueDays,min(tt.month_pay_day) overday
+      from jk.t_jk_payback_month tt where tt.dict_month_status = '1' group by tt.contract_code) pmo  on pmo.contract_code = pa.contract_code
+   left join (
+      select contract_code, sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+      from jk.t_jk_payback_month tt where tt.is_overdue = '1' group by tt.contract_code) pmt  on pmt.contract_code = pa.contract_code
+    where 1=1
+	   	<if test="counteroffer != null and !counteroffer.equals('')">
+      		AND pa.dict_back_result in (${counteroffer})
+      	</if>
+		<if test="customerName != null and !customerName.equals('')">
+			AND lc .customer_name LIKE '%${customerName}%'
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND pa.contract_code = #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND  lb.bank_signing_platform  in 
+				<foreach collection="dictDealType" item="item" open="(" separator="," close=")">
+		       #{item} 
+		    </foreach>
+		</if>
+		<if test="splitBackResult !=null and !splitBackResult.equals('')">
+			AND pa.dict_back_result = #{splitBackResult}
+		</if>
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &gt;= cast(#{minsplitAmount} as numeric)
+		</if>
+
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &lt;= cast(#{maxsplitAmount} as numeric)
+		</if>
+
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type = #{dictSourceType}
+		</if>
+
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag = #{mark}
+		</if>
+		
+		 <if test="monthPayDay != null and !monthPayDay.equals('')">
+		   AND pa.payback_day in 
+		   	<foreach collection="monthPayDay" item="item" open="(" separator="," close=")">
+		       #{item}
+		    </foreach>
+	     </if>
+		<if test=" storesId!= null and !storesId.equals('')">
+		   AND loin.loan_store_orgid in (${storesId})
+	    </if>
+	    <if test="bankId != null and !bankId.equals('')">
+		   AND lb.bank_name in (${bankId})
+	   </if>
+	   <if test="trustRecharge != null and !trustRecharge.equals('')">
+		   AND loin.trust_recharge = #{trustRecharge}
+	   </if>
+	  <!--  导出全部数据或者导出选择数据用 -->
+	   <if test="ids != null and !ids.equals('')">
+		   AND pa.id in 
+		   	<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	   </if>
+	   <if test="failReason != null and !failReason.equals('')">
+		   AND  ${failReason}
+	   </if>
+	   <if test="cpcnCount != null and !cpcnCount.equals('')">
+		   AND  pa.cpcn_count = cast(#{cpcnCount} as integer)
+	   </if>
+	    <if test="tlSign != null and !tlSign.equals('')">
+          and  lb.tl_Sign  = #{tlSign}
+        </if>
+        <if test="klSign != null and klSign != ''">
+          and   lb.kl_Sign = #{klSign}
+		</if>
+		<if test="cjSign != null and cjSign != ''">
+         and   lb.cj_Sign = #{cjSign}
+        </if>
+		 <if test="realAuthen != null and realAuthen != ''">
+	         and   lb.real_Authen = #{realAuthen}
+		 </if>
+        <if test="queryoverdueDaysString != null and !queryoverdueDaysString.equals('')">
+		    and COALESCE(pmo.overdueDays,0)  ${queryoverdueDaysString}
+	    </if>
+	    <if test="overCount != null and !overCount.equals('')">
+	   	    and  COALESCE(pmt.overCount,0)  = cast (#{overCount} as integer)
+        </if>
+	    <if test="loanStatus != null and loanStatus != ''">
+            and   loin.dict_loan_status = #{loanStatus}
+		</if>
+		<if test="tlCount != null and !tlCount.equals('')">
+	      and  pa.tl_Count  = cast(#{tlCount} as integer)
+        </if>
+	    <!-- 只发送当前还款日的数据-->
+	       AND  COALESCE(loin.model,'0') != '1'
+	       AND  pa.apply_pay_day <![CDATA[ <= ]]> now() 
+	     <!--   AND ((COALESCE(po.overdueDays,0)  <![CDATA[ < ]]> cast('120' as numeric) and COALESCE(lb.bank_signing_platform,pa.dict_deal_type) = '1') 
+	        or COALESCE(lb.bank_signing_platform,pa.dict_deal_type) != '1') -->
+	      <if test="failReasonText != null and !failReasonText.equals('')">
+		   AND  COALESCE(pa.fail_Reason,'')  like  '%${failReasonText}%'
+	     </if>
+	</select>
+	
+	<!-- 线下划扣查询要拆分的数据  -->
+	<select id="queryApplyList"   resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+	  select distinct pa.id,
+	   (pa.apply_deduct_amount - COALESCE(pa.apply_really_amount,0)) as applyAmount
+	   ,pa.bank_code as applyBankName,
+	   pa.CONTRACT_CODE as contractCode,
+       #{deductType} as dictDeductType,
+       lb.bank_account_name as bankAccountName,
+       lb.bank_account as bankAccount,
+       lb.bank_branch as bankBranch,
+       province.area_name as bankProvince,
+       city.area_name as bankCity,
+       lc.dict_cert_type as dictertType,
+       lc.customer_cert_num as customerCertNum,
+       lc.customer_phone_first as customerPhoneFirst,
+        pa.loan_customer_name AS customerName,
+        p.id as paybackId
+	   from  jk.t_jk_deducts_payback_apply pa left join jk.t_jk_payback p on p.contract_code = pa.contract_code
+	        left join jk.t_jk_contract con on con.contract_code = p.contract_code
+	        left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+	        left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and lb.bank_top_flag = '1' and lb.repayment_flag='1'
+	        left join jk.t_jk_loan_customer lc on lc.loan_code = con.loan_code
+	       <!--  left join jk.t_jk_payback_month pm  on  pm.id = pa.month_id -->
+	        left join jk.t_gl_province_city_cmb  province on lb.bank_province = province.id 
+            left join jk.t_gl_province_city_cmb  city on lb.bank_city = city.id 
+             left join (
+		      select contract_code, min(tt.months),
+		      COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) overdueDays,min(tt.month_pay_day) overday
+		      from jk.t_jk_payback_month tt where tt.dict_month_status = '1' group by tt.contract_code) pmo on pmo.contract_code = pa.contract_code
+		    left join (
+          select contract_code, sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+            from jk.t_jk_payback_month tt where tt.is_overdue = '1' group by tt.contract_code) pmt  on pmt.contract_code = pa.contract_code
+	    where 1=1
+	   	<if test="counteroffer != null and !counteroffer.equals('')">
+      		AND pa.dict_back_result in (${counteroffer})
+      	</if>
+		<if test="customerName != null and !customerName.equals('')">
+			AND lc.customer_name LIKE '%${customerName}%'
+
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND pa.contract_code = #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND lb.bank_signing_platform in 
+		    <foreach collection="dictDealType" item="item" open="(" separator="," close=")">
+		       #{item} 
+		    </foreach>
+		</if>
+		<if test="splitBackResult !=null and !splitBackResult.equals('')">
+			AND pa.dict_back_result = #{splitBackResult}
+		</if>
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.apply_deduct_amount <![CDATA[ >= ]]> cast(#{minsplitAmount} as numeric)
+		</if>
+
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+			AND pa.apply_deduct_amount <![CDATA[ <= ]]> cast(#{maxsplitAmount} as numeric)
+		</if>
+
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type = #{dictSourceType}
+		</if>
+
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag = #{mark}
+		</if>
+		
+		
+		 <if test="monthPayDay != null and !monthPayDay.equals('')">
+		   AND pa.payback_day in 
+		   	<foreach collection="monthPayDay" item="item" open="(" separator="," close=")">
+		       #{item}
+		    </foreach>
+	     </if>
+		
+		<if test=" storesId!= null and !storesId.equals('')">
+		   AND loin.loan_store_orgid in (${storesId})
+	    </if>
+	    <if test="bankId != null and !bankId.equals('')">
+		   AND lb.bank_name in (${bankId})
+	   </if>
+	   <if test="trustRecharge != null and !trustRecharge.equals('')">
+		   AND loin.trust_recharge = #{trustRecharge}
+	   </if>
+	  <!--  导出全部数据或者导出选择数据用 -->
+	   <if test="ids != null and !ids.equals('')">
+		   AND pa.id in 
+		   	<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	   </if>
+	    <if test="failReason != null and !failReason.equals('')">
+		  AND    ${failReason}
+	   </if>
+	   <if test="model != null and !model.equals('')">
+		   AND  COALESCE(loin.model,'0') != #{model}
+	   </if>
+	    <if test="tlSign != null and !tlSign.equals('')">
+          and  lb.tl_Sign  = #{tlSign}
+        </if>
+        <if test="klSign != null and klSign != ''">
+          and   lb.kl_Sign = #{klSign}
+		</if>
+		 <if test="cjSign != null and cjSign != ''">
+	        and   lb.cj_Sign = #{cjSign}
+	     </if>
+		<if test="realAuthen != null and realAuthen != ''">
+	         and   lb.real_Authen = #{realAuthen}
+		</if>
+        <if test="cpcnCount != null and !cpcnCount.equals('')">
+	    and  pa.cpcn_Count  = cast(#{cpcnCount} as integer)
+       </if>
+        <if test="loanStatus != null and loanStatus != ''">
+            and   loin.dict_loan_status = #{loanStatus}
+		</if>
+		 <if test="queryoverdueDaysString != null and !queryoverdueDaysString.equals('')">
+		     and COALESCE(pmo.overdueDays,0)  ${queryoverdueDaysString}
+	     </if>
+      	<if test="overCount != null and !overCount.equals('')">
+	    	 and  COALESCE(pmt.overCount,0)  = cast (#{overCount} as integer)
+    	  </if>
+    	 <if test="tlCount != null and !tlCount.equals('')">
+	      and  pa.tl_Count  = cast(#{tlCount} as integer)
+        </if>
+    	  <if test="failReasonText != null and !failReasonText.equals('')">
+		   AND  COALESCE(pa.fail_Reason,'')  like  '%${failReasonText}%'
+	     </if>
+	</select>
+	<!--集中划扣 导出 -->
+	<select id="ExportCenterSplit" resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+    select 
+    distinct
+       pa.id,
+       pa.contract_code as contractCode,
+       lc.customer_name as customerName,
+       lb.bank_name as bankName,
+       con.contract_months as contractMonths,
+       con.contract_replay_day as contractReplayDay,
+       ROUND(pa.apply_deduct_amount,2)  as splitAmount,
+       ROUND(p.payback_month_amount,2) as paybackMonthAmount,
+       p.dict_pay_status as dictPayStatus,
+       org.name as storesName,
+       loin.loan_flag as loanFlag,
+       loin.dict_loan_status as dictLoanStatus,
+       pm.month_pay_day as monthPayDay,
+       ROUND(COALESCE(p.payback_month_amount,0) - COALESCE(pm.month_capital_payactual,0) - 
+       COALESCE(pm.month_interest_payactual,0) -  COALESCE(pm.actual_month_fee_service,0),2) as currentNotYet,
+       ROUND(COALESCE(pm.month_capital_payactual,0) + COALESCE(pm.month_interest_payactual,0) +
+       COALESCE(pm.actual_month_fee_service,0),2) as currentAlreadyRepaid,
+       pa.dict_back_result as splitBackResult,
+       pa.trust_recharge_result as trustRechargeResult,
+       pa.trust_recharge_failure_reason as trustRechargeFailReason,
+       pa.fail_Reason as failReason,
+       lb.bank_signing_platform as  dictDealType,
+       loin.model,
+       ROUND(pa.apply_really_amount,2) as applyReallyAmount,
+       pmo.overdueDays,
+       COALESCE(pa.cpcn_count,0) as cpcnCount,
+       COALESCE(pa.tl_count,0) as tlCount,
+       COALESCE(lb.tl_sign,'0') as tlSign,
+       lb.bank_account as bankAccount,
+       pmt.overCount,
+      case when lb.kl_Sign ='0' then '未签约' when lb.kl_Sign ='1' then '已签约' else '签约失败' end  as  klSign,
+       case when lb.real_Authen ='0' then '否' when lb.kl_Sign ='1' then '是' else '认证中' end  as  realAuthen,
+       case when lb.cj_Sign ='0' then '未签约' when lb.cj_Sign ='1' then '已签约' else '签约失败' end  as  cjSign
+    from  jk.T_JK_DEDUCTS_PAYBACK_APPLY pa 
+     left join jk.t_jk_payback p  on p.contract_code = pa.contract_code
+     left join jk.t_jk_contract con on con.contract_code = p.contract_code
+     left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+     left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and lb.bank_top_flag = '1'  AND lb.repayment_flag='1'
+     left join jk.t_jk_loan_customer lc on lc.loan_code = con.loan_code
+     left join jk.t_jk_payback_month pm on  pm.id = pa.month_id
+     left join jk.t_gl_org org on loin.loan_store_orgid =  org.id
+      left join (
+      select contract_code, min(tt.months),
+      COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) overdueDays,min(tt.month_pay_day) overday
+     
+      from jk.t_jk_payback_month tt where tt.dict_month_status = '1' group by tt.contract_code) pmo  on pmo.contract_code = pa.contract_code
+      left join (
+          select contract_code, sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+            from jk.t_jk_payback_month tt where tt.is_overdue = '1' group by tt.contract_code) pmt  on pmt.contract_code = pa.contract_code
+    where 1=1 
+    	<if test="counteroffer != null and !counteroffer.equals('')">
+      		AND pa.dict_back_result in (${counteroffer})
+      	</if>
+		<if test="customerName != null and !customerName.equals('')">
+			AND lc .customer_name LIKE '%${customerName}%'
+
+		</if>
+		<if test="contractCode != null and !contractCode.equals('')">
+			AND pa.contract_code = #{contractCode}
+		</if>
+		<if test="dictDealType !=null and !dictDealType.equals('')">
+			AND lb.bank_signing_platform in 
+			<foreach collection="dictDealType" item="item" open="(" separator="," close=")">
+		       #{item} 
+		    </foreach>
+		</if>
+		<if test="splitBackResult !=null and !splitBackResult.equals('')">
+			AND pa.dict_back_result = #{splitBackResult}
+		</if>
+		<if test="minsplitAmount != null and !minsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &gt;= cast(#{minsplitAmount} as numeric)
+		</if>
+
+		<if test="maxsplitAmount!=null and !maxsplitAmount.equals('')">
+			AND pa.apply_deduct_amount &lt;= cast(#{maxsplitAmount} as numeric)
+		</if>
+
+		<if test="dictSourceType!= null and !dictSourceType.equals('')">
+			AND loin.dict_source_type = #{dictSourceType}
+		</if>
+
+		<if test="mark!= null and !mark.equals('')">
+			AND loin.loan_flag = #{mark}
+		</if>
+		
+		 <if test="monthPayDay != null and !monthPayDay.equals('')">
+		   AND pa.payback_day in 
+		   	<foreach collection="monthPayDay" item="item" open="(" separator="," close=")">
+		       #{item}
+		    </foreach>
+	     </if>
+		
+		<if test=" storesId!= null and !storesId.equals('')">
+		   AND loin.loan_store_orgid in (${storesId})
+	    </if>
+	    <if test="bankId != null and !bankId.equals('')">
+		   AND lb.bank_name in (${bankId})
+	   </if>
+	   <if test="trustRecharge != null and !trustRecharge.equals('')">
+		   AND loin.trust_recharge = #{trustRecharge}
+	   </if>
+	  <!--  导出全部数据或者导出选择数据用 -->
+	   <if test="ids != null and !ids.equals('')">
+		   AND pa.id in 
+		   	<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+			</foreach>
+	   </if>
+	    <if test="failReason != null and !failReason.equals('')">
+		  AND    ${failReason}
+	   </if>
+	   <if test="model != null and !model.equals('')">
+		  AND loin.model  = #{model}
+	   </if>
+      <if test="queryoverdueDaysString != null and !queryoverdueDaysString.equals('')">
+	     and COALESCE(pmo.overdueDays,0)  ${queryoverdueDaysString}
+     </if>
+      <if test="overCount != null and !overCount.equals('')">
+	     and  COALESCE(pmt.overCount,0)  = cast (#{overCount} as integer)
+      </if>
+      <if test="tlSign != null and !tlSign.equals('')">
+         and   lb.tl_Sign  = #{tlSign}
+      </if>
+      <if test="klSign != null and klSign != ''">
+          and   lb.kl_Sign = #{klSign}
+     </if>
+      <if test="cjSign != null and cjSign != ''">
+        and   lb.cj_Sign = #{cjSign}
+      </if>
+	 <if test="realAuthen != null and realAuthen != ''">
+         and   lb.real_Authen = #{realAuthen}
+	 </if>
+      <if test="cpcnCount != null and !cpcnCount.equals('')">
+         and  pa.cpcn_Count  = cast(#{cpcnCount} as integer)
+      </if>
+        <if test="tlCount != null and !tlCount.equals('')">
+	      and  pa.tl_Count  = cast(#{tlCount} as integer)
+        </if>
+      <if test="loanStatus != null and loanStatus != ''">
+            and   loin.dict_loan_status = #{loanStatus}
+	  </if>
+	  <if test="failReasonText != null and !failReasonText.equals('')">
+		   AND  COALESCE(pa.fail_Reason,'')  like  '%${failReasonText}%'
+	   </if>
+	</select>
+	
+	<!-- 导出富有 -->
+   <select id="getPaybackSplitList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackSplitFyEx">
+	   select 
+	      ps.id as id,
+         ps.remark  as enterpriseSerialno,
+         dic.label as bankName, 
+         lb.bank_account as bankAccount,
+         lb.bank_account_name as bankAccountName,
+         ROUND(ps.split_amount,2) as splitAmount,
+         lc.customer_phone_first as customerPhoneFirst,
+         lc.dict_cert_type as dictertType,
+         lc.customer_cert_num as customerCertNum,
+         lb.bank_name  as bankCode  
+	  from jk.t_jk_payback_split ps inner join jk.T_JK_DEDUCTS_PAYBACK_APPLY pa on ps.r_payback_apply_id = pa.id
+	  left join jk.t_jk_payback p on p.contract_code = pa.contract_code
+	  left join jk.t_jk_contract con on con.contract_code = p.contract_code
+	  left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+	  left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and  lb.bank_top_flag='1'  AND lb.repayment_flag='1'
+	  left join jk.t_jk_loan_customer lc on lc.loan_code = con.loan_code    
+	  left join (select * from t_gl_dict where type  = 'jk_open_bank') dic on dic.value = lb.bank_name      
+	 where   pa.id = #{id}  and ps.split_back_result !='2'  and ps.split_pch = #{splitPch}
+	</select>
+		<!-- 导出好易联 -->
+	<select id="getPaybackSplitListHyl" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackSplitHylExport">
+	  
+   select 
+         ps.id as id,
+         ps.remark as enterpriseSerialno,
+         lb.bank_name as bankCode, 
+         lb.bank_account as bankAccount,
+         lb.bank_account_name as bankAccountName,
+         ROUND(ps.split_amount*100,0) as splitAmount,
+         lc.customer_phone_first as customerPhoneFirst,
+         lc.dict_cert_type as dictertType,
+         lc.customer_cert_num as customerCertNum,
+         men.name  as bankProvince,
+         city.area_name as  bankCity,
+         lb.bank_branch as bankName
+  
+	  from jk.t_jk_payback_split ps inner join jk.T_JK_DEDUCTS_PAYBACK_APPLY pa on ps.r_payback_apply_id = pa.id
+	  left join jk.t_jk_payback p on p.contract_code = pa.contract_code
+	  left join jk.t_jk_contract con on con.contract_code = p.contract_code
+	  left join jk.t_jk_loan_info loin on loin.loan_code = con.loan_code
+	  left join jk.t_jk_loan_bank lb on loin.loan_code = lb.loan_code and  lb.bank_top_flag='1' and lb.repayment_flag='1'
+	  left join jk.t_jk_loan_customer lc on lc.loan_code = con.loan_code    
+          LEFT JOIN JK.t_gl_org men ON loin.loan_store_orgid = men.id
+      left join jk.t_gl_province_city_cmb  city on lb.bank_city = city.id  
+	 where     pa.id = #{id} and ps.split_back_result !='2' and ps.split_pch = #{splitPch}
+
+	</select>
+	<!-- 映射 -->
+	<resultMap type="com.creditharmony.loan.borrow.payback.entity.PaybackSplit" id="PaybackSplitList">
+		<id column="id" property="id" />
+		<result column="r_payback_apply_id" property="rId" />
+		<result column="split_amount" property="splitAmount" />
+		<result column="splitback_date" property="splitBackDate" />
+		<result column="dict_back_result" property="splitBackResult" />
+		<result column="split_fail_result" property="splitFailResult" />		
+		<result column="trust_recharge_result" property="trustRechargeResult" />
+		<result column="trust_recharge_failure_reason" property="trustRechargeFailReason" />
+		<result column="batch_flag" property="batchFlag" />
+		<result column="time_flag" property="timeFlag" />
+		<result column="r_list_id" property="rId" />
+		<result column="sumAmont" property="sumAmont" />
+		<result column="sumNumber" property="sumNumber" />
+		<result column="rPaybackId" property="rPaybackId" />
+		<association property="payback"
+			javaType="com.creditharmony.loan.borrow.payback.entity.Payback">
+			<id column="contract_code" property="contractCode" />
+			<result column="dict_pay_status" property="dictPayStatus" />
+			<result column="payback_day" property="paybackDay" />
+			<result column="payback_current_month" property="paybackCurrentMonth" />
+			<result column="payback_month_amount" property="paybackMonthAmount" />
+		</association>
+		<association property="contract"
+			javaType="com.creditharmony.loan.borrow.contract.entity.Contract">
+			<id column="contract_code" property="contractCode" />
+			<result column="contract_replay_day" property="contractReplayDay" />
+			<result column="contract_months" property="contractMonths" />
+		</association>
+		<association property="loanInfo"
+			javaType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+			<id column="loan_code" property="loanCode"></id>
+			<result column="dict_loan_status" property="dictLoanStatus"></result>
+			<result column="loan_team_orgid" property="loanTeamOrgId"></result>
+			<result column="trust_recharge" property="trustRecharge"></result>
+			<result column="loan_flag" property="loanFlag"></result>
+		</association>
+		<association property="loanCustomer"
+			javaType="com.creditharmony.loan.common.entity.LoanCustomer">
+			<id column="customer_code" property="customerCode"></id>
+			<result column="customer_name" property="customerName"></result>
+			<result column="customer_phone_first" property="customerPhoneFirst"></result>
+			<result column="trusteeship_no" property="trusteeshipNo"></result>
+		</association>
+		<association property="loanBank"
+			javaType="com.creditharmony.loan.common.entity.LoanBank">
+			<id column="loan_code" property="loanCode"></id>
+			<result column="bank_name" property="bankName"></result>
+			<result column="bank_branch" property="bankBranch"></result>
+		</association>
+
+		<association property="paybackMonth"
+			javaType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+			<id column="customer_code" property="contractCode"></id>
+			<result column="month_pay_day" property="monthPayDay"></result>
+			<result column="month_capital_payactual" property="monthCapitalPayactual"></result>
+			<result column="month_interest_payactual" property="monthInterestPayactual"></result>
+		</association>
+		<association property="org"
+			javaType="com.creditharmony.core.users.entity.Org">
+			<id column="org_name" property="name"></id>
+		</association>
+
+	</resultMap>
+
+	<!-- 修改划扣平台 -->
+	<update id="updatePlat">
+		update jk.t_jk_payback_split set dict_deal_type
+		=#{plat} where id=#{id}
+	</update>
+
+	<!-- 集中划扣已拆分列表中的批量退回 -->
+	<update id="backApply">
+		delete from  jk.t_jk_deducts_payback_apply 
+		where id=#{id}
+	</update>
+
+	<!-- 获取合同编号 -->
+	<select id="getContractCode" resultType="java.lang.String">
+		select contract_code
+		from jk.t_jk_payback_apply where id=#{id}
+	</select>
+
+	<!-- 更改还款主表中的还款状态为还款退回 -->
+	<update id="updateStatus">
+		update jk.T_JK_PAYBACK_LIST set 
+		STATUS= #{dictPaybackStatus},
+		return_reasion= #{applyBackMes},
+		modify_by = #{modifyBy},
+		modify_time = #{modifyTime}
+		where id = #{id}
+	</update>
+	
+	<!-- 更改待还款归档列表中的还款状态为还款退回 -->
+	<update id="updateHisStatus">
+		update jk.t_jk_payback_list_his set 
+		split_back_result= #{dictPaybackStatus},
+		return_reasion= #{applyBackMes},
+		modify_by = #{modifyBy},
+		modify_time = #{modifyTime}
+		where id = #{id}
+	</update>
+	
+	<!--将申请表置为 划扣中 （线上）-->
+	<update id="updatePaybackStatus"  parameterType="java.util.List">
+		 <foreach collection="list" item="item" index="index" open="" close="" separator=";" >
+		   update jk.T_JK_PAYBACK_APPLY 
+		   set dict_back_result='3'
+		   where id = #{item.batId}
+	      </foreach>
+
+	</update>
+	
+	<!--将申请表置为 划扣中 （线下）-->
+	<update id="updateApplyStatusSigle">
+		   update jk.T_JK_DEDUCTS_PAYBACK_APPLY 
+		   set dict_back_result=#{splitBackResult},
+		   modify_by = #{modifyBy},
+		   modify_time = #{modifyTime},
+		   splitpch = #{splitPch}
+		   where id = #{id}
+	</update>
+
+	<!-- 修改委托充值 -->
+	<update id="updateTrustRecharge" parameterType="com.creditharmony.loan.borrow.payback.entity.ex.TrusteeImportEx">
+		update jk.t_jk_deducts_payback_apply   
+		<trim prefix="SET" suffixOverrides=",">
+		 <if test="returnCode != null and returnCode != ''"> 
+		 	trust_recharge_result = #{returnCode},
+		 </if>
+		 <if test="returnMsg != null"> 
+		 	trust_recharge_failure_reason = #{returnMsg},
+		 </if>		 
+		 </trim>
+		where id = #{paybackApplyId} 
+			and contract_code = #{contractCode} 
+			<if test="trustAmount != null and trustAmount != ''"> 
+				and apply_deduct_amount  = cast (#{trustAmount}  as numeric)
+			</if>
+			and ( dict_back_result = '0' or  dict_back_result = '' or dict_back_result is null
+					or  dict_back_result = '3' or  dict_back_result = '4')
+	</update>
+	
+	<!-- 根据还款拆分ID,获取该借款人的账户ID -->
+	<select id="getPaybackDeducts" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackDeducts">
+		select a.id as
+		rId2,d.id as rId,d.split_amount as
+		deductAmount,c.contract_code as
+		contractCode from jk.t_jk_loan_bank a
+		,jk.t_jk_contract
+		b,jk.t_jk_payback_apply c,jk.t_jk_payback_split d
+		where
+		a.loan_code=b.loan_code and c.contract_code=b.contract_code and
+		c.id=d.r_payback_apply_id and d.id=#{id}
+		and a.bank_top_flag='1' limit 1
+	</select>
+	<!-- 根据还款申请id,查询还款主表ID -->
+	<select id="getMainId" resultType="java.lang.String">
+		select b.id from
+		jk.t_jk_payback b,jk.t_jk_payback_apply a
+		where a.contract_code
+		=b.contract_code and a.id=#{id}
+	</select>
+	<!-- 读取还款操作流水表中的记录 -->
+	<select id="getAllHirstory" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+		select * from
+		jk.t_jk_payback_ope where r_payback_id =#{mainId}
+	</select>
+	<!--查询 拆分表 用来保存 划扣表 -->
+	<select id="queryPaybackDeductsBean" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackDeducts">
+		select
+		a.id as rId,--还款拆分表,
+		f.id as rId2,--关联ID2(账户表)
+		c.CONTRACT_CODE as
+		contractCode, --合同编号
+		a.SPLIT_AMOUNT as deductAmount, -- 划扣 金额
+		a.DICT_R_DEDUCT_TYPE as dictRDeductType --关联类型
+		from t_jk_payback_split
+		a left join jk.t_jk_payback_apply b on
+		a.r_payback_apply_id = b.id
+		left
+		join jk.t_jk_payback c on b.contract_code = c.contract_code
+		left join
+		jk.t_jk_contract d on c.contract_code = d.contract_code
+		left join
+		jk.t_jk_loan_info e on e.loan_code = d.loan_code
+		left join
+		jk.t_jk_loan_bank f on e.loan_code = f.loan_code and
+		f.bank_top_flag =
+		<include refid="topflag"></include>
+		where
+		<!-- f.bank_top_flag ='1' and -->
+		1=1
+		<if test="id != null">
+			AND a.id in( #{id} )
+		</if>
+		<if test="splitPch != null">
+			AND a.R_PAYBACK_APPLY_ID = #{splitPch}
+		</if>
+		<if test="enterpriseSerialno != null">
+			AND a.remark = #{enterpriseSerialno}
+		</if>
+	</select>
+	<insert id="addPaybackDeducts" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackDeducts">
+
+		INSERT INTO
+		T_JK_PAYBACK_DEDUCTS(
+		id,
+		R_SPLIT_URGE_ID,
+		R_BANK_ID,
+		CONTRACT_CODE,
+		DEDUCT_AMOUNT,
+		DICT_R_DEDUCT_TYPE,
+		DEDUCT_ONLINETIME,
+		DICT_DECUCT_FLAG,
+		DICT_DEDUCTS_TYPE,
+		DECUCT_TIME,
+		DECUCT_USER_CODE,
+		DICT_BACK_RESULT,
+		DECUCT_FAIL_RESULT,
+		DICT_DEDUCT_STATUS,
+		CREATE_BY,
+		CREATE_TIME
+		)
+		VALUES
+		(
+		#{id},
+		#{rId},
+		#{rId2},
+		#{contractCode},
+		#{deductAmount},
+		#{dictRDeductType},
+		#{deductOnlinetime},
+		#{dictDecuctFlag},
+		#{dictDeductsType},
+		#{decuctTime},
+		#{decuctUser},
+		#{dictBackResult},
+		#{decuctFailResult},
+		#{dictDeductStatus},
+		#{createBy},
+		#{createTime}
+		)
+	</insert>
+	<insert id="batchInsertSplitData" parameterType="java.util.List">
+		INSERT INTO t_jk_payback_split(
+		id,
+		r_payback_apply_id,
+		split_pch,
+		dict_r_deduct_type,
+		split_amount,
+		split_back_result,
+		splitback_date,
+		split_fail_result,
+		batch_flag,
+		dict_deal_type,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time,
+		enterprise_serialno,
+		loan_code,
+		payback_flag,
+		remark
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.id },
+			#{item.rId },
+			#{item.splitPch },
+			#{item.dictRDeductType},
+			#{item.applyDeductAmount},
+			#{item.splitBackResult },
+			#{item.splitBackDate },
+			#{item.splitFailResult },
+			#{item.batchFlag },
+			#{item.dictDealType },
+			#{item.createBy },
+			#{item.createTime },
+			#{item.modifyBy },
+			#{item.modifyTime },
+			#{item.enterpriseSerialno
+			},
+			#{item.loanCode },
+			#{item.paybackFlag },
+			#{item.remark}
+			)
+		</foreach>
+	</insert>
+	<insert id="insert" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+		INSERT INTO
+		T_JK_PAYBACK_SPLIT(
+		id,
+		R_PAYBACK_APPLY_ID,
+		split_pch,
+		dict_r_deduct_type,
+		split_amount,
+		split_back_result,
+		splitback_date,
+		split_fail_result,
+		batch_flag,
+		dict_deal_type,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time
+		)
+		VALUES
+		(
+		#{id },
+		#{rId },
+		#{splitPch },
+		#{dictRDeductType},
+		#{applyDeductAmount},
+		#{splitBackResult },
+		#{splitBackDate },
+		#{splitFailResult },
+		#{batchFlag },
+		#{dictDealType },
+		#{createBy },
+		#{createTime },
+		#{modifyBy },
+		#{modifyTime }
+		)
+	</insert>
+	<!-- 更新回盘结果，回盘时间 -->
+	<update id="updateSplitLineStatus">
+		update jk.t_jk_payback_split
+		set     SPLIT_BACK_RESULT= #{splitBackResult}
+		       ,SPLITBACK_DATE = #{splitBackDate}
+		       ,split_amount = #{splitAmount}
+		       ,modify_by = #{modifyBy}
+		       ,modify_time= #{modifyTime}
+		       <if test="splitFailResult != null and !splitFailResult.equals('')">
+				,split_fail_result = #{splitFailResult}
+			   </if>
+		where
+		id = #{id}
+	</update>
+	<!-- 集中划扣拆分回盘结果start -->
+	<insert id="batchInsertDeductSplit" parameterType="java.util.List">
+		INSERT INTO t_jk_payback_split(
+		id,
+		r_payback_apply_id,
+		split_pch,
+		dict_r_deduct_type,
+		split_amount,
+		split_back_result,
+		splitback_date,
+		split_fail_result,
+		batch_flag,
+		dict_deal_type,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time,
+		enterprise_serialno,
+		loan_code,
+		payback_flag,
+		remark
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.id },
+			#{item.paybackApplyId },
+			#{item.splitPch },
+			#{item.deductType},
+			#{item.splitAmount},
+			#{item.splitBackResult },
+			#{item.splitBackDate },
+			#{item.splitFailResult },
+			#{item.batchFlag },
+			#{item.dealType },
+			#{item.createBy },
+			#{item.createTime },
+			#{item.modifyBy },
+			#{item.modifyTime },
+			#{item.enterpriseSerialno },
+			#{item.loanCode },
+			#{item.paybackFlag },
+			#{item.remark}
+			)
+		</foreach>
+	</insert>
+	<!-- 集中划扣拆分回盘结果end -->
+	
+	<select id="queryPaybackSplit" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+	   select id from t_jk_deducts_payback_apply where id =#{id} and cast (extract(epoch from modify_time) as varchar) = #{verTime}
+	</select>
+	
+	<!-- 查询数据是否被更新 -->
+	<select id="querySplitByno" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+	  select id,r_payback_apply_id as rId2 from jk.t_jk_payback_split where  remark = #{id} and  split_back_result != #{counteroffer}
+	</select>
+	<!-- 线下导出更新蓝补 -->
+	<update id="updatePaybackBlue">
+	 update  jk.t_jk_payback  set
+	    modify_by = #{modifyBy},
+		modify_time = #{modifyTime},
+		payback_bule_amount = (COALESCE(payback_bule_amount,0) + COALESCE(#{splitAmount},0)) 
+		where contract_code = (select contract_code from t_jk_deducts_payback_apply where id = #{rId2})
+	</update>
+	<select id="queryPaybackApply" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+	  select a.id,ROUND(a.apply_deduct_amount,2) as applyDeductAmount,ROUND(a.apply_really_amount,2) as applyReallyAmount,
+	  b.id as paybackId,a.contract_code as contractCode,a.month_id as monthId,b.payback_bule_amount as paybackBuleAmount
+	  from jk.t_jk_deducts_payback_apply a
+	   left join jk.t_jk_payback b on a.contract_code = b.contract_code
+	   where 
+	   a.id = (select r_payback_apply_id from jk.t_jk_payback_split where id =  #{id})
+	</select>
+	<!-- 更新申请状态 -->
+	<update id="updatePaybackApply">
+	 update  jk.t_jk_deducts_payback_apply set apply_really_amount = COALESCE(apply_really_amount,0) + COALESCE(#{applyReallyAmount},0),
+	    modify_by = #{modifyBy},
+		modify_time = #{modifyTime},
+		dict_Deal_Type = #{dictDealType},
+		<if test="failReason != null and !failReason.equals('')">
+		fail_reason = #{failReason},
+	    </if>
+	 dict_back_result = #{splitBackResult} where id = #{id} 
+	</update>
+	
+	<!-- 获取中金导出列表-->
+   <select id="getDeductPaybackListZj" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackSplitZjEx">
+    select 
+      distinct
+      ps.enterprise_serialno as enterpriseSerialno, 
+      ROUND(ps.split_amount,2) as splitAmount,
+      lb.bank_name as bankName, 
+      
+      lb.bank_account_name as bankAccountName,
+      lb.bank_account as bankAccount,
+      lb.bank_branch as bankBranch,
+      province.area_name as bankProvince,
+      city.area_name as bankCity,
+      ps.remark,
+      lc.dict_cert_type as dictertType,
+      lc.customer_cert_num as customerCertNum,
+      lc.customer_phone_first as customerPhoneFirst,
+      lc.customer_email as mailbox
+      
+	  from  jk.t_jk_deducts_payback_apply pa  inner join jk.t_jk_payback_split ps on ps.r_payback_apply_id = pa.id
+	  left join jk.t_jk_payback pb on pb.contract_code = pa.contract_code
+	  left join jk.t_jk_contract c on c.contract_code = pb.contract_code
+	  left join jk.t_jk_loan_info li on li.loan_code = c.loan_code
+	  left join jk.t_jk_loan_bank lb on li.loan_code = lb.loan_code and  lb.bank_top_flag='1' and lb.repayment_flag='1'
+	  left join jk.t_jk_loan_customer lc on lc.loan_code = c.loan_code     
+      left join jk.t_gl_province_city_cmb  province on lb.bank_province = province.id 
+      left join jk.t_gl_province_city_cmb  city on lb.bank_city = city.id 
+	  where   pa.id = #{id} and ps.split_back_result !='2' and ps.split_pch = #{splitPch}
+	</select>
+	
+	<!-- 获取通联导出列表-->
+   <select id="getDeductPaybackListTl" resultType="com.creditharmony.loan.borrow.payback.entity.ex.PaybackSplitTlEx">
+    select 
+      distinct
+      ps.enterprise_serialno as enterpriseSerialno, 
+      ROUND(ps.split_amount*100,0) as splitAmount,
+      lb.bank_name as bankName, 
+      lb.bank_name as backCode, 
+      lb.bank_account_name as bankAccountName,
+      lb.bank_account as bankAccount,
+      lb.bank_branch as bankBranch,
+      province.area_name as bankProvince,
+      city.area_name as bankCity,
+      ps.remark,
+      lc.dict_cert_type as dictertType,
+      lc.customer_cert_num as customerCertNum,
+      lc.customer_phone_first as customerPhoneFirst
+	  from  jk.t_jk_deducts_payback_apply pa  inner join jk.t_jk_payback_split ps on ps.r_payback_apply_id = pa.id
+	  left join jk.t_jk_payback pb on pb.contract_code = pa.contract_code
+	  left join jk.t_jk_contract c on c.contract_code = pb.contract_code
+	  left join jk.t_jk_loan_info li on li.loan_code = c.loan_code
+	  left join jk.t_jk_loan_bank lb on li.loan_code = lb.loan_code and  lb.bank_top_flag='1' and lb.repayment_flag='1'
+	  left join jk.t_jk_loan_customer lc on lc.loan_code = c.loan_code     
+      left join jk.t_gl_province_city_cmb  province on lb.bank_province = province.id 
+      left join jk.t_gl_province_city_cmb  city on lb.bank_city = city.id 
+	  where   pa.id = #{id} and ps.split_back_result !='2' and ps.split_pch = #{splitPch}
+	</select>
+	
+	<select id="getSystemSetting" parameterType="com.creditharmony.loan.common.entity.SystemSetting" resultType="com.creditharmony.loan.common.entity.SystemSetting">
+	  select 
+	     a.id as id
+		,a.sys_flag as sysFlag
+		,a.sys_name as sysName
+		,a.sys_value as sysValue from jk.t_jk_system_setting  a
+		where 1=1
+		<if test="id != null and id != ''">
+			and a.id=#{id}
+		</if>
+		<if test="sysFlag != null and sysFlag != ''">
+			and a.sys_flag=#{sysFlag}
+		</if>
+		<if test="sysValue != null and sysValue != ''">
+			and a.sys_value=#{sysValue}
+		</if>
+	</select>
+	
+	<!-- 为该条数据加锁-->
+	<select id="getApply"  resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+	   select id from  jk.t_jk_deducts_payback_apply where id = #{batId} and  cast (extract(epoch from modify_time) as varchar) = #{verTime}
+	   and dict_back_result = #{status} for update
+	</select>
+	
+	<!-- 查询逾期天数-->
+	<select id="queryOverdueDays"  resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+	  select COALESCE((date_part('day',  now()::date - min(tt.month_pay_day)::date )+1),0) as overdueDays
+	   from (
+	       select months,contract_code,month_pay_day,is_overdue from jk.t_jk_payback_month where dict_month_status ='1' and contract_code = #{contractCode}
+	        ) tt
+	</select>
+	
+  <!-- 查询逾期次数-->
+	<select id="queryOverdueCount"  resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackSplit">
+	    select sum(cast (COALESCE(tt.is_overdue,'0','1') as integer)) overCount
+	   from (
+	       select contract_code,is_overdue from jk.t_jk_payback_month where is_overdue ='1' and contract_code = #{contractCode}
+	        ) tt
+	</select>
+   <select id ="queryPaybackMonth" resultType = "com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+       select 
+       pm.month_pay_day ,
+       pm.month_capital_payactual ,
+       pm.month_interest_payactual ,
+       pm.actual_month_fee_service,
+       pm.months
+       from jk.t_jk_payback_month pm where pm.id = #{id}
+   
+   </select>
+</mapper>
+	

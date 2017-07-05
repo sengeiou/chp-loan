@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanHouseDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanHouse">
+    <id column="id"  property="id" />
+    <result column="r_customer_coborrower_id"  property="rcustomerCoborrowerId" />
+    <result column="loan_customter_type"  property="loanCustomterType" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="house_province"  property="houseProvince" />
+    <result column="house_city"  property="houseCity" />
+    <result column="house_area"  property="houseArea" />
+    <result column="house_address"  property="houseAddress" />
+    <result column="house_create_day" property="houseCreateDay"/>
+    <result column="house_buyway"  property="houseBuyway" />
+    <result column="house_buyday"  property="houseBuyday" />
+    <result column="house_property_right" property="housePropertyRight"/>
+    <result column="dict_house_common" property="dictHouseCommon"/>
+    <result column="house_property_relation" property="housePropertyRelation"/>
+    <result column="house_pledge_mark" property="housePledgeMark"/>
+    <result column="house_pledge_flag" property="housePledgeFlag"/>
+    <result column="property_get_day"  property="propertyGetDay" />
+    <result column="house_builing_area"  property="houseBuilingArea" />
+    <result column="dict_house_bank"  property="dictHouseBank" />
+    <result column="house_loan_amount"  property="houseLoanAmount" />
+    <result column="house_loan_year"  property="houseLoanYear" />
+    <result column="house_amount"  property="houseAmount" />
+    <result column="house_less_amount"  property="houseLessAmount" />
+    <result column="house_month_repay_amount"  property="houseMonthRepayAmount" />
+    <result column="house_base_info"  property="houseBaseInfo" />
+    <result column="dict_house_type"  property="dictHouseType" />
+    <result column="dict_house_type_remark"  property="dictHouseTypeRemark" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id,r_customer_coborrower_id, loan_customter_type, loan_code, house_province, house_city, house_area, 
+    house_address,house_create_day,house_buyway,house_buyday,house_property_right,dict_house_common,
+    house_property_relation,house_pledge_mark,house_pledge_flag,property_get_day,house_builing_area,
+    dict_house_bank,house_loan_amount,house_loan_year,house_amount,house_less_amount,house_month_repay_amount,
+    house_base_info,dict_house_type,dict_house_type_remark,create_by,create_time,modify_by,modify_time
+  </sql>
+ 
+  
+  <select id="findListByLoanCode"  resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_loan_house
+    where loan_code = #{0} and loan_customter_type = #{1} order by create_time
+  </select>
+  <insert id="insert">
+    insert into jk.t_jk_loan_house(
+     <include refid="Base_Column_List"/>
+    )values(
+      #{id,jdbcType=VARCHAR},#{rcustomerCoborrowerId,jdbcType=VARCHAR},#{loanCustomterType,jdbcType=VARCHAR},
+      #{loanCode,jdbcType=VARCHAR},#{houseProvince,jdbcType=VARCHAR},#{houseCity,jdbcType=VARCHAR},#{houseArea,jdbcType=NUMERIC},
+      #{houseAddress,jdbcType=VARCHAR},#{houseCreateDay,jdbcType=TIMESTAMP},#{houseBuyway,jdbcType=VARCHAR},
+      #{houseBuyday,jdbcType=TIMESTAMP},#{housePropertyRight,jdbcType=VARCHAR},#{dictHouseCommon,jdbcType=VARCHAR},
+      #{housePropertyRelation,jdbcType=VARCHAR},#{housePledgeMark,jdbcType=VARCHAR},#{housePledgeFlag,jdbcType=VARCHAR},
+      #{propertyGetDay,jdbcType=TIMESTAMP},#{houseBuilingArea,jdbcType=NUMERIC},#{dictHouseBank,jdbcType=VARCHAR},
+      #{houseLoanAmount,jdbcType=NUMERIC},#{houseLoanYear,jdbcType=NUMERIC},#{houseAmount,jdbcType=NUMERIC},
+      #{houseLessAmount,jdbcType=NUMERIC},#{houseMonthRepayAmount,jdbcType=NUMERIC},
+      #{houseBaseInfo,jdbcType=VARCHAR},#{dictHouseType,jdbcType=VARCHAR},#{dictHouseTypeRemark,jdbcType=VARCHAR},#{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP},#{modifyBy,jdbcType=VARCHAR},#{modifyTime,jdbcType=TIMESTAMP}     
+    ) 
+</insert>
+<update id="update">
+ update jk.t_jk_loan_house
+    <set>
+      <if test="rcustomerCoborrowerId != null">
+        r_customer_coborrower_id = #{rcustomerCoborrowerId,jdbcType=NUMERIC},
+      </if>
+      <if test="loanCustomterType != null">
+        loan_customter_type = #{loanCustomterType,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="houseProvince != null">
+        house_province = #{houseProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="houseCity != null">
+        house_city = #{houseCity,jdbcType=VARCHAR},
+      </if>
+      <if test="houseArea != null">
+        house_area = #{houseArea,jdbcType=VARCHAR},
+      </if>
+      <if test="houseAddress != null">
+        house_address = #{houseAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="houseCreateDay != null">
+        house_create_day = #{houseCreateDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="houseBuyway != null">
+        house_buyway = #{houseBuyway,jdbcType=VARCHAR},
+      </if>
+      <if test="houseBuyday != null">
+        house_buyday = #{houseBuyday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="housePropertyRight != null">
+        house_property_right = #{housePropertyRight,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dictHouseCommon != null">
+        dict_house_common = #{dictHouseCommon,jdbcType=VARCHAR},
+      </if>
+      <if test="housePropertyRelation != null">
+        house_property_relation = #{housePropertyRelation,jdbcType=VARCHAR},
+      </if>
+      <if test="housePledgeMark != null">
+        house_pledge_mark = #{housePledgeMark,jdbcType=NUMERIC},
+      </if>
+      <if test="housePledgeFlag != null">
+        house_pledge_flag = #{housePledgeFlag,jdbcType=NUMERIC},
+      </if>
+       <if test="propertyGetDay != null">
+        property_get_day = #{propertyGetDay,jdbcType=TIMESTAMP},
+      </if>
+       <if test="houseBuilingArea != null">
+        house_builing_area = #{houseBuilingArea,jdbcType=NUMERIC},
+      </if>
+      <if test="dictHouseBank != null">
+        dict_house_bank = #{dictHouseBank,jdbcType=NUMERIC},
+      </if>
+      
+      <if test="houseLoanAmount != null">
+        house_loan_amount = #{houseLoanAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="houseLoanYear != null">
+        house_loan_year = #{houseLoanYear,jdbcType=NUMERIC},
+      </if>
+      <if test="houseAmount != null">
+        house_amount = #{houseAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="houseLessAmount != null">
+        house_less_amount = #{houseLessAmount,jdbcType=NUMERIC},
+      </if>
+       <if test="houseMonthRepayAmount != null">
+        house_month_repay_amount = #{houseMonthRepayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="houseBaseInfo != null">
+        house_base_info = #{houseBaseInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="dictHouseType != null">
+        dict_house_type = #{dictHouseType,jdbcType=VARCHAR},
+      </if>
+      <if test="dictHouseTypeRemark != null">
+        dict_house_type_remark = #{dictHouseTypeRemark,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=NUMERIC}
+</update>
+<delete id="deleteByCondition" parameterType="map">
+     delete from jk.t_jk_loan_house 
+     where id = #{id,jdbcType=VARCHAR} 
+  </delete>
+</mapper>

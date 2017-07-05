@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarCustomerBaseDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarCustomerBase" >
+    <id column="customer_code" property="customerCode" jdbcType="VARCHAR" />
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="customer_name" property="customerName" jdbcType="VARCHAR" />
+    <result column="customer_sex" property="customerSex" jdbcType="VARCHAR" />
+    <result column="customer_birthday" property="customerBirthday" jdbcType="DATE" />
+    <result column="dict_cert_type" property="dictCertType" jdbcType="VARCHAR" />
+    <result column="customer_cert_num" property="customerCertNum" jdbcType="VARCHAR" />
+    <result column="customer_cert_org" property="customerCertOrg" jdbcType="VARCHAR" />
+    <result column="id_start_day" property="idStartDay" jdbcType="DATE" />
+    <result column="id_end_day" property="idEndDay" jdbcType="DATE" />
+    <result column="customer_mobile_phone" property="customerMobilePhone" jdbcType="VARCHAR" />
+    <result column="dict_comp_industry" property="dictCompIndustry" jdbcType="VARCHAR" />
+    <result column="customer_name_ocr" property="customerNameOcr" jdbcType="VARCHAR" />
+    <result column="customer_cret_ocr" property="customerCretOcr" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="area_no" property="areaNo" jdbcType="VARCHAR" />
+    <result column="telephone_no" property="telephoneNo" jdbcType="VARCHAR" />
+    <result column="customer_code_old" property="customerCodeOld" jdbcType="VARCHAR" />
+    <result column="is_telephone_modify" property="isTelephoneModify" jdbcType="VARCHAR" />
+    <result column="is_email_modify" property="isEmailModify" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    customer_code, id, customer_name, customer_sex, customer_birthday, dict_cert_type, 
+    customer_cert_num, customer_cert_org, id_start_day, id_end_day, customer_mobile_phone, 
+    dict_comp_industry, customer_name_ocr, customer_cret_ocr, create_by, create_time, 
+    modify_by, modify_time, area_no, telephone_no, customer_code_old, is_telephone_modify,is_email_modify
+  </sql>
+  <select id="selectByCustomerCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_jk_customer_base
+    where customer_code = #{customerCode,jdbcType=VARCHAR}
+  </select>
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_jk_customer_base
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="delete" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBase" >
+    delete from t_jk_customer_base
+    where customer_code = #{customerCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertCarCustomerBase" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBase" >
+    insert into t_jk_customer_base (customer_code, id, customer_name, 
+      customer_sex, customer_birthday, dict_cert_type, 
+      customer_cert_num, customer_cert_org, id_start_day, 
+      id_end_day, customer_mobile_phone, dict_comp_industry, 
+      customer_name_ocr, customer_cret_ocr, create_by, 
+      create_time, modify_by, modify_time, 
+      area_no, telephone_no, customer_code_old, is_telephone_modify,is_email_modify
+      )
+    values (#{customerCode,jdbcType=VARCHAR}, #{id,jdbcType=VARCHAR}, #{customerName,jdbcType=VARCHAR}, 
+      #{customerSex,jdbcType=VARCHAR}, #{customerBirthday,jdbcType=DATE}, #{dictCertType,jdbcType=VARCHAR}, 
+      #{customerCertNum,jdbcType=VARCHAR}, #{customerCertOrg,jdbcType=VARCHAR}, #{idStartDay,jdbcType=DATE}, 
+      #{idEndDay,jdbcType=DATE}, #{customerMobilePhoneEnc,jdbcType=VARCHAR}, #{dictCompIndustry,jdbcType=VARCHAR},
+      #{customerNameOcr,jdbcType=VARCHAR}, #{customerCretOcr,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, 
+      #{areaNo,jdbcType=VARCHAR}, #{telephoneNo,jdbcType=VARCHAR}, #{customerCodeOld,jdbcType=VARCHAR}, 
+      #{isTelephoneModify,jdbcType=VARCHAR},#{isEmailModify,jdbcType=VARCHAR}
+      )
+  </insert>
+  
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBase" >
+    update t_jk_customer_base
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="customerName != null" >
+        customer_name = #{customerName,jdbcType=VARCHAR},
+      </if>
+      <if test="customerSex != null" >
+        customer_sex = #{customerSex,jdbcType=VARCHAR},
+      </if>
+      <if test="customerBirthday != null" >
+        customer_birthday = #{customerBirthday,jdbcType=DATE},
+      </if>
+      <if test="dictCertType != null" >
+        dict_cert_type = #{dictCertType,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertNum != null" >
+        customer_cert_num = #{customerCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertOrg != null" >
+        customer_cert_org = #{customerCertOrg,jdbcType=VARCHAR},
+      </if>
+      <if test="idStartDay != null" >
+        id_start_day = #{idStartDay,jdbcType=DATE},
+      </if>
+      <if test="idEndDay != null" >
+        id_end_day = #{idEndDay,jdbcType=DATE},
+      </if>
+      <if test="customerMobilePhone != null" >
+        customer_mobile_phone = #{customerMobilePhoneEnc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCompIndustry != null" >
+        dict_comp_industry = #{dictCompIndustry,jdbcType=VARCHAR},
+      </if>
+      <if test="customerNameOcr != null" >
+        customer_name_ocr = #{customerNameOcr,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCretOcr != null" >
+        customer_cret_ocr = #{customerCretOcr,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="areaNo != null" >
+        area_no = #{areaNo,jdbcType=VARCHAR},
+      </if>
+      <if test="telephoneNo != null" >
+        telephone_no = #{telephoneNo,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCodeOld != null" >
+        customer_code_old = #{customerCodeOld,jdbcType=VARCHAR},
+      </if>
+      <if test="isTelephoneModify != null" >
+        is_telephone_modify = #{isTelephoneModify,jdbcType=VARCHAR},
+      </if>
+      <if test="isEmailModify != null" >
+        is_email_modify = #{isEmailModify,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where customer_code = #{customerCode,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateById" parameterType="com.creditharmony.loan.car.common.entity.CarCustomerBase" >
+    update t_jk_customer_base
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCode != null" >
+        customer_code = #{customerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="customerName != null" >
+        customer_name = #{customerName,jdbcType=VARCHAR},
+      </if>
+      <if test="customerSex != null" >
+        customer_sex = #{customerSex,jdbcType=VARCHAR},
+      </if>
+      <if test="customerBirthday != null" >
+        customer_birthday = #{customerBirthday,jdbcType=DATE},
+      </if>
+      <if test="dictCertType != null" >
+        dict_cert_type = #{dictCertType,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertNum != null" >
+        customer_cert_num = #{customerCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertOrg != null" >
+        customer_cert_org = #{customerCertOrg,jdbcType=VARCHAR},
+      </if>
+      <if test="idStartDay != null" >
+        id_start_day = #{idStartDay,jdbcType=DATE},
+      </if>
+      <if test="idEndDay != null" >
+        id_end_day = #{idEndDay,jdbcType=DATE},
+      </if>
+      <if test="customerMobilePhone != null" >
+        customer_mobile_phone = #{customerMobilePhoneEnc,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCompIndustry != null" >
+        dict_comp_industry = #{dictCompIndustry,jdbcType=VARCHAR},
+      </if>
+      <if test="customerNameOcr != null" >
+        customer_name_ocr = #{customerNameOcr,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCretOcr != null" >
+        customer_cret_ocr = #{customerCretOcr,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="areaNo != null" >
+        area_no = #{areaNo,jdbcType=VARCHAR},
+      </if>
+      <if test="telephoneNo != null" >
+        telephone_no = #{telephoneNo,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCodeOld != null" >
+        customer_code_old = #{customerCodeOld,jdbcType=VARCHAR},
+      </if>
+      <if test="isTelephoneModify != null" >
+        is_telephone_modify = #{isTelephoneModify,jdbcType=VARCHAR},
+      </if>
+      <if test="isEmailModify != null" >
+        is_email_modify = #{isEmailModify,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

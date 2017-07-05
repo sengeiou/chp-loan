@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanInfoCoborrowerDao">
+  	<resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfoCoborrower">
+	    <id column="id"  property="id" />
+	    <result column="rid"  property="rid" />
+	    <result column="loan_code"  property="loanCode" />
+	    <result column="product_type"  property="productType" />
+	    <result column="loan_apply_amount"  property="loanApplyAmount" />
+	    <result column="loan_months"  property="loanMonths" />
+	    <result column="borrowing_purposes"  property="borrowingPurposes" />
+	    <result column="borrowing_purposes_remark"  property="borrowingPurposesRemark" />
+	    <result column="high_payback_month_money"  property="highPaybackMonthMoney" />
+	    <result column="main_payback_resource"  property="mainPaybackResource" />
+	    <result column="main_payback_resource_remark"  property="mainPaybackResourceRemark" />
+	    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    	<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    	<result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    	<result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+	    <result column="remarks"  property="remarks" />
+  	</resultMap>
+  	<sql id="Base_Column_List">
+    	id,
+    	rid,
+    	loan_code,
+    	product_type,
+    	loan_apply_amount,
+    	loan_months,
+    	borrowing_purposes,
+    	borrowing_purposes_remark,
+    	high_payback_month_money,
+    	main_payback_resource,
+    	main_payback_resource_remark,
+    	create_by,
+    	create_time,
+    	modify_by,
+    	modify_time,
+    	remarks
+  	</sql>
+  	<select id="queryLoanInfoCoborrowerByRid" resultMap="BaseResultMap" parameterType="Map">
+   		select 
+    	<include refid="Base_Column_List" />
+    	from jk.t_jk_loan_info_coborrower
+   		where rid = #{relateId, jdbcType=VARCHAR}
+  	</select>
+  	<insert id="insert">
+     	insert into jk.t_jk_loan_info_coborrower(
+       		<include refid="Base_Column_List"/>
+     	)values(
+       		#{id,jdbcType=VARCHAR},
+       		#{rid,jdbcType=VARCHAR},
+       		#{loanCode,jdbcType=VARCHAR},
+       		#{productType,jdbcType=VARCHAR},
+       		#{loanApplyAmount,jdbcType=NUMERIC},
+       		#{loanMonths,jdbcType=INTEGER},
+       		#{borrowingPurposes,jdbcType=VARCHAR},
+       		#{borrowingPurposesRemark,jdbcType=VARCHAR},
+       		#{highPaybackMonthMoney,jdbcType=NUMERIC},
+       		#{mainPaybackResource,jdbcType=VARCHAR},
+       		#{mainPaybackResourceRemark,jdbcType=VARCHAR},
+       		#{createBy,jdbcType=VARCHAR},
+          	#{createTime,jdbcType=TIMESTAMP},
+          	#{modifyBy,jdbcType=VARCHAR},
+          	#{modifyTime,jdbcType=TIMESTAMP},
+       		#{remarks,jdbcType=VARCHAR}
+     	)
+  	</insert>
+  	<update id="update">
+  		update jk.t_jk_loan_info_coborrower
+    	<set>
+	      	<if test="rid != null">
+	        	rid = #{rid,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="loanCode != null">
+	        	loan_code = #{loanCode,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="productType != null">
+	        	product_type = #{productType,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="loanApplyAmount != null">
+	       		loan_apply_amount = #{loanApplyAmount,jdbcType=NUMERIC},
+	      	</if>
+	      	<if test="loanMonths != null">
+	        	loan_months = #{loanMonths,jdbcType=INTEGER},
+	      	</if>
+	      	<if test="borrowingPurposes != null">
+	       		borrowing_purposes = #{borrowingPurposes,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="borrowingPurposesRemark != null">
+	       		borrowing_purposes_remark = #{borrowingPurposesRemark,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="highPaybackMonthMoney != null">
+	        	high_payback_month_money = #{highPaybackMonthMoney,jdbcType=NUMERIC},
+	      	</if>
+	      	<if test="mainPaybackResource != null">
+	        	main_payback_resource = #{mainPaybackResource,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="mainPaybackResourceRemark != null">
+	        	main_payback_resource_remark = #{mainPaybackResourceRemark,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="createBy != null">
+	        	create_by = #{createBy,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="createTime != null">
+	       		create_time = #{createTime,jdbcType=TIMESTAMP},
+	      	</if>
+	      	<if test="modifyBy != null">
+	        	modify_by = #{modifyBy,jdbcType=VARCHAR},
+	      	</if>
+	      	<if test="modifyTime != null">
+	        	modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+	      	</if>
+	      	<if test="remarks != null">
+	        	remarks = #{remarks,jdbcType=VARCHAR}
+	      	</if>
+   		</set>
+  		where id = #{id,jdbcType=VARCHAR}
+  	</update>
+  	<delete id="deleteByRid" parameterType="map">
+    	delete from jk.t_jk_loan_info_coborrower where rid = #{rid,jdbcType=VARCHAR}
+  	</delete>
+</mapper>

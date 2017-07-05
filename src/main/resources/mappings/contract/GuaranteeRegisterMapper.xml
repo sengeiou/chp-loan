@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.GuaranteeRegisterDao">
+<resultMap type="com.creditharmony.loan.borrow.contract.entity.GuaranteeRegister" id="baseColumnMap">
+   <result column="guarantee_name" jdbcType="VARCHAR" property="guaranteeName"/>
+   <result column="guarantee_idNum" jdbcType="VARCHAR" property="guaranteeIdNum"/>
+   <result column="guarantee_mail" jdbcType="VARCHAR" property="guaranteeMail"/>
+   <result column="guarantee_mobile" jdbcType="VARCHAR" property="guaranteeMobile"/>
+   <result column="guarantee_tel" jdbcType="VARCHAR" property="guaranteeTel"/>
+   <result column="company_name" jdbcType="VARCHAR" property="companyName"/>
+   <result column="company_province" jdbcType="VARCHAR" property="companyProvince"/>
+   <result column="company_paperid" jdbcType="VARCHAR" property="companyPaperId"/>
+   <result column="company_registered_no" jdbcType="VARCHAR" property="companyRegisteredNo"/>
+   <result column="cert_container" jdbcType="VARCHAR" property="certContainer"/>
+   <result column="trans_id" jdbcType="VARCHAR" property="transId"/>
+   <result column="register_date" jdbcType="TIMESTAMP" property="registerDate"/>
+   <result column="contract_code" jdbcType="VARCHAR" property="contractCode"/>
+   <result column="loan_code" jdbcType="VARCHAR" property="loanCode"/>
+   <result column="relate_id" jdbcType="VARCHAR" property="relateId"/>
+</resultMap>
+<sql id="baseColumn">
+	guarantee_name,guarantee_idNum,guarantee_mail,guarantee_mobile,guarantee_tel,
+	company_name,company_province,company_paperid,company_registered_no,cert_container,
+	trans_id,register_date,contract_code,loan_code,relate_id 
+</sql>
+<select id="get" parameterType="com.creditharmony.loan.borrow.contract.entity.GuaranteeRegister" resultMap="baseColumnMap">
+    select 
+      <include refid="baseColumn"/> 
+    from jk.t_jk_ca_guarantee_register 
+    where 
+       1=1 
+    <if test="loanCode!=null and loanCode!=''">   
+      and loan_code = #{loanCode,jdbcType=VARCHAR} 
+    </if>
+    <if test="contractCode !=null and contractCode !=''">
+      and contract_code = #{contractCode,jdbcType=VARCHAR}
+    </if>
+    <if test="relateId !=null and relateId!=''">
+      and relate_id = #{relateId,jdbcType=VARCHAR} 
+    </if>
+</select>
+<select id="getFromApproveById" parameterType="string" resultMap="baseColumnMap">
+     select id as relate_id,
+            loan_code,
+            jyzm_registered_province as company_province,
+            jyzm_company_name as company_name,
+            Nvl(credit_code,regist_num) as company_paperid,
+            regist_num_type as company_registered_no,
+            jyzm_legal_man as guarantee_name
+     from   jk.t_jk_zlsh_jyzm where id=#{reateId,jdbcType=VARCHAR}     
+            
+</select>
+<insert id="insert" parameterType="com.creditharmony.loan.borrow.contract.entity.GuaranteeRegister">
+  insert into jk.t_jk_ca_guarantee_register 
+   <trim prefix="(" suffix=")" suffixOverrides=",">
+    <if test="contractCode !=null and contractCode !=''">
+       contract_code,
+     </if>
+     <if test="loanCode !=null and loanCode !=''">
+       loan_code,
+     </if>
+      <if test="relateId !=null and relateId !=''">
+       relate_id,
+     </if>
+      <if test="registerDate !=null">
+       register_date,
+     </if>
+      <if test="transId !=null and transId !=''">
+       trans_id,
+     </if>
+      <if test="certContainer !=null and certContainer !=''">
+       cert_container,
+     </if>
+      <if test="companyRegisteredNo !=null and companyRegisteredNo !=''">
+       company_registered_no,
+     </if>
+      <if test="companyPaperId !=null and companyPaperId !=''">
+       company_paperid,
+     </if>
+      <if test="companyProvince !=null and companyProvince !=''">
+       company_province,
+     </if>
+      <if test="companyName !=null and companyName !=''">
+       company_name,
+     </if>
+      <if test="guaranteeTel !=null and guaranteeTel !=''">
+       guarantee_tel,
+     </if>
+     <if test="guaranteeMobile !=null and guaranteeMobile !=''">
+       guarantee_mobile,
+     </if>
+     <if test="guaranteeMail !=null and guaranteeMail !=''">
+       guarantee_mail,
+     </if>
+     <if test="guaranteeIdNum !=null and guaranteeIdNum !=''">
+       guarantee_idNum,
+     </if>
+     <if test="guaranteeName !=null and guaranteeName !=''">
+       guarantee_name,
+     </if>
+     <if test="modifyTime!=null">
+       modify_time,
+     </if>
+     <if test="modifyBy!=null and modifyBy!=''">
+       modify_by,
+     </if>
+     <if test="createTime!=null">
+       create_time,
+     </if>
+     <if test="createBy!=null and createBy!=''">
+       create_by,
+     </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+     <if test="contractCode !=null and contractCode !=''">
+       #{contractCode,jdbcType=VARCHAR},
+     </if>
+     <if test="loanCode !=null and loanCode !=''">
+       #{loanCode,jdbcType=VARCHAR},
+     </if>
+      <if test="relateId !=null and relateId !=''">
+       #{relateId,jdbcType=VARCHAR},
+     </if>
+      <if test="registerDate !=null">
+       #{registerDate,jdbcType=TIMESTAMP},
+     </if>
+      <if test="transId !=null and transId !=''">
+       #{transId,jdbcType=VARCHAR},
+     </if>
+      <if test="certContainer !=null and certContainer !=''">
+       #{certContainer,jdbcType=VARCHAR},
+     </if>
+      <if test="companyRegisteredNo !=null and companyRegisteredNo !=''">
+       #{companyRegisteredNo,jdbcType=VARCHAR},
+     </if>
+      <if test="companyPaperId !=null and companyPaperId !=''">
+       #{companyPaperId,jdbcType=VARCHAR},
+     </if>
+      <if test="companyProvince !=null and companyProvince !=''">
+       #{companyProvince,jdbcType=VARCHAR},
+     </if>
+      <if test="companyName !=null and companyName !=''">
+       #{companyName,jdbcType=VARCHAR},
+     </if>
+      <if test="guaranteeTel !=null and guaranteeTel !=''">
+      #{guaranteeTel,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeMobile !=null and guaranteeMobile !=''">
+       #{guaranteeMobile,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeMail !=null and guaranteeMail !=''">
+       #{guaranteeMail,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeIdNum !=null and guaranteeIdNum !=''">
+       #{guaranteeIdNum,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeName !=null and guaranteeName !=''">
+       #{guaranteeName,jdbcType=VARCHAR},
+     </if>
+     <if test="modifyTime!=null">
+       #{modifyTime,jdbcType=TIMESTAMP},
+     </if>
+     <if test="modifyBy!=null and modifyBy!=''">
+       #{modifyBy,jdbcType=VARCHAR},
+     </if>
+     <if test="createTime!=null">
+       #{createTime,jdbcType=TIMESTAMP},
+     </if>
+     <if test="createBy!=null and createBy!=''">
+       #{createBy,jdbcType=VARCHAR},
+     </if>
+    </trim>
+</insert>
+<update id="update" parameterType="com.creditharmony.loan.borrow.contract.entity.GuaranteeRegister">
+update jk.t_jk_ca_guarantee_register 
+  <set>
+    <if test="contractCode !=null and contractCode !=''">
+       contract_code = #{contractCode,jdbcType=VARCHAR},
+     </if>
+     <if test="loanCode !=null and loanCode !=''">
+       loan_code = #{loanCode,jdbcType=VARCHAR},
+     </if>
+      <if test="relateId !=null and relateId !=''">
+       relate_id = #{relateId,jdbcType=VARCHAR},
+     </if>
+      <if test="registerDate !=null">
+       register_date = #{registerDate,jdbcType=TIMESTAMP},
+     </if>
+      <if test="transId !=null and transId !=''">
+       trans_id = #{transId,jdbcType=VARCHAR},
+     </if>
+      <if test="certContainer !=null and certContainer !=''">
+       cert_container = #{certContainer,jdbcType=VARCHAR},
+     </if>
+      <if test="companyRegisteredNo !=null and companyRegisteredNo !=''">
+       company_registered_no = #{companyRegisteredNo,jdbcType=VARCHAR},
+     </if>
+      <if test="companyPaperId !=null and companyPaperId !=''">
+       company_paperid = #{companyPaperId,jdbcType=VARCHAR},
+     </if>
+      <if test="companyProvince !=null and companyProvince !=''">
+       company_province = #{companyProvince,jdbcType=VARCHAR},
+     </if>
+      <if test="companyName !=null and companyName !=''">
+       company_name = #{companyName,jdbcType=VARCHAR},
+     </if>
+      <if test="guaranteeTel !=null and guaranteeTel !=''">
+       guarantee_tel = #{guaranteeTel,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeMobile !=null and guaranteeMobile !=''">
+       guarantee_mobile = #{guaranteeMobile,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeMail !=null and guaranteeMail !=''">
+       guarantee_mail = #{guaranteeMail,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeIdNum !=null and guaranteeIdNum !=''">
+       guarantee_idNum = #{guaranteeIdNum,jdbcType=VARCHAR},
+     </if>
+     <if test="guaranteeName !=null and guaranteeName !=''">
+       guarantee_name = #{guaranteeName,jdbcType=VARCHAR},
+     </if>
+     <if test="modifyTime!=null">
+       modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+     </if>
+     <if test="modifyBy!=null and modifyBy!=''">
+       modify_by = #{modifyBy,jdbcType=VARCHAR},
+     </if>
+     <if test="createTime!=null">
+       create_time = #{createTime,jdbcType=TIMESTAMP},
+     </if>
+     <if test="createBy!=null and createBy!=''">
+       create_by = #{createBy,jdbcType=VARCHAR},
+     </if>
+  </set>
+  where loan_code=#{loanCode,jdbcType=VARCHAR} 
+</update>
+<delete id="delete" parameterType="string">
+  delete from jk.t_jk_ca_guarantee_register 
+  where loan_code = #{loanCode,jdbcType=VARCHAR} 
+</delete>
+
+
+<select id="getRegisterByloancode" resultType="java.util.Map" parameterType="com.creditharmony.loan.borrow.contract.entity.Contract">
+	select * from jk.T_JK_COMP_MANAGE where loan_code = #{loanCode,jdbcType=VARCHAR}
+</select>
+</mapper>

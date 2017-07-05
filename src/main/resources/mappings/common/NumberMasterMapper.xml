@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.NumberMasterDao">
+	<sql id="numColumns">
+		id
+		,deal_part
+		,deal_cyc
+		,deal_date
+		,serial_no
+		,effective
+		,remark
+		,create_by
+		,create_time
+		,modify_by
+		,modify_time
+	</sql>
+
+	<select id="get" resultType="com.creditharmony.loan.common.entity.NumberMaster">
+		select
+		<include refid="numColumns" />
+		from jk.t_jk_number_master
+		where 1=1
+		<if test="dealPart!=null and dealPart !=''">
+			and deal_part = #{dealPart}
+		</if>
+		<if test="dealCyc!=null and dealCyc !=''">
+			and deal_cyc = #{dealCyc}
+		</if>
+		<if test="dealDate!=null and dealDate !=''">
+			and deal_date = #{dealDate}
+		</if>
+		<if test="effective!=null and effective !=''">
+			and effective = #{effective}
+		</if> for update 
+	</select>
+
+	<insert id="insert">
+		INSERT INTO jk.t_jk_number_master(
+		<include refid="numColumns" />
+
+		) VALUES (
+		#{id},
+		#{dealPart},
+		#{dealCyc},
+		#{dealDate},
+		#{SerialNo},
+		#{effective},
+		#{remarks},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime}
+		)
+	</insert>
+
+	<update id="update">
+		update jk.t_jk_number_master set serial_no =
+		#{SerialNo}
+		where id = #{id}
+	</update>
+
+</mapper>

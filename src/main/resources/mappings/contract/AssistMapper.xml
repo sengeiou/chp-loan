@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.contractAudit.dao.AssistDao" >
+ 
+  <update id="updateAssist" parameterType="com.creditharmony.loan.borrow.contractAudit.entity.Assist">
+  	    UPDATE JK.T_JK_LOAN_INFO
+		SET
+		<trim prefixOverrides=",">
+		<if test="present_audit_operator !=null and present_audit_operator !=''">
+			,PRESENT_AUDIT_OPERATOR=#{present_audit_operator}
+		</if>
+		<if test="if_dispatch != null and if_dispatch !=''">
+			,IF_DISPATCH=#{if_dispatch}
+		</if>
+		<if test="auditreturnreason !=null and auditreturnreason !=''">
+			,AUDITRETURNREASON = #{auditreturnreason}
+		</if>
+		<if test="audittime !=null">
+			,AUDITTIME = #{audittime}
+		</if>
+		<if test="auditusercode !=null and auditusercode !=''">
+			, AUDITUSERCODE= #{auditusercode}
+		</if>
+		<if test="kingstatus !=null and kingstatus !=''">
+			,KING_STATUS = #{kingstatus}
+		</if>
+ 		</trim>
+		WHERE LOAN_CODE = #{loan_code}
+  </update>
+  
+  <update id="updateAuditOperator">
+  	  UPDATE JK.T_JK_LOAN_INFO
+		SET
+		<trim prefixOverrides=",">
+		<if test="present_audit_operator !=null and present_audit_operator !=''">
+			,PRESENT_AUDIT_OPERATOR=#{present_audit_operator}
+		</if>
+		<if test="if_dispatch != null and if_dispatch !=''">
+			,IF_DISPATCH=#{if_dispatch}
+		</if>
+		</trim>
+		WHERE LOAN_CODE = #{loan_code}
+  </update>
+</mapper>

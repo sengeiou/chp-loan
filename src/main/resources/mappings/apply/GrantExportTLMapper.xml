@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.GrantExportTLDao">
+ <resultMap id="GrantExportMap" type="com.creditharmony.loan.borrow.grant.entity.ex.GrantExportTLEx">
+    <result property="serialNum" column="serial_num" jdbcType="VARCHAR"/>
+    <result property="grantAmount" column="grant_amount" jdbcType="NUMERIC"/>
+    <result property="bankCode" column="bank_name" jdbcType="VARCHAR"/>
+    <result property="accountType" column="account_type" jdbcType="VARCHAR"/>
+    <result property="accountName" column="bank_account_name" jdbcType="VARCHAR"/>
+    <result property="accountNumber" column="bank_account" jdbcType="VARCHAR"/>
+    <result property="bankBranch" column="bank_branch" jdbcType="VARCHAR"/>
+    <result property="provinceCode" column="bank_province" jdbcType="VARCHAR"/>
+    <result property="provinceName" column="province_name" jdbcType="VARCHAR"/>
+    <result property="cityCode" column="bank_city" jdbcType="VARCHAR"/>
+    <result property="cityName" column="city_name" jdbcType="VARCHAR"/>
+    <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    <result property="certType" column="dict_cert_type" jdbcType="VARCHAR"/>
+    <result property="certTypeName" column="cert_type_name" jdbcType="VARCHAR"/>
+    <result property="identityCode" column="customer_cert_num" jdbcType="VARCHAR"/>
+    <result property="telePhone" column="customer_phone_first" jdbcType="VARCHAR"/>
+    <result property="productCode" column="product_type" jdbcType="VARCHAR"/>
+    <result property="contractCode" column="contract_code" jdbcType="VARCHAR"/>
+  </resultMap>
+  <select id="findGrantInfo" resultMap="GrantExportMap" parameterType="map">
+    select to_char(ROW_NUMBER()  OVER(),'00009') AS serial_num, 
+			dict_loan_way,
+           a.dict_cert_type,
+           a.customer_cert_num,
+           p.remark as remark ,
+           b.bank_name,
+           b.bank_account_name,
+           b.bank_account,
+           b.bank_branch,
+           b.bank_province,
+           p1.area_name as province_name,
+           b.bank_city,
+           c2.area_name as city_name,
+           g.contract_code,
+           p.split_amount*100 as grant_amount,
+           round(cf.fee_petition,2) as feePetition,--信访费
+           round(cf.fee_urged_service,2) as feeUrgeService,--催收服务费
+           round(e.fee_credit,2) as feeCredit,--征信费
+           (case when g.product_type = 'A021' then
+		   round(fee_petition+fee_urged_service+fee_credit,2) else round(fee_urged_service,2) end) as feeSum, --综合费用
+           e.product_type      
+	 from jk.t_jk_loan_grant c
+	 left join t_jk_payback_split p on p.r_payback_apply_id = c.id 
+	 left join jk.t_jk_loan_customer a on a.loan_code = c.loan_code  
+	 left join jk.t_jk_contract g on g.loan_code = c.loan_code
+	 left join jk.t_jk_contract_fee cf on cf.contract_code = g.contract_code
+  	 left join jk.t_jk_loan_bank b on c.loan_code = b.loan_code and b.bank_top_flag='1' and b.repayment_flag = '0'
+   	 left join jk.t_jk_loan_info e  on e.loan_code = c.loan_code 
+   	 left join jk.t_gl_province_city p1 on p1.area_code = b.bank_province 
+  	 left join jk.t_gl_province_city c2  on c2.area_code = b.bank_city 
+	left join jk.t_gl_dict f on f.value = b.bank_name   
+	where e.dict_loan_status != '68' and f.type=#{openBank}  and p.split_back_result = '4' 
+ 	 <if test="lendingWayCode!=null and lendingWayCode!=''">
+ 	    and c.dict_loan_way = #{lendingWayCode,jdbcType=VARCHAR} 
+ 	 </if>
+ 	 <if test="applyIds!=null">
+ 	     and g.apply_id in 
+ 	     <foreach item="item" index="index" collection="applyIds" open="(" separator="," close=")">  
+            #{item}  
+         </foreach>
+ 	 </if>
+  </select>
+  
+  <!-- 转为要进行拆分的数据格式 ,导出的数据，不能为线上的-->
+  <select id="getSplitTl" parameterType="map" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+       select c.id,
+  			(CASE when c.grant_fail_amount = 0 then round(c.grant_amount) else round(c.grant_fail_amount) end ) as applyAmount,
+		    bank.bank_name as applyBankName,303 as dictDeductType,
+		    c.contract_code as contractCode, c.loan_code as loanCode
+		from t_jk_loan_grant c 
+		left join t_jk_contract e on e.contract_code = c.contract_code
+		left join t_jk_loan_info l on l.loan_code = e.loan_code 
+		left join t_jk_loan_bank bank on bank.loan_code=e.loan_code 
+		where 
+		bank.bank_top_flag='1' and bank.repayment_flag = '0' and l.dict_loan_status != '68' 
+		<if test="lendingWayCode!=null and lendingWayCode!=''">
+ 	    and c.dict_loan_way = #{lendingWayCode,jdbcType=VARCHAR} 
+ 	 	</if>
+ 	 	<if test="applyIds!=null">
+ 	     and e.apply_id in 
+ 	     <foreach item="item" index="index" collection="applyIds" open="(" separator="," close=")">  
+            #{item}  
+         </foreach>
+ 	 </if>
+  </select>
+  
+  <!-- 删除拆分表中处理中（导出）的数据 -->
+	<update id="deleteSplitDeal">
+		 DELETE FROM t_jk_payback_split WHERE r_payback_apply_id = #{id}  
+		 and split_back_result = #{splitBackResult}
+	</update>  
+</mapper>

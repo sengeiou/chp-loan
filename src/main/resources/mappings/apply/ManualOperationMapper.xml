@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.ManualOperationDao">
+	<sql id="allManualOperationList">
+		jpm.id as id,
+		jpc.contract_code as contractCode, <!--合同编号 -->
+		jlb.bank_signing_platform as dictDealType, <!-- 划扣平台 -->
+		jlb.bank_name as applyBankName, <!-- 银行 -->
+		jp.payback_bule_amount as paybackBuleAmount, <!--蓝补金额 -->
+		jlc.customer_name as customerName, <!-- 客户姓名 -->
+		goss.name as orgName, <!-- 门店名称 -->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态 -->
+		jli.loan_flag as loanMark, <!--标识 -->
+		jc.contract_month_repay_amount as contractMonthRepayAmount, <!--期供金额 -->
+		<!-- 当期已还金额 = 实还本金+实还利息 -->
+		jpm.month_capital_payactual as monthCapitalPayactual, <!--实还本金 -->
+		jpm.month_interest_payactual as monthInterestPayactual, <!--实还利息 -->
+		<!-- 当期未还金额 = (应还本金+应还利息) - (实还本金 + 实还利息) -->
+		jpm.month_pay_amount as monthPayAmount, <!--应还本金 -->
+		jpm.month_interest_backshould as monthInterestBackshould, <!--应还利息 -->
+		
+		jpm.month_penalty_reduction as monthPenaltyReduction,<!-- 减免违约金 -->
+		jpm.month_punish_reduction as monthPunishReduction,<!-- 减免罚息 -->
+		
+		jp.payback_current_month as paybackCurrentMonth, <!-- 当前第几期 -->
+		jpc.id as chargeId,
+		jpc.create_time as createTime <!-- 创建日期(用来排序) -->
+	</sql>
+	<!-- 手动冲抵列表 -->
+	<select id="allManualOperationList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.ManualOperationEx">
+	select 
+		<include refid="allManualOperationList" />
+		from jk.t_jk_payback_charge jpc 
+			left join jk.t_jk_payback jp on jp.contract_code = jpc.contract_code
+			left join jk.t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join jk.t_jk_contract jc on jc.contract_code = jpc.contract_code 
+			left join jk.t_jk_loan_bank jlb on jlb.loan_code = jc.loan_code 
+			and jlb.bank_top_flag = #{bankTopFlag} and jlb.repayment_flag = '1'
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join jk.t_gl_org goss on goss.id = gos.parent_id
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+		where jpc.charge_status = #{enumTwo} <!-- 冲抵状态：0 未冲抵 -->
+		  and jpc.dict_offset_type = #{enumThree} <!-- 冲抵方式：4 还款日查账 -->
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and jpm.contract_code = #{contractCode}
+		</if>
+		<if test="orgName != null and orgName != ''">
+			and goss.name = #{orgName}  <!-- 门店名称 -->
+		</if>
+		<if test="applyBankName != null and applyBankName != ''">
+			and jlb.bank_name = #{applyBankName}  <!-- 银行 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and jli.loan_flag = #{loanMark}  <!-- 标识 -->
+		</if>
+		<if test="dictDealType != null and dictDealType != ''">
+			and jlb.bank_signing_platform = #{dictDealType}  <!-- 划扣平台 -->
+		</if>
+		order by createTime desc
+	</select>
+	<sql id="queryManualOperationList">
+		jpm.id as id,
+		jpm.contract_code as contractCode, <!--合同编号 -->
+		jpm.months as months,<!-- 期数 -->
+		jp.payback_bule_amount as paybackBuleAmount, <!--蓝补金额 -->
+		jpm.month_pay_day as payBack, <!--账单日 -->
+		jlc.customer_name as customerName, <!--客户姓名 -->
+		jli.loan_flag as loanMark, <!--标识 -->
+		jp.payback_month_amount as contractMonthRepayAmount, <!--期供金额 -->
+		jc.product_type as productType, <!--产品类型 -->
+		jc.contract_version as contractVersion,<!-- 合同版本号 -->
+
+		jpm.actual_month_fee_service as actualmonthFeeService,<!-- 分期服务费实还金额 -->
+		jpm.month_capital_payactual as monthCapitalPayactual, <!--实还本金 -->
+		jpm.month_interest_payactual as monthInterestPayactual, <!--实还利息 -->
+		jpm.month_fee_service as monthFeeService,<!-- 应还分期服务费 -->
+		jpm.month_pay_amount as monthPayAmount, <!--应还本金 -->
+		jpm.month_interest_backshould as monthInterestBackshould, <!--应还利息 -->
+		jpm.month_before_finish_amount as monthBeforeFinishAmount, <!--提前结清一次性金额 -->
+		jpm.month_late_fee as monthLateFee, <!--应还滞纳金 -->
+		jpm.month_interest_punishshould as monthInterestPunishshould, <!--应还罚息 -->
+		jpm.month_interest_punishactual as monthInterestPunishactual, <!-- 实还罚息 -->
+		jpm.actual_month_late_fee as actualMonthLateFee, <!-- 实还滞纳金 -->
+		jpm.month_late_fee_reduction as monthLateFeeReduction,<!-- 减免滞纳金 -->
+		jpm.month_punish_reduction as monthPunishReduction,<!-- 减免罚息 -->
+		jpm.month_penalty_should as monthPenaltyShould,<!-- 应还违约金 -->
+		jpm.month_penalty_actual as monthPenaltyActual,<!-- 实还违约金 -->
+		jpm.month_penalty_reduction as monthPenaltyReduction,<!-- 减免违约金 -->
+		jpm.month_overdue_days as monthOverdueDays, <!-- 当期逾期天数 -->
+		jpm.dict_month_status as dictMonthStatus, <!--最终期供状态 -->
+		jpm.is_overdue as isOverdue <!--是否逾期 -->
+	</sql>
+	<!-- 手动冲抵 查看页面数据 -->
+	<select id="queryManualOperation" resultType="com.creditharmony.loan.borrow.payback.entity.ex.ManualOperationEx">
+		SELECT	
+			A.CONTRACT_CODE contractCode,
+		    E.PRODUCT_NAME productType,
+			D.LOAN_CUSTOMER_NAME customerName,
+			A.MONTH_PAY_DAY payBack,
+			A.MONTH_PAY_TOTAL contractMonthRepayAmount,
+			(COALESCE(A.MONTH_CAPITAL_PAYACTUAL,0)+COALESCE(A.MONTH_INTEREST_PAYACTUAL,0)+COALESCE(A.ACTUAL_MONTH_FEE_SERVICE,0)) hisOverpaybackMonthMoney,
+			round(
+			case when B.dict_pay_status ='3' then '0.00' else
+			(COALESCE(A.MONTH_PAY_TOTAL,0)-COALESCE(A.MONTH_CAPITAL_PAYACTUAL,0)-COALESCE(A.MONTH_INTEREST_PAYACTUAL,0)
+			-COALESCE(A.ACTUAL_MONTH_FEE_SERVICE,0))  end,2) notOverpaybackMonthMoney, 
+			A.MONTH_BEFORE_FINISH_AMOUNT monthBeforeFinishAmount,
+			round(CASE 
+			WHEN cast(C.CONTRACT_VERSION as integer) >=4 THEN
+			(COALESCE(A.MONTH_INTEREST_PUNISHSHOULD,0)+COALESCE(A.MONTH_LATE_FEE,0)) --应还罚息及违约金(滞纳金)
+			ELSE
+			(COALESCE(A.MONTH_INTEREST_PUNISHSHOULD,0)+COALESCE(A.MONTH_PENALTY_SHOULD,0))
+			END ,2)
+			interestPenaltyPunishShould,
+			round(
+			CASE 
+			WHEN  cast(C.CONTRACT_VERSION as integer) >=4 THEN
+			(COALESCE(A.MONTH_INTEREST_PUNISHACTUAL,0)+COALESCE(A.ACTUAL_MONTH_LATE_FEE,0))  --实还罚息及违约金(滞纳金)
+			ELSE
+			(COALESCE(A.MONTH_INTEREST_PUNISHACTUAL,0)+COALESCE(A.MONTH_PENALTY_ACTUAL,0)) --实还罚息及违约金(滞纳金)
+			END ,2)
+			as penaltyPunishActualSum,
+			round(
+			CASE 
+			WHEN  cast(C.CONTRACT_VERSION as integer) >=4 THEN
+				(COALESCE(A.MONTH_PUNISH_REDUCTION,0)+COALESCE(A.MONTH_LATE_FEE_REDUCTION,0)) 
+			ELSE
+				(COALESCE(A.MONTH_PUNISH_REDUCTION,0)+COALESCE(A.MONTH_PENALTY_REDUCTION,0)) 
+			END	,2)
+			penaltyPunishReductionSum,
+			
+			CASE WHEN A.IS_OVERDUE='1' THEN '是' ELSE '否' END isOverdue,
+			A.MONTH_OVERDUE_DAYS monthOverdueDays,
+			M1.LABEL dictMonthStatusLabel,
+			M2.LABEL loanMarkLabel
+		FROM JK.T_JK_PAYBACK_MONTH A
+			LEFT JOIN JK.T_JK_PAYBACK B ON A.CONTRACT_CODE = B.CONTRACT_CODE
+			LEFT JOIN JK.T_JK_CONTRACT C ON A.CONTRACT_CODE = C.CONTRACT_CODE
+			LEFT JOIN JK.T_JK_LOAN_INFO D ON C.LOAN_CODE = D.LOAN_CODE
+			LEFT JOIN JK.T_GL_JK_PRODUCT E ON E.PRODUCT_TYPE='products_type_loan_credit' AND D.PRODUCT_TYPE=E.PRODUCT_CODE
+			LEFT JOIN JK.T_GL_DICT M1 ON M1.TYPE='jk_period_status' AND A.DICT_MONTH_STATUS=M1.VALUE
+			LEFT JOIN JK.T_GL_DICT M2 ON M2.TYPE='jk_channel_flag' AND D.LOAN_FLAG=M2.VALUE
+		WHERE A.CONTRACT_CODE = #{contractCode}
+		ORDER BY A.MONTHS
+	</select>
+	<!-- 手动冲抵 查看页面数据（上面四个字段） -->
+	<select id="queryOperation" resultType="com.creditharmony.loan.borrow.payback.entity.ex.ManualOperationEx">
+		SELECT 
+			A.CONTRACT_CODE,
+			C.CUSTOMER_CERT_NUM AS CUSTOMERCERTNUM,
+			E.GRANT_AMOUNT AS GRANTAMOUNT,
+			SUM(COALESCE(A.MONTH_CAPITAL_PAYACTUAL,0)+COALESCE(A.MONTH_INTEREST_PAYACTUAL,0)
+				+COALESCE(A.ACTUAL_MONTH_FEE_SERVICE,0)) AS SUNAMOUNT,
+			round(	
+			CASE 
+			WHEN cast(MIN(B.CONTRACT_VERSION) as integer) >=4 THEN
+				SUM(COALESCE(A.MONTH_INTEREST_PUNISHSHOULD,0)+COALESCE(A.MONTH_LATE_FEE,0)
+				-COALESCE(A.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(A.MONTH_PUNISH_REDUCTION,0)
+				-COALESCE(A.ACTUAL_MONTH_LATE_FEE,0)-COALESCE(A.MONTH_LATE_FEE_REDUCTION,0))
+			ELSE
+				SUM(COALESCE(A.MONTH_PENALTY_SHOULD,0)+COALESCE(A.MONTH_INTEREST_PUNISHSHOULD,0)
+				-COALESCE(A.MONTH_PENALTY_ACTUAL,0)-COALESCE(A.MONTH_PENALTY_REDUCTION,0)
+				-COALESCE(A.MONTH_INTEREST_PUNISHACTUAL,0)-COALESCE(A.MONTH_PUNISH_REDUCTION,0))
+				
+			END, 2)NOTPENALTYPUNISHSHOULDSUM,
+			
+			M.LABEL AS DICTPAYSTATUSLABEL
+		FROM JK.T_JK_PAYBACK_MONTH A
+			LEFT JOIN JK.T_JK_CONTRACT B ON A.CONTRACT_CODE = B.CONTRACT_CODE
+			LEFT JOIN JK.T_JK_LOAN_CUSTOMER C ON B.LOAN_CODE = C.LOAN_CODE
+			LEFT JOIN JK.T_JK_LOAN_INFO D ON B.LOAN_CODE=D.LOAN_CODE
+			LEFT JOIN JK.T_JK_LOAN_GRANT E ON A.CONTRACT_CODE = E.CONTRACT_CODE
+			LEFT JOIN JK.T_GL_DICT M ON M.TYPE='jk_loan_apply_status' AND D.DICT_LOAN_STATUS=M.VALUE
+		WHERE A.CONTRACT_CODE = #{contractCode}
+		GROUP BY A.CONTRACT_CODE,C.CUSTOMER_CERT_NUM,E.GRANT_AMOUNT,M.LABEL
+	</select>
+	<select id="sumContractMonthRepay" resultType="com.creditharmony.loan.borrow.payback.entity.ex.ManualOperationEx">
+		select 
+		    id,
+			jpm.month_pay_total as contractMonthRepayAmount
+		from t_jk_payback_month jpm 
+		where jpm.contract_code = #{contractCode} 
+		
+	</select>
+	<!-- 风控批量冲抵时的蓝补金额 -->
+	<select id="queryChargeAgainst" resultType="com.creditharmony.loan.borrow.payback.entity.ex.ManualOperationEx">	
+		select 
+			jpm.id as monthId,
+			jpm.month_pay_amount as monthCapitalPayactual, <!-- 应还本金 -->
+			jpm.month_interest_backshould as monthInterestPayactual, <!-- 应还利息 -->
+			jp.payback_bule_amount as paybackBuleAmount, <!-- 蓝补金额 -->
+			jp.contract_code as contractCode, <!-- 合同编号 -->
+			jc.contract_months as contractMonths, <!-- 批借期限 -->
+			jpm.months as months, <!-- 期数 -->
+			jp.payback_current_month as paybackCurrentMonth, <!-- 当前第几期 -->
+			jc.id as id <!-- 主表ID -->
+		from t_jk_payback_month jpm
+			left join t_jk_payback jp on jpm.contract_code = jp.contract_code
+			left join t_jk_contract jc on jc.contract_code = jpm.contract_code
+		where jpm.id = #{monthId}
+	</select>
+	<!-- 风控批量冲抵   冲抵期供(修改实还本金利息) -->
+	<select id="updateNotMoney">
+		update t_jk_payback_month
+		   set  
+			month_capital_payactual = #{monthCapitalPayactual},
+			month_interest_payactual = #{monthInterestPayactual},
+			dict_month_status = #{enumOne}
+		where id = #{monthId} 
+	</select>
+	<!-- 风控批量冲抵成功后 将蓝补余额存回还款主表的蓝补金额里面 -->
+	<select id="updatePaybackBuleAmount">
+		update t_jk_payback
+		   set
+			payback_bule_amount = #{paybackBuleAmount}
+		where contract_code = #{contractCode}
+	</select>
+	
+	<!-- 冲抵成功后修改冲抵状态 -->
+	<update id="updateChargeStatus">
+		UPDATE t_jk_payback_charge
+		   SET 
+			   modify_by= #{modifyBy},
+			   modify_time= #{modifyTime}, 
+			   charge_status= #{enumThree}
+		 WHERE id = #{chargeId}
+	</update>
+	
+	<!-- 手动冲抵：如果冲抵期数未最后一期，修改主表中的还款状态为：5 结清待确认 -->
+	<update id="updatePaybackStatus">
+		UPDATE t_jk_payback
+		   SET 
+		       dict_pay_status= #{enumThree}, 
+		       modify_by= #{modifyBy},
+		       modify_time= #{modifyTime}
+		WHERE contract_code = #{contractCode}
+	</update>
+	
+	<!-- 手动冲抵：冲抵成功后修改主表中的当前第几期 -->
+	<update id="updatePaybackCurrentMonth">
+		UPDATE t_jk_payback
+		   SET 
+		       payback_current_month= #{paybackCurrentMonth}, 
+		       modify_by = #{modifyBy},
+		       modify_time= #{modifyTime}
+		WHERE contract_code = #{contractCode}
+	</update>
+	
+	<!-- 添加蓝补交易明细记录 -->
+	<select id="insertPaybackBuleAmont">
+		insert into t_jk_payback_bule_amont(
+	            id, r_month_id, deal_time, trade_type, operator, dict_deal_use, 
+	            trade_amount, surplus_bule_amount, create_by, create_time, dict_offset_type)
+    	values (#{id}, #{rMonthId}, #{createTime}, #{tradeType}, #{createBy}, #{dictDealUse}, 
+	            #{tradeAmount}, #{surplusBuleAmount}, #{createBy}, #{createTime}, #{dictOffsetType} );
+	</select>
+	<!-- 查询导出Excel数据表的数据 -->
+	<select id="exportExcelData" resultType="com.creditharmony.loan.borrow.payback.entity.ex.ManualOperationEx">
+	select 
+		<include refid="allManualOperationList" />
+		from t_jk_payback_charge jpc 
+			left join t_jk_payback jp on jp.contract_code = jpc.contract_code
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join t_jk_contract jc on jc.contract_code = jpc.contract_code 
+			left join t_jk_loan_bank jlb on jlb.loan_code = jc.loan_code 
+			and jlb.bank_top_flag = '1' and jlb.repayment_flag = '1'
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join t_gl_org goss on goss.id = gos.parent_id
+		where jpc.id = #{id}
+	</select>
+	
+	<!-- 查询导出查看页面期供Excel数据表的数据 -->
+	<select id="exportMonthExcel" resultType="com.creditharmony.loan.borrow.payback.entity.ex.MonthExcelEx">
+		select	
+			<include refid="queryManualOperationList" />
+		from t_jk_payback_month jpm
+				left join t_jk_payback jp on jp.contract_code = jpm.contract_code
+				left join t_jk_customer_base jcb on jcb.customer_code = jp.customer_code
+				left join t_jk_contract jc on jc.contract_code = jpm.contract_code
+				left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+				left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+		where jpm.contract_code = #{contractCode} 
+		order by payBack
+	</select>
+</mapper>

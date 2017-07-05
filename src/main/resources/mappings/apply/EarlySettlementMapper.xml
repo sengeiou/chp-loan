@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.EarlySettlementDao">
+	<sql id="earlySettlementHavaTodoColumns">
+		jpc.id as id, 
+		jpc.contract_code as contractCode,  <!-- 合同编号-->
+		jpc.dict_offset_type,<!-- 冲抵方式 -->
+		jp.payback_max_overduedays as paybackMaxOverduedays, <!--最长逾期 -->
+		jp.dict_pay_status as dictPayStatus, <!--还款状态-->
+		gos.name as orgName, <!--门店名称 -->
+		jlc.customer_name as customerName, <!--客户名称 -->
+		jc.contract_amount as contractMoney, <!-- 合同金额 -->
+		jusa.urge_moeny as urgeMoeny, <!--催收服务费金额 -->
+		jusa.urge_decute_moeny as urgeDecuteMoeny,<!-- 已收催收服务费金额 -->
+		jlg.grant_amount as grantAmount, <!--放款金额 -->
+		jc.contract_months as contractMonths, <!--批借期数 -->
+		jc.contract_replay_day as contractReplayDate, <!--首期还款日 -->
+		jpm.id as paybackMonthId,
+		jpm.month_pay_amount as monthPayMoney , <!-- 应还本金-->
+		jpm.month_interest_backshould as monthInterestBackshould, <!-- 应还利息-->
+		jpm.month_capital_payactual as monthCapitalPayactual, <!-- 实还本金-->
+		jpm.month_interest_payactual as monthInterestPayactual, <!-- 实还利息-->
+		jpc.settle_total_amount as modifyYingpaybackBackMoney, <!-- 提前结清应还款总额 -->
+		jpm.modify_time as modifyDate, <!--提前结清日期-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		us.name as reductionBy, <!-- 减免人-->
+		jpm.month_punish_reduction as monthPunishReduction, <!--减免罚息-->
+		jpm.month_penalty_reduction as monthPenaltyReduction, <!--减免违约金-->
+		jpm.month_before_reduction_amount,<!-- 减免提前结清金额 -->
+		jli.loan_flag as loanFlag, <!-- 标识 -->
+		jli.model as model, <!-- 标识 -->
+		jlc.customer_telesales_flag as loanIsPhone, <!--是否电销-->
+		jpc.apply_bule_amount as applyAmountPaybac, <!-- 申请还款金额 -->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		jli.model,
+		jp.square_moeny as actualModifyMoney
+		,jpc.charge_status as chargeStatus
+	</sql>
+	<!-- 提前结清已办列表 -->
+	<select id="allEarlySettlementList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.EarlySettlementEx">
+		select 
+			<include refid="earlySettlementHavaTodoColumns" />
+		from t_jk_payback_charge jpc 
+			left join t_jk_payback jp on jp.contract_code = jpc.contract_code
+			left join t_jk_contract jc on jc.contract_code = jpc.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join t_jk_loan_grant jlg on jlg.contract_code = jpc.contract_code
+			left join t_jk_urge_services_amount jusa on jusa.contract_code = jp.contract_code 
+			and (jusa.return_logo = #{returnLogo} or jusa.return_logo is null)
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_gl_user us on us.id = jpm.reduction_by
+		where jpc.dict_offset_type = #{enumOne}<!-- 冲抵方式：3 提前结清 --> 
+			 <!-- 冲抵状态：3 已冲抵 or 4 风控还款退回 -->
+		<if test="chargeStatus!=null and !chargeStatus.equals('')">
+	        AND jpc.charge_status in (${chargeStatus}) 
+	   </if> 
+		<if test="customerName != null and customerName != ''">
+			and jlc.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and jpc.contract_code = #{contractCode}
+		</if>
+		<if test="storeId != null and storeId != ''">
+			and jli.loan_store_orgid in  (${storeId}) <!-- 门店名称 -->
+		</if>
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+			and jp.dict_pay_status = #{dictPayStatus} <!-- 还款状态 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and jli.loan_flag = #{loanFlag} <!-- 标识 -->
+		</if>
+		<if test="loanIsPhone != null and loanIsPhone != ''">
+			and jlc.customer_telesales_flag = #{loanIsPhone} <!-- 是否电销 -->
+		</if>
+		<!-- 一下三行日期的查询条件 -->
+		<if test="beginDate != null">
+		   <![CDATA[and jpm.modify_time >= #{beginDate}]]>
+		</if>
+		<if test="endDate != null">
+		  <![CDATA[AND jpm.modify_time <= #{endDate}]]>
+		</if>
+		<if test="beginDate != null  and endDate != null">
+			and jpm.modify_time between #{beginDate} and #{endDate} <!-- 提前结清日期 -->
+		</if>
+	    <if test="model != null  and model != ''">
+			and jli.model = #{model} <!-- 模式 -->
+		</if>
+		<if test="idList !=null and idList.length > 0">
+			and jpc.id in
+			<foreach item="item" index="index" collection="idList" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		order by modifyDate desc
+	</select>
+    <!-- 单个查看  提前结清已办列表信息 -->
+    <sql id="seeEarlySettlementclums">
+   		jpc.contract_code as contractCode, <!--合同编号 -->
+		jp.payback_month_amount as paybackMonthMoney, <!--期供金额-->
+		jp.payback_max_overduedays as paybackMaxOverduedays, <!--最长逾期天数-->
+		jp.payback_bule_amount as paybackBuleAmont, <!-- 蓝补金额-->
+		jlc.customer_name as customerName, <!--客户名称 -->
+		org.name as orgName, <!--门店名称 -->
+		jc.contract_amount as contractMoney, <!-- 合同金额 -->
+		jc.contract_version as contractVersion,<!-- 合同版本号 -->
+		jlg.grant_amount as grantAmount, <!--放款金额 -->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jpm.month_capital_payactual as monthCapitalPayactual, <!-- 实还本金-->
+		jpm.month_interest_payactual as monthInterestPayactual, <!-- 实还利息-->
+		jpm.month_penalty_actual as monthPenaltyActual, <!-- 实还违约金-->
+		jpm.month_interest_punishactual as monthInterestPunishactual, <!-- 实还罚息-->
+		jpm.month_before_reduction_amount as monthModifyMoney, <!--减免提前结清金额  期供表 提前结清减免金额-->
+		jpm.month_penalty_reduction as monthPenaltyReduction, <!-- 减免违约金-->
+		jpm.month_punish_reduction as monthPunishReduction, <!-- 减免罚息-->
+		jpm.reduction_by as reductionBy, <!-- 减免人-->
+		jpm.month_before_finish_amount as monthBeforefinishMoney, <!--一次性提前结清应还款金额  期供表 提前结清金额 -->
+		jusa.urge_moeny as urgeMoeny, <!--催收服务费金额--> 
+		usb.dict_pay_status as dictPayStatusSF, <!--是否返款-->
+		usb.payback_back_amount as paybackBackMoney,  <!--返款金额-->
+		jpc.return_reason as remark, <!-- 审核意见 -->	
+		jpc.settle_total_amount as modifyYingpaybackBackMoney, <!-- 提前结清应还款总额 -->
+		jpc.penalty_total_amount as notYetLiquidatedPenalty, <!-- 未还违约金及罚息总额 -->
+		jpc.charge_status as chargeStatus <!-- 冲抵状态 -->
+    </sql>
+    <select id="seeEarlySettlement" resultType="com.creditharmony.loan.borrow.payback.entity.ex.EarlySettlementEx">
+    	select 
+		  	<include refid="seeEarlySettlementclums" />
+		from t_jk_payback_charge jpc 
+			left join t_jk_payback jp on jp.contract_code = jpc.contract_code
+			left join t_jk_contract jc on jc.contract_code = jpc.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org org on org.id = jli.loan_store_orgid
+			left join t_jk_loan_grant jlg on jlg.contract_code = jpc.contract_code
+			left join t_jk_urge_services_amount jusa on jusa.r_grant_id = jlg.id and jusa.return_logo = #{returnLogo}
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_jk_urge_services_backamount usb on usb.r_payback_id = #{rPaybackId}
+		where jpc.id = #{id}
+    </select>
+    
+    <select id="getPunishPenaltySum" resultType="com.creditharmony.loan.borrow.payback.entity.ex.EarlySettlementEx">
+     select contract_code,sum(month_punish_reduction) monthPunishReductionSum,
+     sum(month_penalty_reduction) monthPenaltyReductionSum,
+     sum(month_late_fee_reduction) monthLateFeeReductionSum,
+     sum(month_capital_payactual) monthCapitalPayactualSum,
+     sum(month_interest_payactual) monthInterestPayactualSum,
+     sum(actual_month_fee_service) actualMonthFeeServiceSum,
+     sum(month_penalty_actual) monthPenaltyActualSum,
+     sum(month_interest_punishactual) monthinterestPunishActualSum,
+     sum(actual_month_late_fee) actualMonthLateFeeSum from t_jk_payback_month  tpm 
+     where contract_code=#{contratCode} group by contract_code 
+    </select>
+</mapper>

@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.creditharmony.loan.borrow.payback.dao.LoanServiceBureauDao">
+	<sql id="loanServiceBureauHavaTo">
+	    a.id,
+		a.id as ids,
+		a.month_id as monthId,<!-- 集中划扣申请时关联的期供ID -->
+		a.contract_code as contractCode, <!--合同编号-->
+		a.repay_amount as applyMoneyPayback, <!-- 申请还款金额 -->
+		a.split_back_result as  splitBackResult,<!-- 回盘结果 -->
+		a.return_reasion as applyBackMmes, <!--失败原因-->
+		a.dict_deal_type as dictDealType, <!--划扣平台-->
+		gda.label as dictPayResult, <!--还款结果-->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jc.contract_end_day as contractEndDay, <!--合同到期日-->
+		gos.name as orgName, <!--门店名称-->
+	    gos.id as storeId, <!--门店id-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jp.dict_pay_status as dictPayStatus, <!--还款状态-->
+		jp.payback_day as repaymentDate ,<!-- 还款日 -->
+		jpm.month_pay_day as monthPayDay, <!--期供还款日-->
+		jli.loan_flag as loanMark, <!--标识-->
+		jlc.customer_telesales_flag as customerTelesalesFlag, <!--是否电销-->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		jli.dict_source_type as dictSourceType, <!-- 来源系统 -->
+		jpm.month_pay_total as monthPayAmount, <!-- 应还款金额 -->
+		jli.model          <!-- 模式 -->
+	</sql>
+	<sql id="loanServiceBureauHavaToColuns">
+		jpcg.id as ids,
+		jpcg.contract_code as contractCode, <!--合同编号-->
+		jp.payback_bule_amount as applyMoneyPayback, <!-- 申请还款金额 -->
+		gdc.label as dictPayResult, <!--还款结果-->
+		jpcg.return_reason as applyBackMmes, <!--失败原因-->
+		jlb.bank_signing_platform as dictDealType, <!-- 划扣平台 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jc.contract_end_day as contractEndDay, <!--合同到期日-->
+		gos.name as orgName, <!--门店名称-->
+		gos.id as storeId, <!--门店id-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jp.dict_pay_status as dictPayStatus, <!--还款状态-->
+		jpm.month_pay_day as monthPayDay, <!--期供还款日-->
+		jli.loan_flag as loanMark, <!--标识-->
+		jlc.customer_telesales_flag as customerTelesalesFlag, <!--是否电销-->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		jp.payback_day as repaymentDate,<!-- 还款日 -->
+		jli.dict_source_type as dictSourceType, <!-- 来源系统 -->
+		jpcg.settle_total_amount as monthPayAmount, <!-- 应还款金额 -->
+		jli.model
+	</sql>
+	
+	<!-- 借款人服务部集中划扣申请已办列表页面 -->
+	<select id="centerApplyHaveToList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.LoanServiceBureauEx">
+	  select 
+	  <include refid="loanServiceBureauHavaTo"/>
+	  from t_jk_payback_list_his a 
+			left join t_jk_payback jp on jp.contract_code = a.contract_code
+			left join t_jk_contract jc on jc.contract_code = a.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_jk_payback_month jpm on  jpm.id = a.month_id
+			left join t_gl_dict gda on gda.type = 'jk_payback_result' and gda.value = a.split_back_result <!-- 回盘结果 -->
+			where 1=1
+			<if test="customerName != null and customerName != ''">
+			    and jlc.customer_name LIKE '%${customerName}%'
+			</if>
+			<if test="contractCode != null and contractCode != ''">
+			    and a.contract_code like '%${contractCode}%'
+			</if>
+			<if test="loanMark != null and loanMark != ''">
+			    and jli.loan_flag = #{loanMark} <!-- 标识 -->
+			</if>
+			<if test="splitBackResult != null and splitBackResult != ''">
+				and a.split_back_result  = #{splitBackResult}  <!-- 回盘结果 -->
+			</if>
+			<if test="dictSourceType != null and dictSourceType != ''">
+				and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+			</if>
+			<if test="storeId != null and storeId != ''">
+				and gos.id in (${storeId}) <!-- 门店名称 -->
+			</if>
+			<if test="repaymentDate !=null and repaymentDate != ''">
+				and jp.payback_day  in(${repaymentDate}) <!-- 还款日 -->
+			</if>
+			<if test="model !=null and model != ''">
+				and jli.model  = #{model} <!-- 还款日 -->
+			</if>
+			order by a.create_time desc 
+	</select>
+	
+	<!-- 借款人服务部 待提前结清确认已办列表页面 -->
+	<select id="earlyExamHavetoList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.LoanServiceBureauEx">
+	  select 
+	  <include refid="loanServiceBureauHavaToColuns"/>
+	  from t_jk_payback_charge jpcg
+			left join t_jk_contract jc on jc.contract_code = jpcg.contract_code 
+			left join t_jk_payback jp on jp.contract_code = jpcg.contract_code
+			left join t_jk_loan_bank jlb on jlb.loan_code = jc.loan_code and jlb.bank_top_flag = '1' 
+			and jlb.repayment_flag = '1'
+			left join t_gl_dict gdc on gdc.type = 'jk_charge_against_status' and gdc.value = jpcg.charge_status <!-- 回盘结果 -->
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+		where dict_offset_type = #{enumTwo} and charge_status in (${chargeStatus})<!-- 冲抵方式：3 提前结清 -->
+	        <if test="customerName != null and customerName != ''">
+			    and jlc.customer_name LIKE CONCAT('%',#{customerName}, '%')
+			</if>
+			<if test="contractCode != null and contractCode != ''">
+			    and jpcg.contract_code like '%${contractCode}%'
+			</if>
+			<if test="loanMark != null and loanMark != ''">
+			    and jli.loan_flag = #{loanMark} <!-- 标识 -->
+			</if>
+			<if test="dictSourceType != null and dictSourceType != ''">
+				and jli.dict_source_type = #{dictSourceType} <!-- 来源系统 -->
+			</if>
+			<if test="storeId != null and storeId != ''">
+				and gos.id in (${storeId}) <!-- 门店名称 -->
+			</if>
+			<if test="repaymentDate !=null and repaymentDate != ''">
+				and jp.payback_day  in(${repaymentDate}) <!-- 还款日 -->
+			</if>
+			<if test="model !=null and model != ''">
+				and jli.model  = #{model} <!-- 还款日 -->
+			</if>
+			order by jpcg.create_time desc 
+	</select>
+	
+	    <!-- 门店已办 单个查看(POS机还款) -->
+	<select id="seePayBackTransPos" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferInfo">
+			select a.contract_code,    <!-- 合同号 -->
+			a.refer_code as referCode,              <!-- 参考号 -->
+			a.pos_order_number as posOrderNumber,        <!-- POS订单号 -->
+			a.dict_deposit as dictDepositPosCard,            <!-- 存款方式  -->
+			a.payback_date as paybackDate,            <!-- 到账日期 -->
+			a.apply_really_amount as applyReallyAmountPosCard,     <!-- 实际到账金额  -->
+			a.upload_name as uploadNamePosCard,             <!-- 上传人 -->
+			a.upload_date as uploadDatePosCard            <!-- 上传时间 -->
+			from t_jk_pos_record a  where   a.r_payback_apply_id  =#{ids}
+	</select>
+	
+	<!-- 查询借款人服务部已办列表(还款申请表、冲抵申请表) -->
+	<select id="allLoanServiceBureauHavaToList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.LoanServiceBureauEx">
+	select * from (
+		select 
+			<include refid="loanServiceBureauHavaToColuns" />
+		from t_jk_payback_charge jpcg
+			left join t_jk_contract jc on jc.contract_code = jpcg.contract_code 
+			left join t_jk_payback jp on jp.contract_code = jpcg.contract_code
+			left join t_jk_loan_bank jlb on jlb.loan_code = jc.loan_code 
+			and jlb.bank_top_flag = '1' and jlb.repayment_flag = '1'
+			left join t_gl_dict gd on gd.type = 'jk_repay_type' and gd.value = jpcg.dict_offset_type <!-- 还款类型 -->
+			left join t_gl_dict gdc on gdc.type = 'jk_charge_against_status' and gdc.value = jpcg.charge_status <!-- 回盘结果 -->
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+		where dict_offset_type = #{enumTwo} and charge_status in (${chargeStatus})<!-- 冲抵方式：3 提前结清 -->
+	UNION ALL
+		select
+			<include refid="loanServiceBureauHavaTo" />
+		from t_jk_payback_apply a 
+			left join t_jk_payback jp on jp.contract_code = a.contract_code
+			left join t_jk_contract jc on jc.contract_code = a.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_store_orgid
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join t_gl_dict gd on gd.type = 'jk_repay_type' and gd.value = a.dict_pay_use <!-- 还款类型 -->
+			left join t_gl_dict gda on gda.type = 'jk_payback_result' and gda.value = a.dict_pay_result <!-- 回盘结果 -->
+		where a.dict_deduct_type = #{enumOne} <!-- 划扣类型：集中划扣 0-->  
+	)dataList
+		where 1=1
+		
+		
+		<if test="customerName != null and customerName != ''">
+			and dataList.customerName LIKE CONCAT('%',#{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and dataList.contractCode like '%${contractCode}%'
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and dataList.loanMark = #{loanMark} <!-- 标识 -->
+		</if>
+		<if test="dictPayResult != null and dictPayResult != ''">
+			and dataList.dictPayResult = #{dictPayResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and dataList.dictSourceType = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="storeId != null and storeId != ''">
+			and dataList.storeId in (${storeId}) <!-- 门店名称 -->
+		</if>
+		<if test="repaymentDate !=null and repaymentDate != ''">
+			and cast(to_char(dataList.monthPayDay,'dd') as integer) = cast(#{repaymentDate} as integer) <!-- 还款日 -->
+		</if>
+		order by monthPayDay desc
+	</select>
+	
+	<sql id="storelist">
+		a.id as ids,
+		a.contract_code as contractCode, <!--合同编号-->
+		a.apply_amount as applyMoneyPayback, <!-- 申请还款总额 -->
+		a.split_back_result as splitBackResult, <!-- 回盘结果 -->
+		a.dict_pay_result as dictPayResult,
+		a.dict_payback_status as dictPaybackStatus,<!-- 还款申请状态 -->
+		a.fail_reason as SplitFailResult, <!-- 失败原因 -->
+		a.apply_really_amount as applyReallyAmount, <!-- 实际还款金额 -->
+		a.dict_pay_use as dictPayUse, <!-- 还款类型 -->
+		a.dict_repay_method as dictRepayMethod,<!-- 还款方式 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jc.contract_end_day as contractEndDay, <!--合同到期日-->
+		goss.name as orgName, <!--门店名称-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jpm.month_pay_amount as monthPayMoney, <!--应还本金-->
+		jpm.month_interest_backshould as monthInterestBackshould, <!--应还利息-->
+		jpm.month_interest_punishshould as monthInterestPunishshould, <!--应还罚息-->
+		jpm.month_penalty_should as monthPenaltyShould, <!--应还违约金-->
+		a.dict_payback_status as dictPayStatus, <!--还款状态-->
+		jpm.month_pay_day as monthPayDay, <!--还款日-->
+		jli.loan_flag as loanMark, <!--标识-->
+		jlc.customer_telesales_flag as customerTelesalesFlag, <!--是否电销-->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		a.apply_really_amount as applyReallyAmount, <!-- 实际还款金额 -->
+		a.create_time as createTime,  <!-- 创建时间 -->
+		jli.model
+		,jli.dict_source_type as dictSourceType
+		,jp.payback_day as repaymentDate
+		,a.fail_reason as failReason,
+		case when (a.split_back_result ='1' or a.split_back_result ='2')
+		then
+		a.modify_time else null end  as modifyTime <!-- 划扣日期 -->
+	</sql>
+	<sql id="storeChargeList">
+		jpc.id as ids,
+		jpc.contract_code as contractCode, <!--合同编号-->
+		jp.payback_bule_amount as applyMoneyPayback, <!-- 申请还款总额 -->
+		null as splitBackResult, <!-- 回盘结果 -->
+		null as dictPayResult,
+		jpc.charge_status as dictPaybackStatus, <!--还款状态-->
+		null as SplitFailResult, <!-- 失败原因 -->
+		jp.payback_bule_amount as applyReallyAmount, <!-- 实际还款金额 -->
+		jpc.dict_offset_type as dictPayUse, <!-- 还款类型 -->
+		null as dictRepayMethod,<!-- 还款方式 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jc.contract_end_day as contractEndDay, <!--合同到期日-->
+		goss.name as orgName, <!--门店名称-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jpm.month_pay_amount as monthPayMoney, <!--应还本金-->
+		jpm.month_interest_backshould as monthInterestBackshould, <!--应还利息-->
+		jpm.month_interest_punishshould as monthInterestPunishshould, <!--应还罚息-->
+		jpm.month_penalty_should as monthPenaltyShould, <!--应还违约金-->
+		jp.dict_pay_status as dictPayStatus, <!--还款状态-->
+		jpm.month_pay_day as monthPayDay, <!--还款日-->
+		jli.loan_flag as loanMark, <!--标识-->
+		jlc.customer_telesales_flag as customerTelesalesFlag, <!--是否电销-->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		null as applyReallyAmount ,<!-- 实际到账金额 -->
+		jpc.create_time as createTime,  <!-- 创建时间 -->
+		jli.model
+		,jli.dict_source_type as dictSourceType
+		,jp.payback_day as repaymentDate
+		,'' as failReason,
+		 null as modifyTime
+	</sql>
+	<!-- 查询门店已办列表 -->
+	<select id="allStoresAlreadyDoList" resultType="com.creditharmony.loan.borrow.payback.entity.ex.LoanServiceBureauEx">
+	select * from (
+		select 
+			<include refid="storeChargeList" />
+		from t_jk_payback_charge jpc
+			left join t_jk_payback jp on jp.contract_code = jpc.contract_code
+			left join t_jk_contract jc on jc.contract_code = jpc.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join t_gl_org goss on goss.id = gos.parent_id
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_gl_dict gd on gd.type = 'jk_charge_against_status' and gd.value = jpc.charge_status
+		where jpc.dict_offset_type = #{enumTwo} <!-- 冲抵方式 ：3 提前结清 --> 
+		    <if test="phoneSaleSign != null and phoneSaleSign != ''">
+				and jlc.customer_telesales_flag=#{phoneSaleSign}
+			</if>
+		    ${queryRight} 
+	UNION ALL
+		select
+			<include refid="storelist" />
+		from t_jk_payback_apply a 
+			left join t_jk_payback jp on jp.contract_code = a.contract_code
+			left join t_jk_contract jc on jc.contract_code = a.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join t_gl_org goss on goss.id = gos.parent_id
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month 
+	     where a.dict_payback_status not in (${dictPaybackStatus})
+	        <if test="phoneSaleSign != null and phoneSaleSign != ''">
+				and jlc.customer_telesales_flag=#{phoneSaleSign}
+			</if>
+		     ${queryRight}
+	) dataList
+		where 1=1
+		<if test="customerName != null and customerName != ''">
+			and dataList.customerName LIKE CONCAT('%',#{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and dataList.contractCode = #{contractCode}
+		</if>
+		<if test="contractReplayDay != null and contractReplayDay != ''">
+			and dataList.monthPayDay = #{contractReplayDay} <!-- 期供还款日期 -->
+		</if>
+		<if test="splitBackResult != null and splitBackResult != ''">
+			and dataList.splitBackResult = #{splitBackResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="dictPayUse != null and dictPayUse != ''">
+			and dataList.dictPayUse = #{dictPayUse} <!-- 还款类型 -->
+		</if>
+		<if test="dictRepayMethod != null and dictRepayMethod != ''">
+		   and dataList.dictRepayMethod = #{dictRepayMethod} <!-- 还款方式 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and dataList.dictSourceType = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and dataList.loanMark = #{loanMark} <!-- 标识 -->
+		</if>
+		<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''">
+			and dataList.customerTelesalesFlag = #{customerTelesalesFlag} <!-- 是否电销 -->
+		</if>
+		<if test="repaymentDate !=null and repaymentDate != ''">
+			and cast(dataList.repaymentDate as integer) = cast(#{repaymentDate} as integer) <!-- 还款日 -->
+		</if> 
+		<if test="model !=null and model != ''">
+			and dataList.model = #{model}
+		</if> 
+		<if test="dictPayStatus != null and dictPayStatus != ''">
+		   and dataList.dictPaybackStatus in (${dictPayStatus})
+		</if>
+		<if test="createTime != null and createTime != ''">
+		   and to_char(dataList.createTime,'yyyy-mm-dd') = to_char(#{createTime}::TIMESTAMP,'yyyy-mm-dd')
+		</if>
+		<if test="beginDate != null and beginDate != ''">
+			and to_char(dataList.modifyTime,'yyyy-mm-dd') = to_char(#{beginDate}::TIMESTAMP,'yyyy-mm-dd') <!--回盘日期 -->
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and dataList.modifyTime &lt;=  #{endDate} <!-- 划扣日期 -->
+		</if>
+		order by dataList.createTime desc nulls last
+	</select>
+	<!-- 门店已办  单个查看 (提前结清) -->
+	<sql id="seeStoresAlreadycolums">
+		jpc.id,
+		jpc.contract_code as contractCode, <!--合同编号-->
+		jpc.upload_filename,<!-- 上传文件路径 -->
+		jpc.settle_total_amount,<!-- 提前结清应还总额 -->
+		jpc.apply_bule_amount,<!-- 申请蓝补金额 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jlc.customer_cert_num as customerCertNum, <!--证件号码-->
+		jc.product_type as productType, <!--产品类型-->
+		jc.contract_amount as contractAmount, <!--合同金额-->
+		jp.payback_month_amount as paybackMonthAmount, <!--期供金额-->
+		jc.contract_months as contractMonths, <!--借款期限-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jpm.actual_month_late_fee as actualMonthLateFee, <!-- 实还滞纳金 -->
+		jpm.month_interest_punishactual as monthInterestPunishactual, <!-- 实还罚息 -->
+		jpm.month_late_fee as monthLateFee, <!-- 应还滞纳金-->
+		jpm.month_interest_punishshould as monthInterestPunishshould, <!-- 应还罚息 -->
+		jpm.month_before_finish_amount as monthBeforeFinishAmount, <!--提前结清金额-->
+		<!-- 提前结清应还总金额 = 提前结清金额 + 未还违约金(滞纳金)及罚息总额-->
+		<!-- 减免金额 = 减免滞纳金 + 减免罚息 -->
+		jpm.month_late_fee_reduction as monthLateFeeReduction, <!--减免滞纳金-->
+		jpm.month_punish_reduction as monthPunishReduction, <!--减免罚息-->
+		jp.payback_bule_amount as paybackBuleAmount <!-- 蓝补金额 -->
+	</sql>
+	<select id="seeStoresAlreadyDo" resultType="com.creditharmony.loan.borrow.payback.entity.ex.LoanServiceBureauEx">
+		select
+			<include refid="seeStoresAlreadycolums" />
+		from t_jk_payback_charge jpc 
+			left join t_jk_payback jp on jp.contract_code = jpc.contract_code
+			left join t_jk_contract jc on jc.contract_code = jpc.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+		where jpc.id = #{ids}<!-- a.dict_deduct_type like '1' and a.dict_pay_use like '0' and  -->
+	</select>
+	<!-- 门店已办  单个查看 (非提前结清) -->
+	<sql id="seeStoresAlreadycolunmss">
+		a.id,
+		a.dict_repay_method dictRepayMethod, <!-- 还款方式 -->
+		a.contract_code as contractCode, <!--合同编号-->
+		a.apply_pay_day as applyPayDay,<!-- 还款申请日期 -->
+		a.apply_really_amount as applyReallyAmount,<!-- 实际到账总额 -->
+		a.apply_amount  as applyDeductAmount,<!-- 划扣金额 -->
+		a.dict_deal_type as dictDealType, <!-- 划扣平台 -->
+		jmp.mid_bank_name as dictDepositAccount,<!-- 存入账户 -->
+		a.apply_account_name as applyAccountName, <!-- 账号名称 -->
+		a.apply_deduct_account as applyDeductAccount,<!-- 划扣账号 -->
+		a.apply_bank_name as applyBankName, <!-- 开户行全称 -->
+		a.pos_bill_code as posBillCode,    <!-- pos订单号 -->
+		a.dict_pos_type  as dictPosType,   <!-- POS平台 -->
+		jlc.customer_cert_num as customerCertNum, <!--证件号码-->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jc.product_type as productType, <!--产品类型-->
+		pro.product_name as productLabel,
+		jc.contract_amount as contractAmount, <!--合同金额-->
+		jp.payback_month_amount as paybackMonthAmount, <!--期供金额-->
+	    jc.contract_months as contractMonths, <!--借款期限-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jli.loan_flag as loanMark, <!--标识-->
+		jp.payback_bule_amount as paybackBuleAmount, <!-- 蓝补金额 -->
+		<!-- 本次应还款金额=四个应还相加 -->
+		jpm.month_pay_amount as monthPayMoney, <!--应还本金-->
+		jpm.month_interest_backshould as monthInterestBackshould, <!--应还利息-->
+		jpm.month_interest_punishshould as monthInterestPunishshould, <!--应还罚息-->
+	    jpm.month_late_fee as monthLateFee <!-- 应还滞纳金-->	
+	</sql>
+	<select id="seeStoresAlreadyDos" resultType="com.creditharmony.loan.borrow.payback.entity.ex.LoanServiceBureauEx">
+		select
+			<include refid="seeStoresAlreadycolunmss" />
+		from t_jk_payback_apply a  
+			left join jk.t_jk_payback jp on jp.contract_code = a.contract_code
+			left join jk.t_jk_contract jc on jc.contract_code = a.contract_code
+			left join jk.t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join jk.t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join jk.t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join jk.t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month
+		    left join jk.t_jk_middle_person jmp on jmp.bank_card_no = a.dict_deposit_account
+			<!--产品类型 -->
+			left join jk.t_gl_jk_product pro on jc.product_type = pro.product_code
+		where a.id = #{ids} <!-- a.dict_deduct_type like '1' and a.dict_pay_use != '0' and --> 
+	</select>
+	
+	<!-- 门店已办 单个查看(还款用途为：非提前结清  汇款/转账、划扣信息) -->
+	<select id="seePayBackTrans" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackTransferInfo">
+		select 
+			a.dict_deposit as dictDeposit, <!-- 存款方式 -->
+			a.tran_deposit_time as tranDepositTime, <!-- 存款时间 -->
+			
+			a.stores_in_accountname as storesInAccountname, <!-- 存款账户 -->
+			<!-- jmp.mid_bank_name as storesInAccountname, --><!--存入银行(存入户名)-->
+			a.really_amount as reallyAmount, <!-- 实际到账金额 -->
+			a.deposit_name as depositName, <!-- 实际存款人 -->
+			a.upload_path as uploadPath,<!-- 上传文件路径  -->
+			a.upload_filename as uploadFilename,<!-- 存款凭条 -->
+			a.upload_name as uploadName, <!-- 上传人 -->
+			a.upload_date as uploadDate <!-- 上传时间 -->
+		from t_jk_payback_transfer_info a 
+			left join t_jk_middle_person jmp on jmp.id = a.stores_in_accountname
+		where a.r_payback_apply_id = #{ids}
+	</select>
+	
+	
+	<!-- 查询电催已办列表 -->
+	<select id="allStoresAlreadyDoListEl" resultType="com.creditharmony.loan.borrow.payback.entity.ex.LoanServiceBureauEx">
+	select * from (
+		select
+			<include refid="storelist" />
+		from t_jk_payback_apply a 
+			left join t_jk_payback jp on jp.contract_code = a.contract_code
+			left join t_jk_contract jc on jc.contract_code = a.contract_code
+			left join t_jk_loan_info jli on jli.loan_code = jc.loan_code
+			left join t_gl_org gos on gos.id = jli.loan_team_orgid
+			left join t_gl_org goss on goss.id = gos.parent_id
+			left join t_jk_loan_customer jlc on jlc.loan_code = jc.loan_code
+			left join t_jk_payback_month jpm on jpm.contract_code = jp.contract_code and jpm.months = jp.payback_current_month 
+			left join t_jk_payback_split jps on jps.r_payback_apply_id = a.id
+			left join t_gl_dict gd on gd.type = 'jk_counteroffer_result' and gd.value = jps.split_back_result
+	     where a.dict_payback_status not in (${dictPaybackStatus}) and  a.urge_manage= #{urgeManage} 
+		     ${queryRight}
+	)dataList
+		where 1=1
+		<if test="customerName != null and customerName != ''">
+			and dataList.customerName LIKE CONCAT('%',#{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and dataList.contractCode like '%${contractCode}%'
+		</if>
+		<if test="contractReplayDay != null and contractReplayDay != ''">
+			and dataList.monthPayDay = #{contractReplayDay} <!-- 期供还款日期 -->
+		</if>
+		<if test="dictPayResult != null and dictPayResult != ''">
+			and dataList.dictPayResult = #{dictPayResult}  <!-- 回盘结果 -->
+		</if>
+		<if test="dictPayUse != null and dictPayUse != ''">
+			and dataList.dictPayUse = #{dictPayUse} <!-- 还款类型 -->
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			and dataList.dictSourceType = #{dictSourceType} <!-- 来源系统 -->
+		</if>
+		<if test="loanMark != null and loanMark != ''">
+			and dataList.loanMark = #{loanMark} <!-- 标识 -->
+		</if>
+		<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''">
+			and dataList.customerTelesalesFlag = #{customerTelesalesFlag} <!-- 是否电销 -->
+		</if>
+		<if test="repaymentDate !=null and repaymentDate != ''">
+			and cast(to_char(dataList.monthPayDay,'dd') as integer) = cast(#{repaymentDate} as integer) <!-- 还款日 -->
+		</if> 
+		order by dataList.create_time desc
+	</select>
+	
+
+	<sql id="storelistElect">
+		a.id as ids,
+		a.contract_code as contractCode, <!--合同编号-->
+		a.apply_amount as applyMoneyPayback, <!-- 申请还款总额 -->
+		gd.label as splitBackResult, <!-- 回盘结果 -->
+		jps.split_fail_result as SplitFailResult, <!-- 失败原因 -->
+		a.apply_really_amount as applyReallyAmount, <!-- 实际还款金额 -->
+		a.dict_pay_use as dictPayUse, <!-- 还款类型 -->
+		jlc.customer_name as customerName, <!--客户名称-->
+		jc.contract_end_day as contractEndDay, <!--合同到期日-->
+		goss.name as orgName, <!--门店名称-->
+		jli.dict_loan_status as dictLoanStatus, <!--借款状态-->
+		jpm.month_pay_amount as monthPayMoney, <!--应还本金-->
+		jpm.month_interest_backshould as monthInterestBackshould, <!--应还利息-->
+		jpm.month_interest_punishshould as monthInterestPunishshould, <!--应还罚息-->
+		jpm.month_penalty_should as monthPenaltyShould, <!--应还违约金-->
+		jp.dict_pay_status as dictPayStatus, <!--还款状态-->
+		jpm.month_pay_day as monthPayDay, <!--还款日-->
+		jli.loan_flag as loanMark, <!--标识-->
+		jlc.customer_telesales_flag as customerTelesalesFlag, <!--是否电销-->
+		jp.id as rPaybackId, <!-- 还款主表ID -->
+		a.dict_deduct_type as dictOffsetType, <!-- 划扣类型 -->
+		a.dict_repay_method as dictRepayMethod, <!-- 还款方式 -->
+		a.apply_pay_day as applyPayDay <!-- 还款申请日期 -->
+	</sql>
+	
+</mapper>
+

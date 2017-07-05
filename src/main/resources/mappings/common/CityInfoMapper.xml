@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.CityInfoDao">
+	<sql id="cityColumns">
+		a.id,
+		a.area_name,
+		a.short_name,
+		a.area_code,
+		a.area_type,
+		a.parent_id,
+		a.city_car_code
+	</sql>
+	<sql id="cityColumnsCmb">
+		a.id,
+		a.area_name,
+		a.short_name,
+		a.area_code,
+		a.area_type,
+		a.parent_id
+		
+	</sql>
+	<select id="findOneArea" parameterType="map" resultType="com.creditharmony.loan.common.entity.CityInfo">
+		select
+		<include refid="cityColumns" />
+		from jk.t_gl_province_city a
+		where 1=1
+		and a.area_code = #{areaCode,jdbcType=VARCHAR}
+	</select>
+	<select id="findByParams" resultType="com.creditharmony.loan.common.entity.CityInfo">
+		SELECT
+		<include refid="cityColumns" />
+		FROM jk.t_gl_province_city a
+		WHERE 1=1
+		<if test="provinceId != null">
+			AND a.parent_id = #{provinceId}
+		</if>
+		<if test="parentId != null">
+			AND a.parent_id = #{parentId}
+		</if>
+		order by a.area_name
+	</select>
+	<!-- 招商银行查询 -->
+	<select id="findByParamsCmb" resultType="com.creditharmony.loan.common.entity.CityInfo">
+		SELECT
+		<include refid="cityColumnsCmb" />
+		FROM jk.t_gl_province_city_cmb a
+		WHERE 1=1
+		<if test="provinceId != null">
+			AND a.parent_id = #{provinceId}
+		</if>
+		<if test="parentId != null">
+			AND a.parent_id = #{parentId}
+		</if>
+		order by a.area_name
+	</select>
+
+	<insert id="insert">
+	</insert>
+
+	<update id="update">
+
+	</update>
+
+	<update id="delete">
+	</update>
+
+	<!-- 检索省市区及下辖地区 -->
+	<select id="selCitySub" resultType="com.creditharmony.loan.common.entity.CityInfo">
+		SELECT
+		<include refid="cityColumns" />
+		FROM
+		jk.t_gl_province_city
+		<where>
+			<if test="id != null and id != ''">
+				(parent_id = #{id} OR id = #{id})
+			</if>
+		</where>
+		
+	</select>
+
+	<select id="findAreaName" parameterType="map" resultType="com.creditharmony.loan.common.entity.CityInfo">
+		select
+		<include refid="cityColumnsCmb" />
+		from jk.t_gl_province_city_cmb a
+		where 1=1
+		and a.area_code = #{areaCode,jdbcType=VARCHAR}
+	</select>
+	<select id="get" parameterType="java.lang.String" resultType="com.creditharmony.loan.common.entity.CityInfo">
+		select
+		<include refid="cityColumns" />
+		from jk.t_gl_province_city a
+		where a.id = #{id,jdbcType=VARCHAR}
+	</select>
+</mapper>

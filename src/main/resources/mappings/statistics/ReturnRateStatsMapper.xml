@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.statistics.dao.ReturnRateStatsDao">
+	
+	<select id="findReturnRateStatsList" parameterType="com.creditharmony.loan.borrow.statistics.view.ReturnRateStatsParams" resultType="com.creditharmony.loan.borrow.statistics.entity.ReturnRateStats">
+		select 
+			srr.id, 
+			businessdepartment.name as businessDepartmentName, 
+			province_name as provinceName, 
+			citybrunch.name as cityBranchName, 
+			provincebrunch.name as provinceBranchName, 
+			store_name as storeName, 
+			role_name as roleName, 
+			user_name as userName, 
+			return_times as returnTimes, 
+			return_rate as returnRate, 
+			stats_date as statsDate 
+		from 
+			jk.t_jk_stats_return_rate as srr 
+			left join jk.t_gl_org as store on srr.store_id = store.id 
+			left join jk.t_gl_org as citybrunch on store.parent_id = citybrunch.id and citybrunch.type = '6200000006' 
+			left join jk.t_gl_org as provincebrunch on ((citybrunch.id is not null and citybrunch.parent_id = provincebrunch.id) or (citybrunch.id is null and store.parent_id = provincebrunch.id)) and (provincebrunch.type = '6200000002' or provincebrunch.type = '6200000005') 
+			left join jk.t_gl_org as businessdepartment on provincebrunch.parent_id = businessdepartment.id and businessdepartment.type = '6200000001'
+		where
+			1=1
+			<if test="month != null">
+				and stats_date &gt; #{startDate, jdbcType = DATE} and stats_date &lt; #{endDate, jdbcType = DATE}
+			</if>
+			<if test="month == null and (userName == null or userName == '') and (roleId == null or roleId == '') and (businessDepartmentId == null or businessDepartmentId == '') and (provinceBranchId == null or provinceBranchId == '') and (cityBranchId == null or cityBranchId == '') and (storeId == null or storeId == '')">
+				and stats_date = #{previousDay, jdbcType = DATE}
+			</if>
+			<if test="userName != null and userName != ''">
+				and user_name like CONCAT('%',#{userName, jdbcType = VARCHAR},'%')
+			</if>
+			<if test="roleId != null and roleId != ''">
+				and role_id = #{roleId, jdbcType = VARCHAR}
+			</if>
+			<if test="businessDepartmentId != null and businessDepartmentId !=''">
+				and businessdepartment.id = #{businessDepartmentId, jdbcType = VARCHAR}
+			</if>
+			<if test="provinceBranchId != null and provinceBranchId != ''">
+				and provincebrunch.id = #{provinceBranchId, jdbcType = VARCHAR}
+			</if>
+			<if test="cityBranchId != null and cityBranchId != ''">
+				and citybrunch.id = #{cityBranchId, jdbcType = VARCHAR}
+			</if>
+			<if test="storeId != null and storeId != ''">
+				and store.id = #{storeId, jdbcType = VARCHAR}
+			</if>
+	</select>
+	
+	<select id="findExportReturnRateStatsList" parameterType="com.creditharmony.loan.borrow.statistics.view.ReturnRateStatsParams" resultType="com.creditharmony.loan.borrow.statistics.entity.ReturnRateStats">
+		select 
+			srr.id, 
+			businessdepartment.name as businessDepartmentName, 
+			province_name as provinceName, 
+			citybrunch.name as cityBranchName, 
+			provincebrunch.name as provinceBranchName, 
+			store_name as storeName, 
+			role_name as roleName, 
+			user_name as userName, 
+			return_times as returnTimes, 
+			return_rate as returnRate, 
+			stats_date as statsDate 
+		from 
+			jk.t_jk_stats_return_rate as srr 
+			left join jk.t_gl_org as store on srr.store_id = store.id 
+			left join jk.t_gl_org as citybrunch on store.parent_id = citybrunch.id and citybrunch.type = '6200000006' 
+			left join jk.t_gl_org as provincebrunch on ((citybrunch.id is not null and citybrunch.parent_id = provincebrunch.id) or (citybrunch.id is null and store.parent_id = provincebrunch.id)) and (provincebrunch.type = '6200000002' or provincebrunch.type = '6200000005') 
+			left join jk.t_gl_org as businessdepartment on provincebrunch.parent_id = businessdepartment.id and businessdepartment.type = '6200000001'
+		where
+			1=1
+			<if test="exportId != null and exportId != ''">
+				and id in 
+				<foreach item="item" index="index" collection="exportIdArray" open="(" separator="," close=")">  
+			        #{item}  
+	      		</foreach>
+			</if>
+			<if test="exportId == null or exportId == ''">
+				<if test="month != null">
+					and stats_date &gt; #{startDate, jdbcType = DATE} and stats_date &lt; #{endDate, jdbcType = DATE}
+				</if>
+				<if test="userName != null and userName != ''">
+					and user_name like CONCAT('%',#{userName, jdbcType = VARCHAR},'%')
+				</if>
+				<if test="roleId != null and roleId != ''">
+					and role_id = #{roleId, jdbcType = VARCHAR}
+				</if>
+				<if test="businessDepartmentId != null and businessDepartmentId !=''">
+					and businessdepartment.id = #{businessDepartmentId, jdbcType = VARCHAR}
+				</if>
+				<if test="provinceBranchId != null and provinceBranchId != ''">
+					and provincebrunch.id = #{provinceBranchId, jdbcType = VARCHAR}
+				</if>
+				<if test="cityBranchId != null and cityBranchId != ''">
+					and citybrunch.id = #{cityBranchId, jdbcType = VARCHAR}
+				</if>
+				<if test="storeId != null and storeId != ''">
+					and store.id = #{storeId, jdbcType = VARCHAR}
+				</if>
+			</if>
+	</select>
+	 <!-- 
+	 <select id="findReturnRateStatsList" parameterType="com.creditharmony.loan.borrow.statistics.view.ReturnRateStatsParams" resultType="com.creditharmony.loan.borrow.statistics.entity.ReturnRateStats">
+	
+		select
+				id,
+				business_department_id,
+				business_department_name as businessDepartmentName,
+				province_id,
+				province_name as provinceName,
+				province_branch_id,
+				province_branch_name as provinceBranchName,
+				city_branch_id,
+				city_branch_name as cityBranchName,
+				store_id,
+				store_name as storeName,
+				role_id,
+				role_name as roleName,
+				user_id,
+				user_name as userName,
+				entering_times ,
+				return_times as returnTimes,
+				round( t.return_times::numeric / t.entering_times::numeric, 2) as returnRate,
+				stats_date as statsDate
+			from (select
+					uro.user_id as id,
+					businessDepartment.id as business_department_id,
+					businessDepartment."name" as business_department_name,
+					store.province_id as province_id,
+					province.area_name as province_name,
+					provincebranch.id as province_branch_id,
+					provincebranch."name" as province_branch_name,
+					citybranch.id as city_branch_id,
+					citybranch."name" as city_branch_name,
+					store.id as store_id,
+					store."name" as store_name,
+					ro.id as role_id,
+					ro.role_type as role_name,
+					uro.user_id,
+					u."name" as user_name,
+					case
+						when uro.role_id = '6230000003' then nvl(storeEnteringTable.enteringTimes, 0)::int 
+						else nvl(customerEnteringTable.enteringTimes, 0)::int 
+					end as entering_times,
+					case
+						when uro.role_id = '6230000003' then nvl(storeReturnTable.returnTimes, 0)::int
+						else nvl(customerReturnTable.returnTimes, 0)::int
+					end as return_times,
+					case
+						when uro.role_id = '6230000003' then storeReturnTable.stats_date
+						else customerReturnTable.stats_date
+					end as stats_date
+				from
+					jk.t_gl_user_role_org as uro 
+					left join jk.t_gl_role as ro on uro.role_id = ro.id
+					left join jk.t_gl_org as store on uro.org_id = store.id
+					left join jk.t_gl_org as citybranch on store.parent_id = citybranch.id
+					left join jk.t_gl_org as provincebranch on citybranch.parent_id = provincebranch.id
+					left join jk.t_gl_org as businessDepartment on provincebranch.parent_id = businessDepartment.id
+					left join jk.t_gl_user as u on uro.user_id = u.id
+					left join jk.t_gl_province_city as province on store.province_id = province.id
+					left join (select
+									count(1) as enteringTimes, 
+									li.loan_customer_service as userId,
+									to_char(li.outto_loan_time, 'YYYY-MM') as stats_date
+								from 					
+								jk.t_jk_loan_info as li
+								where 	
+									li.outto_loan_time &lt; #{endDate, jdbcType = DATE}
+									<if test="startDate != null">
+										and li.outto_loan_time &gt; #{startDate, jdbcType = DATE}
+									</if>	
+								group by li.loan_customer_service, to_char(li.outto_loan_time, 'YYYY-MM')
+					) as customerEnteringTable on customerEnteringTable.userId = uro.user_id and uro.role_id = '6230000004'
+					left join (select 
+									count(1) as enteringTimes, 
+									li.loan_store_orgid as storeId,
+									to_char(li.outto_loan_time, 'YYYY-MM') as stats_date
+								from jk.t_jk_loan_info as li
+									inner join jk.t_gl_user_role_org as uro on uro.user_id = li.loan_customer_service and uro.role_id = '6230000004'
+								where 	
+									li.outto_loan_time &lt; #{endDate, jdbcType = DATE}
+									<if test="startDate != null">
+										and li.outto_loan_time &gt; #{startDate, jdbcType = DATE}
+									</if>
+								group by li.loan_store_orgid, to_char(li.outto_loan_time, 'YYYY-MM')
+					) as storeEnteringTable on storeEnteringTable.storeId = uro.org_id and uro.role_id = '6230000003'
+					left join (select
+									count(1) as returnTimes, 
+									li.loan_customer_service as userId,
+									to_char(ab.create_time, 'YYYY-MM') as stats_date
+								from
+									jk.t_jk_audit_back as ab 
+									left join jk.t_jk_loan_info as li on li.loan_code = ab.loan_code
+								where
+									ab.create_time &lt; #{endDate, jdbcType = DATE}
+									<if test="startDate != null">
+										and ab.create_time &gt; #{startDate, jdbcType = DATE}
+									</if>
+									and ab.audit_json = '04'
+								group by li.loan_customer_service, to_char(ab.create_time, 'YYYY-MM')
+					) as customerReturnTable on uro.user_id = customerReturnTable.userId and uro.role_id = '6230000004' and customerEnteringTable.stats_date = customerReturnTable.stats_date
+					left join 	(select
+									count(1) as returnTimes, 
+									li.loan_store_orgid as storeId,
+									to_char(ab.create_time, 'YYYY-MM') as stats_date
+								from
+									jk.t_jk_audit_back as ab 
+									left join jk.t_jk_loan_info as li on li.loan_code = ab.loan_code
+									inner join jk.t_gl_user_role_org as uro on uro.user_id = li.loan_customer_service and uro.role_id = '6230000004'
+								where
+									ab.create_time &lt; #{endDate, jdbcType = DATE}
+									<if test="startDate != null">
+										and ab.create_time &gt; #{startDate, jdbcType = DATE}
+									</if>
+									and ab.audit_json = '04'
+								group by li.loan_store_orgid, to_char(ab.create_time, 'YYYY-MM')
+					) as storeReturnTable on uro.org_id = storeReturnTable.storeId and uro.role_id = '6230000003' and storeEnteringTable.stats_date = storeReturnTable.stats_date 
+				where
+					u.del_flag = '0'
+					<if test="userName != null and userName != ''">
+						and u."name" like '%#{userName, jdbcType = VARCHAR}%'
+					</if>
+					<if test="businessDepartmentId != null and businessDepartmentId !=''">
+						and businessDepartment.id = #{businessDepartmentId, jdbcType = VARCHAR}
+					</if>
+					<if test="provinceBranchId != null and provinceBranchId != ''">
+						and provincebranch.id = #{provinceBranchId, jdbcType = VARCHAR}
+					</if>
+					<if test="cityBranchId != null and cityBranchId != ''">
+						and citybranch.id = #{cityBranchId, jdbcType = VARCHAR}
+					</if>
+					<if test="storeId != null and storeId != ''">
+						and store.id = #{storeId, jdbcType = VARCHAR}
+					</if>
+					<if test="roleId != null and roleId != ''">
+						and ro.id = #{roleId, jdbcType = VARCHAR}
+					</if>
+					<if test="roleId == null or roleId == ''">
+						and ro.id in('6230000004', '6230000003') 
+					</if>
+			) as t where return_times  &gt; 0 
+	 </select>
+	  
+	 <select id="findExportReturnRateStatsList" parameterType="com.creditharmony.loan.borrow.statistics.view.ReturnRateStatsParams" resultType="com.creditharmony.loan.borrow.statistics.entity.ReturnRateStats">
+	 </select>
+	 -->
+</mapper>

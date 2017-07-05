@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.CustomerLivingsDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.CustomerLivings">
+    <result column="id"  property="id" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="r_customer_coborrower_id" property="rcustomerCoborrowerId"/>
+    <result column="loan_customer_type"  property="loanCustomerType" />
+    <result column="customer_firt_arrive_year"  property="customerFirtArriveYear" />
+    <result column="customer_residential"  property="customerResidential" />
+    <result column="customer_first_living_day"  property="customerFirtLivingDay" />
+    <result column="customer_family_support"  property="customerFamilySupport" />
+    <result column="customer_housing_situation"  property="customerHousingSituation" />
+    <result column="customer_month_repay_amount" property="customerMonthRepayAmount"/>
+    <result column="customer_rent_month" property="customerRentMonth"/>
+    <result column="customer_house_hold_property"  property="customerHouseHoldProperty" />
+    <result column="customer_have_live"  property="customerHaveLive" />
+    <result column="customer_living_num"  property="customerLivingNum" />
+    <result column="dict_house_type"  property="dictHouseType" />
+    <result column="customer_house_hold_property_new_other"  property="customerHouseHoldPropertyNewOther" />
+  </resultMap>
+   <sql id="baseColumn">
+      id,loan_code,r_customer_coborrower_id,loan_customer_type,
+      customer_firt_arrive_year,customer_residential,
+      customer_first_living_day,customer_family_support,
+      customer_housing_situation,customer_month_repay_amount,
+      customer_rent_month,customer_house_hold_property,
+      customer_have_live,customer_living_num,dict_house_type,
+      create_by,create_time,modify_by,modify_time,
+      customer_house_hold_property_new_other
+   </sql>
+   <select id="selectByLoanCode"  resultMap="BaseResultMap">
+    select 
+      <include refid="baseColumn"/>
+    from jk.t_jk_customer_livings
+    where loan_code = #{0} and loan_customer_type = #{1}
+  </select>
+  <select id="findByParam" parameterType="map" resultMap="BaseResultMap">
+      select 
+      <include refid="baseColumn"/>
+    from jk.t_jk_customer_livings  
+    where loan_code=#{loanCode,jdbcType=VARCHAR} and  r_customer_coborrower_id = #{relateId,jdbcType=VARCHAR} 
+    and loan_customer_type=#{customerType,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert">
+     insert into jk.t_jk_customer_livings(
+       <include refid="baseColumn"/>
+       )values(
+        #{id,jdbcType=VARCHAR},
+        #{loanCode,jdbcType=VARCHAR},
+        #{rcustomerCoborrowerId,jdbcType=VARCHAR},
+        #{loanCustomerType,jdbcType=VARCHAR},
+        #{customerFirtArriveYear,jdbcType=VARCHAR},
+        #{customerResidential,jdbcType=VARCHAR},
+        #{customerFirtLivingDay,jdbcType=TIMESTAMP},
+        #{customerFamilySupport,jdbcType=INTEGER},
+        #{customerHousingSituation,jdbcType=VARCHAR},
+        #{customerMonthRepayAmount,jdbcType=NUMERIC},
+        #{customerRentMonth,jdbcType=NUMERIC},
+        #{customerHouseHoldProperty,jdbcType=VARCHAR},
+        #{customerHaveLive,jdbcType=VARCHAR},
+        #{customerLivingNum,jdbcType=INTEGER},
+        #{dictHouseType,jdbcType=VARCHAR},
+        #{createBy,jdbcType=VARCHAR}, 
+        #{createTime,jdbcType=TIMESTAMP},
+        #{modifyBy,jdbcType=VARCHAR}, 
+        #{modifyTime,jdbcType=TIMESTAMP},
+        #{customerHouseHoldPropertyNewOther,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="update">
+    update jk.t_jk_customer_livings
+    <set>
+      <if test="id != null and id !=''">
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null and loanCode !=''">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="rcustomerCoborrowerId != null and rcustomerCoborrowerId !=''">
+        r_customer_coborrower_id = #{rcustomerCoborrowerId,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCustomerType != null and loanCustomerType !=''">
+        loan_customer_type = #{loanCustomerType,jdbcType=VARCHAR},
+      </if>
+      <if test="customerFirtArriveYear != null and customerFirtArriveYear !=''">
+        customer_firt_arrive_year = #{customerFirtArriveYear,jdbcType=VARCHAR},
+      </if>
+      <if test="customerResidential != null and customerResidential !=''">
+        customer_residential = #{customerResidential,jdbcType=VARCHAR},
+      </if>
+      <if test="customerFirtLivingDay != null">
+        customer_first_living_day = #{customerFirtLivingDay,jdbcType=TIMESTAMP},
+      </if>
+      <if test="customerFamilySupport != null and customerFamilySupport !=''">
+        customer_family_support = #{customerFamilySupport,jdbcType=NUMERIC},
+      </if>
+      <if test="customerHousingSituation != null and customerHousingSituation !=''">
+        customer_housing_situation = #{customerHousingSituation,jdbcType=VARCHAR},
+      </if>
+      <if test="customerMonthRepayAmount != null">
+        customer_month_repay_amount = #{customerMonthRepayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="customerRentMonth != null">
+        customer_rent_month = #{customerRentMonth,jdbcType=NUMERIC},
+      </if>
+      <if test="customerHouseHoldProperty != null and customerHouseHoldProperty !=''">
+        customer_house_hold_property = #{customerHouseHoldProperty,jdbcType=VARCHAR},
+      </if>
+      <if test="customerHaveLive != null and customerHaveLive !=''">
+        customer_have_live = #{customerHaveLive,jdbcType=VARCHAR},
+      </if>
+      <if test="customerLivingNum != null">
+        customer_living_num = #{customerLivingNum,jdbcType=INTEGER},
+      </if>
+      <if test="dictHouseType != null and dictHouseType !=''">
+        dict_house_type = #{dictHouseType,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null and createBy !=''">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null and modifyBy !=''">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="customerHouseHoldPropertyNewOther != null">
+        customer_house_hold_property_new_other = #{customerHouseHoldPropertyNewOther,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+   </update>
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.app.dao.AppDao">
+	
+  <select id="getOutsideTaskList" resultType="com.creditharmony.loan.common.entity.OutsideCheckInfo">
+	select id, loan_code, survey_emp_id, item_distance, dict_survey_status,
+		dict_check_type, create_time, create_by, modify_time, modify_by,
+		survey_start_time, survey_end_time, r_status_his_id
+		from jk.t_jk_outside_task_list
+	where loan_code = #{loanCode}
+  </select>
+  
+  <select id="getOutsideTaskListInfo" resultType="com.creditharmony.loan.borrow.outvisit.enity.LoanOutsideTaskInfo">
+	SELECT id, task_id, dict_customer_type, check_json, live_province, live_city, 
+       live_area, live_address, house_province, house_city, house_area, 
+       house_address, work_uinit_province, work_unit_city, work_unit_area, 
+       work_unit_address, operation_province, operation_city, operation_area, 
+       operation_address, create_by, create_time, modify_by, modify_time, 
+       customer_name, telephone, remark
+  FROM jk.t_jk_outside_task_info
+	where task_id = #{taskId} and dict_customer_type = #{dictCustomerType}
+  </select>
+  
+  <select id="getOutCheck" resultType="com.creditharmony.core.dict.entity.Dict">
+  		SELECT 
+		 b.id as id,
+		 b.value as value,
+		 b.label as label,
+		 b.type as type
+		FROM jk.t_gl_dict a
+		LEFT JOIN jk.t_gl_dict b on concat(a.type,'_',a.value) = b.type
+		LEFT JOIN jk.t_gl_dict c on concat(b.type,'_',b.value) = c.type
+		WHERE a.type = #{type} and b.value = #{value}
+		ORDER by a.sort,b.sort,c.sort
+  </select>
+  
+  <select id="getOutListForDistance" resultType="com.creditharmony.loan.common.entity.OutsideCheckInfo">
+	  select id, loan_code, survey_emp_id, item_distance, dict_survey_status,
+		dict_check_type, create_time, create_by, modify_time, modify_by,
+		survey_start_time, survey_end_time, r_status_his_id
+		from jk.t_jk_outside_task_list
+	where loan_code = #{loanCode} and item_distance is not null
+  </select>
+  
+  <update id="updateOutSideTask">
+  	update jk.t_jk_outside_task_list 
+  	set
+  	item_distance = #{itemDistance},
+  	dict_survey_status = #{dictSurveyStatus}
+  	where id=#{id} and survey_emp_id=#{surveyEmpId}
+  </update>
+  
+</mapper>
+

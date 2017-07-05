@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.common.dao.ChangeDao" >
+
+  <update id="updateAccountChange" parameterType="String">
+	update jk.t_jk_account_change_log
+	set send_flag=#{status}
+	where doc_id=#{docId}
+</update>
+
+<update id="updateArchivesStatus" >
+	update jk.t_jk_contract_archives
+	set send_flag = '2'
+	where loan_code=#{loanCode} and file_num=#{fileType}
+</update>
+  
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.black.dao.BlackDao">
+  <resultMap id="black" type="com.creditharmony.loan.borrow.black.entity.Black">
+     <result column="id" property="id" jdbcType="VARCHAR"/>
+     <result column="loan_code" property="loanCode" jdbcType="VARCHAR"/>
+     <result column="dict_black_type" property="dictBlackType" jdbcType="VARCHAR"/>
+     <result column="black_msg" property="blackMsg" jdbcType="VARCHAR"/>
+     <result column="dict_source" property="dictSource" jdbcType="VARCHAR"/>
+     <result column="dict_mark_type" property="dictMarkType" jdbcType="VARCHAR"/>
+     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+     <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+     <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+     <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+  </resultMap>
+  <sql id="blackBase">
+     id,loan_code,dict_black_type,black_msg,dict_source,dict_mark_type,
+     create_time,create_by,modify_by,modify_time 
+  </sql>
+  <select id="findBlackByIdentification" resultMap="black"> 
+      select 
+      <include refid="blackBase"/> 
+      from jk.t_jk_backlist_all 
+      where 1=1 
+      <if test="dictBlackType!=null and dictBlackType!=''">
+       and dict_black_type = #{dictBlackType} 
+      </if>
+      <if test="blackMsg!=null and blackMsg!=''">
+       and black_msg = #{blackMsg} 
+      </if>
+      <if test="dictMarkType!=null and dictMarkType!=''">
+       and dict_mark_type = #{dictMarkType} 
+      </if>
+  </select>
+</mapper>

@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.HCAuditResultDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.contract.entity.HCAuditResultEntity" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="apply_id" property="applyId" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="r_status_his_id" property="rStatusHisId" jdbcType="VARCHAR" />
+    <result column="single_tast_id" property="singleTastId" jdbcType="VARCHAR" />
+    <result column="audit_result" property="auditResult" jdbcType="VARCHAR" />
+    <result column="product_type" property="productType" jdbcType="VARCHAR" />
+    <result column="audit_months" property="auditMonths" jdbcType="INTEGER" />
+    <result column="audit_amount" property="auditAmount" jdbcType="NUMERIC" />
+    <result column="audit_contract_amount" property="auditContractAmount" jdbcType="NUMERIC" />
+    <result column="audit_month_repay_amount" property="auditMonthRepayAmount" jdbcType="NUMERIC" />
+    <result column="audit_rules_code" property="auditRulesCode" jdbcType="VARCHAR" />
+    <result column="audit_check_examine" property="auditCheckExamine" jdbcType="VARCHAR" />
+    <result column="audit_ensure_name" property="auditEnsureName" jdbcType="VARCHAR" />
+    <result column="audit_legal_man" property="auditLegalMan" jdbcType="VARCHAR" />
+    <result column="ensureman_business_place" property="ensuremanBusinessPlace" jdbcType="VARCHAR" />
+    <result column="dict_check_type" property="dictCheckType" jdbcType="VARCHAR" />
+    <result column="attachment_path" property="attachmentPath" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="stepname" property="stepname" jdbcType="VARCHAR" />
+    <result column="gross_rate" property="grossRate" jdbcType="NUMERIC" />
+    <result column="dict_source_type" property="dictSourceType" jdbcType="VARCHAR" />
+    <result column="business_prove_id" property="businessProveId" jdbcType="VARCHAR" />
+    <result column="ensureman_business_province" property="ensuremanBusinessProvince" jdbcType="VARCHAR" />
+    <result column="ensureman_business_city" property="ensuremanBusinessCity" jdbcType="VARCHAR" />
+    <result column="ensureman_business_area" property="ensuremanBusinessArea" jdbcType="VARCHAR" />
+    <result column="dict_source_type_pcl" property="dictSourceTypePcl" jdbcType="VARCHAR" />
+    <result column="best_coborrower_id" property="bestCoborrowerId" jdbcType="VARCHAR" />
+    <result column="business_cert_num" property="businessCertNum" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, apply_id, loan_code, r_status_his_id, single_tast_id, audit_result, product_type, 
+    audit_months, audit_amount, audit_contract_amount, audit_month_repay_amount, audit_rules_code, 
+    audit_check_examine, audit_ensure_name, audit_legal_man, ensureman_business_place, 
+    dict_check_type, attachment_path, create_time, create_by, modify_time, modify_by, 
+    stepname, gross_rate, dict_source_type, business_prove_id, ensureman_business_province, 
+    ensureman_business_city, ensureman_business_area, dict_source_type_pcl, best_coborrower_id, 
+    business_cert_num
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_jk_audit_result
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  
+   <select id="searchOneByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_jk_audit_result
+    where loan_code = #{loanCode,jdbcType=VARCHAR} order by create_time desc limit 1
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from t_jk_audit_result
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.borrow.contract.entity.HCAuditResultEntity" >
+    insert into t_jk_audit_result (id, apply_id, loan_code, 
+      r_status_his_id, single_tast_id, audit_result, 
+      product_type, audit_months, audit_amount, 
+      audit_contract_amount, audit_month_repay_amount, 
+      audit_rules_code, audit_check_examine, audit_ensure_name, 
+      audit_legal_man, ensureman_business_place, 
+      dict_check_type, attachment_path, create_time, 
+      create_by, modify_time, modify_by, 
+      stepname, gross_rate, dict_source_type, 
+      business_prove_id, ensureman_business_province, 
+      ensureman_business_city, ensureman_business_area, 
+      dict_source_type_pcl, best_coborrower_id, business_cert_num
+      )
+    values (#{id,jdbcType=VARCHAR}, #{applyId,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, 
+      #{rStatusHisId,jdbcType=VARCHAR}, #{singleTastId,jdbcType=VARCHAR}, #{auditResult,jdbcType=VARCHAR}, 
+      #{productType,jdbcType=VARCHAR}, #{auditMonths,jdbcType=INTEGER}, #{auditAmount,jdbcType=NUMERIC}, 
+      #{auditContractAmount,jdbcType=NUMERIC}, #{auditMonthRepayAmount,jdbcType=NUMERIC}, 
+      #{auditRulesCode,jdbcType=VARCHAR}, #{auditCheckExamine,jdbcType=VARCHAR}, #{auditEnsureName,jdbcType=VARCHAR}, 
+      #{auditLegalMan,jdbcType=VARCHAR}, #{ensuremanBusinessPlace,jdbcType=VARCHAR}, 
+      #{dictCheckType,jdbcType=VARCHAR}, #{attachmentPath,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{createBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{stepname,jdbcType=VARCHAR}, #{grossRate,jdbcType=NUMERIC}, #{dictSourceType,jdbcType=VARCHAR}, 
+      #{businessProveId,jdbcType=VARCHAR}, #{ensuremanBusinessProvince,jdbcType=VARCHAR}, 
+      #{ensuremanBusinessCity,jdbcType=VARCHAR}, #{ensuremanBusinessArea,jdbcType=VARCHAR}, 
+      #{dictSourceTypePcl,jdbcType=VARCHAR}, #{bestCoborrowerId,jdbcType=VARCHAR}, #{businessCertNum,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.contract.entity.HCAuditResultEntity" >
+    insert into t_jk_audit_result
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="applyId != null" >
+        apply_id,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="rStatusHisId != null" >
+        r_status_his_id,
+      </if>
+      <if test="singleTastId != null" >
+        single_tast_id,
+      </if>
+      <if test="auditResult != null" >
+        audit_result,
+      </if>
+      <if test="productType != null" >
+        product_type,
+      </if>
+      <if test="auditMonths != null" >
+        audit_months,
+      </if>
+      <if test="auditAmount != null" >
+        audit_amount,
+      </if>
+      <if test="auditContractAmount != null" >
+        audit_contract_amount,
+      </if>
+      <if test="auditMonthRepayAmount != null" >
+        audit_month_repay_amount,
+      </if>
+      <if test="auditRulesCode != null" >
+        audit_rules_code,
+      </if>
+      <if test="auditCheckExamine != null" >
+        audit_check_examine,
+      </if>
+      <if test="auditEnsureName != null" >
+        audit_ensure_name,
+      </if>
+      <if test="auditLegalMan != null" >
+        audit_legal_man,
+      </if>
+      <if test="ensuremanBusinessPlace != null" >
+        ensureman_business_place,
+      </if>
+      <if test="dictCheckType != null" >
+        dict_check_type,
+      </if>
+      <if test="attachmentPath != null" >
+        attachment_path,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="stepname != null" >
+        stepname,
+      </if>
+      <if test="grossRate != null" >
+        gross_rate,
+      </if>
+      <if test="dictSourceType != null" >
+        dict_source_type,
+      </if>
+      <if test="businessProveId != null" >
+        business_prove_id,
+      </if>
+      <if test="ensuremanBusinessProvince != null" >
+        ensureman_business_province,
+      </if>
+      <if test="ensuremanBusinessCity != null" >
+        ensureman_business_city,
+      </if>
+      <if test="ensuremanBusinessArea != null" >
+        ensureman_business_area,
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        dict_source_type_pcl,
+      </if>
+      <if test="bestCoborrowerId != null" >
+        best_coborrower_id,
+      </if>
+      <if test="businessCertNum != null" >
+        business_cert_num,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId != null" >
+        #{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="rStatusHisId != null" >
+        #{rStatusHisId,jdbcType=VARCHAR},
+      </if>
+      <if test="singleTastId != null" >
+        #{singleTastId,jdbcType=VARCHAR},
+      </if>
+      <if test="auditResult != null" >
+        #{auditResult,jdbcType=VARCHAR},
+      </if>
+      <if test="productType != null" >
+        #{productType,jdbcType=VARCHAR},
+      </if>
+      <if test="auditMonths != null" >
+        #{auditMonths,jdbcType=INTEGER},
+      </if>
+      <if test="auditAmount != null" >
+        #{auditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="auditContractAmount != null" >
+        #{auditContractAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="auditMonthRepayAmount != null" >
+        #{auditMonthRepayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="auditRulesCode != null" >
+        #{auditRulesCode,jdbcType=VARCHAR},
+      </if>
+      <if test="auditCheckExamine != null" >
+        #{auditCheckExamine,jdbcType=VARCHAR},
+      </if>
+      <if test="auditEnsureName != null" >
+        #{auditEnsureName,jdbcType=VARCHAR},
+      </if>
+      <if test="auditLegalMan != null" >
+        #{auditLegalMan,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessPlace != null" >
+        #{ensuremanBusinessPlace,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckType != null" >
+        #{dictCheckType,jdbcType=VARCHAR},
+      </if>
+      <if test="attachmentPath != null" >
+        #{attachmentPath,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="stepname != null" >
+        #{stepname,jdbcType=VARCHAR},
+      </if>
+      <if test="grossRate != null" >
+        #{grossRate,jdbcType=NUMERIC},
+      </if>
+      <if test="dictSourceType != null" >
+        #{dictSourceType,jdbcType=VARCHAR},
+      </if>
+      <if test="businessProveId != null" >
+        #{businessProveId,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessProvince != null" >
+        #{ensuremanBusinessProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessCity != null" >
+        #{ensuremanBusinessCity,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessArea != null" >
+        #{ensuremanBusinessArea,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        #{dictSourceTypePcl,jdbcType=VARCHAR},
+      </if>
+      <if test="bestCoborrowerId != null" >
+        #{bestCoborrowerId,jdbcType=VARCHAR},
+      </if>
+      <if test="businessCertNum != null" >
+        #{businessCertNum,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.borrow.contract.entity.HCAuditResultEntity" >
+    update t_jk_audit_result
+    <set >
+      <if test="applyId != null" >
+        apply_id = #{applyId,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="rStatusHisId != null" >
+        r_status_his_id = #{rStatusHisId,jdbcType=VARCHAR},
+      </if>
+      <if test="singleTastId != null" >
+        single_tast_id = #{singleTastId,jdbcType=VARCHAR},
+      </if>
+      <if test="auditResult != null" >
+        audit_result = #{auditResult,jdbcType=VARCHAR},
+      </if>
+      <if test="productType != null" >
+        product_type = #{productType,jdbcType=VARCHAR},
+      </if>
+      <if test="auditMonths != null" >
+        audit_months = #{auditMonths,jdbcType=INTEGER},
+      </if>
+      <if test="auditAmount != null" >
+        audit_amount = #{auditAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="auditContractAmount != null" >
+        audit_contract_amount = #{auditContractAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="auditMonthRepayAmount != null" >
+        audit_month_repay_amount = #{auditMonthRepayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="auditRulesCode != null" >
+        audit_rules_code = #{auditRulesCode,jdbcType=VARCHAR},
+      </if>
+      <if test="auditCheckExamine != null" >
+        audit_check_examine = #{auditCheckExamine,jdbcType=VARCHAR},
+      </if>
+      <if test="auditEnsureName != null" >
+        audit_ensure_name = #{auditEnsureName,jdbcType=VARCHAR},
+      </if>
+      <if test="auditLegalMan != null" >
+        audit_legal_man = #{auditLegalMan,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessPlace != null" >
+        ensureman_business_place = #{ensuremanBusinessPlace,jdbcType=VARCHAR},
+      </if>
+      <if test="dictCheckType != null" >
+        dict_check_type = #{dictCheckType,jdbcType=VARCHAR},
+      </if>
+      <if test="attachmentPath != null" >
+        attachment_path = #{attachmentPath,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="stepname != null" >
+        stepname = #{stepname,jdbcType=VARCHAR},
+      </if>
+      <if test="grossRate != null" >
+        gross_rate = #{grossRate,jdbcType=NUMERIC},
+      </if>
+      <if test="dictSourceType != null" >
+        dict_source_type = #{dictSourceType,jdbcType=VARCHAR},
+      </if>
+      <if test="businessProveId != null" >
+        business_prove_id = #{businessProveId,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessProvince != null" >
+        ensureman_business_province = #{ensuremanBusinessProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessCity != null" >
+        ensureman_business_city = #{ensuremanBusinessCity,jdbcType=VARCHAR},
+      </if>
+      <if test="ensuremanBusinessArea != null" >
+        ensureman_business_area = #{ensuremanBusinessArea,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSourceTypePcl != null" >
+        dict_source_type_pcl = #{dictSourceTypePcl,jdbcType=VARCHAR},
+      </if>
+      <if test="bestCoborrowerId != null" >
+        best_coborrower_id = #{bestCoborrowerId,jdbcType=VARCHAR},
+      </if>
+      <if test="businessCertNum != null" >
+        business_cert_num = #{businessCertNum,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.borrow.contract.entity.HCAuditResultEntity" >
+    update t_jk_audit_result
+    set apply_id = #{applyId,jdbcType=VARCHAR},
+      loan_code = #{loanCode,jdbcType=VARCHAR},
+      r_status_his_id = #{rStatusHisId,jdbcType=VARCHAR},
+      single_tast_id = #{singleTastId,jdbcType=VARCHAR},
+      audit_result = #{auditResult,jdbcType=VARCHAR},
+      product_type = #{productType,jdbcType=VARCHAR},
+      audit_months = #{auditMonths,jdbcType=INTEGER},
+      audit_amount = #{auditAmount,jdbcType=NUMERIC},
+      audit_contract_amount = #{auditContractAmount,jdbcType=NUMERIC},
+      audit_month_repay_amount = #{auditMonthRepayAmount,jdbcType=NUMERIC},
+      audit_rules_code = #{auditRulesCode,jdbcType=VARCHAR},
+      audit_check_examine = #{auditCheckExamine,jdbcType=VARCHAR},
+      audit_ensure_name = #{auditEnsureName,jdbcType=VARCHAR},
+      audit_legal_man = #{auditLegalMan,jdbcType=VARCHAR},
+      ensureman_business_place = #{ensuremanBusinessPlace,jdbcType=VARCHAR},
+      dict_check_type = #{dictCheckType,jdbcType=VARCHAR},
+      attachment_path = #{attachmentPath,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      stepname = #{stepname,jdbcType=VARCHAR},
+      gross_rate = #{grossRate,jdbcType=NUMERIC},
+      dict_source_type = #{dictSourceType,jdbcType=VARCHAR},
+      business_prove_id = #{businessProveId,jdbcType=VARCHAR},
+      ensureman_business_province = #{ensuremanBusinessProvince,jdbcType=VARCHAR},
+      ensureman_business_city = #{ensuremanBusinessCity,jdbcType=VARCHAR},
+      ensureman_business_area = #{ensuremanBusinessArea,jdbcType=VARCHAR},
+      dict_source_type_pcl = #{dictSourceTypePcl,jdbcType=VARCHAR},
+      best_coborrower_id = #{bestCoborrowerId,jdbcType=VARCHAR},
+      business_cert_num = #{businessCertNum,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

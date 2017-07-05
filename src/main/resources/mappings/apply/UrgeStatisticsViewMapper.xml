@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.UrgeStatisticsViewDao">
+  
+	
+  
+  <select id="findList" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeStatisticsView">
+      select b.id as id,b.contract_code as contractCode,
+       c.customer_name as customerName,
+      b.contract_amount as contractAmount,
+      ROUND(COALESCE(a.urge_moeny,'0'),2) as receivableFeeUrgedService,
+      ROUND(COALESCE((COALESCE(a.urge_decute_moeny,'0')+COALESCE(a.audit_amount,'0')),'0'),2) as receivedfeeUrgedService,
+      round(fee_petition,2) as feePetition, --信访费
+	  round(fee_credit,2) as feeCredit,--征信费
+	  (case when d.product_type = 'A021' then
+	  round(fee_petition+fee_urged_service+fee_credit,2) else fee_urged_service end) as feeSum, --费用总和
+	  pro.product_name,
+      e.lending_time as lendingTime,
+      a.urge_decute_date as lastDeductDate,
+      f.label as loanFlag,
+      g.dict_pay_status as dictPayStatus,
+      pm.monthOverdueDaysMax as monthOverdueDaysMax,
+      pb.dict_pay_status as payStatus
+ from jk.t_jk_urge_services_amount a
+ inner join (select id,contract_code,contract_amount,loan_code,product_type from jk.t_jk_contract ) b on b.contract_code=a.contract_code
+ left join jk.t_jk_loan_info d on d.loan_code=b.loan_code
+ left join jk.t_jk_loan_customer c on c.loan_code=d.loan_code
+  left join jk.t_jk_loan_grant e on e.contract_code=a.contract_code
+  left join jk.t_jk_contract_fee cf on cf.contract_code = b.contract_code
+  left join (select value,label from jk.t_gl_dict where type='jk_channel_flag') f on f.value=d.loan_flag
+  left join jk.t_gl_jk_product pro on b.product_type = pro.product_code
+  left join jk.t_jk_urge_services_backamount g on g.contract_code=b.contract_code
+  left join (select contract_code,max(month_overdue_days) as monthOverdueDaysMax from jk.t_jk_payback_month where month_overdue_days >1 
+					group by contract_code) pm on pm.contract_code=b.contract_code
+  left join jk.t_jk_payback pb on pb.contract_code=b.contract_code
+  where 1=1
+  <if test="colResult == 3">
+    and  ROUND(COALESCE(a.urge_moeny,'0'),2) &lt;= ROUND(COALESCE((COALESCE(a.urge_decute_moeny,'0')+COALESCE(a.audit_amount,'0')),'0'),2)
+  </if>
+  <if test="colResult == 1">
+     and  ROUND(COALESCE((COALESCE(a.urge_decute_moeny,'0')+COALESCE(a.audit_amount,'0'))),2) =0
+  </if>
+  <if test="colResult == 2">
+   and ROUND(COALESCE((COALESCE(a.urge_decute_moeny,'0')+COALESCE(a.audit_amount,'0')),'0'),2) &gt;0
+    and  ROUND(COALESCE(a.urge_moeny,'0'),2) &lt; ROUND(COALESCE((COALESCE(a.urge_decute_moeny,'0')+COALESCE(a.audit_amount,'0')),'0'),2)
+  </if>
+  <if test="dictPayStatus == 2">
+     and g.dict_pay_status = '3'
+  </if>
+  <if test="dictPayStatus == 1">
+     and g.dict_pay_status != '3'
+  </if>
+  <if test="backMoneyDesc == 1">
+      and pm.monthOverdueDaysMax &lt;29
+  </if>
+  <if test="backMoneyDesc == 2">
+      and pm.monthOverdueDaysMax &gt;29
+  </if>
+  <if test="customerName!=null and customerName!=''">
+     and c.customer_name=#{customerName}
+  </if>
+  <if test="contractCode!=null and contractCode!=''">
+     and b.contract_code=#{contractCode}
+  </if>
+  <if test="productName != null and productName != ''">
+  	and b.product_type = #{productName}
+  </if>
+   <if test="deductBeginTime!=null and deductBeginTime!='' and deductEndTime!=null and deductEndTime!=''">
+     and to_char(a.urge_decute_date,'YYYY-MM-dd') between #{deductBeginTime} and #{deductEndTime}
+  </if>
+  <if test="(deductBeginTime!=null and deductBeginTime!='') and (deductEndTime=null and deductEndTime='')">
+     and to_char(a.urge_decute_date,'YYYY-MM-dd') >= #{deductBeginTime} 
+  </if>
+  <if test="lendingTimeBegin!=null and lendingTimeBegin!='' and lendingTimeEnd!=null and lendingTimeEnd!=''">
+     and to_char(e.lending_time,'YYYY-MM-dd') between #{lendingTimeBegin} and #{fanKuanEnd}
+  </if>
+  <if test="(lendingTimeBegin!=null and lendingTimeBegin!='') and (lendingTimeEnd=null and lendingTimeEnd='')">
+     and to_char(e.lending_time,'YYYY-MM-dd') >= #{lendingTimeBegin} 
+  </if> 
+  <if test="payStatus!=null and payStatus!=''">
+      and pb.dict_pay_status = #{payStatus}
+  </if>
+          ${queryRight} 
+  </select>
+ 
+ 
+ <select id="findByContractCode"  resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeStatisticsView">
+ 
+     select b.id as id,b.contract_code as contractCode,
+       c.customer_name as customerName,
+      b.contract_amount as contractAmount,
+      ROUND(COALESCE(a.urge_moeny,'0'),2) as receivableFeeUrgedService,
+      ROUND(COALESCE((COALESCE(a.urge_decute_moeny,'0')+COALESCE(a.audit_amount,'0')),'0'),2) as receivedfeeUrgedService,
+      round(fee_petition,2) as feePetition, --信访费
+	  round(fee_credit,2) as feeCredit,--征信费
+	  round(fee_urged_service,2) as urgeMoney, --催收服务费
+	  (case when d.product_type = 'A021' then
+	  round(fee_petition+fee_urged_service+fee_credit,2) else round(fee_urged_service,2) end) as feeSum, --费用总和
+	  pro.product_name,
+     e.lending_time as lendingTime,
+      a.urge_decute_date as lastDeductDate,
+      f.label as loanFlag,
+      g.dict_pay_status as dictPayStatus,
+      pm.monthOverdueDaysMax as monthOverdueDaysMax,
+      pb.dict_pay_status as payStatus
+ from jk.t_jk_urge_services_amount a
+ inner join (select id,contract_code,contract_amount,loan_code,product_type from jk.t_jk_contract ) b on b.contract_code=a.contract_code
+ left join jk.t_jk_loan_info d on d.loan_code=b.loan_code
+ left join jk.t_jk_loan_customer c on c.loan_code=d.loan_code
+  left join jk.t_jk_loan_grant e on e.contract_code=a.contract_code
+  left join jk.t_jk_contract_fee cf on cf.contract_code = e.contract_code
+  left join (select value,label from jk.t_gl_dict where type='jk_channel_flag') f on f.value=d.loan_flag
+  left join jk.t_gl_jk_product pro on b.product_type = pro.product_code
+   left join jk.t_jk_urge_services_backamount g on g.contract_code=b.contract_code
+  left join (select contract_code,max(month_overdue_days) as monthOverdueDaysMax from jk.t_jk_payback_month  where month_overdue_days >1
+					group by contract_code) pm on pm.contract_code=b.contract_code
+  left join jk.t_jk_payback pb on pb.contract_code=b.contract_code
+  where 1=1
+ <if test="params.customerName!=null and params.customerName!=''">
+     and c.customer_name=#{params.customerName}
+  </if>
+  <if test="params.contractCode!=null and params.contractCode!=''">
+     and b.contract_code=#{params.contractCode}
+  </if>
+  <if test="params.productName!=null and params.productName!=''">
+     and b.product_type=#{params.productName}
+  </if>  
+   <if test="params.deductBeginTime!=null and params.deductBeginTime!='' and params.deductEndTime!=null and params.deductEndTime!=''">
+     and to_char(a.urge_decute_date,'YYYY-MM-dd') between #{params.deductBeginTime} and #{params.deductEndTime}
+  </if>
+  <if test="(params.deductBeginTime!=null and params.deductBeginTime!='') and (params.deductEndTime=null and params.deductEndTime='')">
+     and to_char(a.urge_decute_date,'YYYY-MM-dd') >= #{params.deductBeginTime} 
+  </if>
+  <if test="params.lendingTimeBegin!=null and params.lendingTimeBegin!='' and params.lendingTimeEnd!=null and params.lendingTimeEnd!=''">
+     and to_char(e.lending_time,'YYYY-MM-dd') between #{params.lendingTimeBegin} and #{params.fanKuanEnd}
+  </if>
+  <if test="(params.lendingTimeBegin!=null and params.lendingTimeBegin!='') and (params.lendingTimeEnd=null and params.lendingTimeEnd='')">
+     and to_char(e.lending_time,'YYYY-MM-dd') >= #{params.lendingTimeBegin} 
+  </if> 
+  <if test="params.payStatus!=null and params.payStatus!=''">
+      and pb.dict_pay_status = #{params.payStatus}
+  </if>
+  <if test="params.contractCodes != null and params.contractCodes != ''">
+		   and b.contract_code in
+		   <foreach item="item" index="index" collection="contractCodes"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		   
+		</if>
+ </select>
+ 
+</mapper>

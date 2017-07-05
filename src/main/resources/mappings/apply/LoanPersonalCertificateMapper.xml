@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.applyinfo.dao.LoanPersonalCertificateDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.applyinfo.entity.LoanPersonalCertificate">
+    <result column="id"  property="id" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="customer_rel_master" property="customerRelMaster"/>
+    <result column="customer_rel_master_remark"  property="customerRelMasterRemark" />
+    <result column="master_name"  property="masterName" />
+    <result column="master_cert_num"  property="masterCertNum" />
+    <result column="master_address_province"  property="masterAddressProvince" />
+    <result column="master_address_city"  property="masterAddressCity" />
+    <result column="master_address_area"  property="masterAddressArea" />
+    <result column="master_address" property="masterAddress"/>
+    <result column="children_name" property="childrenName"/>
+    <result column="children_cert_num"  property="childrenCertNum" />
+    <result column="educational_certificate_type"  property="educationalCertificateType" />
+    <result column="graduation_school"  property="graduationSchool" />
+    <result column="educational_certificate_num"  property="educationalCertificateNum" />
+    <result column="educational_certificate_time"  property="educationalCertificateTime" />
+    <result column="wedding_time"  property="weddingTime" />
+    <result column="license_issuing_agency"  property="licenseIssuingAgency" />
+  </resultMap>
+   <sql id="baseColumn">
+      id,loan_code,customer_rel_master,customer_rel_master_remark,
+      master_name,master_cert_num,
+      master_address_province,master_address_city,
+      master_address_area,master_address,
+      children_name,children_cert_num,
+      educational_certificate_type,graduation_school,educational_certificate_num,
+      create_by,create_time,modify_by,modify_time,
+      educational_certificate_time,
+      wedding_time,license_issuing_agency
+   </sql>
+   <select id="findByLoanCode"  resultMap="BaseResultMap">
+    select 
+      <include refid="baseColumn"/>
+    from jk.t_jk_personal_certificate
+    where loan_code = #{0} 
+  </select>
+  
+  <insert id="insert">
+     insert into jk.t_jk_personal_certificate(
+       <include refid="baseColumn"/>
+       )values(
+        #{id,jdbcType=VARCHAR},
+        #{loanCode,jdbcType=VARCHAR},
+        #{customerRelMaster,jdbcType=VARCHAR},
+        #{customerRelMasterRemark,jdbcType=VARCHAR},
+        #{masterName,jdbcType=VARCHAR},
+        #{masterCertNum,jdbcType=VARCHAR},
+        #{masterAddressProvince,jdbcType=VARCHAR},
+        #{masterAddressCity,jdbcType=INTEGER},
+        #{masterAddressArea,jdbcType=VARCHAR},
+        #{masterAddress,jdbcType=VARCHAR},
+        #{childrenName,jdbcType=VARCHAR},
+        #{childrenCertNum,jdbcType=VARCHAR},
+        #{educationalCertificateType,jdbcType=VARCHAR},
+        #{graduationSchool,jdbcType=VARCHAR},
+        #{educationalCertificateNum,jdbcType=VARCHAR},
+        #{createBy,jdbcType=VARCHAR}, 
+        #{createTime,jdbcType=TIMESTAMP},
+        #{modifyBy,jdbcType=VARCHAR}, 
+        #{modifyTime,jdbcType=TIMESTAMP},
+        #{educationalCertificateTime,jdbcType=DATE}, 
+        #{weddingTime,jdbcType=DATE},
+        #{licenseIssuingAgency,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="update">
+    update jk.t_jk_personal_certificate
+    <set>
+      <if test="id != null">
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null">
+        loan_code = #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <!-- <if test="customerRelMaster != null">
+        customer_rel_master = #{customerRelMaster,jdbcType=VARCHAR},
+      </if> -->
+      customer_rel_master = #{customerRelMaster,jdbcType=VARCHAR},
+      <!-- <if test="customerRelMasterRemark != null">
+        customer_rel_master_remark = #{customerRelMasterRemark,jdbcType=VARCHAR},
+      </if> -->
+      customer_rel_master_remark = #{customerRelMasterRemark,jdbcType=VARCHAR},
+      <!-- <if test="masterName != null">
+        master_name = #{masterName,jdbcType=VARCHAR},
+      </if> -->
+      master_name = #{masterName,jdbcType=VARCHAR},
+      <!-- <if test="masterCertNum != null">
+        master_cert_num = #{masterCertNum,jdbcType=VARCHAR},
+      </if> -->
+       master_cert_num = #{masterCertNum,jdbcType=VARCHAR},
+      <!-- <if test="masterAddressProvince != null">
+        master_address_province = #{masterAddressProvince,jdbcType=VARCHAR},
+      </if> -->
+       master_address_province = #{masterAddressProvince,jdbcType=VARCHAR},
+      <!-- <if test="masterAddressCity != null">
+        master_address_city = #{masterAddressCity,jdbcType=VARCHAR},
+      </if> -->
+      master_address_city = #{masterAddressCity,jdbcType=VARCHAR},
+      <!-- <if test="masterAddressArea != null">
+        master_address_area = #{masterAddressArea,jdbcType=VARCHAR},
+      </if> -->
+      master_address_area = #{masterAddressArea,jdbcType=VARCHAR},
+      <!-- <if test="masterAddress != null">
+        master_address = #{masterAddress,jdbcType=VARCHAR},
+      </if> -->
+      master_address = #{masterAddress,jdbcType=VARCHAR},
+      <!-- <if test="childrenName != null">
+        children_name = #{childrenName,jdbcType=VARCHAR},
+      </if> -->
+      children_name = #{childrenName,jdbcType=VARCHAR},
+      <!-- <if test="childrenCertNum != null">
+        children_cert_num = #{childrenCertNum,jdbcType=VARCHAR},
+      </if> -->
+      children_cert_num = #{childrenCertNum,jdbcType=VARCHAR},
+      <!-- <if test="educationalCertificateType != null">
+        educational_certificate_type = #{educationalCertificateType,jdbcType=VARCHAR},
+      </if> -->
+       educational_certificate_type = #{educationalCertificateType,jdbcType=VARCHAR},
+      <!-- <if test="graduationSchool != null">
+        graduation_school = #{graduationSchool,jdbcType=VARCHAR},
+      </if> -->
+      graduation_school = #{graduationSchool,jdbcType=VARCHAR},
+     <!--  <if test="educationalCertificateNum != null">
+        educational_certificate_num = #{educationalCertificateNum,jdbcType=VARCHAR},
+      </if> -->
+      educational_certificate_num = #{educationalCertificateNum,jdbcType=VARCHAR},
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <!-- <if test="educationalCertificateTime != null">
+        educational_certificate_time = #{educationalCertificateTime,jdbcType=DATE},
+      </if> -->
+       educational_certificate_time = #{educationalCertificateTime,jdbcType=DATE},
+      <!-- <if test="weddingTime != null">
+        wedding_time = #{weddingTime,jdbcType=DATE},
+      </if> -->
+       wedding_time = #{weddingTime,jdbcType=DATE},
+      <!-- <if test="licenseIssuingAgency != null">
+        license_issuing_agency = #{licenseIssuingAgency,jdbcType=VARCHAR},
+      </if> -->
+      license_issuing_agency = #{licenseIssuingAgency,jdbcType=VARCHAR},
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+   </update>
+</mapper>

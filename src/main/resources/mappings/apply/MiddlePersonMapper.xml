@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.MiddlePersonDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.common.entity.MiddlePerson">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="middle_name" jdbcType="VARCHAR" property="middleName" />
+    <result column="mid_cert_no" jdbcType="VARCHAR" property="midCertNo" />
+    <result column="mid_bank_name" jdbcType="VARCHAR" property="midBankName" />
+    <result column="bank_card_no" jdbcType="VARCHAR" property="bankCardNo" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, middle_name,mid_cert_no, mid_bank_name, bank_card_no, address, status
+  </sql>
+  <!-- 查询中间人信息-->
+   <select id="selectMiddleByName"  resultMap="BaseResultMap" parameterType="com.creditharmony.loan.common.entity.MiddlePerson">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_middle_person a
+    where 1=1
+		<if test="id != null and id != ''">
+			and a.id =#{id}
+		</if>    
+		<if test="middleName != null and middleName != ''">
+			and a.middle_name LIKE CONCAT('%', #{middleName}, '%')
+		</if>
+		<if test="midBankName != null and midBankName != ''">
+			and a.mid_bank_name LIKE CONCAT('%', #{midBankName}, '%')
+		</if>
+		<if test="depositFlag != null and depositFlag != ''">
+			and a.deposit_flag =#{depositFlag}
+		</if>
+		<if test="wayFlag == null or wayFlag == ''">
+			and a.way_flag in ('0','1','2')
+		</if>
+		<if test="wayFlag != null and wayFlag != ''">
+			and a.way_flag = #{wayFlag}
+		</if>
+		order by way_flag
+  </select>
+  
+    <!-- 查询中间人信息   不分页-->
+   <select id="selectMiddlePerson"  resultMap="BaseResultMap" parameterType="com.creditharmony.loan.common.entity.MiddlePerson">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_middle_person a
+    where 1=1
+		<if test="id != null and id != ''">
+			and a.id =#{id}
+		</if>    
+		<if test="middleName != null and middleName != ''">  <!-- 中间人姓名 -->
+			and a.middle_name LIKE CONCAT('%', #{middleName}, '%')
+		</if>
+		<if test="midBankName != null and midBankName != ''">  <!-- 开户行名称 -->
+			and a.mid_bank_name LIKE CONCAT('%', #{midBankName}, '%')
+		</if>
+		<if test="bankCardNo != null and bankCardNo != ''">  <!-- 银行账号 -->
+			and a.bank_card_no = #{bankCardNo}
+		</if>
+		<if test="firstFlag != null and firstFlag != ''"> <!-- 首次查询 --> 
+		
+		order by 
+		position(substring(a.middle_name from 1 for 1) in '夏夏') desc, 
+		position(substring(a.mid_bank_name from 2 for 1) in '商信') desc 
+		</if>
+  </select>
+  
+  <!-- 根据中间人id查询中间人 -->
+  <select id="selectById" resultMap="BaseResultMap">
+  select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_middle_person a
+  where a.id=#{id}  
+  </select>
+  
+  <!-- 还款查询存入账户  by zhangfeng -->
+   <select id="findPaybackAccount" resultType="com.creditharmony.loan.common.entity.MiddlePerson">
+	  select 
+	  	id, middle_name,mid_cert_no, mid_bank_name, bank_card_no, address, status,account_bank,deposit_flag
+	   from jk.t_jk_middle_person
+	  where 1=1
+	  <if test="depositFlag != null and depositFlag != ''">
+			and deposit_flag = #{depositFlag}
+	  </if>
+	  <if test="wayFlag != null and wayFlag != ''">
+			and way_flag = #{wayFlag}
+	  </if>
+  </select>
+</mapper>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarPendingRepayMatchDao">
+
+  <!-- 待还款匹配列表查询 -->
+  <select id="selectPendingMatchList"  resultType="com.creditharmony.loan.car.common.entity.CarPendingRepayMatchInfo">   
+	select t.id id,
+		   t1.contract_code contractCode,<!--合同编号-->
+		   t2.loan_customer_name loanCustomerName,<!--客户姓名-->
+		   t2.store_name storeName,<!--门店名称-->
+		   t.stores_in_account storesInAccount,<!--存入账户-->
+		   <!--批借期数(划扣追回单据无此参数)	-->
+		   <!--首期还款日(划扣追回单据无此参数)	-->
+		   <!--申请查账日期(划扣追回单据无此参数)-->	
+		   <!--还款状态(划扣追回单据无此参数)-->	
+		   t1.contract_amount contractAmount,<!--合同金额-->	
+		   <!--期供金额(划扣追回单据无此参数)-->	
+		   (t3.urge_moeny - t3.urge_decute_moeny) applyRepayAmount,<!--申请还款金额-->	
+		   t.really_amount reallyAmount,<!--追回金额-->	
+		   <!--还款日(划扣追回单据无此参数)-->	
+		   t2.dict_loan_status dictLoanStatus,<!--借款状态-->	
+		   t.blue_amount blueAmount,<!--蓝补金额-->	
+		   '车借划扣追回' checkType, <!--查账类型-->	
+		   <!--标识(划扣追回单据无此参数)-->
+		   t4.customer_cert_num customerCertNum, <!--证件号码-->
+		   t1.product_type productType,<!--产品类型-->
+		   t1.contract_months contractMonths,<!--借款类型-->
+		   t.dict_repay_method dictRepayMethod,<!--还款方式-->
+		   t.apply_pay_day applyPayDay,<!--还款申请日期-->
+		   t.urge_id urgeId
+	from jk.T_CJ_PAYBACK_TRANSFER_INFO t
+	left join jk.T_CJ_CONTRACT t1 on t1.loan_code = t.loan_code
+	left join jk.T_CJ_LOAN_INFO t2 on t2.loan_code = t.loan_code
+	left join jk.T_CJ_URGE_SERVICES_AMOUNT t3 on t3.id = t.urge_id
+	left join t_jk_loan_customer t4 on t4.loan_code = t.loan_code
+	where t.matching_result = '0'
+	<if test="id != null and id != ''">
+		and t.id=#{id}
+	</if>	
+	<if test="loanCustomerName != null and loanCustomerName != ''">
+		and t2.loan_customer_name LIKE CONCAT('%', #{loanCustomerName}, '%')
+	</if>
+	<if test="contractCode != null and contractCode != ''">
+		and t1.contract_code LIKE CONCAT('%', #{contractCode}, '%')
+	</if>
+	<if test="applyRepayAmountUp != null and applyRepayAmountUp != ''">
+		and (COALESCE(t3.urge_moeny,0) - COALESCE(t3.urge_decute_moeny,0)) <![CDATA[>=]]> #{amountUp}
+	</if>
+	<if test="applyRepayAmountDown != null and applyRepayAmountDown != ''">
+		and (COALESCE(t3.urge_moeny,0) - COALESCE(t3.urge_decute_moeny,0)) <![CDATA[<=]]> #{amountDown}
+	</if>
+	<if test="storeName != null and storeName != ''">
+		and t2.store_name = #{storeName}
+	</if>
+	<if test="storesInAccount != null and storesInAccount != ''"><!-- 存入账户 -->
+		and t.stores_in_account =#{storesInAccount}
+	</if>
+	<!--union all 还款追回数据集-->
+		
+  </select>
+  
+<!-- 待还款匹配明细列表查询 -->
+  <select id="selectMatchDetailList"  resultType="com.creditharmony.loan.car.common.entity.CarRepayMatchDetailInfo">   
+	  SELECT id id, 
+			transfer_id transferId, 
+			tran_deposit_time tranDepositTime, 
+			really_amount reallyAmount, 
+			deposit_name depositName, 
+			dict_deposit dictDeposit, 
+			upload_name uploadName, 
+			upload_date uploadDate, 
+			upload_filename uploadFilename, 
+			upload_path uploadPath,
+			matching_result matchingResult
+	FROM jk.t_cj_payback_transfer_detail t
+	where t.transfer_id =#{transferId}
+  </select>
+  
+  <!-- 待还款匹配提交 -->
+  <update id="updateRepayMatch" parameterType="com.creditharmony.loan.car.common.entity.CarPendingRepayMatchInfo">
+  update jk.T_CJ_PAYBACK_TRANSFER_INFO 
+	<set>
+      <if test="matchingResult != null">
+        matching_result = #{matchingResult,jdbcType=VARCHAR},
+      </if>
+      <if test="auditCheckExamine != null">
+        audit_check_examine = #{auditCheckExamine,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+	 	modify_time=#{modifyTime},
+	 </if>
+	 <if test="modifyBy != null"> 
+	 	modify_by=#{modifyBy}
+	 </if>
+    </set>
+      WHERE id  = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 待还款明细匹配提交 -->
+  <update id="updateRepayDetailMatch" parameterType="com.creditharmony.loan.car.common.entity.CarPendingRepayMatchInfo">
+  update jk.t_cj_payback_transfer_detail 
+	<set>
+      <if test="matchingResult != null">
+        matching_result = #{matchingResult,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+	 	modify_time=#{modifyTime},
+	 </if>
+	 <if test="modifyBy != null"> 
+	 	modify_by=#{modifyBy}
+	 </if>
+    </set>
+      WHERE id  = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- 加载选中待还款匹配列表 -->
+  <select id="getCheckedMatchList"  resultType="com.creditharmony.loan.car.common.entity.CarPendingRepayMatchInfo">   
+	select t.id id,
+		   t1.contract_code contractCode,<!--合同编号-->
+		   t2.loan_customer_name loanCustomerName,<!--客户姓名-->
+		   t2.store_name storeName,<!--门店名称-->
+		   t.stores_in_account storesInAccount,<!--存入账户-->
+		   <!--批借期数(划扣追回单据无此参数)	-->
+		   <!--首期还款日(划扣追回单据无此参数)	-->
+		   <!--申请查账日期(划扣追回单据无此参数)-->	
+		   <!--还款状态(划扣追回单据无此参数)-->	
+		   t1.contract_amount contractAmount,<!--合同金额-->	
+		   <!--期供金额(划扣追回单据无此参数)-->	
+		   (t3.urge_moeny - t3.urge_decute_moeny) applyRepayAmount,<!--申请还款金额-->	
+		   t.really_amount reallyAmount,<!--追回金额-->	
+		   <!--还款日(划扣追回单据无此参数)-->	
+		   t2.dict_loan_status dictLoanStatus,<!--借款状态-->	
+		   t.blue_amount blueAmount,<!--蓝补金额-->	
+		   '车借划扣追回' checkType, <!--查账类型-->	
+		   <!--标识(划扣追回单据无此参数)-->
+		   t4.customer_cert_num customerCertNum, <!--证件号码-->
+		   t1.product_type productType,<!--产品类型-->
+		   t1.contract_months contractMonths,<!--借款类型-->
+		   t.dict_repay_method dictRepayMethod,<!--还款方式-->
+		   t.apply_pay_day applyPayDay,<!--还款申请日期-->
+		   t.urge_id urgeId
+	from jk.T_CJ_PAYBACK_TRANSFER_INFO t
+	left join jk.T_CJ_CONTRACT t1 on t1.loan_code = t.loan_code
+	left join jk.T_CJ_LOAN_INFO t2 on t2.loan_code = t.loan_code
+	left join jk.T_CJ_URGE_SERVICES_AMOUNT t3 on t3.id = t.urge_id
+	left join t_jk_loan_customer t4 on t4.loan_code = t.loan_code
+	where t.matching_result = '0'
+	<if test="id != null and id != ''">
+		and t.id in (${id})
+	</if>	
+		
+  </select>
+  
+  <!-- 待还款匹配批量退回 -->
+  <update id="updateRepayBatchBack" parameterType="com.creditharmony.loan.car.common.entity.CarPendingRepayMatchInfo">
+  update jk.T_CJ_PAYBACK_TRANSFER_INFO 
+	<set>
+      <if test="matchingResult != null">
+        matching_result = #{matchingResult,jdbcType=VARCHAR},
+      </if>
+      <if test="auditCheckExamine != null">
+        audit_check_examine = #{auditCheckExamine,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+	 	modify_time=#{modifyTime},
+	 </if>
+	 <if test="modifyBy != null"> 
+	 	modify_by=#{modifyBy}
+	 </if>
+    </set>
+      WHERE id  in (${id})
+  </update>
+</mapper>

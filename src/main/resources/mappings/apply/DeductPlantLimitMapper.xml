@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.DeductPlantLimitDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    <id column="id" property="id"  />
+    <result column="plant_code" property="plantCode"  />
+    <result column="plant_name" property="plantName" />
+    <result column="not_enough_proportion" property="notEnoughProportion" />
+    <result column="not_enough_base" property="notEnoughBase"  />
+    <result column="failure_rate" property="failureRate" />
+    <result column="failure_base" property="failureBase"  />
+    <result column="failure_number" property="failureNumber"/>
+    <result column="money_symbol1" property="moneySymbol1" />
+    <result column="money_symbol2" property="moneySymbol2" />
+    <result column="deduct_money1" property="deductMoney1" />
+    <result column="deduct_money2" property="deductMoney2"/>
+    <result column="deduct_type1" property="deductType1" />
+    <result column="deduct_type2" property="deductType2" />
+    <result column="create_by" property="createBy"/>
+    <result column="create_time" property="createTime" />
+    <result column="modify_by" property="modifyBy"  />
+    <result column="modify_time" property="modifyTime"/>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, plant_code, plant_name, ROUND(not_enough_proportion,2) as not_enough_proportion, not_enough_base, ROUND(failure_rate,2) as failure_rate, 
+    failure_base, failure_number, money_symbol1, money_symbol2, ROUND(deduct_money1,2) as deduct_money1, ROUND(deduct_money2,2) as deduct_money2, 
+    deduct_type1, deduct_type2, create_by, create_time, modify_by, modify_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_deduct_plant_limit
+    where id = #{id}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from jk.t_jk_deduct_plant_limit
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    insert into jk.t_jk_deduct_plant_limit (id, plant_code, plant_name, 
+      not_enough_proportion, not_enough_base, failure_rate, 
+      failure_base, failure_number, money_symbol1, 
+      money_symbol2, deduct_money1, deduct_money2, 
+      deduct_type1, deduct_type2, create_by, 
+      create_time, modify_by, modify_time
+      )
+    values (#{id}, #{plantCode}, #{plantName}, 
+      #{notEnoughProportion}, #{notEnoughBase}, #{failureRate}, 
+      #{failureBase}, #{failureNumber}, #{moneySymbol1}, 
+      #{moneySymbol2}, #{deductMoney1}, #{deductMoney2}, 
+      #{deductType1}, #{deductType2}, #{createBy}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    insert into jk.t_jk_deduct_plant_limit
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="plantCode != null" >
+        plant_code,
+      </if>
+      <if test="plantName != null" >
+        plant_name,
+      </if>
+      <if test="notEnoughProportion != null" >
+        not_enough_proportion,
+      </if>
+      <if test="notEnoughBase != null" >
+        not_enough_base,
+      </if>
+      <if test="failureRate != null" >
+        failure_rate,
+      </if>
+      <if test="failureBase != null" >
+        failure_base,
+      </if>
+      <if test="failureNumber != null" >
+        failure_number,
+      </if>
+      <if test="moneySymbol1 != null" >
+        money_symbol1,
+      </if>
+      <if test="moneySymbol2 != null" >
+        money_symbol2,
+      </if>
+      <if test="deductMoney1 != null" >
+        deduct_money1,
+      </if>
+      <if test="deductMoney2 != null" >
+        deduct_money2,
+      </if>
+      <if test="deductType1 != null" >
+        deduct_type1,
+      </if>
+      <if test="deductType2 != null" >
+        deduct_type2,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id},
+      </if>
+      <if test="plantCode != null" >
+        #{plantCode},
+      </if>
+      <if test="plantName != null" >
+        #{plantName},
+      </if>
+      <if test="notEnoughProportion != null" >
+        #{notEnoughProportion},
+      </if>
+      <if test="notEnoughBase != null" >
+        #{notEnoughBase},
+      </if>
+      <if test="failureRate != null" >
+        #{failureRate},
+      </if>
+      <if test="failureBase != null" >
+        #{failureBase},
+      </if>
+      <if test="failureNumber != null" >
+        #{failureNumber},
+      </if>
+      <if test="moneySymbol1 != null" >
+        #{moneySymbol1},
+      </if>
+      <if test="moneySymbol2 != null" >
+        #{moneySymbol2},
+      </if>
+      <if test="deductMoney1 != null" >
+        #{deductMoney1},
+      </if>
+      <if test="deductMoney2 != null" >
+        #{deductMoney2},
+      </if>
+      <if test="deductType1 != null" >
+        #{deductType1},
+      </if>
+      <if test="deductType2 != null" >
+        #{deductType2},
+      </if>
+      <if test="createBy != null" >
+        #{createBy},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    update jk.t_jk_deduct_plant_limit
+    <set >
+      <if test="plantCode != null" >
+        plant_code = #{plantCode},
+      </if>
+      <if test="plantName != null" >
+        plant_name = #{plantName},
+      </if>
+      <if test="notEnoughProportion != null" >
+        not_enough_proportion = #{notEnoughProportion},
+      </if>
+      <if test="notEnoughBase != null" >
+        not_enough_base = #{notEnoughBase},
+      </if>
+      <if test="failureRate != null" >
+        failure_rate = #{failureRate},
+      </if>
+      <if test="failureBase != null" >
+        failure_base = #{failureBase},
+      </if>
+      <if test="failureNumber != null" >
+        failure_number = #{failureNumber},
+      </if>
+      <if test="moneySymbol1 != null" >
+        money_symbol1 = #{moneySymbol1},
+      </if>
+      <if test="moneySymbol2 != null" >
+        money_symbol2 = #{moneySymbol2},
+      </if>
+      <if test="deductMoney1 != null" >
+        deduct_money1 = #{deductMoney1},
+      </if>
+      <if test="deductMoney2 != null" >
+        deduct_money2 = #{deductMoney2},
+      </if>
+      <if test="deductType1 != null" >
+        deduct_type1 = #{deductType1},
+      </if>
+      <if test="deductType2 != null" >
+        deduct_type2 = #{deductType2},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    update jk.t_jk_deduct_plant_limit
+    set plant_code = #{plantCode},
+      plant_name = #{plantName},
+      not_enough_proportion = #{notEnoughProportion},
+      not_enough_base = #{notEnoughBase},
+      failure_rate = #{failureRate},
+      failure_base = #{failureBase},
+      failure_number = #{failureNumber},
+      money_symbol1 = #{moneySymbol1},
+      money_symbol2 = #{moneySymbol2},
+      deduct_money1 = #{deductMoney1},
+      deduct_money2 = #{deductMoney2},
+      deduct_type1 = #{deductType1},
+      deduct_type2 = #{deductType2},
+      create_by = #{createBy},
+      create_time = #{createTime},
+      modify_by = #{modifyBy},
+      modify_time = #{modifyTime}
+    where id = #{id}
+  </update>
+  
+  
+  <select id="queryPage" resultMap="BaseResultMap"  >
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_deduct_plant_limit
+       where 1=1
+      <if test="plantCode != null and  plantCode != ''" >
+        and plant_code = #{plantCode}
+      </if>
+      <if test="plantName != null  and plantName !=''" >
+        and plant_name = #{plantName}
+      </if>
+      <if test="notEnoughProportion != null and notEnoughProportion != ''" >
+        and not_enough_proportion = #{notEnoughProportion}
+      </if>
+      <if test="notEnoughBase != null and notEnoughBase != ''" >
+        and not_enough_base = #{notEnoughBase}
+      </if>
+      <if test="failureRate != null and failureRate != ''">
+         and failure_rate = #{failureRate}
+      </if>
+      <if test="failureBase != null and failureBase != ''" >
+        and failure_base = #{failureBase}
+      </if>
+      <if test="failureNumber != null and failureNumber != ''" >
+        and failure_number = #{failureNumber}
+      </if>
+      <if test="moneySymbol1 != null and moneySymbol1 != ''" >
+        and money_symbol1 = #{moneySymbol1}
+      </if>
+      <if test="moneySymbol2 != null and moneySymbol2 != ''" >
+        and money_symbol2 = #{moneySymbol2}
+      </if>
+      <if test="deductMoney1 != null and deductMoney1 !=''" >
+        and deduct_money1 = #{deductMoney1}
+      </if>
+      <if test="deductMoney2 != null and deductMoney2 !=''" >
+       and  deduct_money2 = #{deductMoney2}
+      </if>
+      <if test="deductType1 != null and deductType1 != ''" >
+       and  deduct_type1 = #{deductType1}
+      </if>
+      <if test="deductType2 != null and deductType2 != ''" >
+        and deduct_type2 = #{deductType2}
+      </if>
+      <if test="createBy != null" >
+       and  create_by = #{createBy}
+      </if>
+      <if test="createTime != null" >
+       and  create_time = #{createTime,jdbcType=TIMESTAMP}
+      </if>
+      <if test="modifyBy != null" >
+       and  modify_by = #{modifyBy}
+      </if>
+      <if test="modifyTime != null" >
+       and modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+      </if>
+  </select>
+  
+  
+  <!--   =================门店设置                =========================== -->
+  
+  <select id="queryOrgPage"  resultType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+     
+     select * from (
+     select 
+     a.id,
+     b.name  as orgName, 
+     a.org_id as orgId,
+     ROUND(a.not_Enough_Proportion,2) as notEnoughProportion,
+     ROUND(a.failure_Rate,2) as failureRate, 
+     a.base_Number as  baseNumber,
+     a.put_date as putDate
+     from jk.t_jk_org_deduct_limit a
+     left join(select cast ('zhonghedongfang' as varchar) as id ,cast ('中和东方' as varchar) as  name 
+        UNION
+        select cast ('dianxiaobu'  as  varchar) as id,  cast ('电销部' as varchar) as name 
+        UNION
+     select id,name from jk.t_gl_org )  b on a.org_id = b.id
+     ) a
+       where 1=1 
+       <if test="orgIds != null and !orgIds.equals('')">
+            and a.orgId in
+		   	<foreach collection="orgIds" item="item" open="(" separator="," close=")">
+			#{item}
+	     	</foreach>
+	   </if>
+      order by  a.notEnoughProportion,a.failureRate,a.baseNumber
+  </select>
+  
+  <delete id="deleteOrg" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    delete from jk.t_jk_org_deduct_limit
+    where id = #{id}
+  </delete>
+  
+  <select id="findOrgsByParams" resultType="com.creditharmony.core.users.entity.Org" >
+  
+      select * from (
+       select cast ('zhonghedongfang' as varchar) as id ,cast ('中和东方' as varchar) as  name 
+        UNION
+        select cast ('dianxiaobu'  as  varchar) as id,  cast ('电销部' as varchar) as name 
+        UNION
+       select cast ('all'  as  varchar) as id,  cast ('所有门店' as varchar) as name 
+       UNION
+    	SELECT ID,NAME
+    	FROM jk.t_gl_org
+    	where 1=1
+    	<if test="departmentId != null and departmentId != ''"> and (id= #{departmentId} or parent_ids like '%' || #{departmentId} || '%')</if>
+    	<if test="delFlag != null and delFlag != ''"> and del_flag = #{delFlag}</if>
+    	<if test="type != null and type != ''"> and type = #{type}</if>
+    	<if test="name != null and name != ''"> and name like '%'||#{name}||'%'</if>
+    	<if test="children != null and children.size > 0">and (
+    	<foreach collection="children" item="item"  separator="or">
+			 name like '%'||#{item.name}||'%'
+		</foreach>
+		)
+		</if>
+		) a
+		 where 1=1 
+		   <if test="name != null and name != ''"> and name like '%'||#{name}||'%'</if>
+		   <if test="id != null and id != ''"> and id != #{id}</if>
+		 order by a.id desc
+    </select>
+    
+    <insert id="saveOrg" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    insert into jk.t_jk_org_deduct_limit (id, org_id, not_Enough_Proportion, 
+      failure_Rate, base_Number,create_by, 
+      create_time, modify_by, modify_time,put_date
+      )
+    values (#{id}, #{orgId}, #{notEnoughProportion}, 
+      #{failureRate}, #{baseNumber}, #{createBy}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy}, #{modifyTime,jdbcType=TIMESTAMP},
+      #{putDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  
+  <update id="updateOrg" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit" >
+    update jk.t_jk_org_deduct_limit
+    set org_id = #{orgId},
+      not_enough_proportion = #{notEnoughProportion},
+      failure_Rate = #{failureRate},
+      base_Number = #{baseNumber},
+      modify_by = #{modifyBy},
+      modify_time = #{modifyTime},
+      put_date = #{putDate}
+    where id = #{id}
+  </update>
+  
+   <select  id="queryOrgLimit" resultType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit">
+    select  id from jk.t_jk_org_deduct_limit
+    where org_id = #{id}
+  </select>
+  
+  <select  id="queryOrgStatisticsPage" resultType="com.creditharmony.loan.borrow.payback.entity.DeductPlantLimit">
+       
+    select * from (
+          select 
+          a.org_id as orgId,
+            ROUND(case when a.not_enough_proportion is null then 0 else a.not_enough_proportion end,2) as notEnoughProportion,
+           ROUND(case when a.failure_rate is null then 0 else a.failure_rate end,2) as failureRate,
+          case when a.deduct_number is null then 0 else a.deduct_number end  as deductNumber,
+           case when  a.failure_number is null then 0 else  a.failure_number end  as failureNumber,
+           case when  a.not_enough_number is null then 0 else  a.not_enough_number end  as notEnoughNumber,
+          b.name as orgName,
+          a.create_date as createDate,
+          a.id
+          
+          from jk.t_jk_org_deduct_Statistics a left join    
+         (select cast ('zhonghedongfang' as varchar) as id ,cast ('中和东方' as varchar) as  name 
+           UNION
+           select cast ('dianxiaobu'  as  varchar) as id,  cast ('电销部' as varchar) as name 
+           UNION
+           select id,name from jk.t_gl_org )  b on a.org_id = b.id
+          
+       ) a  where 1=1
+    
+       <if test="orgIds != null and !orgIds.equals('')">
+            and a.orgId in
+		   	<foreach collection="orgIds" item="item" open="(" separator="," close=")">
+			#{item}
+	     	</foreach>
+	   </if>
+	   <if test="createDate != null and !createDate.equals('')">
+             and a.createDate = #{createDate}
+	   </if>
+  </select>
+  
+  
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarCheckRateDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarCheckRate" >
+    <id column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="interest_rate" property="interestRate" jdbcType="NUMERIC" />
+    <result column="monthly_interest" property="monthlyInterest" jdbcType="NUMERIC" />
+    <result column="first_service_tariffing_rate" property="firstServiceTariffingRate" jdbcType="NUMERIC" />
+    <result column="first_service_tariffing" property="firstServiceTariffing" jdbcType="NUMERIC" />
+    <result column="contract_amount" property="contractAmount" jdbcType="NUMERIC" />
+    <result column="fee_payment_amount" property="feePaymentAmount" jdbcType="NUMERIC" />
+    <result column="month_repay_amount" property="monthRepayAmount" jdbcType="NUMERIC" />
+    <result column="comprehensive_service_fee" property="comprehensiveServiceFee" jdbcType="NUMERIC" />
+    <result column="audit_fee" property="auditFee" jdbcType="NUMERIC" />
+    <result column="consulting_fee" property="consultingFee" jdbcType="NUMERIC" />
+    <result column="intermediary_service_fee" property="intermediaryServiceFee" jdbcType="NUMERIC" />
+    <result column="information_service_charge" property="informationServiceCharge" jdbcType="NUMERIC" />
+    <result column="default_penalty_interest" property="defaultPenaltyInterest" jdbcType="NUMERIC" />
+    <result column="default_penalty_interest_rate" property="defaultPenaltyInterestRate" jdbcType="NUMERIC" />
+    <result column="default_penalty_rate" property="defaultPenaltyRate" jdbcType="NUMERIC" />
+    <result column="default_penalty" property="defaultPenalty" jdbcType="NUMERIC" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="grant_amount" property="grantAmount" jdbcType="NUMERIC" />
+    <result column="deduct_amount" property="deductAmount" jdbcType="NUMERIC" />
+    <result column="extend_pay_amount" property="extendPayAmount" jdbcType="NUMERIC" />
+    <result column="out_visit_fee" property="outVisitFee" jdbcType="NUMERIC" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    loan_code, interest_rate, monthly_interest, first_service_tariffing_rate, first_service_tariffing, 
+    contract_amount, fee_payment_amount, month_repay_amount, comprehensive_service_fee, 
+    audit_fee, consulting_fee, intermediary_service_fee, information_service_charge, 
+    default_penalty_interest, default_penalty_interest_rate, default_penalty_rate, default_penalty, 
+    create_by, create_time, grant_amount,deduct_amount,extend_pay_amount,out_visit_fee
+  </sql>
+  <select id="selectByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_check_rate
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteCarCheckRate" parameterType="com.creditharmony.loan.car.common.entity.CarCheckRate" >
+    delete from t_cj_check_rate
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertCarCheckRate" parameterType="com.creditharmony.loan.car.common.entity.CarCheckRate" >
+    insert into t_cj_check_rate (loan_code, interest_rate, monthly_interest, 
+      first_service_tariffing_rate, first_service_tariffing, 
+      contract_amount, fee_payment_amount, month_repay_amount, 
+      comprehensive_service_fee, audit_fee, consulting_fee, 
+      intermediary_service_fee, information_service_charge, 
+      default_penalty_interest, default_penalty_interest_rate, 
+      default_penalty_rate, default_penalty, create_by, 
+      create_time, grant_amount, deduct_amount,extend_pay_amount,out_visit_fee)
+    values (#{loanCode,jdbcType=VARCHAR}, #{interestRate,jdbcType=NUMERIC}, #{monthlyInterest,jdbcType=NUMERIC}, 
+      #{firstServiceTariffingRate,jdbcType=NUMERIC}, #{firstServiceTariffing,jdbcType=NUMERIC}, 
+      #{contractAmount,jdbcType=NUMERIC}, #{feePaymentAmount,jdbcType=NUMERIC}, #{monthRepayAmount,jdbcType=NUMERIC}, 
+      #{comprehensiveServiceFee,jdbcType=NUMERIC}, #{auditFee,jdbcType=NUMERIC}, #{consultingFee,jdbcType=NUMERIC}, 
+      #{intermediaryServiceFee,jdbcType=NUMERIC}, #{informationServiceCharge,jdbcType=NUMERIC}, 
+      #{defaultPenaltyInterest,jdbcType=NUMERIC}, #{defaultPenaltyInterestRate,jdbcType=NUMERIC}, 
+      #{defaultPenaltyRate,jdbcType=NUMERIC}, #{defaultPenalty,jdbcType=NUMERIC}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{grantAmount,jdbcType=NUMERIC}, #{deductAmount,jdbcType=NUMERIC}, #{extendPayAmount,jdbcType=NUMERIC},#{outVisitFee,jdbcType=NUMERIC})
+  </insert>
+  
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarCheckRate" >
+    update t_cj_check_rate
+    <set >
+      <if test="interestRate != null" >
+        interest_rate = #{interestRate,jdbcType=NUMERIC},
+      </if>
+      <if test="monthlyInterest != null" >
+        monthly_interest = #{monthlyInterest,jdbcType=NUMERIC},
+      </if>
+      <if test="firstServiceTariffingRate != null" >
+        first_service_tariffing_rate = #{firstServiceTariffingRate,jdbcType=NUMERIC},
+      </if>
+      <if test="firstServiceTariffing != null" >
+        first_service_tariffing = #{firstServiceTariffing,jdbcType=NUMERIC},
+      </if>
+      <if test="contractAmount != null" >
+        contract_amount = #{contractAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="feePaymentAmount != null" >
+        fee_payment_amount = #{feePaymentAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="monthRepayAmount != null" >
+        month_repay_amount = #{monthRepayAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="comprehensiveServiceFee != null" >
+        comprehensive_service_fee = #{comprehensiveServiceFee,jdbcType=NUMERIC},
+      </if>
+      <if test="auditFee != null" >
+        audit_fee = #{auditFee,jdbcType=NUMERIC},
+      </if>
+      <if test="consultingFee != null" >
+        consulting_fee = #{consultingFee,jdbcType=NUMERIC},
+      </if>
+      <if test="intermediaryServiceFee != null" >
+        intermediary_service_fee = #{intermediaryServiceFee,jdbcType=NUMERIC},
+      </if>
+      <if test="informationServiceCharge != null" >
+        information_service_charge = #{informationServiceCharge,jdbcType=NUMERIC},
+      </if>
+      <if test="defaultPenaltyInterest != null" >
+        default_penalty_interest = #{defaultPenaltyInterest,jdbcType=NUMERIC},
+      </if>
+      <if test="defaultPenaltyInterestRate != null" >
+        default_penalty_interest_rate = #{defaultPenaltyInterestRate,jdbcType=NUMERIC},
+      </if>
+      <if test="defaultPenaltyRate != null" >
+        default_penalty_rate = #{defaultPenaltyRate,jdbcType=NUMERIC},
+      </if>
+      <if test="defaultPenalty != null" >
+        default_penalty = #{defaultPenalty,jdbcType=NUMERIC},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="grantAmount != null" >
+        grant_amount = #{grantAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="deductAmount != null" >
+        deduct_amount = #{deductAmount,jdbcType=NUMERIC},
+      </if>
+      <if test="extendPayAmount != null" >
+        extend_pay_amount = #{extendPayAmount,jdbcType=NUMERIC},
+      </if>
+       <if test="outVisitFee != null" >
+        out_visit_fee = #{outVisitFee,jdbcType=NUMERIC},
+      </if>
+      
+    </set>
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+   
+</mapper>

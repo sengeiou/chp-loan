@@ -1,0 +1,2070 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarLoanStatusHisDao" >
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.car.common.entity.CarLoanStatusHis" >
+    <id column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="dict_loan_status" property="dictLoanStatus" jdbcType="VARCHAR" />
+    <result column="operate_step" property="operateStep" jdbcType="VARCHAR" />
+    <result column="dict_sys_flag" property="dictSysFlag" jdbcType="VARCHAR" />
+    <result column="operate_result" property="operateResult" jdbcType="VARCHAR" />
+    <result column="operator" property="operator" jdbcType="VARCHAR" />
+    <result column="operator_role_id" property="operatorRoleId" jdbcType="VARCHAR" />
+    <result column="org_code" property="orgCode" jdbcType="VARCHAR" />
+    <result column="operate_time" property="operateTime" jdbcType="TIMESTAMP" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="DoneListMap" type="com.creditharmony.loan.car.common.entity.ex.CarLoanStatusHisEx" extends="BaseResultMap">
+  		<result column="CONTRACT_CODE" property="contractCode" jdbcType="VARCHAR" />
+  		<result column="LOAN_CUSTOMER_NAME" property="loanCustomerName" jdbcType="VARCHAR" />
+  		<result column="LOAN_APPLY_AMOUNT" property="loanApplyAmount" jdbcType="NUMERIC" />
+  		<result column="LOAN_MONTHS" property="loanMonths" jdbcType="VARCHAR" />
+  		<result column="manager_code" property="managerCode" jdbcType="VARCHAR" />
+  		<result column="manager_name" property="managerName" jdbcType="VARCHAR" />
+  		<result column="FIRST_AUDIT_MONTHS" property="firstAuditMonths" jdbcType="VARCHAR" />
+  		<result column="SECOND_AUDIT_MONTHS" property="secondAuditMonths" jdbcType="VARCHAR" />
+  		<result column="FINAL_AUDIT_MONTHS" property="finalAuditMonths" jdbcType="VARCHAR" />
+  		<result column="DICT_PRODUCT_TYPE" property="productType" jdbcType="VARCHAR" />
+  		<result column="DICT_PRODUCT_NAME" property="productName" jdbcType="VARCHAR" />
+  		<result column="FIRST_PRODUCT_TYPE" property="firstProductType" jdbcType="VARCHAR" />
+  		<result column="SECOND_PRODUCT_TYPE" property="secondProductType" jdbcType="VARCHAR" />
+  		<result column="FINAL_PRODUCT_TYPE" property="finalProductType" jdbcType="VARCHAR" />
+  		<result column="STORE_ASSESS_AMOUNT" property="storeAssessAmount" jdbcType="NUMERIC" />
+  		<result column="FIRST_AUDIT_AMOUNT" property="firstAuditAmount" jdbcType="NUMERIC" />
+  		<result column="SECOND_AUDIT_AMOUNT" property="secondAuditAmount" jdbcType="NUMERIC" />
+  		<result column="FINAL_AUDIT_AMOUNT" property="finalAuditAmount" jdbcType="NUMERIC" />
+  		<result column="LOAN_APPLY_TIME" property="applyTime" jdbcType="TIMESTAMP" />
+  		<result column="AREA_NAME" property="provinceName" jdbcType="VARCHAR" />
+  		<result column="STORE_NAME" property="storeName" jdbcType="VARCHAR" />
+  		<result column="TEAM_MANAGER_NAME" property="teamManagerName" jdbcType="VARCHAR" />
+  		<result column="COSTUMER_MANAGER_NAME" property="costumerManagerName" jdbcType="VARCHAR" />
+  		<result column="REVIEW_MEET" property="reviewMeetName" jdbcType="VARCHAR" />
+  		<result column="DICT_LOAN_STATUS" property="loanStatusCode" jdbcType="VARCHAR" />
+  		<result column="RATE_CHECK_DATE" property="rateCheckDate" jdbcType="TIMESTAMP" />
+  		<result column="PLATE_NUMBERS" property="plateNumbers" jdbcType="VARCHAR" />
+  		<result column="apply_Id" property="applyId" jdbcType="VARCHAR" />
+  		<result column="card_bank" property="midBankName" jdbcType="VARCHAR" />
+  		<result column="bank_card_no" property="bankCardNo" jdbcType="VARCHAR" />
+  		<result column="product_type" property="productTypeContract" jdbcType="VARCHAR" />
+  		<result column="urge_decute_moeny" property="urgeDecuteMoeny" jdbcType="NUMERIC" />
+  		<result column="urge_decute_date" property="urgeDecuteDate" jdbcType="TIMESTAMP" />
+  		<result column="dict_deal_status" property="dictDealStatus" jdbcType="VARCHAR" />
+  		<result column="dict_deal_type" property="dictDealType" jdbcType="VARCHAR" />
+  		<result column="conditional_through_flag" property="conditionalThroughFlag" jdbcType="VARCHAR" />
+  		<result column="dict_loan_flag" property="borrowTursteeFlag" jdbcType="VARCHAR" />
+  		<result column="urge_moeny" property="urgeMoeny" jdbcType="NUMERIC"  />
+  		<result column="contract_months" property="contractMonths" jdbcType="VARCHAR" />
+  		<result column="split_fail_result" property="splitFailResult" jdbcType="VARCHAR" />
+  		<result column="audit_status" property="auditStatus" jdbcType="VARCHAR" />
+  		<result column="audit_refuse_reason" property="auditRefuseReason" jdbcType="VARCHAR" />
+  		<result column="audit_status" property="auditStatus" jdbcType="VARCHAR" />
+  		<result column="audit_refuse_reason" property="auditRefuseReason" jdbcType="VARCHAR" />
+  		<result column="totalUrgeDecuteAmount" property="totalUrgeDecuteAmount" jdbcType="NUMERIC" />
+  		<result column="totalGrantAmount" property="totalGrantAmount" jdbcType="NUMERIC" />
+  		<result column="isextension" property="isExtendsion" jdbcType="VARCHAR" />
+  		<result column="original_contractCode" property="originalContractCode" jdbcType="VARCHAR" />
+  		<result column="derate" property="derate" jdbcType="NUMERIC" />
+  		<result column="cobos" property="cobos" jdbcType="VARCHAR" />
+  		<result column="extend_Num" property="extendNum" jdbcType="NUMERIC" />
+  		<result column="contract_amount" property="contractAmount" jdbcType="NUMERIC" />
+  		<result column="extension_fee" property="extensionFee" jdbcType="NUMERIC"/>
+  		<result column="contract_version" property="contractVersion" jdbcType="VARCHAR" />
+  		<result column="dict_oper_status" property="dictOperStatus" jdbcType="VARCHAR" />
+  		<result column="plan_arrival_time" property="planArrivalTime" jdbcType="TIMESTAMP" />
+  		<result column="vehicle_brand_model" property="vehicleBrandModel" jdbcType="VARCHAR" />
+  		<result column="OPERATE_STEP" property="operateStep" jdbcType="VARCHAR" />
+  		<result column="LENDING_TIME" property="lendingTime" jdbcType="VARCHAR" />
+  		<result column="lendingUserName" property="lendingUserId" jdbcType="VARCHAR" />
+  		<result column="MIDDLE_NAME" property="middleName" jdbcType="VARCHAR" />
+  		<result column="creditMiDBankName" property="creditMiDBankName" jdbcType="VARCHAR" />
+  		<result column="creditBankCardNo" property="creditBankCardNo" jdbcType="VARCHAR" />
+  		<result column="customer_telesales_flag" property="telesalesFlag" jdbcType="VARCHAR" />
+  		<result column="split_fail_result" property="dictDealReason" jdbcType="VARCHAR" /> 
+  		<result column="sourceType" property="sourceType" jdbcType="VARCHAR" /> 
+  		<result column="coborrowerName" property="coborrowerName" jdbcType="VARCHAR" />
+  		<result column="loan_flag" property="loanFlag" jdbcType="VARCHAR" /> 
+  		<result column="customer_cert_num" property="certNum" jdbcType="VARCHAR" /> 
+  		<result column="sign_count" property="signcount" jdbcType="VARCHAR" /> 
+  		<result column="contract_fact_day" property="contractFactDay" jdbcType="TIMESTAMP" /> 
+  		<result column="sign_flag" property="signFlag" jdbcType="VARCHAR" />
+  		<result column="parking_fee" property="parkingFee" jdbcType="NUMERIC" />
+  		<result column="flow_fee" property="flowFee" jdbcType="NUMERIC" />
+  		<result column="contract_replay_day" property="contractReplayDay" jdbcType="TIMESTAMP" />
+  		<result column="contract_tip_day" property="contractTipDay" jdbcType="TIMESTAMP" />
+  		<result column="extend_pay_amount" property="extendRepayMoney" jdbcType="TIMESTAMP" />
+  		<result column="paperless_flag" property="paperLessFlag" jdbcType="VARCHAR" />
+  		<result column="dict_source_type" property="dictSourceType" jdbcType="VARCHAR" />
+  		<result column="agreement_type" property="agreementType" jdbcType="VARCHAR" />
+  		<result column="customer_email" property="customerEmail" jdbcType="VARCHAR" />
+  		<result column="customer_cert_num" property="customerCertNum" jdbcType="VARCHAR" />
+  		<result column="urgent_degree" property="urgentDegree" jdbcType="VARCHAR" />
+  		<result column="contract_end_day" property="contractEndDay" jdbcType="TIMESTAMP" />
+  		<result column="settled_date" property="settledDate" jdbcType="TIMESTAMP" />
+  		<result column="apply_reason" property="applyReason" jdbcType="VARCHAR" />
+  		<result column="doc_id" property="docId" jdbcType="VARCHAR" />
+  		<result column="file_name" property="fileName" jdbcType="VARCHAR" />
+  		<result column="agr_dict_loan_status" property="agrDictLoanStatus" jdbcType="VARCHAR" />
+  		<result column="first_service_tariffing_rate" property="firstServiceTariffingRate" jdbcType="NUMERIC" />
+  		<result column="interestAmount" property="interestAmount" jdbcType="NUMERIC" />
+  		<result column="serviceMoeny" property="serviceMoeny" jdbcType="NUMERIC" />
+  		<result column="longProductMoeny" property="longProductMoeny" jdbcType="NUMERIC" />
+  		<result column="channelMoeny" property="channelMoeny" jdbcType="NUMERIC" />
+  		<result column="parkMoeny" property="parkMoeny" jdbcType="NUMERIC" />
+  		<result column="GPSInstallMoeny" property="GPSInstallMoeny" jdbcType="NUMERIC" />
+  		<result column="GPSUseMoeny" property="GPSUseMoeny" jdbcType="NUMERIC" />
+  		<result column="platformFlowMoeny" property="platformFlowMoeny" jdbcType="NUMERIC" />
+  		<result column="outVisitFee" property="outVisitFee" jdbcType="NUMERIC" />
+  		<result column="revisit_status" property="visitState" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    h.loan_code, h.id, h.dict_loan_status, operate_step, dict_sys_flag, operate_result, operator, 
+    operator_role_id, org_code, operate_time, h.remark, h.create_by, h.create_time, h.modify_by, 
+    h.modify_time
+  </sql>
+  <select id="selectByLoanCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_loan_status_his h
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="findOldPage" resultType="com.creditharmony.loan.car.common.entity.CarLoanStatusHis" parameterType="com.creditharmony.loan.car.common.entity.CarLoanStatusHis">
+	  select  
+	  id,
+	  flow_name as operate_step, 
+	  flow_result as operate_result, 
+	  note as remark,
+	  create_by as operator, 
+      create_time as operate_time 
+ 	  FROM t_cj_loan_his
+	  <where>
+	  	<if test="loanCode != null">
+	  		 loan_code = #{loanCode}  
+	  	</if>
+	  </where>
+	  order by operate_time desc
+  </select>
+  
+  
+  <select id="findPage" resultType="com.creditharmony.loan.car.common.entity.CarLoanStatusHis" parameterType="com.creditharmony.loan.car.common.entity.CarLoanStatusHis">
+	   select d2.label operate_result, d.label operate_step, case when h.remark = '1' then '' else h.remark end remark,
+	   <include refid="Base_Column_List" />
+	  from t_cj_loan_status_his h
+	  left join t_cj_loan_info li on li.loan_code = h.loan_code 
+	  left join t_gl_dict d on d.type = 'jk_car_loan_steps' and d.value = h.operate_step
+	  left join t_gl_dict d2 on d2.type = 'jk_car_operate_result' and d2.value = h.operate_result
+	<!-- and  dict_Sys_Flag = #{dictSysFlag} -->  
+	  <where>
+	  	<if test="loanCode != null">
+	  		 h.loan_code = #{loanCode}  
+	  	</if>
+	  	<if test="applyId != null">
+	  		 li.apply_id = #{applyId}  
+	  	</if>
+	  </where>
+	  order by operate_time desc
+  </select>
+
+<!-- 已办查询 -->
+<select id="findDoneList" resultMap="DoneListMap" parameterType="map">
+	select 
+		ROUND( con.contract_amount * (chr.interest_rate/100) , 2) interestAmount,<!-- 利息 -->
+		ROUND( con.contract_amount *(con.gross_rate - chr.interest_rate)/100 , 2) serviceMoeny,<!-- 服务费 -->
+		(case l.loan_months 
+	 		when 30 then 0 
+	 		when 90 then 0
+	 		else ROUND( con.contract_amount * 0.02 ,2)end
+	 	) longProductMoeny ,<!-- 长期产品服务费 -->
+		(case l.loan_months 
+	 		when 30 then ROUND( con.contract_amount * (chr.first_service_tariffing)/100 ,2)
+			when 90 then ROUND( con.contract_amount * (chr.first_service_tariffing)/100 ,2)
+	 		else ROUND( con.contract_amount * (chr.first_service_tariffing - 2)/100,2) end
+	 	) channelMoeny,<!-- 渠道费 -->
+		COALESCE(chr.out_visit_fee,0) outVisitFee,<!-- 外访费 -->
+		(case l.loan_months 
+	 		when 30 then ROUND( l.parking_fee ,2)
+	 		else ROUND( l.parking_fee*3 ,2) end
+	 	) parkMoeny,<!-- 停车费 -->
+		l.facility_charge GPSInstallMoeny,<!-- GPS设备安装费 -->
+		COALESCE(l.device_used_fee,0) GPSUseMoeny, <!-- GPS使用费 -->
+		l.flow_fee platformFlowMoeny,<!-- 平台流量费 -->
+		l.dict_loan_status,
+		l.review_meet,
+		h.*,
+		h.OPERATE_STEP,
+		l.apply_Id,
+		l.dict_source_type,
+		con.contract_code,
+		con.product_type,
+		con.contract_months,
+		con.contract_amount,
+		con.contract_version,
+		con.contract_fact_day,
+		con.paperless_flag,
+        con.gross_rate,con.contract_end_day,con.contract_replay_day,org2.name teamOrgName,
+		l.conditional_through_flag,
+		l.dict_loan_flag,
+		l.loan_customer_name,
+		l.loan_apply_amount,
+		l.loan_months,
+		l.isextension,			
+		(select count(1) from t_cj_contract c where c.contract_code like con.contract_code||'-%' and sign_flag='1') extend_Num, 							
+		l.dict_product_type,
+		vi.store_assess_amount,
+		l.loan_apply_time,
+		pc.area_name,
+		l.store_name,
+		user1.name TEAM_MANAGER_NAME,
+		user2.name COSTUMER_MANAGER_NAME,
+		user4.name lendingUserName,
+		chr.create_time rate_check_date,
+		(case
+			when chr.first_service_tariffing_rate is null  then ROUND( chr.first_service_tariffing*100/chr.contract_amount,0)
+	 		else ROUND(chr.first_service_tariffing_rate,0) end
+	 	)first_service_tariffing_rate,<!-- 首期服务费 -->
+		vi.plate_numbers,
+		vi.vehicle_brand_model,
+		lc.customer_telesales_flag,
+		cc.dict_oper_status,
+		cc.plan_arrival_time,
+		first.dict_audit_months first_audit_months,
+		p1.product_name first_product_type,
+		first.audit_amount first_audit_amount,
+		recheck.dict_audit_months second_audit_months,
+		p2.product_name second_product_type,
+		recheck.audit_amount second_audit_amount,
+		final.dict_audit_months final_audit_months,
+		p3.product_name final_product_type,
+		final.audit_amount final_audit_amount,
+		sa.urge_decute_moeny,
+		mp.MID_BANK_NAME creditMiDBankName,
+		mp.BANK_CARD_NO creditBankCardNo,
+		mp.MIDDLE_NAME,
+		lg.LENDING_TIME,
+		sum(sa.urge_decute_moeny) over () totalUrgeDecuteAmount,
+		sum(lg.grant_amount) over () totalGrantAmount,
+		sa.urge_moeny,
+		cbi.card_bank,
+		cbi.bank_card_no,
+		scr.audit_status,
+		scr.audit_refuse_reason,
+		lc.customer_cert_num,
+		sa.urge_decute_date,
+		sa.dict_deal_status,
+		sa.dict_deal_type,
+		sa.split_fail_result,
+		file.sign_count,
+		lg.grant_amount,l.store_name,l.manager_code,l.cons_team_managercode,
+		(select name from jk.t_gl_org  where type='6200000001' and id in ( select id from jk.t_gl_org where  position(id||',' in org.parent_ids) >0  )) businessOrgName,
+		(select string_agg(cobo_name,',') from jk.t_cj_loan_coborrower where loan_code=h.loan_code group by loan_code) coborrowerName,
+		l.loan_flag, 
+		cjc.sign_flag
+	FROM (SELECT t.*
+		FROM (
+			SELECT tt.*, ROW_NUMBER() OVER(PARTITION BY tt.loan_code ORDER BY tt.create_time DESC) rn
+			FROM t_cj_loan_status_his tt
+			<where>
+				<!-- 过滤个人已办，不传值，则为全部人员已办 -->
+				<if test="filterUser != null and filterUser != ''">
+					tt.create_by = #{filterUser,jdbcType=VARCHAR}
+				</if>
+				<!-- 程序需填写的字段 开始 -->
+				<if test="isQueryAll != null and isQueryAll != '' and isQueryAll != 1">
+					AND tt.operate_step 
+					<choose>
+						<when test="nodeValList != null and nodeValList.size() > 0">
+							<if test="isIn != null and isIn != '' and isIn != 1">
+								 NOT 
+							</if>
+							IN 
+							<foreach collection="nodeValList" item="item" open="(" close=")" separator=",">
+								#{item}
+							</foreach>
+						</when>
+						<otherwise>
+							IS NULL
+						</otherwise>
+					</choose>
+				</if>
+				<!-- 合同制作已办特有，用于查询合同制作通过的记录 -->
+				<if test="grossFlag != null and grossFlag != '' and grossFlag == 1">
+					AND tt.remark = #{grossFlag}
+				</if>
+				<!-- 程序需填写的字段 结束 -->
+			</where>
+		) t WHERE <![CDATA[t.rn <= 1]]>) h
+	LEFT JOIN t_cj_loan_info l ON h.loan_code = l.loan_code
+	LEFT JOIN t_cj_contract con ON con.loan_code = h.loan_code
+	LEFT JOIN t_cj_vehicle_info vi ON vi.loan_code = h.loan_code
+	LEFT JOIN t_gl_org org ON org.id = l.store_code
+	LEFT JOIN t_gl_province_city pc ON pc.id = org.province_id AND pc.area_type = '1'
+	LEFT JOIN t_gl_user user1 ON user1.id = l.cons_team_managercode
+	LEFT JOIN t_gl_user user2 ON user2.id = l.manager_code
+	LEFT JOIN t_cj_check_rate chr ON chr.loan_code = h.loan_code
+	LEFT JOIN t_jk_loan_customer lc ON lc.loan_code = h.loan_code
+	LEFT JOIN t_cj_customer_consultation cc ON cc.loan_code = lc.loan_code
+	LEFT JOIN t_cj_loan_grant lg ON lg.loan_code = h.loan_code
+	LEFT JOIN t_cj_urge_services_amount sa ON sa.r_grant_id = lg.id
+	LEFT JOIN t_cj_service_charge_return scr ON scr.r_charge_id = sa.id
+	LEFT JOIN t_cj_customer_bank_info  cbi ON cbi.loan_code = h.loan_code
+	LEFT JOIN t_gl_user user4 ON user4.id = lg.LENDING_USER_ID
+	LEFT JOIN t_gl_org org2 ON org2.id = l.cons_team_managercode
+	LEFT JOIN T_JK_MIDDLE_PERSON mp ON mp.id = lg.MID_ID
+	left join (select contract_code ,count(sign_doc_id) as sign_count from jk.t_cj_contract_file group by contract_code ) file on file.contract_code = con.contract_code
+	LEFT JOIN (
+		SELECT t1.*
+		FROM (
+			SELECT a1.*, ROW_NUMBER() OVER(PARTITION BY a1.loan_code ORDER BY a1.create_time DESC) rn
+			FROM t_cj_audit_result a1
+			where a1.dict_check_type = '1'
+		) t1 WHERE <![CDATA[t1.rn <= 1]]>) first ON first.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p1 ON p1.product_type = 'products_type_car_credit' AND p1.product_code = first.dict_product_type
+	LEFT JOIN (
+		SELECT t2.*
+		FROM (
+			SELECT a2.*, ROW_NUMBER() OVER(PARTITION BY a2.loan_code ORDER BY a2.create_time DESC) rn
+			FROM t_cj_audit_result a2
+			where a2.dict_check_type = '2'
+		) t2 WHERE <![CDATA[t2.rn <= 1]]>) recheck ON recheck.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p2 ON p2.product_type = 'products_type_car_credit' AND p2.product_code = recheck.dict_product_type
+	LEFT JOIN (
+		SELECT t3.*
+		FROM (
+			SELECT a3.*, ROW_NUMBER() OVER(PARTITION BY a3.loan_code ORDER BY a3.create_time DESC) rn
+			FROM t_cj_audit_result a3
+			where a3.dict_check_type = '3'
+		) t3 WHERE <![CDATA[t3.rn <= 1]]>) final ON final.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p3 ON p3.product_type = 'products_type_car_credit' AND p3.product_code = final.dict_product_type
+	left join jk.t_cj_contract cjc on cjc.loan_code = h.loan_code 
+	<where>
+		l.isextension IS NULL 
+		<!-- 页面所需查询字段 开始-->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="teamManagerName != null and teamManagerName != ''">
+			AND user1.name LIKE '%' || #{teamManagerName} || '%'
+		</if>
+		<if test="costumerManagerName != null and costumerManagerName != ''">
+			AND user2.name LIKE '%' || #{costumerManagerName} || '%'
+		</if>
+		<if test="storeCodeList != null and storeCodeList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="midBankName != null and midBankName != ''">
+			AND cbi.card_bank = #{midBankName}
+		</if>
+		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+		<if test="grantRecepicResult != null and grantRecepicResult != ''">
+			AND lg.grant_recepic_result =#{grantRecepicResult}
+		</if>
+		<if test="urgeDecuteDateStart != null and urgeDecuteDateStart != ''">
+   			AND sa.urge_decute_date &gt;= #{urgeDecuteDateStart,jdbcType=TIMESTAMP}
+   		</if>
+   		<if test="urgeDecuteDateEnd != null and urgeDecuteDateEnd != ''">
+   			AND sa.urge_decute_date &lt;= #{urgeDecuteDateEnd,jdbcType=TIMESTAMP}
+   		</if>
+   		<if test="dictDealType != null and dictDealType != ''">
+   			AND sa.dict_deal_type = #{dictDealType}	
+   		</if>
+   		<if test="dictDealStatus != null and dictDealStatus != ''">
+   			AND sa.dict_deal_status = #{dictDealStatus}
+   		</if>
+   		<if test="bankCardNo != null and bankCardNo != ''">
+   			AND cbi.bank_card_no = #{bankCardNo}
+   		</if>
+   		<if test="applyId != null and applyId != ''">
+   			AND l.apply_id = #{applyId}
+   		</if>
+   		<if test="applyIdList != null and applyIdList.size() > 0">
+			AND l.apply_id in 
+			<foreach collection="applyIdList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+   		<if test="dictOperStatus != null and dictOperStatus != ''">
+   			AND cc.dict_oper_status = #{dictOperStatus}
+   		</if>
+   		<if test="planArrivalTimeStart != null and planArrivalTimeStart != ''">
+   			and cc.plan_arrival_time &gt; to_date(#{planArrivalTimeStart}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+   			and cc.plan_arrival_time &lt; to_date(#{planArrivalTimeend}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="contractMonths != null and contractMonths != ''">
+   			AND con.contract_months = #{contractMonths}
+   		</if>
+   		<if test="conditionalThroughFlag != null and conditionalThroughFlag != ''">
+   			AND l.conditional_through_flag = #{conditionalThroughFlag}
+   		</if>
+   		
+   		<if test="productType != null and productType != ''">
+   			AND (case when final.dict_product_type is not null then final.dict_product_type  
+    		  		  when recheck.dict_product_type is not null then recheck.dict_product_type
+    	      		  else first.dict_product_type end) = #{productType}
+		</if>
+		<if test="storeCode != null and storeCode != ''">
+			AND l.store_code = #{storeCode,jdbcType=VARCHAR}
+		</if>
+		
+		<!-- 标识P2P  -->
+		<if test="loanFlag != null and loanFlag != ''">
+			AND l.loan_flag = #{loanFlag}
+		</if>
+		<if test="lendingTimeStart != null and lendingTimeStart != ''">
+			AND lg.LENDING_TIME <![CDATA[ >= ]]> #{lendingTimeStart,jdbcType=TIMESTAMP}
+		</if>
+		<if test="lendingTimeEnd != null and lendingTimeEnd != ''">
+			AND lg.LENDING_TIME <![CDATA[ < ]]> #{lendingTimeEnd,jdbcType=TIMESTAMP}
+		</if>
+		<!-- 无纸化 -->
+		<if test="paperLessFlag != null and paperLessFlag != ''">
+			AND con.paperless_flag = #{paperLessFlag}
+		</if>
+		
+		<if test="dictSourceType != null and dictSourceType != ''">
+			AND l.dict_source_type = #{dictSourceType}
+		</if>
+		
+		<!-- 页面所需查询字段 结束-->
+	</where>
+	 ORDER BY h.operate_time desc
+</select>
+<!-- 划扣已办-->
+<select id="findDrawDoneList" resultMap="DoneListMap" parameterType="map">
+	select 
+		ROUND( con.contract_amount * (chr.interest_rate/100) , 2) interestAmount,<!-- 利息 -->
+		ROUND( con.contract_amount *(con.gross_rate - chr.interest_rate)/100 , 2) serviceMoeny,<!-- 服务费 -->
+		(case l.loan_months 
+	 		when 30 then 0 
+	 		when 90 then 0
+	 		else ROUND( con.contract_amount * 0.02 ,2)end
+	 	) longProductMoeny ,<!-- 长期产品服务费 -->
+		(case l.loan_months 
+	 		when 30 then ROUND( chr.first_service_tariffing ,2)
+			when 90 then ROUND( chr.first_service_tariffing ,2)
+	 		else ROUND( chr.first_service_tariffing - 2.0/100 * con.contract_amount ,2) end
+	 	) channelMoeny,<!-- 渠道费 -->
+		COALESCE(chr.out_visit_fee,0) outVisitFee,<!-- 外访费 -->
+		(case l.loan_months 
+	 		when 30 then ROUND( l.parking_fee ,2)
+	 		else ROUND( l.parking_fee*3 ,2) end
+	 	) parkMoeny,<!-- 停车费 -->
+		
+		l.facility_charge GPSInstallMoeny,<!-- GPS设备安装费 -->
+		COALESCE(l.device_used_fee,0) GPSUseMoeny, <!-- GPS使用费 -->
+		l.flow_fee platformFlowMoeny,<!-- 平台流量费 -->
+		l.dict_loan_status,
+		l.review_meet,
+		h.*,
+		h.OPERATE_STEP,
+		l.apply_Id,
+		l.dict_source_type,
+		con.contract_code,
+		con.product_type,
+		con.contract_months,
+		con.contract_amount,
+		con.contract_version,
+		con.contract_fact_day,
+		con.paperless_flag,
+        con.gross_rate,con.contract_end_day,con.contract_replay_day,org2.name teamOrgName,
+		l.conditional_through_flag,
+		l.dict_loan_flag,
+		l.loan_customer_name,
+		l.loan_apply_amount,
+		l.loan_months,
+		l.isextension,			
+		(select count(1) from t_cj_contract c where c.contract_code like con.contract_code||'-%' and sign_flag='1') extend_Num, 							
+		l.dict_product_type,
+		vi.store_assess_amount,
+		l.loan_apply_time,
+		pc.area_name,
+		l.store_name,
+		user1.name TEAM_MANAGER_NAME,
+		user2.name COSTUMER_MANAGER_NAME,
+		user4.name lendingUserName,
+		chr.create_time rate_check_date,
+		(case
+			when chr.first_service_tariffing_rate is null  then ROUND( chr.first_service_tariffing*100/chr.contract_amount,0)
+	 		else ROUND(chr.first_service_tariffing_rate,0) end
+	 	)first_service_tariffing_rate,<!-- 首期服务费 -->
+		vi.plate_numbers,
+		vi.vehicle_brand_model,
+		lc.customer_telesales_flag,
+		cc.dict_oper_status,
+		cc.plan_arrival_time,
+		first.dict_audit_months first_audit_months,
+		p1.product_name first_product_type,
+		first.audit_amount first_audit_amount,
+		recheck.dict_audit_months second_audit_months,
+		p2.product_name second_product_type,
+		recheck.audit_amount second_audit_amount,
+		final.dict_audit_months final_audit_months,
+		p3.product_name final_product_type,
+		final.audit_amount final_audit_amount,
+		sa.urge_decute_moeny,
+		mp.MID_BANK_NAME creditMiDBankName,
+		mp.BANK_CARD_NO creditBankCardNo,
+		mp.MIDDLE_NAME,
+		lg.LENDING_TIME,
+		sum(sa.urge_decute_moeny) over () totalUrgeDecuteAmount,
+		sum(lg.grant_amount) over () totalGrantAmount,
+		sa.urge_moeny,
+		cbi.card_bank,
+		cbi.bank_card_no,
+		scr.audit_status,
+		scr.audit_refuse_reason,
+		lc.customer_cert_num,
+		sa.urge_decute_date,
+		sa.dict_deal_status,
+		sa.dict_deal_type,
+		sa.split_fail_result,
+		file.sign_count,
+		lg.grant_amount,l.store_name,l.manager_code,l.cons_team_managercode,
+		(select name from jk.t_gl_org  where type='6200000001' and id in ( select id from jk.t_gl_org where  position(id||',' in org.parent_ids) >0  )) businessOrgName,
+		(select string_agg(cobo_name,',') from jk.t_cj_loan_coborrower where loan_code=h.loan_code group by loan_code) coborrowerName,
+		l.loan_flag, 
+		cjc.sign_flag
+	FROM (SELECT t.*
+		FROM (
+			SELECT tt.*, ROW_NUMBER() OVER(PARTITION BY tt.loan_code ORDER BY tt.create_time DESC) rn
+			FROM t_cj_loan_status_his tt
+			<where>
+				<!-- 过滤个人已办，不传值，则为全部人员已办 -->
+				<if test="filterUser != null and filterUser != ''">
+					tt.create_by = #{filterUser,jdbcType=VARCHAR}
+				</if>
+				<!-- 程序需填写的字段 开始 -->
+				<if test="isQueryAll != null and isQueryAll != '' and isQueryAll != 1">
+					AND tt.operate_step 
+					<choose>
+						<when test="nodeValList != null and nodeValList.size() > 0">
+							<if test="isIn != null and isIn != '' and isIn != 1">
+								 NOT 
+							</if>
+							IN 
+							<foreach collection="nodeValList" item="item" open="(" close=")" separator=",">
+								#{item}
+							</foreach>
+						</when>
+						<otherwise>
+							IS NULL
+						</otherwise>
+					</choose>
+				</if>
+				<!-- 合同制作已办特有，用于查询合同制作通过的记录 -->
+				<if test="grossFlag != null and grossFlag != '' and grossFlag == 1">
+					AND tt.remark = #{grossFlag}
+				</if>
+				<!-- 程序需填写的字段 结束 -->
+			</where>
+		) t WHERE <![CDATA[t.rn <= 1]]>) h
+	LEFT JOIN t_cj_loan_info l ON h.loan_code = l.loan_code
+	LEFT JOIN t_cj_contract con ON con.loan_code = h.loan_code
+	LEFT JOIN t_cj_vehicle_info vi ON vi.loan_code = h.loan_code
+	LEFT JOIN t_gl_org org ON org.id = l.store_code
+	LEFT JOIN t_gl_province_city pc ON pc.id = org.province_id AND pc.area_type = '1'
+	LEFT JOIN t_gl_user user1 ON user1.id = l.cons_team_managercode
+	LEFT JOIN t_gl_user user2 ON user2.id = l.manager_code
+	LEFT JOIN t_cj_check_rate chr ON chr.loan_code = h.loan_code
+	LEFT JOIN t_jk_loan_customer lc ON lc.loan_code = h.loan_code
+	LEFT JOIN t_cj_customer_consultation cc ON cc.loan_code = lc.loan_code
+	LEFT JOIN t_cj_loan_grant lg ON lg.loan_code = h.loan_code
+	LEFT JOIN t_cj_urge_services_amount sa ON sa.r_grant_id = lg.id
+	LEFT JOIN t_cj_service_charge_return scr ON scr.r_charge_id = sa.id
+	LEFT JOIN t_cj_customer_bank_info  cbi ON cbi.loan_code = h.loan_code
+	LEFT JOIN t_gl_user user4 ON user4.id = lg.LENDING_USER_ID
+	LEFT JOIN t_gl_org org2 ON org2.id = l.cons_team_managercode
+	LEFT JOIN T_JK_MIDDLE_PERSON mp ON mp.id = lg.MID_ID
+	left join (select contract_code ,count(sign_doc_id) as sign_count from jk.t_cj_contract_file group by contract_code ) file on file.contract_code = con.contract_code
+	LEFT JOIN (
+		SELECT t1.*
+		FROM (
+			SELECT a1.*, ROW_NUMBER() OVER(PARTITION BY a1.loan_code ORDER BY a1.create_time DESC) rn
+			FROM t_cj_audit_result a1
+			where a1.dict_check_type = '1'
+		) t1 WHERE <![CDATA[t1.rn <= 1]]>) first ON first.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p1 ON p1.product_type = 'products_type_car_credit' AND p1.product_code = first.dict_product_type
+	LEFT JOIN (
+		SELECT t2.*
+		FROM (
+			SELECT a2.*, ROW_NUMBER() OVER(PARTITION BY a2.loan_code ORDER BY a2.create_time DESC) rn
+			FROM t_cj_audit_result a2
+			where a2.dict_check_type = '2'
+		) t2 WHERE <![CDATA[t2.rn <= 1]]>) recheck ON recheck.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p2 ON p2.product_type = 'products_type_car_credit' AND p2.product_code = recheck.dict_product_type
+	LEFT JOIN (
+		SELECT t3.*
+		FROM (
+			SELECT a3.*, ROW_NUMBER() OVER(PARTITION BY a3.loan_code ORDER BY a3.create_time DESC) rn
+			FROM t_cj_audit_result a3
+			where a3.dict_check_type = '3'
+		) t3 WHERE <![CDATA[t3.rn <= 1]]>) final ON final.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p3 ON p3.product_type = 'products_type_car_credit' AND p3.product_code = final.dict_product_type
+	left join jk.t_cj_contract cjc on cjc.loan_code = h.loan_code 
+	<where>
+		l.isextension IS NULL and sa.dict_deal_status = '2'  <!-- 回盘结果成功 -->
+		<!-- 页面所需查询字段 开始-->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="teamManagerName != null and teamManagerName != ''">
+			AND user1.name LIKE '%' || #{teamManagerName} || '%'
+		</if>
+		<if test="costumerManagerName != null and costumerManagerName != ''">
+			AND user2.name LIKE '%' || #{costumerManagerName} || '%'
+		</if>
+		<if test="storeCodeList != null and storeCodeList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="midBankName != null and midBankName != ''">
+			AND cbi.card_bank = #{midBankName}
+		</if>
+		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+		<if test="grantRecepicResult != null and grantRecepicResult != ''">
+			AND lg.grant_recepic_result =#{grantRecepicResult}
+		</if>
+		<if test="urgeDecuteDateStart != null and urgeDecuteDateStart != ''">
+   			AND sa.urge_decute_date &gt;= #{urgeDecuteDateStart,jdbcType=TIMESTAMP}
+   		</if>
+   		<if test="urgeDecuteDateEnd != null and urgeDecuteDateEnd != ''">
+   			AND sa.urge_decute_date &lt;= #{urgeDecuteDateEnd,jdbcType=TIMESTAMP}
+   		</if>
+   		<if test="dictDealType != null and dictDealType != ''">
+   			AND sa.dict_deal_type = #{dictDealType}	
+   		</if>
+   		<if test="dictDealStatus != null and dictDealStatus != ''">
+   			AND sa.dict_deal_status = #{dictDealStatus}
+   		</if>
+   		<if test="bankCardNo != null and bankCardNo != ''">
+   			AND cbi.bank_card_no = #{bankCardNo}
+   		</if>
+   		<if test="applyId != null and applyId != ''">
+   			AND l.apply_id = #{applyId}
+   		</if>
+   		<if test="applyIdList != null and applyIdList.size() > 0">
+			AND l.apply_id in 
+			<foreach collection="applyIdList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+   		<if test="dictOperStatus != null and dictOperStatus != ''">
+   			AND cc.dict_oper_status = #{dictOperStatus}
+   		</if>
+   		<if test="planArrivalTimeStart != null and planArrivalTimeStart != ''">
+   			and cc.plan_arrival_time &gt; to_date(#{planArrivalTimeStart}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+   			and cc.plan_arrival_time &lt; to_date(#{planArrivalTimeend}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="contractMonths != null and contractMonths != ''">
+   			AND con.contract_months = #{contractMonths}
+   		</if>
+   		<if test="conditionalThroughFlag != null and conditionalThroughFlag != ''">
+   			AND l.conditional_through_flag = #{conditionalThroughFlag}
+   		</if>
+   		
+   		<if test="productType != null and productType != ''">
+   			AND (case when final.dict_product_type is not null then final.dict_product_type  
+    		  		  when recheck.dict_product_type is not null then recheck.dict_product_type
+    	      		  else first.dict_product_type end) = #{productType}
+		</if>
+		<if test="storeCode != null and storeCode != ''">
+			AND l.store_code = #{storeCode,jdbcType=VARCHAR}
+		</if>
+		
+		<!-- 标识P2P  -->
+		<if test="loanFlag != null and loanFlag != ''">
+			AND l.loan_flag = #{loanFlag}
+		</if>
+		<if test="lendingTimeStart != null and lendingTimeStart != ''">
+			AND lg.LENDING_TIME <![CDATA[ >= ]]> #{lendingTimeStart,jdbcType=TIMESTAMP}
+		</if>
+		<if test="lendingTimeEnd != null and lendingTimeEnd != ''">
+			AND lg.LENDING_TIME <![CDATA[ < ]]> #{lendingTimeEnd,jdbcType=TIMESTAMP}
+		</if>
+		<!-- 无纸化 -->
+		<if test="paperLessFlag != null and paperLessFlag != ''">
+			AND con.paperless_flag = #{paperLessFlag}
+		</if>
+		
+		<if test="dictSourceType != null and dictSourceType != ''">
+			AND l.dict_source_type = #{dictSourceType}
+		</if>
+		
+		<!-- 页面所需查询字段 结束-->
+	</where>
+	 ORDER BY h.operate_time desc
+</select>
+
+<select id="findDoneListForXls" resultType="com.creditharmony.loan.car.common.entity.ex.CarLoanGrantHaveEx" parameterType="map">
+	select 
+		l.dict_loan_status,
+		l.review_meet,
+		h.*,
+		h.OPERATE_STEP,
+		l.apply_Id,
+		con.contract_code,
+		con.product_type productTypeContract,
+		con.contract_months,
+		con.contract_amount,
+		con.contract_version,
+		con.contract_fact_day,
+        con.gross_rate,con.contract_end_day,con.contract_replay_day,org2.name teamOrgName,
+		l.conditional_through_flag,
+		l.dict_loan_flag,
+		l.loan_customer_name,
+		l.loan_apply_amount,
+		l.loan_months,
+		l.isextension,			
+		(select count(1) from t_cj_contract c where c.contract_code like con.contract_code||'-%' and sign_flag='1') extend_Num, 						
+		l.dict_product_type,
+		vi.store_assess_amount,
+		l.loan_apply_time,
+		pc.area_name,
+		l.store_name,
+		user1.name consTeamManagerName,
+		user2.name managerName,
+		user4.name lendingUserName,
+		chr.create_time rate_check_date,
+		vi.plate_numbers,
+		vi.vehicle_brand_model,
+		lc.customer_telesales_flag,
+		cc.dict_oper_status,
+		cc.plan_arrival_time,
+		first.dict_audit_months first_audit_months,
+		p1.product_name first_product_type,
+		first.audit_amount first_audit_amount,
+		recheck.dict_audit_months second_audit_months,
+		p2.product_name second_product_type,
+		recheck.audit_amount second_audit_amount,
+		final.dict_audit_months final_audit_months,
+		p3.product_name final_product_type,
+		final.audit_amount final_audit_amount,
+		sa.urge_decute_moeny,
+		mp.MID_BANK_NAME creditMiDBankName,
+		mp.BANK_CARD_NO creditBankCardNo,
+		mp.MIDDLE_NAME,
+		lg.LENDING_TIME,
+		sum(sa.urge_decute_moeny) over () totalUrgeDecuteAmount,
+		sum(lg.grant_amount) over () totalGrantAmount,
+		sa.urge_moeny,
+		cbi.card_bank,
+		cbi.bank_card_no,
+		scr.audit_status,
+		scr.audit_refuse_reason,
+		lc.customer_cert_num,
+		sa.urge_decute_date,
+		sa.dict_deal_status,
+		sa.dict_deal_type,
+		sa.split_fail_result,
+		file.sign_count,
+		lg.grant_amount,l.store_name,l.manager_code,l.cons_team_managercode,
+		(select name from jk.t_gl_org  where type='6200000001' and id in ( select id from jk.t_gl_org where  position(id||',' in org.parent_ids) >0  )) bussinessOrgName,
+		(select string_agg(cobo_name,',') from jk.t_cj_loan_coborrower where loan_code=h.loan_code group by loan_code) coborrowerName,
+		l.loan_flag, 
+		cjc.sign_flag
+	FROM (SELECT t.*
+		FROM (
+			SELECT tt.*, ROW_NUMBER() OVER(PARTITION BY tt.loan_code ORDER BY tt.create_time DESC) rn
+			FROM t_cj_loan_status_his tt
+			<where>
+				<!-- 过滤个人已办，不传值，则为全部人员已办 -->
+				<if test="filterUser != null and filterUser != ''">
+					tt.create_by = #{filterUser,jdbcType=VARCHAR}
+				</if>
+				<!-- 程序需填写的字段 开始 -->
+				<if test="isQueryAll != null and isQueryAll != '' and isQueryAll != 1">
+					AND tt.operate_step 
+					<choose>
+						<when test="nodeValList != null and nodeValList.size() > 0">
+							<if test="isIn != null and isIn != '' and isIn != 1">
+								 NOT 
+							</if>
+							IN 
+							<foreach collection="nodeValList" item="item" open="(" close=")" separator=",">
+								#{item}
+							</foreach>
+						</when>
+						<otherwise>
+							IS NULL
+						</otherwise>
+					</choose>
+				</if>
+				<!-- 合同制作已办特有，用于查询合同制作通过的记录 -->
+				<if test="grossFlag != null and grossFlag != '' and grossFlag == 1">
+					AND tt.remark = #{grossFlag}
+				</if>
+				<!-- 程序需填写的字段 结束 -->
+			</where>
+		) t WHERE <![CDATA[t.rn <= 1]]>) h
+	LEFT JOIN t_cj_loan_info l ON h.loan_code = l.loan_code
+	LEFT JOIN t_cj_contract con ON con.loan_code = h.loan_code
+	LEFT JOIN t_cj_vehicle_info vi ON vi.loan_code = h.loan_code
+	LEFT JOIN t_gl_org org ON org.id = l.store_code
+	LEFT JOIN t_gl_province_city pc ON pc.id = org.province_id AND pc.area_type = '1'
+	LEFT JOIN t_gl_user user1 ON user1.id = l.cons_team_managercode
+	LEFT JOIN t_gl_user user2 ON user2.id = l.manager_code
+	LEFT JOIN t_cj_check_rate chr ON chr.loan_code = h.loan_code
+	LEFT JOIN t_jk_loan_customer lc ON lc.loan_code = h.loan_code
+	LEFT JOIN t_cj_customer_consultation cc ON cc.loan_code = lc.loan_code
+	LEFT JOIN t_cj_loan_grant lg ON lg.loan_code = h.loan_code
+	LEFT JOIN t_cj_urge_services_amount sa ON sa.r_grant_id = lg.id
+	LEFT JOIN t_cj_service_charge_return scr ON scr.r_charge_id = sa.id
+	LEFT JOIN t_cj_customer_bank_info  cbi ON cbi.loan_code = h.loan_code
+	LEFT JOIN t_gl_user user4 ON user4.id = lg.LENDING_USER_ID
+	LEFT JOIN t_gl_org org2 ON org2.id = user1.department_id
+	LEFT JOIN T_JK_MIDDLE_PERSON mp ON mp.id = lg.MID_ID
+	left join (select contract_code ,count(sign_doc_id) as sign_count from jk.t_cj_contract_file group by contract_code ) file on file.contract_code = con.contract_code
+	LEFT JOIN (
+		SELECT t1.*
+		FROM (
+			SELECT a1.*, ROW_NUMBER() OVER(PARTITION BY a1.loan_code ORDER BY a1.create_time DESC) rn
+			FROM t_cj_audit_result a1
+			where a1.dict_check_type = '1'
+		) t1 WHERE <![CDATA[t1.rn <= 1]]>) first ON first.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p1 ON p1.product_type = 'products_type_car_credit' AND p1.product_code = first.dict_product_type
+	LEFT JOIN (
+		SELECT t2.*
+		FROM (
+			SELECT a2.*, ROW_NUMBER() OVER(PARTITION BY a2.loan_code ORDER BY a2.create_time DESC) rn
+			FROM t_cj_audit_result a2
+			where a2.dict_check_type = '2'
+		) t2 WHERE <![CDATA[t2.rn <= 1]]>) recheck ON recheck.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p2 ON p2.product_type = 'products_type_car_credit' AND p2.product_code = recheck.dict_product_type
+	LEFT JOIN (
+		SELECT t3.*
+		FROM (
+			SELECT a3.*, ROW_NUMBER() OVER(PARTITION BY a3.loan_code ORDER BY a3.create_time DESC) rn
+			FROM t_cj_audit_result a3
+			where a3.dict_check_type = '3'
+		) t3 WHERE <![CDATA[t3.rn <= 1]]>) final ON final.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p3 ON p3.product_type = 'products_type_car_credit' AND p3.product_code = final.dict_product_type
+	left join jk.t_cj_contract cjc on cjc.loan_code = h.loan_code 
+	<where>
+		l.isextension IS NULL
+		<!-- 页面所需查询字段 开始-->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="teamManagerName != null and teamManagerName != ''">
+			AND user1.name LIKE '%' || #{teamManagerName} || '%'
+		</if>
+		<if test="costumerManagerName != null and costumerManagerName != ''">
+			AND user2.name LIKE '%' || #{costumerManagerName} || '%'
+		</if>
+		<if test="storeCodeList != null and storeCodeList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="midBankName != null and midBankName != ''">
+			AND cbi.card_bank = #{midBankName}
+		</if>
+		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+		<if test="grantRecepicResult != null and grantRecepicResult != ''">
+			AND lg.grant_recepic_result =#{grantRecepicResult}
+		</if>
+		<if test="urgeDecuteDateStart != null and urgeDecuteDateStart != ''">
+   			AND sa.urge_decute_date &gt;= #{urgeDecuteDateStart,jdbcType=TIMESTAMP}
+   		</if>
+   		<if test="urgeDecuteDateEnd != null and urgeDecuteDateEnd != ''">
+   			AND sa.urge_decute_date &lt;= #{urgeDecuteDateEnd,jdbcType=TIMESTAMP}
+   		</if>
+   		<if test="dictDealType != null and dictDealType != ''">
+   			AND sa.dict_deal_type = #{dictDealType}	
+   		</if>
+   		<if test="dictDealStatus != null and dictDealStatus != ''">
+   			AND sa.dict_deal_status = #{dictDealStatus}
+   		</if>
+   		<if test="bankCardNo != null and bankCardNo != ''">
+   			AND cbi.bank_card_no = #{bankCardNo}
+   		</if>
+   		<if test="applyId != null and applyId != ''">
+   			AND l.apply_id = #{applyId}
+   		</if>
+   		<if test="applyIdList != null and applyIdList.size() > 0">
+			AND l.apply_id in 
+			<foreach collection="applyIdList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+   		<if test="dictOperStatus != null and dictOperStatus != ''">
+   			AND cc.dict_oper_status = #{dictOperStatus}
+   		</if>
+   		<if test="planArrivalTimeStart != null and planArrivalTimeStart != ''">
+   			and cc.plan_arrival_time &gt; to_date(#{planArrivalTimeStart}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+   			and cc.plan_arrival_time &lt; to_date(#{planArrivalTimeend}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="contractMonths != null and contractMonths != ''">
+   			AND con.contract_months = #{contractMonths}
+   		</if>
+   		<if test="conditionalThroughFlag != null and conditionalThroughFlag != ''">
+   			AND l.conditional_through_flag = #{conditionalThroughFlag}
+   		</if>
+   		
+   		<if test="productType != null and productType != ''">
+   			AND (case when final.dict_product_type is not null then final.dict_product_type  
+    		  		  when recheck.dict_product_type is not null then recheck.dict_product_type
+    	      		  else first.dict_product_type end) = #{productType}
+		</if>
+		<if test="storeCode != null and storeCode != ''">
+			AND l.store_code = #{storeCode,jdbcType=VARCHAR}
+		</if>
+		
+		<!-- 标识P2P  -->
+		<if test="loanFlag != null and loanFlag != ''">
+			AND l.loan_flag = #{loanFlag}
+		</if>
+		<if test="lendingTimeStart != null and lendingTimeStart != ''">
+			AND lg.LENDING_TIME <![CDATA[ >= ]]> #{lendingTimeStart,jdbcType=TIMESTAMP}
+		</if>
+		<if test="lendingTimeEnd != null and lendingTimeEnd != ''">
+			AND lg.LENDING_TIME <![CDATA[ < ]]> #{lendingTimeEnd,jdbcType=TIMESTAMP}
+		</if>
+		
+		<!-- 页面所需查询字段 结束-->
+	</where>
+	 ORDER BY l.loan_apply_time, h.operate_time desc
+</select>
+
+  <delete id="delete" parameterType="com.creditharmony.loan.car.common.entity.CarLoanStatusHis" >
+    delete from t_cj_loan_status_his
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </delete>
+  
+  <insert id="insert" parameterType="com.creditharmony.loan.car.common.entity.CarLoanStatusHis" >
+
+    insert into t_cj_loan_status_his (loan_code, id, dict_loan_status,
+      operate_step, dict_sys_flag, operate_result, 
+      operator, operator_role_id, org_code, 
+      operate_time, remark, create_by, 
+      create_time, modify_by, modify_time
+      )
+    values (#{loanCode,jdbcType=VARCHAR}, #{id,jdbcType=VARCHAR}, #{dictLoanStatus,jdbcType=VARCHAR},
+      #{operateStep,jdbcType=VARCHAR}, #{dictSysFlag,jdbcType=VARCHAR}, #{operateResult,jdbcType=VARCHAR}, 
+      #{operator,jdbcType=VARCHAR}, #{operatorRoleId,jdbcType=VARCHAR}, #{orgCode,jdbcType=VARCHAR}, 
+      #{operateTime,jdbcType=TIMESTAMP}, #{remark,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+   
+  <update id="update" parameterType="com.creditharmony.loan.car.common.entity.CarLoanStatusHis" >
+    update t_cj_loan_status_his
+    <set >
+      <if test="id != null" >
+        id = #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="dictLoanStatus != null" >
+        dict_loan_status = #{dictLoanStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="operateStep != null" >
+        operate_step = #{operateStep,jdbcType=VARCHAR},
+      </if>
+      <if test="dictSysFlag != null" >
+        dict_sys_flag = #{dictSysFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="operateResult != null" >
+        operate_result = #{operateResult,jdbcType=VARCHAR},
+      </if>
+      <if test="operator != null" >
+        operator = #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="operatorRoleId != null" >
+        operator_role_id = #{operatorRoleId,jdbcType=VARCHAR},
+      </if>
+      <if test="orgCode != null" >
+        org_code = #{orgCode,jdbcType=VARCHAR},
+      </if>
+      <if test="operateTime != null" >
+        operate_time = #{operateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+  
+  <sql id="commonSql">
+    l.loan_code,
+  	l.apply_Id,				<!-- L流程id -->
+  	l.store_name,			<!-- 门店名称 -->
+	l.loan_apply_amount,	<!-- 申请金额 -->
+	l.dict_product_type, 
+    l.loan_months,     
+    l.manager_code,
+    con.agreement_type,
+	con.sign_Flag,
+	con.paperless_flag,
+	l.loan_apply_time,		<!-- 申请日期 -->
+	l.dict_loan_status,		<!-- 借款状态 -->
+	l.isextension,			<!-- 是否展期 -->
+	con.audit_amount,		<!-- 批借金额 -->
+	con.derate,				<!-- 降额 -->
+	vi.plate_numbers,		<!-- 车牌号码 -->
+	con.contract_code,		<!-- 展期合同编号 -->
+	pc.area_name,			<!-- 所属城市 -->
+	con.contract_amount,	<!-- 合同金额 -->
+	con.extension_fee,		<!-- 展期费用 -->
+	lc.customer_telesales_flag,	<!-- 是否电销 -->
+	con.contract_version,	<!-- 合同版本号 -->
+	l.parking_fee,				<!-- 停车费 -->
+	l.flow_fee,				<!-- 平台流量费 -->
+	l.loan_flag,
+	chr.extend_pay_amount,
+	l.dict_source_type,
+  </sql>
+  <sql id="selectSql">
+  	con3.contract_code original_contractCode,				<!-- 原借款编号 -->
+	lc.customer_name loan_customer_name,					<!-- 客户姓名 -->
+	(select string_agg(cobo_name,',') from t_cj_loan_coborrower where loan_code=l.loan_code group by loan_code) as "coborrowerName",	<!-- 共借人 -->
+	 (con3.contract_replay_day + INTERVAL '7 D') contract_replay_day,	<!-- 合同起始日期 -->
+	(con3.contract_end_day + interval '7 D') contract_tip_day,			<!-- 合同截止日期 -->
+	(select count(1) from t_cj_contract c where c.contract_code like con2.contract_code||'-%' and sign_flag='1') extend_Num							<!-- 已展期次数 -->
+  </sql>
+  <sql id="groupbySql">
+  	con2.contract_code,
+  	con3.contract_code,
+	lc.customer_name,
+	l2.loan_rawcode,
+	h.operate_time,
+	con3.contract_replay_day,
+	con3.contract_end_day,
+	l2.loan_additional_applyid
+  </sql>
+  <!-- 车借展期已办查询 -->
+<select id="findExtendDoneList" resultMap="DoneListMap" parameterType="map">
+	select
+		<include refid="commonSql"></include>
+		l.dict_loan_status agr_dict_loan_status,		<!-- 借款状态 -->
+    	(select name from jk.t_gl_user where id = l.manager_code) manager_name,
+    	(
+	    	select product_name from t_gl_jk_product
+			where product_type = 'products_type_car_credit'
+			and product_code = l.dict_product_type
+		) dict_product_name,
+		<include refid="selectSql"></include>
+	FROM (SELECT t.*
+		FROM (
+			SELECT tt.*, ROW_NUMBER() OVER(PARTITION BY tt.loan_code ORDER BY tt.create_time DESC) rn
+			FROM t_cj_loan_status_his tt
+			<where>
+				<if test="filterUser != null and filterUser != ''">
+					tt.create_by = #{filterUser,jdbcType=VARCHAR}
+				</if>
+				<!-- 程序需填写的字段 -->
+				<if test="isQueryAll != null and isQueryAll != '' and isQueryAll != 1">
+					AND tt.operate_step 
+					<choose>
+						<when test="nodeValList != null and nodeValList.size() > 0">
+							<if test="isIn != null and isIn != '' and isIn != 1">
+								 NOT 
+							</if>
+							IN 
+							<foreach collection="nodeValList" item="item" open="(" close=")" separator=",">
+								#{item}
+							</foreach>
+						</when>
+						<otherwise>
+							IS NULL
+						</otherwise>
+					</choose>
+				</if>
+				<if test="grossFlag != null and grossFlag != '' and grossFlag == 1">
+					AND tt.remark = #{grossFlag}
+				</if>
+			</where>
+		) t WHERE <![CDATA[t.rn <= 1]]>) h
+	LEFT JOIN t_cj_loan_info l ON h.loan_code = l.loan_code
+	LEFT JOIN t_cj_loan_info l2 ON l.loan_additional_applyid = l2.id
+	LEFT JOIN t_cj_contract con ON con.loan_code = h.loan_code
+	LEFT JOIN t_cj_contract con2 ON con2.loan_code = l.loan_rawcode
+	LEFT JOIN t_cj_contract con3 ON con3.loan_code = l2.loan_code
+	LEFT JOIN t_cj_check_rate chr ON chr.loan_code = h.loan_code
+	LEFT JOIN t_cj_vehicle_info vi ON vi.loan_code = l2.loan_code
+	LEFT JOIN t_gl_org org ON org.id = l.store_code
+	LEFT JOIN t_gl_province_city pc ON pc.id = org.province_id AND pc.area_type = '1'
+	LEFT JOIN t_jk_loan_customer lc ON lc.loan_code = h.loan_code
+	LEFT JOIN t_cj_loan_coborrower lco ON lco.loan_code = l.loan_rawcode
+	<where>
+		l.isextension = '1'
+		<!-- 页面查询条件开始 -->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="applyTimeStrat != null and applyTimeStrat != ''">
+   			AND l.LOAN_APPLY_TIME &gt;= #{applyTimeStrat}
+   		</if>
+   		<if test="applyTimeEnd != null and applyTimeEnd != ''">
+   			AND l.LOAN_APPLY_TIME &lt;= #{applyTimeEnd}
+   		</if>
+   		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="isExtendsion != null and isExtendsion != ''">
+   			AND l.ISEXTENSION = #{isExtendsion}
+   		</if>
+   		<if test="storeCodeList != null and nodeValList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="contractMonths != null and contractMonths != ''">
+			AND con.contract_months = #{contractMonths}
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			AND l.dict_source_type = #{dictSourceType}
+		</if>
+		<!-- 页面查询条件结束 -->
+		GROUP BY 
+			<include refid="commonSql"></include>
+			<include refid="groupbySql"></include>
+	</where>
+	 ORDER BY operate_time DESC
+</select>
+
+<!-- 已办查询 -->
+<select id="findLoanDataList" resultMap="DoneListMap" parameterType="map">
+select * from (
+	select 
+		l.dict_loan_status,
+        l.dict_loan_status as agr_dict_loan_status,
+		l.review_meet,
+		h.loan_code,
+		h.dict_loan_status,
+		h.operate_time,
+		h.OPERATE_STEP,
+		l.apply_Id,
+		l.create_time,
+		(select string_agg(cobo_name,',') from jk.t_cj_loan_coborrower where loan_code=h.loan_code group by loan_code) as "coborrowerName",
+		con.contract_code,
+		con.product_type,
+		con.contract_months,
+    	con.paperless_flag,
+    	con.agreement_type,
+    	con.revisit_status,
+		l.conditional_through_flag,
+		l.dict_loan_flag,
+		l.loan_customer_name,
+		l.loan_apply_amount,
+		l.loan_months,
+		l.dict_product_type,
+		vi.store_assess_amount,
+		l.loan_apply_time,
+		pc.area_name,
+		l.store_name,
+		user1.name team_manager_name,
+		user2.name costumer_manager_name,
+		user4.name lendingUserName,
+		(chr.create_time + interval '7 D') rate_check_date,
+		vi.plate_numbers,
+		vi.vehicle_brand_model,
+		lc.customer_telesales_flag,
+		cc.dict_oper_status,
+		cc.plan_arrival_time,
+		first.dict_audit_months first_audit_months,
+		p1.product_name first_product_type,
+		first.audit_amount first_audit_amount,
+		recheck.dict_audit_months second_audit_months,
+		p2.product_name second_product_type,
+		recheck.audit_amount second_audit_amount,
+		final.dict_audit_months final_audit_months,
+		p3.product_name final_product_type,
+		final.audit_amount final_audit_amount,
+		sa.urge_decute_moeny,
+		mp.MID_BANK_NAME creditMiDBankName,
+		mp.BANK_CARD_NO creditBankCardNo,
+		mp.MIDDLE_NAME,
+		lg.LENDING_TIME,
+		sum(sa.urge_decute_moeny) over () totalUrgeDecuteAmount,
+		sum(lg.grant_amount) over () totalGrantAmount,
+		sa.urge_moeny,
+		cbi.card_bank,
+		cbi.bank_card_no,
+		scr.audit_status,
+		scr.audit_refuse_reason,
+		lc.customer_telesales_flag,
+		sa.urge_decute_date,
+		sa.dict_deal_status,
+		sa.dict_deal_type,
+		sa.split_fail_result,
+		'3.0' sourceType,
+		l.loan_flag <!-- 标识P2P  -->
+	FROM (SELECT t.*
+		FROM (
+			SELECT tt.*, ROW_NUMBER() OVER(PARTITION BY tt.loan_code ORDER BY tt.create_time DESC) rn
+			FROM t_cj_loan_status_his tt
+			<where>
+				<!-- 过滤个人已办，不传值，则为全部人员已办 -->
+				<if test="filterUser != null and filterUser != ''">
+					tt.create_by = #{filterUser,jdbcType=VARCHAR}
+				</if>
+			</where>
+		) t WHERE <![CDATA[t.rn <= 1]]>) h
+	LEFT JOIN t_cj_loan_info l ON h.loan_code = l.loan_code
+	LEFT JOIN t_cj_contract con ON con.loan_code = h.loan_code
+	LEFT JOIN t_cj_vehicle_info vi ON vi.loan_code = h.loan_code
+	LEFT JOIN t_gl_org org ON org.id = l.store_code
+	LEFT JOIN t_gl_province_city pc ON pc.id = org.province_id AND pc.area_type = '1'
+	LEFT JOIN t_gl_user user1 ON user1.id = l.cons_team_managercode
+	LEFT JOIN t_gl_user user2 ON user2.id = l.manager_code
+	LEFT JOIN t_cj_check_rate chr ON chr.loan_code = h.loan_code
+	LEFT JOIN t_jk_loan_customer lc ON lc.loan_code = h.loan_code
+	LEFT JOIN t_cj_customer_consultation cc ON cc.loan_code = lc.loan_code
+	LEFT JOIN t_cj_loan_grant lg ON lg.loan_code = h.loan_code
+	LEFT JOIN t_cj_urge_services_amount sa ON sa.r_grant_id = lg.id
+	LEFT JOIN t_cj_service_charge_return scr ON scr.r_charge_id = sa.id
+	LEFT JOIN t_cj_customer_bank_info  cbi ON cbi.loan_code = h.loan_code
+	LEFT JOIN t_gl_user user4 ON user4.id = lg.LENDING_USER_ID
+	LEFT JOIN T_JK_MIDDLE_PERSON mp ON mp.id = lg.MID_ID
+	LEFT JOIN (
+		SELECT t1.*
+		FROM (
+			SELECT a1.*, ROW_NUMBER() OVER(PARTITION BY a1.loan_code ORDER BY a1.create_time DESC) rn
+			FROM t_cj_audit_result a1
+			where a1.dict_check_type = '1'
+		) t1 WHERE <![CDATA[t1.rn <= 1]]>) first ON first.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p1 ON p1.product_type = 'products_type_car_credit' AND p1.product_code = first.dict_product_type
+	LEFT JOIN (
+		SELECT t2.*
+		FROM (
+			SELECT a2.*, ROW_NUMBER() OVER(PARTITION BY a2.loan_code ORDER BY a2.create_time DESC) rn
+			FROM t_cj_audit_result a2
+			where a2.dict_check_type = '2'
+		) t2 WHERE <![CDATA[t2.rn <= 1]]>) recheck ON recheck.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p2 ON p2.product_type = 'products_type_car_credit' AND p2.product_code = recheck.dict_product_type
+	LEFT JOIN (
+		SELECT t3.*
+		FROM (
+			SELECT a3.*, ROW_NUMBER() OVER(PARTITION BY a3.loan_code ORDER BY a3.create_time DESC) rn
+			FROM t_cj_audit_result a3
+			where a3.dict_check_type = '3'
+		) t3 WHERE <![CDATA[t3.rn <= 1]]>) final ON final.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p3 ON p3.product_type = 'products_type_car_credit' AND p3.product_code = final.dict_product_type
+	<where>
+		l.isextension IS NULL
+		<!-- 页面所需查询字段 开始-->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="teamManagerName != null and teamManagerName != ''">
+			AND user1.name LIKE '%' || #{teamManagerName} || '%'
+		</if>
+		<if test="costumerManagerName != null and costumerManagerName != ''">
+			AND user2.name LIKE '%' || #{costumerManagerName} || '%'
+		</if>
+		<if test="storeCodeList != null and storeCodeList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="productType != null and productType != ''">
+			AND l.dict_product_type = #{productType}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="visitState != null and visitState != ''">
+			AND con.revisit_status = #{visitState}
+		</if>
+		<if test="midBankName != null and midBankName != ''">
+			AND cbi.card_bank = #{midBankName}
+		</if>
+		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+		<if test="urgeDecuteDateStart != null and urgeDecuteDateStart != ''">
+   			AND sa.urge_decute_date &gt;= #{urgeDecuteDate}
+   		</if>
+   		<if test="urgeDecuteDateEnd != null and urgeDecuteDateEnd != ''">
+   			AND sa.urge_decute_date &lt;= #{urgeDecuteDate}
+   		</if>
+   		<if test="dictDealType != null and dictDealType != ''">
+   			AND sa.dict_deal_type = #{dictDealType}	
+   		</if>
+   		<if test="dictDealStatus != null and dictDealStatus != ''">
+   			AND sa.dict_deal_status = #{dictDealStatus}
+   		</if>
+   		<if test="bankCardNo != null and bankCardNo != ''">
+   			AND cbi.bank_card_no = #{bankCardNo}
+   		</if>
+   		<if test="applyId != null and applyId != ''">
+   			AND l.apply_id = #{applyId}
+   		</if>
+   		<if test="dictOperStatus != null and dictOperStatus != ''">
+   			AND cc.dict_oper_status = #{dictOperStatus}
+   		</if>
+   		<if test="planArrivalTimeStart != null and planArrivalTimeStart != ''">
+   			and cc.plan_arrival_time &gt; to_date(#{planArrivalTimeStart}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+   			and cc.plan_arrival_time &lt; to_date(#{planArrivalTimeend}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="contractMonths != null and contractMonths != ''">
+   			AND con.contract_months = #{contractMonths}
+   		</if>
+   		
+   		<!-- 标识P2P  -->
+		<if test="loanFlag != null and loanFlag != ''">
+			AND l.loan_flag = #{loanFlag}
+		</if>
+		
+		<if test="dictSourceType != null and dictSourceType != ''">
+			AND l.dict_source_type = #{dictSourceType}
+		</if>
+		<!-- 页面所需查询字段 结束-->
+	</where>
+	union all 
+		select 
+				l.dict_loan_status,
+       			l.dict_loan_status as agr_dict_loan_status,
+			    l.review_meet,
+			    l.loan_code,
+				l.dict_loan_status,
+				h.operate_time,
+			    h.OPERATE_STEP,
+			    l.apply_Id,
+			    l.create_time,
+			    (select string_agg(cobo_name,',') from jk.t_cj_loan_coborrower where loan_code=h.loan_code group by loan_code) as "coborrowerName",
+			    con.contract_code,
+			    con.product_type,
+			    con.contract_months,
+    			con.paperless_flag,
+    			con.agreement_type,
+    			con.revisit_status,
+			    l.conditional_through_flag,
+			    l.dict_loan_flag,
+			    l.loan_customer_name,
+			    l.loan_apply_amount,
+			    l.loan_months,
+			    l.dict_product_type,
+			    vi.store_assess_amount,
+			    l.loan_apply_time,
+			    pc.area_name,
+			    o.name store_name,
+			    user1.name team_manager_name,
+			    user2.name costumer_manager_name,
+			    user4.name lendingUserName,
+			    chr.create_time rate_check_date,
+			    vi.plate_numbers,
+			    vi.vehicle_brand_model,
+			    lc.customer_telesales_flag,
+			    cc.dict_oper_status,
+			    cc.plan_arrival_time,
+			    '' first_audit_months,--first.dict_audit_months first_audit_months,
+			    '' first_product_type,--p1.product_name first_product_type,
+			    0 first_audit_amount,--first.audit_amount first_audit_amount,
+			    '' second_audit_months,--recheck.dict_audit_months second_audit_months,
+			    '' second_product_type,--p2.product_name second_product_type,
+			    0 second_audit_amount,--recheck.audit_amount second_audit_amount,
+			    con.contract_months||'' final_audit_months,--final.dict_audit_months final_audit_months,
+			    product_name final_product_type,--p3.product_name final_product_type,
+			    con.audit_amount final_audit_amount, --final.audit_amount final_audit_amount,
+			    sa.urge_decute_moeny,
+			    mp.MID_BANK_NAME creditMiDBankName,
+			    mp.BANK_CARD_NO creditBankCardNo,
+			    mp.MIDDLE_NAME,
+			    lg.LENDING_TIME,
+			    SUM(sa.urge_decute_moeny) OVER() totalUrgeDecuteAmount,
+			    SUM(lg.grant_amount) OVER() totalGrantAmount,
+			    sa.urge_moeny,
+			    cbi.card_bank,
+			    cbi.bank_card_no,
+			    scr.audit_status,
+			    scr.audit_refuse_reason,
+			    lc.customer_telesales_flag,
+			    sa.urge_decute_date,
+			    sa.dict_deal_status,
+			    sa.dict_deal_type,
+			    sa.split_fail_result,
+			    '2.0' sourceType,
+			    l.loan_flag <!-- 标识P2P  -->
+		from T_CJ_LOAN_INFO l 
+		LEFT JOIN T_CJ_LOAN_STATUS_HIS h
+        ON 1=2
+        LEFT JOIN T_CJ_CONTRACT con
+        ON con.loan_code = l.loan_code 
+        LEFT JOIN T_CJ_VEHICLE_INFO vi
+        ON vi.loan_code = l.loan_code 
+        LEFT JOIN T_GL_ORG org
+        ON org.id = l.store_code 
+        LEFT JOIN T_GL_PROVINCE_CITY pc
+        ON pc.id = org.province_id AND pc.area_type = '1' 
+        LEFT JOIN T_GL_USER user1
+        ON user1.id = l.cons_team_managercode 
+        LEFT JOIN T_GL_USER user2
+        ON user2.id = l.manager_code 
+        LEFT JOIN T_CJ_CHECK_RATE chr
+        ON chr.loan_code = l.loan_code 
+        LEFT JOIN T_JK_LOAN_CUSTOMER lc
+        ON lc.loan_code = l.loan_code 
+        LEFT JOIN T_CJ_CUSTOMER_CONSULTATION cc
+        ON cc.loan_code = lc.loan_code 
+        LEFT JOIN T_CJ_LOAN_GRANT lg
+        ON lg.loan_code = l.loan_code 
+        LEFT JOIN T_CJ_CUSTOMER_BANK_INFO cbi
+        ON cbi.loan_code = l.loan_code 
+        LEFT JOIN T_CJ_URGE_SERVICES_AMOUNT sa
+        ON 1=2
+        LEFT JOIN T_CJ_SERVICE_CHARGE_RETURN scr
+        ON 1=2
+        LEFT JOIN T_GL_USER user4
+        ON user4.id = lg.LENDING_USER_ID 
+        LEFT JOIN T_JK_MIDDLE_PERSON mp
+        ON mp.id = lg.MID_ID 
+        LEFT JOIN T_GL_JK_PRODUCT p
+        ON p.product_type = 'products_type_car_credit'
+   		AND p.product_code = con.product_type
+   		LEFT JOIN t_gl_org o
+   		on o.id = l.store_code
+        where l.id = l.loan_code and l.id = l.apply_id  and l.isextension IS NULL
+        <!-- 页面所需查询字段 开始-->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="teamManagerName != null and teamManagerName != ''">
+			AND user1.name LIKE '%' || #{teamManagerName} || '%'
+		</if>
+		<if test="costumerManagerName != null and costumerManagerName != ''">
+			AND user2.name LIKE '%' || #{costumerManagerName} || '%'
+		</if>
+		<if test="storeCodeList != null and storeCodeList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="productType != null and productType != ''">
+			AND l.dict_product_type = #{productType}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="visitState != null and visitState != ''">
+			AND con.revisit_status = #{visitState}
+		</if>
+		<if test="midBankName != null and midBankName != ''">
+			AND cbi.card_bank = #{midBankName}
+		</if>
+		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+   		<if test="bankCardNo != null and bankCardNo != ''">
+   			AND cbi.bank_card_no = #{bankCardNo}
+   		</if>
+   		<if test="applyId != null and applyId != ''">
+   			AND l.apply_id = #{applyId}
+   		</if>
+   		<if test="dictOperStatus != null and dictOperStatus != ''">
+   			AND cc.dict_oper_status = #{dictOperStatus}
+   		</if>
+   		<if test="planArrivalTimeStart != null and planArrivalTimeStart != ''">
+   			and cc.plan_arrival_time &gt; to_date(#{planArrivalTimeStart}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="planArrivalTimeend != null and planArrivalTimeend != ''">
+   			and cc.plan_arrival_time &lt; to_date(#{planArrivalTimeend}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="contractMonths != null and contractMonths != ''">
+   			AND con.contract_months = #{contractMonths}
+   		</if>
+   		
+   		<!-- 标识P2P  -->
+		<if test="loanFlag != null and loanFlag != ''">
+			AND l.loan_flag = #{loanFlag}
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			AND l.dict_source_type = #{dictSourceType}
+		</if>
+		<!-- 页面所需查询字段 结束-->
+     ) v   
+	 ORDER BY v.sourceType desc,v.create_time desc,v.loan_apply_time DESC
+</select>
+
+<!-- 通过loanCode校验待确认签署状态下，这条记录是否为合同审核退回 -->
+<select id="checkIsContractCheckBackSign" resultMap="BaseResultMap" parameterType="java.lang.String">
+  	select * from (
+		select * 
+		from t_cj_loan_status_his 
+		where operate_step  = '12' and loan_code = #{loanCode,jdbcType=VARCHAR}
+		order by create_time desc 
+		limit 1)
+	where dict_loan_status = '16';
+  </select>
+  <!-- 查账已办查询 -->
+  <select id="findCheckDoneList" resultMap="DoneListMap" parameterType="map">
+	select 
+		l.dict_loan_status,
+		l.review_meet,
+		h.*,
+		h.OPERATE_STEP,
+		l.apply_Id,
+		con.contract_code,
+		con.product_type,
+		con.contract_months,
+		con.contract_amount,
+		l.conditional_through_flag,
+		l.dict_loan_flag,
+		l.loan_customer_name,
+		l.loan_apply_amount,
+		l.loan_months,
+		l.dict_product_type,
+		vi.store_assess_amount,
+		l.loan_apply_time,
+		pc.area_name,
+		l.store_name,
+		user1.name team_manager_name,
+		user2.name costumer_manager_name,
+		user4.name lendingUserName,
+		chr.create_time rate_check_date,
+		vi.plate_numbers,
+		vi.vehicle_brand_model,
+		lc.customer_telesales_flag,
+		cc.dict_oper_status,
+		cc.plan_arrival_time,
+		first.dict_audit_months first_audit_months,
+		p1.product_name first_product_type,
+		first.audit_amount first_audit_amount,
+		recheck.dict_audit_months second_audit_months,
+		p2.product_name second_product_type,
+		recheck.audit_amount second_audit_amount,
+		final.dict_audit_months final_audit_months,
+		p3.product_name final_product_type,
+		final.audit_amount final_audit_amount,
+		sa.urge_decute_moeny,
+		mp.MID_BANK_NAME as "creditMiDBankName",<!-- 卡号对应的银行名称   存入账户  -->
+		mp.BANK_CARD_NO as "creditBankCardNo",<!-- 中间人卡号 -->
+		mp.MIDDLE_NAME,
+		lg.LENDING_TIME,
+		sum(sa.urge_decute_moeny) over () totalUrgeDecuteAmount, 
+		sum(lg.grant_amount) over () totalGrantAmount,
+		sa.urge_moeny,
+		cbi.card_bank,
+		cbi.bank_card_no,
+		scr.audit_status,
+		scr.audit_refuse_reason,
+		lc.customer_telesales_flag,
+		sa.urge_decute_date,
+		sa.dict_deal_status,
+		sa.dict_deal_type,
+		sa.split_fail_result,
+		round(sa.urge_moeny - sa.urge_decute_moeny , 2) as unUrgeDecuteMoeny,<!-- 未划金额 -->
+		cpti.really_amount as reallyAmount ,<!-- 查账金额 -->
+		cpti.apply_pay_day as "applyPayDay",<!-- 申请查账日期 -->
+		cpti.stores_in_account	as storesInAccount ,<!--存入账号  -->	
+		case when cpti.matching_result = '1' then '匹配成功' else '匹配退回' end matching_result<!-- 查账匹配结果 -->
+	FROM (SELECT t.*
+		FROM (
+			SELECT tt.*, ROW_NUMBER() OVER(PARTITION BY tt.loan_code ORDER BY tt.create_time DESC) rn
+			FROM t_cj_loan_status_his tt
+			<where>
+				<!-- 过滤个人已办，不传值，则为全部人员已办 -->
+				<if test="filterUser != null and filterUser != ''">
+					tt.create_by = #{filterUser,jdbcType=VARCHAR}
+				</if>
+				<!-- 程序需填写的字段 开始 -->
+				<if test="isQueryAll != null and isQueryAll != '' and isQueryAll != 1">
+					AND tt.operate_step 
+					<choose>
+						<when test="nodeValList != null and nodeValList.size() > 0">
+							<if test="isIn != null and isIn != '' and isIn != 1">
+								 NOT 
+							</if>
+							IN 
+							<foreach collection="nodeValList" item="item" open="(" close=")" separator=",">
+								#{item}
+							</foreach>
+						</when>
+						<otherwise>
+							IS NULL
+						</otherwise>
+					</choose>
+				</if>
+				<!-- 合同制作已办特有，用于查询合同制作通过的记录 -->
+				<if test="grossFlag != null and grossFlag != '' and grossFlag == 1">
+					AND tt.remark = #{grossFlag}
+				</if>
+				<!-- 程序需填写的字段 结束 -->
+			</where>
+		) t WHERE <![CDATA[t.rn <= 1]]>) h
+	LEFT JOIN t_cj_loan_info l ON h.loan_code = l.loan_code
+	LEFT JOIN t_cj_contract con ON con.loan_code = h.loan_code
+	LEFT JOIN t_cj_vehicle_info vi ON vi.loan_code = h.loan_code
+	LEFT JOIN t_gl_org org ON org.id = l.store_code
+	LEFT JOIN t_gl_province_city pc ON pc.id = org.province_id AND pc.area_type = '1'
+	LEFT JOIN t_gl_user user1 ON user1.id = l.cons_team_managercode
+	LEFT JOIN t_gl_user user2 ON user2.id = l.manager_code
+	LEFT JOIN t_cj_check_rate chr ON chr.loan_code = h.loan_code
+	LEFT JOIN t_jk_loan_customer lc ON lc.loan_code = h.loan_code
+	LEFT JOIN t_cj_customer_consultation cc ON cc.loan_code = lc.loan_code
+	LEFT JOIN t_cj_loan_grant lg ON lg.loan_code = h.loan_code
+	LEFT JOIN t_cj_urge_services_amount sa ON sa.r_grant_id = lg.id
+	LEFT JOIN t_cj_service_charge_return scr ON scr.r_charge_id = sa.id
+	LEFT JOIN t_cj_customer_bank_info  cbi ON cbi.loan_code = h.loan_code
+	LEFT JOIN t_cj_payback_transfer_info  cpti ON cpti.loan_code = h.loan_code<!-- 车借_还款转账信息记录表 -->
+	LEFT JOIN t_gl_user user4 ON user4.id = lg.LENDING_USER_ID
+	LEFT JOIN T_JK_MIDDLE_PERSON mp ON mp.id = lg.MID_ID
+	LEFT JOIN (
+		SELECT t1.*
+		FROM (
+			SELECT a1.*, ROW_NUMBER() OVER(PARTITION BY a1.loan_code ORDER BY a1.create_time DESC) rn
+			FROM t_cj_audit_result a1
+			where a1.dict_check_type = '1'
+		) t1 WHERE <![CDATA[t1.rn <= 1]]>) first ON first.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p1 ON p1.product_type = 'products_type_car_credit' AND p1.product_code = first.dict_product_type
+	LEFT JOIN (
+		SELECT t2.*
+		FROM (
+			SELECT a2.*, ROW_NUMBER() OVER(PARTITION BY a2.loan_code ORDER BY a2.create_time DESC) rn
+			FROM t_cj_audit_result a2
+			where a2.dict_check_type = '2'
+		) t2 WHERE <![CDATA[t2.rn <= 1]]>) recheck ON recheck.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p2 ON p2.product_type = 'products_type_car_credit' AND p2.product_code = recheck.dict_product_type
+	LEFT JOIN (
+		SELECT t3.*
+		FROM (
+			SELECT a3.*, ROW_NUMBER() OVER(PARTITION BY a3.loan_code ORDER BY a3.create_time DESC) rn
+			FROM t_cj_audit_result a3
+			where a3.dict_check_type = '3'
+		) t3 WHERE <![CDATA[t3.rn <= 1]]>) final ON final.loan_code = h.loan_code
+	LEFT JOIN t_gl_jk_product p3 ON p3.product_type = 'products_type_car_credit' AND p3.product_code = final.dict_product_type
+	<where>
+		l.isextension IS NULL
+		<!-- 页面所需查询字段 开始-->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE  CONCAT('%', #{loanCustomerName}, '%')
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="teamManagerName != null and teamManagerName != ''">
+			AND user1.name LIKE  CONCAT('%', #{teamManagerName}, '%')
+		</if>
+		<if test="costumerManagerName != null and costumerManagerName != ''">
+			AND user2.name LIKE   CONCAT('%', #{costumerManagerName}, '%')
+		</if>
+		<if test="storeCodeList != null and storeCodeList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="midBankName != null and midBankName != ''">
+			AND cbi.card_bank = #{midBankName}
+		</if>
+		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+		<if test="grantRecepicResult != null and grantRecepicResult != ''">
+			AND lg.grant_recepic_result =#{grantRecepicResult}
+		</if>
+		<if test="urgeDecuteDateStart != null and urgeDecuteDateStart != ''">
+   			AND sa.urge_decute_date &gt;= #{urgeDecuteDate}
+   		</if>
+   		<if test="urgeDecuteDateEnd != null and urgeDecuteDateEnd != ''">
+   			AND sa.urge_decute_date &lt;= #{urgeDecuteDate}
+   		</if>
+   		<if test="dictDealType != null and dictDealType != ''">
+   			AND sa.dict_deal_type = #{dictDealType}	
+   		</if>
+   		<if test="dictDealStatus != null and dictDealStatus != ''">
+   			AND sa.dict_deal_status = #{dictDealStatus}
+   		</if>
+   		<if test="bankCardNo != null and bankCardNo != ''">
+   			AND cbi.bank_card_no = #{bankCardNo}
+   		</if>
+   		<if test="applyId != null and applyId != ''">
+   			AND l.apply_id = #{applyId}
+   		</if>
+   		<if test="dictOperStatus != null and dictOperStatus != ''">
+   			AND cc.dict_oper_status = #{dictOperStatus}
+   		</if>
+   		<if test="checkDateStart != null and checkDateStart != ''"><!-- 查账日期 -->
+   			and cpti.apply_pay_day &gt; to_date(#{checkDateStart}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="checkDateEnd != null and checkDateEnd != ''">
+   			and cpti.apply_pay_day &lt; to_date(#{checkDateEnd}, 'yyyy-MM-dd HH24:mi:ss')
+   		</if>
+   		<if test="contractMonths != null and contractMonths != ''">
+   			AND con.contract_months = #{contractMonths}
+   		</if>
+   		<if test="productType != null and productType != ''">
+   			AND (case when final.dict_product_type is not null then final.dict_product_type  
+    		  		  when recheck.dict_product_type is not null then recheck.dict_product_type   
+    	      		  else first.dict_product_type end) = #{productType}
+		</if>
+		
+		<if test="storeName != null and storeName != ''"><!--门店名称 -->
+   			AND l.store_name = #{storeName}
+   		</if>
+   		<if test="reallyAmountMin != null and reallyAmountMin != ''"><!-- 实还金额 -->
+   			and cpti.really_amount &gt;= #{reallyAmountMin}
+   		</if>
+   		<if test="reallyAmountMax != null and reallyAmountMax != ''">
+   			and cpti.really_amount &lt;= #{reallyAmountMax}
+   		</if>
+   		<if test="creditMiDBankName != null and creditMiDBankName != ''"><!--存入账户 -->
+   			AND mp.bank_card_no = #{creditMiDBankName}   
+   		</if>
+   		<if test="conditionalThroughFlag != null and conditionalThroughFlag != ''"><!--附条件标识 -->
+   			AND l.conditional_through_flag = #{conditionalThroughFlag}  
+   		</if>
+		<!-- 页面所需查询字段 结束-->
+	</where>
+	 ORDER BY l.loan_apply_time, h.operate_time desc
+</select>
+
+<!-- 已制作合同查询 -->
+<select id="findExtendContractDoneList" resultMap="DoneListMap" parameterType="map">
+	select
+		<include refid="commonSql"></include>
+		<include refid="selectSql"></include>
+	FROM (SELECT t.*
+		FROM (
+			SELECT tt.*, ROW_NUMBER() OVER(PARTITION BY tt.loan_code ORDER BY tt.create_time DESC) rn
+			FROM t_cj_loan_status_his tt
+			<where>
+				<if test="filterUser != null and filterUser != ''">
+					tt.create_by = #{filterUser,jdbcType=VARCHAR}
+				</if>
+			</where>
+		) t WHERE <![CDATA[t.rn <= 1]]>) h
+	LEFT JOIN t_cj_loan_info l ON h.loan_code = l.loan_code
+	LEFT JOIN t_cj_loan_info l2 ON l.loan_additional_applyid = l2.id
+	LEFT JOIN t_cj_contract con ON con.loan_code = h.loan_code
+	LEFT JOIN t_cj_contract con2 ON con2.loan_code = l.loan_rawcode
+	LEFT JOIN t_cj_contract con3 ON con3.loan_code = l2.loan_code
+	LEFT JOIN t_cj_check_rate chr ON chr.loan_code = h.loan_code
+	LEFT JOIN t_cj_vehicle_info vi ON vi.loan_code = l.loan_code
+	LEFT JOIN t_gl_org org ON org.id = l.store_code
+	LEFT JOIN t_gl_province_city pc ON pc.id = org.province_id AND pc.area_type = '1'
+	LEFT JOIN t_jk_loan_customer lc ON lc.loan_code = h.loan_code
+	LEFT JOIN t_cj_loan_coborrower lco ON lco.loan_code = l.loan_rawcode
+	<where>
+		l.isextension = '1'  and ((h.operate_step = '10' and h.operate_result in ('58')) or (h.operate_step = '11' and h.operate_result in ('61')) or (h.operate_step = '12' and h.operate_result in ('62','64')))
+		<!-- 页面查询条件开始 -->
+		<if test="loanCustomerName != null and loanCustomerName != ''">
+			AND l.loan_customer_name LIKE '%' || #{loanCustomerName} || '%'
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			AND con.contract_code = #{contractCode}
+		</if>
+		<if test="applyTimeStrat != null and applyTimeStrat != ''">
+   			AND l.LOAN_APPLY_TIME &gt;= #{applyTimeStrat}
+   		</if>
+   		<if test="applyTimeEnd != null and applyTimeEnd != ''">
+   			AND l.LOAN_APPLY_TIME &lt;= #{applyTimeEnd}
+   		</if>
+   		<if test="productTypeContract != null and productTypeContract != ''">
+			AND con.product_type =#{productTypeContract}
+		</if>
+		<if test="telesalesFlag != null and telesalesFlag != ''">
+			AND lc.customer_telesales_flag = #{telesalesFlag}
+		</if>
+		<if test="isExtendsion != null and isExtendsion != ''">
+   			AND l.ISEXTENSION = #{isExtendsion}
+   		</if>
+   		<if test="storeCodeList != null and nodeValList.size() > 0">
+			AND l.store_code in 
+			<foreach collection="storeCodeList" item="item" open="(" separator="," close=")" index="index">
+				 #{item,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="certNum != null and certNum != ''">
+			AND lc.customer_cert_num = #{certNum}
+		</if>
+		<if test="contractMonths != null and contractMonths != ''">
+			AND con.contract_months = #{contractMonths}
+		</if>
+		<if test="loanStatusCode != null and loanStatusCode != ''">
+			AND l.dict_loan_status = #{loanStatusCode}
+		</if>
+		<if test="contractFactDay != null and contractFactDay != ''">
+			AND con.contract_fact_day = to_date(#{contractFactDay},'yyyy-MM-dd')
+		</if>
+		<!-- 无纸化 -->
+		<if test="paperLessFlag != null and paperLessFlag != ''">
+			AND con.paperless_flag = #{paperLessFlag}
+		</if>
+		<if test="dictSourceType != null and dictSourceType != ''">
+			AND l.dict_source_type = #{dictSourceType}
+		</if>
+		<!-- 页面查询条件结束 -->
+		GROUP BY 
+			<include refid="commonSql"></include>
+			<include refid="groupbySql"></include>
+	</where>
+	 ORDER BY operate_time DESC
+</select>
+
+<!-- 电子协议申请列表 电子协议已办列表 申请电子协议基本数据 -->
+<select id="getCustomerMsg" parameterType="com.creditharmony.loan.car.common.entity.ex.CarLoanStatusHisEx" resultMap="DoneListMap">
+	select 
+		act.id,
+		mer.customer_name LOAN_CUSTOMER_NAME,
+		act.contract_code,
+		mer.customer_cert_num,
+		mer.customer_email,
+		act.agreement_type,
+		act.product_type ,
+		act.contract_months ,
+		act.contract_amount ,
+		act.contract_end_day ,
+		act.apply_reason  ,
+		l.settled_date ,
+		l.dict_loan_status ,
+		act.urgent_degree,
+		org.name	STORE_NAME
+		from 
+			jk.T_CJ_CONTRACT act,
+			jk.T_JK_LOAN_CUSTOMER mer,
+			t_cj_loan_info l, 
+			jk.t_gl_org org,  
+			jk.t_gl_org og  
+	where act.loan_code = mer.loan_code
+	and act.loan_code = l.loan_code
+	and org.parent_id = og.id
+	and org.id = l.store_code
+	<include refid="conditions"></include>
+</select>
+
+<select id="getFileNameList" parameterType="com.creditharmony.loan.car.common.entity.ex.CarLoanStatusHisEx"  resultMap="DoneListMap">
+	select 
+		sign_doc_id,
+		file_name 
+	from jk.T_CJ_CONTRACT_file f 
+	where f.contract_code = #{contractCode}
+	and sign_doc_id is not null
+</select>
+
+<select id="getEmailTemplate" parameterType="string" resultType="java.util.Map">
+	select template_content,email_description from t_gl_email_template where template_type=#{templateType}
+</select>
+
+<!-- 申请电子协议，修改状态为电子协议待审核 -->
+<update id="updateContractArgType" parameterType="com.creditharmony.loan.car.common.entity.ex.CarLoanStatusHisEx">
+	update T_CJ_CONTRACT 
+		set 
+		urgent_degree  = #{urgentDegree},
+		apply_reason = #{applyReason},
+		agreement_type = #{paperLessFlag}
+	where id = #{id}
+</update>
+	
+<!-- 发送或拒绝 -->
+<update id="updateSendOrReturn" parameterType="com.creditharmony.loan.car.common.entity.ex.CarLoanStatusHisEx">
+	update T_CJ_CONTRACT 
+		set 
+		agreement_type  = #{agreementType}
+	where id = #{id}
+</update>
+
+<!-- 电子协议查询条件 -->
+<sql id="conditions">
+	<if test="id != null and id != ''">
+		and act.id = #{id}
+	</if>
+	<if test="ids != null and ids != ''">
+		and act.id in 
+		<foreach collection="applyIdList" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</if>
+	<if test="contractCode != null and contractCode != ''">
+		and act.contract_code = #{contractCode}
+	</if>
+	<if test="agreementType != null and agreementType != ''">
+		and act.agreement_type  = #{agreementType}
+	</if>
+	<if test="customerCertNum != null and customerCertNum != ''">
+		and mer.customer_cert_num  = #{customerCertNum}
+	</if>
+	<if test="urgentDegree != null and urgentDegree != ''">
+		and act.urgent_degree  = #{urgentDegree}
+	</if>
+	<if test="storeId != null and storeId != ''">
+		and og.id in (#{storeId})
+	</if>
+	<if test="loanCustomerName != null and loanCustomerName != ''">
+		and mer.customer_name like '%'||#{loanCustomerName}||'%'
+	</if>
+</sql>
+
+<insert id="insertAgrLog" parameterType="com.creditharmony.loan.car.common.entity.ex.CarLoanStatusHisEx">
+ insert into jk.T_CJ_CONTRACT_Agr_log(loan_code,operate_step,remark,create_by,create_time)
+ values(#{contractCode},#{operateStep},#{remark},#{createBy},#{createTime})
+</insert>
+
+<select id="selectActAgrLogList" parameterType="string"  resultMap="DoneListMap">
+	select 
+		loan_code CONTRACT_CODE,
+		operate_step,
+		remark,
+		create_by,
+		create_time
+	from jk.T_CJ_CONTRACT_Agr_log
+	where loan_code = #{contractCode}
+</select>
+
+
+  <select id="getCarLoanStatusHis90" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_loan_status_his h
+    where loan_code = #{loanCode,jdbcType=VARCHAR} and (dict_loan_status = '9' or dict_loan_status = '12') 
+    order by operate_time desc
+  </select>
+  
+   <select id="getCarLoanStatusHis7" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_cj_loan_status_his h
+    where loan_code = #{loanCode,jdbcType=VARCHAR} and (dict_loan_status = '6' or dict_loan_status = '53') 
+    order by operate_time desc
+  </select>
+  
+  
+  <select id="checkCarLoanStatusHis7" resultType="int" parameterType="java.lang.String">	
+	select count(*)
+	from t_cj_loan_status_his h where h.id = #{id,jdbcType=VARCHAR}
+	and h.operate_time + 7<![CDATA[ >=]]> sysdate
+  </select>
+  
+   <select id="checkCarLoanStatusHis90" resultType="int" parameterType="java.lang.String">	
+	select count(*)
+	from t_cj_loan_status_his h where h.id = #{id,jdbcType=VARCHAR}
+	and h.operate_time + 90<![CDATA[ >=]]> sysdate
+  </select>
+  
+
+
+</mapper>

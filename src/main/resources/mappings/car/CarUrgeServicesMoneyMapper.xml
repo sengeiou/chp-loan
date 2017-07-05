@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarUrgeServicesMoneyDao">
+	<resultMap id="BaseResultMap"
+		type="com.creditharmony.loan.car.carGrant.ex.CarUrgeServicesMoneyEx">
+		<id column="id" jdbcType="VARCHAR" property="id" /><!-- 拆分表id -->
+		<result column="id" jdbcType="VARCHAR" property="urgeId" /><!-- 
+			催收id -->
+		<result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+		<result column="customer_name" jdbcType="VARCHAR" property="customerName" />
+		<!-- 门店名称 -->
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+		<result column="loan_flag" jdbcType="VARCHAR" property="dictLoanFlag" />
+		<result column="dict_deal_type" jdbcType="VARCHAR" property="dictDealType" />
+		<result column="dict_r_deduct_type" jdbcType="VARCHAR"
+			property="dictRDeductType" />
+		<result column="lending_time" jdbcType="DATE" property="lendingTime" />
+		<result column="decuct_time" jdbcType="DATE" property="decuctTime" />
+		<result column="splitback_date" jdbcType="VARCHAR" property="splitBackDate" />
+		<result column="split_fail_result" jdbcType="VARCHAR" property="splitFailResult" />
+		<result column="bank_name" jdbcType="VARCHAR" property="cardBank" />
+		<result column="split_father_id" jdbcType="VARCHAR" property="splitFatherId" />
+		<result column="contract_months" jdbcType="VARCHAR" property="contractMonths" />
+		<result column="urge_moeny" jdbcType="NUMERIC" property="urgeMoeny" />
+		<result column="urge_decute_moeny" jdbcType="NUMERIC" property="urgeDecuteMoeny" />
+		<result column="contract_amount" jdbcType="NUMERIC" property="contractAmount" />
+		<result column="grant_amount" jdbcType="NUMERIC" property="grantAmount" />
+		<result column="product_type_name" jdbcType="VARCHAR" property="classType" />
+		<result column="customer_telesales_flag" jdbcType="VARCHAR"
+			property="customerTelesalesFlag" />
+		<result column="enterprise_serialno" jdbcType="VARCHAR"
+			property="enterpriseSerialno" />
+		<result column="send_flag" jdbcType="VARCHAR" property="sendFlag" />
+		<result column="timeflag" jdbcType="VARCHAR" property="timeFlag" />
+		<result column="payback_flag" jdbcType="VARCHAR" property="paybackFlag" />
+		<result column="enterprise_serialno" jdbcType="VARCHAR"
+			property="enterpriseSerialno" />
+		<result column="create_by" jdbcType="VARCHAR" property="createBy" />
+		<result column="create_time" jdbcType="DATE" property="createTime" />
+		<result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+		<result column="modify_time" jdbcType="DATE" property="modifyTime" />
+		<result column="loan_flag" jdbcType="DATE" property="loanFlag" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		h.contract_code,                   						<!-- 合同编号 -->
+		k.customer_name,              							<!-- 客户姓名 -->
+		j.card_bank,						 						<!-- 开户行 -->
+		h.product_type,					 						<!-- 借款产品 -->
+		e.urge_moeny,												<!-- 应划扣金额 -->
+		e.urge_decute_moeny,										<!-- 实划扣金额 -->
+		e.dict_deal_type,					 						<!-- 划扣平台 -->
+		e.dict_deal_status as splitBackResult,					<!-- 回盘结果 -->
+		e.split_fail_result as splitFailResult,					<!-- 失败原因 -->
+		g.dict_loan_flag,					 						<!-- 标识 -->
+		k.customer_telesales_flag, 		 						<!-- 是否电销 -->
+		e.id as urge_id,                                          <!-- 催收服务费id -->
+		f.loan_code,                                              <!-- 借款编码 -->
+		e.timeflag,                                               <!-- 催收主表中的时间标识 -->
+		g.loan_flag					 						    <!-- 标识 -->
+
+
+
+	</sql>
+
+	<select id="findCurrentCarUrgeMoneyByGrantId"
+		resultType="com.creditharmony.loan.car.common.entity.CarUrgeServicesMoney">
+		SELECT id, r_grant_id, urge_moeny, urge_decute_moeny, urge_decute_date,
+		dict_deal_status, create_by, create_time, modify_by, modify_time,
+		dict_deal_type, timeflag, return_logo, split_fail_result
+		FROM jk.t_cj_urge_services_amount
+		where create_time = (select max(create_time) from
+		jk.t_cj_urge_services_amount where r_grant_id = #{rGrantId})
+		and
+		r_grant_id = #{rGrantId}
+	</select>
+
+	<!-- 查询放款当日待划扣列表和放款以往待划扣列表 -->
+	<select id="selectDeductsList"
+		resultType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServicesMoneyEx">
+		select p.product_name product_type,
+		<include refid="Base_Column_List" />
+		from
+		jk.t_cj_urge_services_amount e
+		LEFT JOIN jk.t_cj_loan_grant f ON f.id = e.r_grant_id
+		LEFT JOIN jk.t_cj_contract h ON h.loan_code = f.loan_code
+		LEFT JOIN jk.t_cj_loan_info g ON g.loan_code = f.loan_code
+		LEFT JOIN jk.t_cj_customer_bank_info j ON j.loan_code = h.loan_code
+		LEFT JOIN jk.t_jk_loan_customer k ON k.loan_code = j.loan_code
+		LEFT JOIN jk.t_gl_jk_product p ON p.product_code = h.product_type
+		<where>
+			<if test="urgeId != null and urgeId != ''">
+				e.id = #{urgeId,jdbcType=VARCHAR}
+			</if>
+			<if test="urgeIds != null and urgeIds != ''">  <!-- 符合条件的催收主表的id的集合 -->
+				e.id in (${urgeIds})
+			</if>
+			<if test="customerName != null and customerName != ''">
+
+				and k.customer_name LIKE CONCAT('%', #{customerName,jdbcType=VARCHAR},
+				'%')
+			</if>
+			<if test="contractCode != null and contractCode != ''">
+				and h.contract_code LIKE CONCAT('%', #{contractCode,jdbcType=VARCHAR},
+				'%')
+			</if>
+			<if test="cardBankSearch != null and cardBankSearch.length >0">
+				and j.card_bank in
+				<foreach collection="cardBankSearch" item="item" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="productType != null and productType != ''">
+				and h.product_type LIKE CONCAT('%', #{productType,jdbcType=VARCHAR},
+				'%')
+			</if>
+			<if test="urgeMoenyStart != null and urgeMoenyStart != ''">
+				and e.urge_moeny &gt;= #{urgeMoenyStart,jdbcType=NUMERIC}
+			</if>
+			<if test="urgeMoenyEnd != null and urgeMoenyEnd != ''">
+				and e.urge_moeny &lt;= #{urgeMoenyEnd,jdbcType=NUMERIC}
+			</if>
+			<if test="customerTelesalesFlag != null and customerTelesalesFlag != ''">
+				and k.customer_telesales_flag LIKE CONCAT('%',
+				#{customerTelesalesFlag,jdbcType=VARCHAR}, '%')
+			</if>
+
+			<if test="dictDealType != null and dictDealType != ''"><!-- 划扣平台 -->
+				and e.dict_deal_type = #{dictDealType,jdbcType=VARCHAR}
+			</if>
+			<if test="splitBackResult != null and splitBackResult != ''"><!-- 催收主表中的回盘结果 -->
+				and e.dict_deal_status in (${splitBackResult})
+			</if>
+			<if test="timeFlag != null and timeFlag != ''"> <!-- 时间标识，区分当日还是以往,直接在催收主表 -->
+				and e.timeflag =#{timeFlag,jdbcType=VARCHAR}
+			</if>
+			<if test="loanFlag != null and loanFlag != ''"> <!-- P2P标识 -->
+				and g.loan_flag =#{loanFlag,jdbcType=VARCHAR}
+			</if>
+		</where>
+
+	</select>
+
+	<!-- 放款划扣已办列表查询 -->
+	<select id="selectDeductsSuccess" resultType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServicesMoneyEx">
+		select distinct
+		<include refid="Base_Column_List" />
+		from
+		t_jk_urge_services_amount e
+		LEFT JOIN t_jk_payback_split f ON f.r_payback_apply_id = e.id and
+		f.split_back_result = '2'
+		LEFT JOIN t_jk_loan_grant c ON c.id=e.r_grant_id
+		LEFT JOIN t_jk_contract d ON d.contract_code=c.contract_code
+		LEFT JOIN
+		t_jk_loan_info a ON a.loan_code=d.loan_code
+		LEFT JOIN
+		t_jk_loan_customer b ON b.loan_code=a.loan_code
+		LEFT JOIN
+		t_jk_loan_bank h ON h.loan_code=a.loan_code
+		LEFT JOIN t_gl_jk_product j
+		ON j.product_code=a.product_type
+		LEFT JOIN t_gl_jk_product_type p ON
+		p.class_type=a.class_type
+		LEFT JOIN jk.t_gl_org o ON o.id =
+		a.loan_store_orgid
+		where f.dict_r_deduct_type='1'
+		and (e.dict_deal_status ='1' or e.dict_deal_status ='2') <!-- 催收主表的回盘结果为成功或者失败的 -->
+		<if test="id != null and id != ''">
+			and f.id=#{id}
+		</if>
+		<if test="urgeId != null and urgeId != ''">
+			and e.id = #{urgeId}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and b.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="contractCode != null and contractCode != ''">
+			and c.contract_code LIKE CONCAT('%', #{contractCode}, '%')
+		</if>
+		<if test="customerCertNum != null and customerCertNum != ''">
+			and b.customer_cert_num LIKE CONCAT('%',
+			#{customerCertNum}, '%')
+		</if>
+		<if test="dictDealType != null and dictDealType != ''"><!-- 划扣平台 -->
+			and e.dict_deal_type = #{dictDealType}
+		</if>
+		<!-- 放款时间的搜索 -->
+		<if test="startDate != null and startDate != ''">
+			and c.lending_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null and endDate != ''">
+			and c.lending_time &lt;= #{endDate}
+		</if>
+	</select>
+
+
+	<!-- 富友导出 ,根据拆分表进行导出 -->
+	<select id="getDeductsFy"
+		resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeServiceFyEx">
+		select
+		p.id,
+		P.dict_deal_type,
+		bank.bank_name as bankName,
+		bank.bank_account as bankAccount,
+		bank.bank_account_name as bankAccountName,
+		p.split_amount as splitAmount,
+		customer.customer_phone_first as customerPhoneFirst,
+		customer.dict_cert_type as dictertType,
+		customer.customer_cert_num as customerCertNum,
+		p.remark as enterpriseSerialno
+
+		from jk.t_jk_payback_split p
+		left join jk.t_jk_urge_services_amount services on services.id=
+		p.r_payback_apply_id
+		left join jk.t_jk_loan_grant g on g.id=services.r_grant_id
+		left join jk.t_jk_loan_info loan on loan.loan_code = g.loan_code
+		left join jk.t_jk_loan_bank bank on bank.loan_code = loan.loan_code and
+		bank.bank_top_flag='1'
+		left join jk.t_jk_loan_customer customer on customer.loan_code =
+		loan.loan_code
+		where p.dict_r_deduct_type = '1' <!-- 关联类型指定为催收服务费 -->
+		and p.dict_deal_status != '9'<!-- 指定拆分表中的处理状态不为无效标识 -->
+		and p.split_back_result!='3'<!-- 指定回盘结果不能为处理中的数据 -->
+		and p.dict_deal_type = '0'<!-- 指定划扣平台为富友 -->
+		<if test="id != null">
+			AND p.id in( ${id} )<!-- 直接查询list -->
+		</if>
+		<if test="urgeId != null">
+			AND p.r_payback_apply_id in( ${urgeId} )<!-- 根据催收主表id -->
+		</if>
+	</select>
+
+	<!-- 好易联平台导出 ,根据拆分表进行导出 -->
+	<select id="getDeductsHyl"
+		resultType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServiceHylEx">
+		select
+		p.id,
+		dict1.label as bankName, 							<!-- 银行名称 -->
+		bank.bank_card_no as bankAccount,						<!-- 银行卡号 -->
+		bank.bank_account_name as bankAccountName,				<!-- 账号姓名 -->
+		p.split_amount as splitAmount,
+		customer.customer_phone_first as customerPhoneFirst,
+		dict2.label as dictertType,
+		customer.customer_cert_num as customerCertNum,
+		t.area_name as bankProvince,
+		y.area_name as bankCity,
+		p.enterprise_serialno as enterpriseSerialno,
+		g.contract_code
+
+		from jk.t_cj_payback_split p
+		left join jk.t_cj_urge_services_amount services on services.id=
+		p.r_payback_apply_id
+		left join jk.t_cj_loan_grant g on g.id=services.r_grant_id
+		left join jk.t_cj_loan_info loin on loin.loan_code = g.loan_code
+		left join jk.t_cj_customer_bank_info bank on bank.loan_code =
+		loin.loan_code and bank.top='1'
+		left join jk.t_gl_dict dict1 on dict1.type = 'jk_open_bank' and
+		dict1.value = bank.card_bank
+		left join jk.t_jk_loan_customer customer on customer.loan_code =
+		loin.loan_code
+		left join jk.t_gl_dict dict2 ON dict2.type = 'com_certificate_type' and
+		dict2.value = customer.dict_cert_type
+		left join jk.t_gl_province_city t ON t.area_code = bank.bank_province
+		LEFT JOIN jk.t_gl_province_city y ON y.area_code = bank.bank_city
+		where p.dict_r_deduct_type = '606' 			<!-- 关联类型为催收服务费 -->
+		and p.dict_deal_status != '9' 			 <!-- 处理状态不为无效 -->
+
+		<if test="dictDealType != null and dictDealType != ''">   <!-- 指定划扣平台 -->
+			and p.dict_deal_type = #{dictDealType}
+		</if>
+		<if test="id != null">
+			AND p.id in( ${id} ) 				<!-- 直接查询list -->
+		</if>
+		<if test="urgeId != null">
+			AND p.r_payback_apply_id in( ${urgeId} )<!-- 根据催收主表id -->
+		</if>
+	</select>
+
+	<!-- 中金平台导出 ,根据拆分表进行导出 -->
+	<select id="getDeductsZJ"
+		resultType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServiceZJEx">
+		select
+		p.id,
+		bank.card_bank as bankName, 							<!-- 银行名称 -->
+		bank.bank_card_no as bankAccount,						<!-- 银行卡号 -->
+		bank.bank_account_name as bankAccountName,				<!-- 账号姓名 -->
+		p.split_amount as splitAmount,							<!-- 划扣金额 -->
+		customer.customer_phone_first as customerPhoneFirst,	<!-- 手机号 -->
+		customer.dict_cert_type as dictertType,				<!-- 证件类型 -->
+		customer.customer_cert_num as customerCertNum,			<!-- 证件号 -->
+		t.area_name as bankProvince,
+		y.area_name as bankCity,
+		p.enterprise_serialno as enterpriseSerialno						<!-- 备注信息，为企业流水账号，唯一标识 -->
+
+		from jk.t_cj_payback_split p
+		left join jk.t_cj_urge_services_amount services on services.id=
+		p.r_payback_apply_id
+		left join jk.t_cj_loan_grant g on g.id=services.r_grant_id
+		left join jk.t_cj_loan_info loin on loin.loan_code = g.loan_code
+		left join jk.t_cj_customer_bank_info bank on bank.loan_code =
+		loin.loan_code and bank.top='1'
+		left join jk.t_jk_loan_customer customer on customer.loan_code =
+		loin.loan_code
+		left join jk.t_gl_province_city t ON t.area_code = bank.bank_province
+		LEFT JOIN jk.t_gl_province_city y ON y.area_code = bank.bank_city
+		where p.dict_r_deduct_type = '606' 			<!-- 关联类型为催收服务费 -->
+		and p.dict_deal_status != '9' 			 <!-- 处理状态不为无效 -->
+
+		<if test="dictDealType != null and dictDealType != ''">   <!-- 指定划扣平台 -->
+			and p.dict_deal_type = #{dictDealType}
+		</if>
+		<if test="id != null">
+			AND p.id in( ${id} ) 				<!-- 直接查询list -->
+		</if>
+		<if test="urgeId != null">
+			AND p.r_payback_apply_id in( ${urgeId} )<!-- 根据催收主表id -->
+		</if>
+	</select>
+
+
+
+	<!--将拆分表中的符合条件的单子再次进行合并，合并之后再次进行拆分，将要进行拆分的数据转化为payBackApply -->
+	<select id="queryUrgeList"
+		resultType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		select b.id,(b.urge_moeny - b.urge_decute_moeny) as
+		applyAmount,bank.card_bank as applyBankName,2 as dictDeductType,
+		c.contract_code as contractCode, c.loan_code as loanCode
+		from
+
+		jk.t_cj_urge_services_amount b
+		left join jk.t_cj_loan_grant c on c.id = b.r_grant_id
+		left join jk.t_cj_customer_bank_info bank on bank.loan_code=c.loan_code
+		and bank.top='1'
+		<where>
+			<if test="id != null">
+				b.id in( ${id} )<!-- 根据催收主表id -->
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据线下上传的回执结果，更新过拆分表之后，根据拆分表更新催收主表的已划金额，最近划扣日期，处理状态 -->
+	<select id="selSuccess"
+		resultType="com.creditharmony.loan.car.common.entity.CarUrgeServicesMoney">
+		select r_payback_apply_id as id,
+		sum(case when split_back_result='2' then split_amount else 0 end) as
+		urgeDecuteMoeny,
+		sum(case when split_back_result='1' then 1 else 0 end) as successAmount
+		from t_cj_payback_split
+		where r_payback_apply_id in
+		(select distinct r_payback_apply_id from t_cj_payback_split where
+		enterprise_serialno in (${enterpriseSerialno}) group by
+		r_payback_apply_id )
+		group by r_payback_apply_id
+	</select>
+
+	<!-- 向催收服务费表中插入数据 -->
+	<insert id="insertUrge"
+		parameterType="com.creditharmony.loan.car.common.entity.CarUrgeServicesMoney">
+		insert into jk.t_cj_urge_services_amount(
+		id,r_grant_id,urge_moeny,urge_decute_moeny,urge_decute_date,
+		dict_deal_status,timeflag,return_logo,create_by, create_time,
+		modify_by, modify_time,deduct_jump_rule,auto_deduct_flag,dict_deal_type)
+		values
+		(#{id},#{rGrantId},#{urgeMoeny},#{urgeDecuteMoeny},#{urgeDecuteDate},#{dictDealStatus},#{timeFlag},#{returnLogo},#{createBy},#{createTime},#{modifyBy},#{modifyTime},#{deductJumpRule},#{autoDeductFlag},#{dictDealType})
+	</insert>
+
+	<!-- 根据拆分表id查询划扣平台 -->
+	<select id="getDealType" resultType="UrgeServicesMoneyEx">
+		select dict_deal_type from jk.t_jk_payback_split
+		where id=#{id}
+	</select>
+
+	<!-- 根据催收主表id查询拆分表中的list，查找拆分表的id -->
+	<select id="selProcess"
+		resultType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServicesMoneyEx">
+		select id
+		from jk.t_cj_payback_split
+		where r_payback_apply_id in ( ${urgeId} ) and split_back_result !=
+		#{splitResult}
+	</select>
+
+	<!-- 删除拆分表中处理状态为处理中（线下）的单子,根据拆分表中的id -->
+	<update id="delProcess"
+		parameterType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServicesMoneyEx">
+		DELETE FROM jk.t_cj_payback_split WHERE id in ( ${id} )
+	</update>
+
+	<!-- 更新催收服务费列表,根据id,可以为多个 -->
+	<update id="updateUrge"
+		parameterType="com.creditharmony.loan.car.common.entity.CarUrgeServicesMoney">
+		update jk.t_cj_urge_services_amount
+		<set>
+			<if test="urgeMoeny != null">
+				urge_moeny = #{urgeMoeny,jdbcType=NUMERIC},
+			</if>
+			<if test="auditAmount != null">
+				audit_amount = #{auditAmount,jdbcType=NUMERIC},  <!-- 查账金额 -->
+			</if>
+			<if test="urgeDecuteMoeny != null">
+				urge_decute_moeny = #{urgeDecuteMoeny,jdbcType=NUMERIC},<!-- 已划扣金额 -->
+			</if>
+			<if test="urgeDecuteDate != null">
+				urge_decute_date = #{urgeDecuteDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="dictDealStatus != null"><!-- 处理状态 -->
+				dict_deal_status = #{dictDealStatus,jdbcType=VARCHAR},
+			</if>
+			<if test="splitFailResult != null"><!-- 失败原因 -->
+				split_fail_result = #{splitFailResult,jdbcType=VARCHAR},
+			</if>
+			<if test="dictDealType != null"><!-- 划扣平台 -->
+				dict_deal_type = #{dictDealType,jdbcType=VARCHAR},
+			</if>
+			<if test="timeFlag != null">
+				timeflag = #{timeFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="returnLogo != null">
+				return_logo = #{returnLogo,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyBy != null">
+				modify_by = #{modifyBy,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deductJumpRule != null">
+				deduct_jump_rule = #{deductJumpRule,jdbcType=VARCHAR},
+			</if>
+			<if test="autoDeductFlag != null">
+				auto_deduct_flag = #{autoDeductFlag,jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE id in (${id})
+	</update>
+
+	<!-- 将拆分表的处理状态置为无效标识，设置划扣标识 -->
+	<update id="updSplitStatus"
+		parameterType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServicesMoneyEx">
+		update jk.t_cj_payback_split
+		<set>
+			<if test="paybackFlag !=null"> <!-- 线上线下 -->
+				payback_flag=#{paybackFlag}
+			</if>
+			<if test="splitResult !=null"> <!-- 拆分表的回盘结果 -->
+				SPLIT_BACK_RESULT=#{splitResult}
+			</if>
+		</set>
+		where
+		<trim prefixOverrides="AND | OR">
+		<if test="id !=null">
+			and id = #{id}
+		</if>
+		<if test="urgeId !=null">
+			and r_payback_apply_id in (${urgeId})
+		</if>
+        </trim>
+	</update>
+
+	<!-- 更新拆分表中的划扣平台，回盘结果，根据id或者企业流水号或者催收主表id -->
+	<update id="updUrgeSplit"
+		parameterType="com.creditharmony.loan.car.carGrant.ex.CarUrgeServicesMoneyEx">
+		update jk.t_cj_payback_split
+		<set>
+			<if test="splitResult !=null">
+				split_back_result=#{splitResult},
+			</if>
+			<if test="splitBackDate != null">
+				splitback_date=#{splitBackDate},
+			</if>
+			<if test="splitFailResult !=null">
+				split_fail_result=#{splitFailResult},
+			</if>
+			<if test="paybackFlag !=null">
+				payback_flag=#{paybackFlag},
+			</if>
+		</set>
+		where
+		<trim prefixOverrides="AND | OR">
+		<if test="id !=null">
+			and id = #{id}
+		</if>
+		<if test="enterpriseSerialno !=null">
+			and remark = #{enterpriseSerialno}
+		</if>
+		<if test="urgeId !=null">
+			and r_payback_apply_id = #{urgeId}
+		</if>
+        </trim>
+	</update>
+
+	<!-- 根据催收主表id查询划扣回盘结果 -->
+	<select id="find"
+		resultType="com.creditharmony.loan.car.common.entity.CarUrgeServicesMoney">
+		select * from jk.t_cj_urge_services_amount where id = #{id}
+	</select>
+	<!-- 停止或开启滚动划扣方法 -->
+	<update id="changeDeductsRule" parameterType="java.util.HashMap">
+		update jk.t_jk_system_setting
+		<set>
+			<if test="sysValue !=null and sysValue != ''">
+				sys_value=#{sysValue}
+			</if>
+
+		</set>
+		where
+		<trim prefixOverrides="AND | OR">
+		<if test="sysFlag !=null and sysFlag != ''">
+			and sys_flag = #{sysFlag}
+		</if>
+        </trim>
+	</update>
+
+	<!-- 查询系统是否为滚动划扣 -->
+	<select id="selectSystemSetting" parameterType="java.util.HashMap"
+		resultType="java.lang.String">
+		select s.sys_value from jk.t_jk_system_setting s
+		<where>
+		<if test="sysFlag != null and sysFlag != ''">
+			and s.sys_flag = #{sysFlag}
+		</if>
+        </where>
+	</select>
+
+	<!-- 查询要划扣的数据 发送给批处理 -->
+	<select id="queryUrgeDeductReq" parameterType="java.util.HashMap"
+		resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+		select
+		g.id as batId,
+		a.contract_code as businessId,
+		(g.urge_moeny - g.urge_decute_moeny) as amount,
+		b.apply_bank_name as bankName,
+		b.bank_card_no as accountNo,
+		b.bank_account_name as accountName,
+		y.area_name as bankCity,
+		t.area_name as bankProv,
+		b.card_bank as bankId,
+		c.dict_cert_type as idType,
+		c.customer_cert_num as idNo,
+		c.customer_phone_first as mobile
+
+		from jk.t_cj_urge_services_amount g
+		LEFT JOIN jk.t_cj_loan_grant a ON a.id = g.r_grant_id
+		left join jk.t_cj_customer_bank_info b on b.loan_code = a.loan_code
+		LEFT JOIN jk.t_gl_province_city t ON t.area_code = b.bank_province
+		LEFT JOIN jk.t_gl_province_city y ON y.area_code = b.bank_city
+		LEFT JOIN jk.t_jk_loan_customer c ON c.loan_code = a.loan_code
+		LEFT JOIN jk.t_cj_loan_info d ON d.loan_code = a.loan_code
+
+		<where>
+		<if test="id != null and id != ''">
+			and g.id in(${id})
+		</if>
+		<if test="timeFlag != null and timeFlag != ''"> <!-- 时间标识，区分当日还是以往,直接在催收主表 -->
+			and g.timeflag =#{timeFlag}
+		</if>
+		<if test="splitBackResult != null and splitBackResult != ''"> <!-- 划扣回盘结果 -->
+			and g.dict_deal_status =#{dictDealStatus}
+		</if>
+		<if test="loanCode != null and loanCode != ''"> <!-- 划扣回盘结果 -->
+			and a.loan_code =#{loanCode}
+		</if>
+        </where>
+	</select>
+
+	<!-- 查询要划扣的数据 发送给批处理 -->
+	<select id="queryAutomaticDeductReq" parameterType="java.util.HashMap"
+		resultType="com.creditharmony.core.deduct.bean.in.DeductReq">
+		select
+		a.contract_code as businessId,
+		b.apply_bank_name as bankName,
+		b.bank_card_no as accountNo,
+		d.loan_customer_name as accountName,
+		y.area_name as bankCity,
+		t.area_name as bankProv,
+		b.card_bank as bankId,
+		c.dict_cert_type as idType,
+		c.customer_cert_num as idNo,
+		c.customer_phone_first as mobile
+
+		from
+		jk.t_cj_loan_grant a
+		left join jk.t_cj_customer_bank_info b on b.loan_code = a.loan_code
+		LEFT JOIN jk.t_gl_province_city t ON t.area_code = b.bank_province
+		LEFT JOIN jk.t_gl_province_city y ON y.area_code = b.bank_city
+		LEFT JOIN jk.t_jk_loan_customer c ON c.loan_code = a.loan_code
+		LEFT JOIN jk.t_cj_loan_info d ON d.loan_code = a.loan_code
+
+		where a.loan_code =#{loanCode}
+		<if test="grantRecepicResult != null and grantRecepicResult != ''"> <!-- 划扣回盘结果 -->
+			and a.grant_recepic_result =#{grantRecepicResult}
+		</if>
+	</select>
+
+	<!-- 根据合同编号进行查询，查询催收主表中的处理状态，同时如果一笔单子如果为处理中或者待查账时，给出提示，不允许退回 -->
+	<select id="getDealCount" resultType="String">
+		select b.dict_deal_status
+		from jk.t_cj_loan_grant a
+		left join jk.t_cj_urge_services_amount b on b.r_grant_id = a.id
+		where a.contract_code = #{contractCode} and b.return_logo!='1'
+	</select>
+
+</mapper>

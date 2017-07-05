@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.payback.dao.ConfirmPaybackDao">
+	<select id="findConfirm" resultType="com.creditharmony.loan.borrow.payback.entity.Payback">
+	select p.id ,
+	p.contract_code,
+	p.dict_pay_status,
+	p.payback_day,
+	p.payback_bule_amount,
+	p.payback_month_amount,
+	li.modify_time,
+	p.payback_back_amount,
+	p.payback_current_month,
+	p.payback_max_overduedays,
+	pm.id as "paybackMonth.id",
+	pm.month_before_finish_amount as "paybackMonth.monthBeforeFinishAmount",
+	pm.dict_month_status as "paybackMonth.dictMonthStatus",
+	pm.month_overdue_mes as "paybackMonth.monthOverdueMes",
+	pm.month_pay_amount as "paybackMonth.monthPayAmount",
+	pm.month_capital_payactual as "paybackMonth.monthCapitalPayactual",
+	pm.month_interest_backshould as "paybackMonth.monthInterestBackshould",
+	pm.month_interest_payactual as "paybackMonth.monthInterestPayactual",
+	pm.month_interest_punishshould as
+	"paybackMonth.monthInterestPunishshould",
+	pm.month_interest_punishactual as
+	"paybackMonth.monthInterestPunishactual",
+	pm.month_punish_reduction as "paybackMonth.monthPunishReduction",
+	pm.month_penalty_should as "paybackMonth.monthPenaltyShould",
+	pm.month_penalty_actual as "paybackMonth.monthPenaltyActual",
+	pm.month_penalty_reduction as "paybackMonth.monthPenaltyReduction",
+	pm.month_fee_service as "paybackMonth.monthFeeService",
+	pm.actual_month_fee_service as "paybackMonth.actualMonthFeeService",
+	pm.month_late_fee as "paybackMonth.monthLateFee",
+	pm.month_late_fee_reduction as "paybackMonth.monthLateFeeReduction",
+	pm.actual_month_late_fee as "paybackMonth.actualMonthLateFee",
+	tp.month_pay_total_sum as "paybackMonth.monthPayTotalSum",
+	tp.month_capital_payactual_sum as "paybackMonth.monthCapitalPayactualSum",
+	tp.month_interest_payactual_sum as  
+	"paybackMonth.monthInterestPayactualSum",
+	tp.month_interest_punishshould_sum as
+	"paybackMonth.monthInterestPunishshouldSum",
+	tp.month_interest_punishactual_sum as
+	"paybackMonth.monthInterestPunishactualSum",
+	tp.month_punish_reduction_sum as "paybackMonth.monthPunishReductionSum",
+	tp.month_penalty_should_sum as "paybackMonth.monthPenaltyShouldSum",
+	tp.month_penalty_actual_sum as "paybackMonth.monthPenaltyActualSum",
+	tp.actual_month_fee_service_sum as
+	"paybackMonth.actualMonthFeeServiceSum",
+	tp.month_penalty_reduction_sum as "paybackMonth.monthPenaltyReductionSum",
+	tp.month_punish_reduction_sum as
+	"paybackMonth.monthPunishReductionSum",
+	tp.month_late_fee_sum as "paybackMonth.monthLateFeeSum",
+	tp.month_late_fee_reduction_sum as "paybackMonth.monthLateFeeReductionSum",
+	tp.actual_month_late_fee_sum as "paybackMonth.actualMonthLateFeeSum",
+	lc.customer_cert_num as "loanCustomer.customerCertNum",
+	lc.customer_name as "loanCustomer.customerName",
+	lc.customer_telesales_flag as "loanCustomer.customerTelesalesFlag",
+	c.loan_code as "contract.loanCode",
+	c.product_type as "contract.productType",
+	c.contract_amount as "contract.contractAmount",
+	c.contract_months as "contract.contractMonths",
+	c.contract_month_repay_amount as "contract.contractMonthRepayAmount",
+	c.contract_month_repay_total as "contract.contractMonthRepayTotal",
+	c.contract_replay_day as "contract.contractReplayDay",
+	c.contract_end_day as "contract.contractEndDay",
+	c.contract_version as "contract.contractVersion",
+	li.id as "loanInfo.id",
+	li.dict_loan_status as "loanInfo.dictLoanStatus",
+	li.loan_team_orgid as "loanInfo.loanStoreOrgId",
+	li.loan_store_orgid as "loanInfo.loanStoreOrgId",
+	li.trust_recharge as "loanInfo.trustRecharge",
+	li.loan_flag as "loanInfo.loanFlag",
+	li.model as "loanInfo.model",
+	li.dict_source_type as "loanInfo.dictSourceType",
+	org.name as "loanInfo.loanStoreOrgName",
+	lb.id as "loanBank.id",
+	lb.loan_code as "loanBank.loanCode",
+	lb.bank_account_name as "loanBank.bankAccountName",
+	lb.bank_account as "loanBank.bankAccount",
+	lb.bank_branch as "loanBank.bankBranch",
+	lb.bank_name as "loanBank.bankName",
+	lb.bank_signing_platform as "loanBank.bankSigningPlatform",
+	usa.r_grant_id as "urgeServicesMoney.rGrantId",
+	usa.urge_moeny as "urgeServicesMoney.urgeMoeny",
+	usa.urge_decute_moeny as "urgeServicesMoney.urgeDecuteMoeny",
+	lg.grant_amount as "loanGrant.grantAmount",
+	pro.product_name as "jkProducts.productName"
+	from jk.t_jk_payback p left join jk.mview_group_payback_montht tp 
+	 on p.contract_code= tp.contract_code and p.dict_pay_status = #{DICT_PAY_STATUS} and p.effective_flag=#{effectiveFlag}
+	LEFT JOIN jk.t_jk_payback_month pm on pm.contract_code = p.contract_code and p.payback_current_month=pm.months
+	LEFT JOIN jk.t_jk_contract c ON p.contract_code = c.contract_code
+	LEFT JOIN jk.t_jk_loan_customer lc ON c.loan_code = lc.loan_code
+	LEFT JOIN jk.t_jk_loan_info li ON c.loan_code = li.loan_code
+	LEFT JOIN jk.t_gl_org org on org.id = li.loan_store_orgid
+	LEFT JOIN jk.t_jk_loan_bank lb ON lb.loan_code = c.loan_code and
+	lb.bank_top_flag=#{TOP_FLAG} AND lb.repayment_flag = '1' 
+	LEFT JOIN jk.t_jk_loan_grant lg ON lg.contract_code = p.contract_code
+	LEFT JOIN jk.t_jk_urge_services_amount usa ON usa.contract_code = p.contract_code 
+	and (usa.return_logo = #{urgeServicesMoney.returnLogo} OR usa.return_logo is null)
+	LEFT JOIN JK.t_gl_jk_product pro on c.product_type = pro.product_code
+	where 1=1 
+	<if test="publishStart!=null or publishEnd!=null">
+	and 
+	 ( 
+	    (
+	       <![CDATA[cast(c.contract_version as integer)>=(cast(#{CONTRACT_VERSION} as integer))]]>
+	       <if test="publishStart!=null">
+		       AND  
+	     		(
+		            COALESCE(tp.month_late_fee_sum,0) - COALESCE(tp.actual_month_late_fee_sum,0) +
+		            COALESCE(tp.month_interest_punishshould_sum,0) - COALESCE(tp.month_interest_punishactual_sum,0) -
+		            COALESCE(tp.month_late_fee_reduction_sum,0) - COALESCE(tp.month_punish_reduction_sum,0)
+	           	) <![CDATA[ >= ]]> #{publishStart}
+           	</if>
+           	<if test="publishEnd!=null">
+	           	AND  
+	     		(
+		            COALESCE(tp.month_late_fee_sum,0) - COALESCE(tp.actual_month_late_fee_sum,0) +
+		            COALESCE(tp.month_interest_punishshould_sum,0) - COALESCE(tp.month_interest_punishactual_sum,0) -
+		            COALESCE(tp.month_late_fee_reduction_sum,0) - COALESCE(tp.month_punish_reduction_sum,0)
+	           	) <![CDATA[ <= ]]> #{publishEnd}
+           	</if>
+	    ) 
+	    or
+     	(
+	       <![CDATA[c.contract_version  is null or cast(c.contract_version as integer)<=(cast(#{CONTRACT_VERSION} as integer))]]>
+	       <if test="publishStart!=null">
+		       AND 
+		       (
+		       	COALESCE(tp.month_penalty_should_sum,0) - COALESCE(tp.month_penalty_actual_sum,0) +
+			    COALESCE(tp.month_interest_punishshould_sum,0) - COALESCE(tp.month_interest_punishactual_sum,0) -
+			    COALESCE(tp.month_penalty_reduction_sum,0) - COALESCE(tp.month_punish_reduction_sum,0)
+			   )   <![CDATA[ >= ]]> #{publishStart}
+		    </if>
+		    <if test="publishEnd!=null">
+			    AND 
+			    (
+		         COALESCE(tp.month_penalty_should_sum,0) - COALESCE(tp.month_penalty_actual_sum,0) +
+			     COALESCE(tp.month_interest_punishshould_sum,0) - COALESCE(tp.month_interest_punishactual_sum,0) -
+			     COALESCE(tp.month_penalty_reduction_sum,0) - COALESCE(tp.month_punish_reduction_sum,0)
+			    ) <![CDATA[ <= ]]> #{publishEnd}
+		    </if>
+		    
+	    )
+	 )
+	 </if>
+	  <if test="contractCode!= null and !contractCode.equals('')">
+			AND p.contract_code = #{contractCode}
+	  </if>
+	  <if test="loanCustomer!= null and loanCustomer.customerName!=null and ! loanCustomer.customerName.equals('')">
+			AND lc.customer_name like '%'||#{loanCustomer.customerName}||'%'
+	 </if>
+	 <if test="loanInfo != null and loanInfo.loanStoreOrgId != null and !loanInfo.loanStoreOrgId.equals('')">
+		  AND li.loan_store_orgid = #{loanInfo.loanStoreOrgId}
+	 </if> 
+	 <if test="loanInfo != null and loanInfo.loanFlag != null and !loanInfo.loanFlag.equals('')">
+		  AND li.loan_flag = #{loanInfo.loanFlag}
+	 </if> 
+	 <if test="loanInfo != null and loanInfo.model != null and !loanInfo.model.equals('')">
+		  AND li.model = #{loanInfo.model}
+	 </if> 
+	 <if test=" loanInfo != null and  loanInfo.dictSourceType!= null and !loanInfo.dictSourceType.equals('')">
+		 AND li.dict_source_type = #{loanInfo.dictSourceType}
+	</if>
+	<if test="dictPayStatus != null">
+		 AND p.dict_pay_status = #{dictPayStatus}
+	</if>
+	<if test="loanCustomer!= null and loanCustomer.customerTelesalesFlag!= null and !loanCustomer.customerTelesalesFlag.equals('')">
+		AND lc.customer_telesales_flag LIKE
+		#{loanCustomer.customerTelesalesFlag}
+	</if>
+	<!-- 下边三条是日期查询条件 -->
+	<if test="beginDate != null and endDate != null ">
+		AND p.modify_time between #{beginDate} and #{endDate}
+	</if>
+	<if test="beginDate != null ">
+	   <![CDATA[AND p.modify_time >= #{beginDate}]]>
+	</if>
+	<if test="endDate != null">
+	  <![CDATA[AND p.modify_time <= #{endDate}]]>
+	</if>
+	<if test=" loanBank != null and  loanBank.bankName != null and loanBank.bankName != ''">
+			AND lb.bank_name = #{loanBank.bankName}
+	</if>
+	
+	<if test=" ids != null and ids != ''">
+			AND p.id in (${ids})
+	</if>
+		   ${queryRight} 
+		order by p.modify_time DESC
+	</select>
+	
+	
+	
+	<select id="findConfirmBak" resultType="com.creditharmony.loan.borrow.payback.entity.Payback">
+	select 
+	tp.id ,
+	tp.contract_code,
+	tp.dict_pay_status,
+	tp.payback_day,
+	tp.payback_bule_amount,
+	tp.payback_month_amount,
+	tp.modify_time,
+	tp.payback_back_amount,
+	tp.payback_current_month,
+	tp.payback_max_overduedays,
+	tp.pmid as "paybackMonth.id",
+	tp.monthbeforefinishamount as "paybackMonth.monthBeforeFinishAmount",
+	tp.dictMonthStatus as "paybackMonth.dictMonthStatus",
+	tp.monthOverdueMes as "paybackMonth.monthOverdueMes",
+	tp.monthPayAmount as "paybackMonth.monthPayAmount",
+	tp.monthCapitalPayactual as "paybackMonth.monthCapitalPayactual",
+	tp.monthInterestBackshould as "paybackMonth.monthInterestBackshould",
+	tp.monthInterestPayactual as "paybackMonth.monthInterestPayactual",
+	tp.monthInterestPunishshould as
+	"paybackMonth.monthInterestPunishshould",
+	tp.monthInterestPunishactual as
+	"paybackMonth.monthInterestPunishactual",
+	tp.monthPunishReduction as "paybackMonth.monthPunishReduction",
+	tp.monthPenaltyShould as "paybackMonth.monthPenaltyShould",
+	tp.monthPenaltyActual as "paybackMonth.monthPenaltyActual",
+	tp.monthPenaltyReduction as "paybackMonth.monthPenaltyReduction",
+	tp.monthFeeService as "paybackMonth.monthFeeService",
+	tp.actualMonthFeeService as "paybackMonth.actualMonthFeeService",
+	tp.monthLateFee as "paybackMonth.monthLateFee",
+	tp.monthLateFeeReduction as "paybackMonth.monthLateFeeReduction",
+	tp.actualMonthLateFee as "paybackMonth.actualMonthLateFee",
+	tp.monthPayTotalSum as "paybackMonth.monthPayTotalSum",
+	tp.monthCapitalPayactualSum as "paybackMonth.monthCapitalPayactualSum",
+	tp.monthInterestPayactualSum as  
+	"paybackMonth.monthInterestPayactualSum",
+	tp.monthInterestPunishshouldSum as
+	"paybackMonth.monthInterestPunishshouldSum",
+	tp.monthInterestPunishactualSum as
+	"paybackMonth.monthInterestPunishactualSum",
+	tp.monthPenaltyShouldSum as "paybackMonth.monthPenaltyShouldSum",
+	tp.monthPenaltyActualSum as "paybackMonth.monthPenaltyActualSum",
+	tp.actualMonthFeeServiceSum as
+	"paybackMonth.actualMonthFeeServiceSum",
+	tp.monthPenaltyReductionSum as "paybackMonth.monthPenaltyReductionSum",
+	tp.monthPunishReductionSum as
+	"paybackMonth.monthPunishReductionSum",
+	tp.monthLateFeeSum as "paybackMonth.monthLateFeeSum",
+	tp.monthLateFeeReductionSum as "paybackMonth.monthLateFeeReductionSum",
+	tp.actualMonthLateFeeSum as "paybackMonth.actualMonthLateFeeSum",
+	tp.customerCertNum as "loanCustomer.customerCertNum",
+	tp.customerName as "loanCustomer.customerName",
+	tp.customerTelesalesFlag as "loanCustomer.customerTelesalesFlag",
+	tp.cloancode as "contract.loanCode",
+	tp.productType as "contract.productType",
+	tp.contractAmount as "contract.contractAmount",
+	tp.contractMonths as "contract.contractMonths",
+	tp.contractMonthRepayAmount as "contract.contractMonthRepayAmount",
+	tp.contractMonthRepayTotal as "contract.contractMonthRepayTotal",
+	tp.contractReplayDay as "contract.contractReplayDay",
+	tp.contractEndDay as "contract.contractEndDay",
+	tp.contractVersion as "contract.contractVersion",
+	tp.liid as "loanInfo.id",
+	tp.dictLoanStatus as "loanInfo.dictLoanStatus",
+	tp.loanStoreOrgId as "loanInfo.loanStoreOrgId",
+	tp.dictsourcetype as "loanInfo.dictSourceType",
+	tp.trustRecharge as "loanInfo.trustRecharge",
+	tp.loanFlag as "loanInfo.loanFlag",
+	tp.loanStoreOrgName as "loanInfo.loanStoreOrgName",
+	tp.lbid as "loanBank.id",
+	tp.lbloancode as "loanBank.loanCode",
+	tp.bankAccountName as "loanBank.bankAccountName",
+	tp.bankAccount as "loanBank.bankAccount",
+	tp.bankBranch as "loanBank.bankBranch",
+	tp.bankName as "loanBank.bankName",
+	tp.bankSigningPlatform as "loanBank.bankSigningPlatform",
+	tp.rgrantid as "urgeServicesMoney.rGrantId",
+	tp.grantAmount as "loanGrant.grantAmount",
+	tp.productName as "jkProducts.productName",
+	usa.urge_decute_moeny as "urgeServicesMoney.urgeDecuteMoeny",
+	usa.urge_moeny as "urgeServicesMoney.urgeMoeny"
+	from jk.mview_group_payback_month tp
+	LEFT JOIN jk.t_jk_urge_services_amount usa on usa.contract_code = tp .contract_code
+    where 1=1 
+	  <if test="contractCode!= null and !contractCode.equals('')">
+			AND tp.contract_code =  #{contractCode}
+	  </if>
+	  <if test="urgeServicesMoney.returnLogo != null and urgeServicesMoney.returnLogo != ''">
+            AND usa.return_logo = #{urgeServicesMoney.returnLogo}
+      </if>
+	  <if test="loanCustomer!= null and loanCustomer.customerName!=null and ! loanCustomer.customerName.equals('')">
+			AND tp.customerName like '%'||#{loanCustomer.customerName}||'%'
+	 </if>
+	 <if test="loanInfo != null and loanInfo.loanStoreOrgId != null and !loanInfo.loanStoreOrgId.equals('')">
+		  AND tp.loanStoreOrgId = #{loanInfo.loanStoreOrgId}
+	 </if> 
+	 <if test=" loanInfo != null and  loanInfo.dictSourceType!= null and !loanInfo.dictSourceType.equals('')">
+		 AND tp.dictsourcetype = #{loanInfo.dictSourceType}
+	</if>
+	<if test="dictPayStatus != null">
+		 AND tp.dict_pay_status = #{dictPayStatus}
+	</if>
+	<if test="loanCustomer!= null and loanCustomer.customerTelesalesFlag!= null and !loanCustomer.customerTelesalesFlag.equals('')">
+		AND tp.customerTelesalesFlag LIKE
+		#{loanCustomer.customerTelesalesFlag}
+	</if>
+	<if test="createTime != null and !(createTime.equals('')) and modifyTime != null and !(modifyTime.equals(''))">
+			AND tp.modify_time between #{createTime} and #{modifyTime}
+	</if>
+	<if test=" loanBank != null and  loanBank.bankName != null and loanBank.bankName != ''">
+			AND tp.bankName = #{loanBank.bankName}
+	</if>
+		   ${queryRight} 
+		order by tp.modify_time DESC
+	</select>
+	
+	 <!--结清期供计算   -->
+	 <select id="findPaybackMonth" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+	    SELECT  
+	    	pm.month_before_finish_amount,<!--提前结清金额   -->
+			pm.dict_month_status,<!--期供状态   -->
+			pm.month_overdue_mes,<!--逾期原因  --> 
+			pm.month_pay_amount, <!-- 应还本金-->
+			pm.month_capital_payactual,<!-- 实还本金-->
+			pm.month_interest_backshould,<!--应还利息   -->
+			pm.month_interest_payactual,<!-- 实还利息-->
+			pm.month_interest_punishshould,<!--应还罚息   -->
+			pm.month_interest_punishactual,<!-- 实还罚息-->
+			pm.month_punish_reduction,<!--减免罚息   -->
+			pm.month_penalty_should,<!-- 应还违约金-->
+			pm.month_penalty_actual,<!-- 实还违约金-->
+			pm.month_penalty_reduction,<!--减免违约金   -->
+			pm.month_fee_service,<!-- 分期服务费 -->
+			pm.actual_month_fee_service,<!--实还款服务费   -->
+			pm.month_late_fee ,<!-- 应还滞纳金 -->
+			pm.actual_month_late_fee,<!--实还滞纳金   -->
+			tp.month_pay_total_sum,<!--应还总额   -->
+			tp.month_overdue_days_max,<!-- 最大逾期天数(max)-->
+			tp.month_capital_payactual_sum,<!-- 实还本金总额(sum)-->
+			tp.month_interest_payactual_sum,<!-- 实还利息总额(sum)-->
+			tp.month_interest_punishshould_sum,<!-- 应还罚息总额(sum)--> 
+			tp.month_interest_punishactual_sum,<!-- 实还罚息总额(sum)-->
+			tp.month_penalty_should_sum,<!-- 应还违约金总额(sum)-->
+			tp.month_penalty_actual_sum,<!-- 实还还违约金总额(sum)-->
+			tp.actual_month_fee_service_sum,<!-- 实还分期服务费总额(sum) -->
+			tp.month_penalty_reduction_sum,<!-- 减免违约金总额(sum) -->
+			tp.month_punish_reduction_sum,<!-- 减免罚息总额(sum) -->
+			tp.month_late_fee_sum,<!-- 应还滞纳金(sum)-->
+			tp.month_late_fee_reduction_sum,<!-- 减免滞纳金(sum)-->
+			tp.actual_month_late_fee_sum<!--  实还滞纳金(sum)-->
+	    FROM jk.t_jk_payback_month pm
+		LEFT JOIN (select 
+					max(month_overdue_days) as month_overdue_days_max,<!-- 最大逾期天数(max)-->
+					sum(month_capital_payactual) as month_capital_payactual_sum,<!-- 实还本金总额(sum)-->
+					sum(month_interest_payactual) as month_interest_payactual_sum,<!-- 实还利息总额(sum)-->
+					sum(month_interest_punishshould) as month_interest_punishshould_sum,<!-- 应还罚息总额(sum)-->
+					sum(month_interest_punishactual) as month_interest_punishactual_sum,<!-- 实还罚息总额(sum)-->
+					sum(month_penalty_should) as month_penalty_should_sum,<!-- 应还违约金总额(sum)-->
+					sum(month_penalty_actual) as month_penalty_actual_sum,<!-- 实还违约金总额(sum)-->
+					sum(month_penalty_reduction) as month_penalty_reduction_sum,<!-- 减免违约金总额(sum)-->
+					sum(month_punish_reduction) as month_punish_reduction_sum,<!-- 减免罚息总额(sum)-->
+					sum(month_late_fee) as month_late_fee_sum,<!-- 应还滞纳金(sum)-->
+					sum(month_late_fee_reduction) as month_late_fee_reduction_sum,<!-- 减免滞纳金(sum)-->
+					sum(actual_month_late_fee) as actual_month_late_fee_sum,<!-- 实还滞纳金(sum)-->
+					sum(actual_month_fee_service) as  actual_month_fee_service_sum,<!-- 实还分期服务费(sum) -->
+					sum(month_pay_total) as  month_pay_total_sum,<!-- 应还总额和 -->
+					contract_code from jk.t_jk_payback_month  
+					group by contract_code
+		)  tp on tp.contract_code = pm.contract_code
+	    WHERE  pm.contract_code=#{contractCode}  and pm.months = #{months}
+	   
+   </select>
+   
+   <!-- 查询结清确认时是否返款 -->
+   <select id="getUrgeBackAmount" resultType="com.creditharmony.loan.borrow.grant.entity.UrgeServicesBackMoney">
+     select id,payback_back_amount from t_jk_urge_services_backamount where contract_code =#{contractCode}
+   </select>
+   
+   <!-- 查询结清确认时的审核意见 -->
+   <select id="getConfirmedRemark" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackOpe">
+     select id,r_payback_id,dict_loan_status,dict_r_deduct_type,operate_result,remark,create_time from t_jk_payback_ope 
+     where  dict_loan_status =#{dictLoanStatus} and r_payback_id =#{rPaybackId} 
+     order by create_time desc
+   </select>
+ 
+</mapper>

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.serve.dao.EmailServeDao">
+  <!-- 获取还款提醒列表 -->
+  <select id="findEmailList" resultType="com.creditharmony.loan.borrow.serve.entity.PaybackMonthSendEmail">
+  	SELECT
+  		email.id,
+  		email.send_email_status sendEmailStatus,
+  		email.modify_time modifyTime,
+  		email.email_type emailType,
+  		org.name storeName,
+  		month.id paybackMonthId, 
+  		month.contract_code contractCode,
+  		info.loan_customer_name customerName,
+  		info.dict_loan_status loanStatus,
+  		contract.audit_amount auditAmount,
+  		contract.contract_amount contractAmount,
+  		payback.payback_day paybackDay,
+  		payback.payback_month_amount contractMonthRepayAmount,
+  		customer.customer_email customerEmail,
+  		customer.email_if_confirm emailIfConfirm,
+  		customer.customer_code customerCode,
+  		lb.bank_name,
+  		lb.bank_account
+  	FROM jk.t_jk_payback_month month
+  		LEFT JOIN jk.t_jk_contract contract ON contract.contract_code=month.contract_code
+  		LEFT JOIN jk.t_jk_loan_info info ON contract.loan_code=info.loan_code
+  		LEFT JOIN jk.t_jk_loan_customer customer ON info.loan_code=customer.loan_code
+  		LEFT JOIN jk.t_jk_payback_month_sending_email email ON month.id=email.r_payback_month_id
+  		LEFT JOIN jk.t_jk_payback payback ON  month.contract_code=payback.contract_code
+  		LEFT JOIN jk.t_gl_org org ON info.loan_store_orgid=org.id
+  		LEFT JOIN jk.t_jk_loan_bank lb ON lb.loan_code = contract.loan_code 
+  			and lb.repayment_flag='1' and lb.bank_top_flag='1'
+  	where month.remind_logo='1'
+  		<if test="customerName != null and customerName != ''">
+  			and info.loan_customer_name like '%${customerName}%'
+  		</if>
+  		<if test="contractCode != null and contractCode != ''">
+  			and month.contract_code = #{contractCode}
+  		</if>
+  		<if test="storeId != null and storeId != ''">
+  			and org.id in (${storeId})
+  		</if>
+  		<if test="sendEmailStatus != null and sendEmailStatus != ''">
+  			and email.send_email_status = #{sendEmailStatus}
+  			<!-- <if test='sendEmailStatus=="0"'>
+	  			and email.send_email_status is null
+	  		</if>
+  			<if test='sendEmailStatus=="-1"'>
+  				and (email.send_email_status is null or email.send_email_status='3')
+  			</if>
+  			<if test='sendEmailStatus!="-1" and sendEmailStatus!="0"'>
+  				and email.send_email_status in(${sendEmailStatus})
+  			</if> -->
+  		</if>
+  		
+  		<if test="customerEmail != null and customerEmail != ''">
+  			and customer.customer_email = #{customerEmail}
+  		</if>
+  		<if test="paybackMonthId != null and paybackMonthId != ''">
+  			and month.id in (${paybackMonthId})
+  		</if>
+  		<if test="id != null and id != ''">
+  			and email.id in (${id})
+  		</if>
+  		<if test="modifyTimeStr != null and modifyTimeStr != ''">
+  			and to_char(email.modify_time,'yyyy-mm-dd')=#{modifyTimeStr}
+  		</if>
+  		<if test="emailType != null and emailType != ''">
+  			<if test='emailType=="1"'>
+  				and (email.email_type is null or email.email_type='1')
+  			</if>
+  			<if test='emailType!="1"'>
+  				and email.email_type in(${emailType})
+  			</if>
+  		</if>
+  		<if test="loanStatus !=null and loanStatus !=''">
+  			<if test='loanStatus=="0"'>
+  				and info.dict_loan_status not in('89','90')
+  			</if>
+  			<if test='loanStatus!="0"'>
+  				and info.dict_loan_status in (${loanStatus})
+  			</if>
+  		</if>
+  		order by email.modify_time desc,month.modify_time desc
+  </select>
+  
+  <!-- 发送过的邮件列表 -->
+  <select id="findSendEmailList" resultType="com.creditharmony.loan.borrow.serve.entity.PaybackMonthSendEmail">
+  	SELECT
+  		email.id,
+  		email.send_email_status sendEmailStatus,
+  		email.modify_time modifyTime,
+  		email.email_type emailType,
+  		org.name storeName,
+  		info.loan_customer_name customerName,
+  		info.dict_loan_status loanStatus,
+  		contract.contract_code contractCode,
+  		contract.audit_amount auditAmount,
+  		contract.contract_amount contractAmount,
+  		(case when contract.paperless_flag is null then '1' else contract.paperless_flag end) paperlessFlag,
+  		payback.payback_day paybackDay,
+  		payback.payback_month_amount contractMonthRepayAmount,
+  		customer.customer_email customerEmail,
+  		customer.email_if_confirm emailIfConfirm,
+  		customer.customer_code customerCode,
+  		lb.bank_name,
+  		lb.bank_account
+  	FROM jk.t_jk_payback_month_sending_email email  
+  	LEFT JOIN jk.t_jk_loan_customer customer ON email.customer_code = customer.customer_code 
+  	LEFT JOIN jk.t_jk_loan_info info ON customer.loan_code = info.loan_code 
+  	LEFT JOIN jk.t_jk_contract contract ON info.loan_code = contract.loan_code 
+    LEFT JOIN jk.t_jk_payback payback ON contract.contract_code = payback.contract_code 
+    LEFT JOIN jk.t_gl_org org ON info.loan_store_orgid = org.id 
+    LEFT JOIN jk.t_jk_loan_bank lb ON lb.loan_code = contract.loan_code
+            AND lb.repayment_flag = '1'
+            AND lb.bank_top_flag = '1'
+  	where customer.customer_name is not null
+  		
+  		<if test="customerName != null and customerName != ''">
+  			and customer.customer_name like '%${customerName}%'
+  		</if>
+  		<if test="contractCode != null and contractCode != ''">
+  			and contract.contract_code = #{contractCode}
+  		</if>
+  		<if test="storeId != null and storeId != ''">
+  			and org.id in (${storeId})
+  		</if>
+  		<if test="sendEmailStatus != null and sendEmailStatus != ''">
+  			<if test='sendEmailStatus=="0"'>
+	  			and email.send_email_status is null
+	  		</if>
+  			<if test='sendEmailStatus=="-1"'>
+  				and (email.send_email_status is null or email.send_email_status='3')
+  			</if>
+  			<if test='sendEmailStatus!="-1" and sendEmailStatus!="0"'>
+  				and email.send_email_status in(${sendEmailStatus})
+  			</if>
+  		</if>
+  		
+  		<if test="customerEmail != null and customerEmail != ''">
+  			and customer.customer_email = #{customerEmail}
+  		</if>
+  		<if test="id != null and id != ''">
+  			and email.id in (${id})
+  		</if>
+  		<if test="modifyTimeStr != null and modifyTimeStr != ''">
+  			and to_char(email.modify_time,'yyyy-mm-dd')=#{modifyTimeStr}
+  		</if>
+  		<if test="emailType != null and emailType != ''">
+  			<if test='emailType=="1"'>
+  				and (email.email_type is null or email.email_type='1')
+  			</if>
+  			<if test='emailType!="1"'>
+  				and email.email_type in(${emailType})
+  			</if>
+  		</if>
+  		<if test="loanStatus !=null and loanStatus !=''">
+  			<if test='loanStatus=="0"'>
+  				and info.dict_loan_status not in('89','90')
+  			</if>
+  			<if test='loanStatus!="0"'>
+  				and info.dict_loan_status in (${loanStatus})
+  			</if>
+  		</if>
+  		<if test="paperlessFlag !=null and paperlessFlag != ''">
+  			<if test="paperlessFlag==1">
+  				and (contract.paperless_flag is null or contract.paperless_flag=#{paperlessFlag})
+  			</if>
+  			<if test="paperlessFlag!=1">
+  				and contract.paperless_flag=#{paperlessFlag}
+  			</if>
+  		</if>
+  		order by email.modify_time desc
+  </select>
+  
+  <!-- 节假日提醒列表 -->
+  <select id="findHolidayList" resultType="com.creditharmony.loan.borrow.serve.entity.PaybackMonthSendEmail">
+  	SELECT
+  		org.name storeName,
+  		info.loan_customer_name customerName,
+  		info.dict_loan_status loanStatus,
+  		contract.contract_code contractCode,
+  		contract.audit_amount auditAmount,
+  		contract.contract_amount contractAmount,
+  		(case when contract.paperless_flag is null then '1' else contract.paperless_flag end) paperlessFlag,
+  		payback.payback_day paybackDay,
+  		payback.payback_month_amount contractMonthRepayAmount,
+  		customer.customer_email customerEmail,
+  		customer.email_if_confirm emailIfConfirm,
+  		customer.customer_code customerCode,
+  		lb.bank_name,
+  		lb.bank_account
+  	FROM jk.t_jk_loan_customer customer  
+  		LEFT JOIN jk.t_jk_loan_info info ON customer.loan_code=info.loan_code
+  		LEFT JOIN jk.t_jk_contract contract ON info.loan_code=customer.loan_code
+  		LEFT JOIN jk.t_jk_payback payback ON  contract.contract_code=payback.contract_code
+  		LEFT JOIN jk.t_gl_org org ON info.loan_store_orgid=org.id
+  		LEFT JOIN jk.t_jk_loan_bank lb ON lb.loan_code = contract.loan_code 
+  			and lb.repayment_flag='1' and lb.bank_top_flag='1'
+  	where 1=1
+  		<if test="customerName != null and customerName != ''">
+  			and customer.customer_name like '%${customerName}%'
+  		</if>
+  		<if test="contractCode != null and contractCode != ''">
+  			and contract.contract_code in (${contractCode})
+  		</if>
+  		<if test="storeId != null and storeId != ''">
+  			and org.id in (${storeId})
+  		</if>
+  		
+  		<if test="customerEmail != null and customerEmail != ''">
+  			and customer.customer_email = #{customerEmail}
+  		</if>
+  		<if test="loanStatus !=null and loanStatus !=''">
+  			<if test='loanStatus=="0"'>
+  				and info.dict_loan_status not in('89','90')
+  			</if>
+  			<if test='loanStatus!="0"'>
+  				and info.dict_loan_status in (${loanStatus})
+  			</if>
+  		</if>
+  		<if test="paperlessFlag !=null and paperlessFlag != ''">
+  			<if test="paperlessFlag==1">
+  				and (contract.paperless_flag is null or contract.paperless_flag=#{paperlessFlag})
+  			</if>
+  			<if test="paperlessFlag!=1">
+  				and contract.paperless_flag=#{paperlessFlag}
+  			</if>
+  		</if>
+  		order by contract.modify_time desc
+  </select>
+<!-- 插入邮件发送记录 -->
+<insert id="insertSendEmail" parameterType="com.creditharmony.loan.borrow.serve.entity.PaybackMonthSendEmail">
+	insert into jk.t_jk_payback_month_sending_email(
+		id,
+		r_payback_month_id,
+		send_email_status,
+		create_time,
+		create_by,
+		email_type,
+		modify_time,
+		modify_by,
+		contract_code,
+		customer_code
+	)
+	 values(
+		#{id},
+		#{paybackMonthId},
+		#{sendEmailStatus},
+		#{createTime},
+		#{createBy},
+		#{emailType},
+		#{modifyTime},
+		#{modifyBy},
+		#{contractCode},
+		#{customerCode}
+	)
+</insert>
+<!-- 更新发送状态 -->
+<insert id="updateSendEmailStatus" parameterType="com.creditharmony.loan.borrow.serve.entity.PaybackMonthSendEmail">
+	update jk.t_jk_payback_month_sending_email set 
+		send_email_status=#{sendEmailStatus},
+		modify_time=#{modifyTime},
+		modify_by=#{modifyBy}
+		where id =#{id}
+</insert>
+
+<!-- 删除未发送的邮件提醒 -->
+<insert id="deleteEmailByStatus" parameterType="com.creditharmony.loan.borrow.serve.entity.PaybackMonthSendEmail">
+	delete from jk.t_jk_payback_month_sending_email 
+		where send_email_status=#{sendEmailStatus}
+</insert>
+
+<!-- 获取当前日期的后四个工作日 -->
+	<select id="selectNowDayAfterDate" parameterType="String" resultType="String">
+		SELECT 
+			to_char(workday,'dd') 
+		FROM 
+			jk.t_jk_workday 
+		WHERE 
+			<![CDATA[to_char(to_date(#{nowDayStr},'yyyyMMdd'),'yyyyMMdd') < to_char(workday,'yyyyMMdd')]]>
+			AND effective_flag = '0' ORDER BY workday ASC LIMIT 4 
+	</select>
+</mapper>

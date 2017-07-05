@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.loan.common.dao.ExportHistoryDao" >
+
+    <resultMap id="BaseResultMap" type="com.creditharmony.loan.common.entity.ExportHistory" >
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="export_desc" property="exportDesc" jdbcType="VARCHAR" />
+		<result column="export_username" property="exportUsername" jdbcType="VARCHAR" />
+		<result column="export_date" property="exportDate" jdbcType="DATE" />
+    </resultMap>
+  
+    <sql id="Base_Column_List" >
+		id, 
+		export_desc, 
+		export_username, 
+		export_date 
+    </sql>
+
+	<insert id="insert" parameterType="com.creditharmony.loan.common.entity.ExportHistory" >
+        INSERT INTO T_JK_EXPORT_HISTORY (
+            <include refid="Base_Column_List"/>
+        )
+        VALUES (
+            #{id}, 
+            #{exportDesc}, 
+            #{exportUsername}, 
+            #{exportDate} 
+        )
+    </insert>	
+</mapper>

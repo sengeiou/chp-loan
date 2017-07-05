@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.delivery.dao.DeliveryWaitDao">
+	<resultMap id="deliveryWait" type="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewEx" >
+		<result property="loanCode" column="loan_code" /><!-- 借款编码 -->
+		<result property="loanCustomerName" column="loan_customer_name" /><!-- 客户姓名 -->
+		<result property="contractCode" column="contract_code" /><!-- 合同编号 -->
+		<result property="orgName" column="org_name" /><!-- 机构名 -->
+		<result property="teamManagerName" column="teamManagerName" /><!-- 团队经理 -->
+		<result property="managerName" column="managerName" /><!-- 客户经理 -->
+		<result property="customerServiceName" column="customerServiceName" /><!-- 客服人员 -->
+		<result property="outbountByName" column="outbountByName" /><!-- 外访人员 -->
+		<result property="dictLoanStatus" column="dict_loan_status" /><!-- 借款状态 -->
+		<result property="newOrgName" column="newOrgName" /><!-- 新门店名 -->
+		<result property="newStoresId" column="new_stores_id"/><!-- 新门店名 -->
+		<result property="newTeamManagercode" column="new_team_managercode"/><!-- 新团队经理  -->
+		<result property="newTeamManagerName" column="newTeamManagerName" /><!-- 新团队经理 -->
+		<result property="newManagercode" column="new_managercode"/><!-- 新客户经理  -->
+		<result property="newManagerName" column="newManagerName" /><!-- 新客户经理 -->
+		<result property="newCustomerServiceName" column="newCustomerServiceName" /><!-- 新客服人员 -->
+		<result property="newCustomerServicescode" column="new_customer_servicescode"/><!-- 新客服人员 -->
+		<result property="newOutbountByName" column="newOutbountByName" /><!-- 新外访人员 -->
+		<result property="newOutboundBy" column="new_outbound_by" /><!-- 新外访人员 -->
+		<result property="deliveryReason" column="delivery_reason" /><!-- 交割原因 -->
+		<result property="entrustMan" column="entrust_man" /><!-- 申请人 -->
+		<result property="deliveryApplyTime" column="delivery_apply_time" /><!-- 交割申请时间 -->
+		<result property="deliveryResult" column="delivery_result" /><!-- 交割结果(状态) -->	
+			
+	</resultMap>
+	
+	<!-- 公用sql字段 -->
+	<sql id="delivery">		
+		a.loan_code,
+		b.loan_customer_name,
+		c.contract_code,
+		d.name org_name,
+		e.name teamManagerName,
+		f.name managerName,
+		g.name customerServiceName,
+		h.name outbountByName,
+		a.dict_loan_status,
+		i.name newOrgName,
+		j.name newTeamManagerName,
+		k.name newManagerName,
+		l.name newCustomerServiceName,
+		m.name newOutbountByName,
+		a.delivery_reason,
+		a.entrust_man,
+		a.delivery_apply_time,
+		a.delivery_result,
+		a.new_stores_id,
+		a.new_team_managercode,
+		a.new_managercode,
+		a.new_customer_servicescode,
+		a.new_outbound_by 
+		from jk.T_JK_TASK_DELIVERY a
+		left join jk.T_JK_LOAN_INFO b ON a.LOAN_CODE = b.LOAN_CODE
+		left join jk.T_JK_CONTRACT c ON a.LOAN_CODE = c.LOAN_CODE 
+		left join jk.T_GL_ORG d ON a.STORES_ID = d.ID
+		left join jk.T_GL_USER e ON a.TEAM_MANAGERCODE = e.id
+		left join jk.T_GL_USER f ON a.MANAGER_CODE = f.id
+		left join jk.T_GL_USER g ON a.CUSTOMER_SERVICESCODE = g.id
+		left join jk.T_GL_USER h ON a.OUTBOUND_BY = h.id
+		left join jk.T_GL_ORG i ON a.NEW_STORES_ID = i.ID
+		left join jk.T_GL_USER j ON a.NEW_TEAM_MANAGERCODE = j.id
+		left join jk.T_GL_USER k ON a.NEW_MANAGERCODE = k.id
+		left join jk.T_GL_USER l ON a.NEW_CUSTOMER_SERVICESCODE = l.id
+		left join jk.T_GL_USER m ON a.NEW_OUTBOUND_BY = m.id
+	</sql>
+	
+	<!-- 交割待办列表 -->
+	<select id="deliveryWait" resultMap="deliveryWait">
+		select distinct	
+		<include refid="delivery" />
+		where a.delivery_result = '1'
+		<!-- 根据客户姓名检索 -->	
+		<if test="custName != null and custName !='' ">
+  			and b.loan_customer_name like '%${custName }%'
+  		</if>
+  		<!-- 根据门店检索 -->
+  		<if test="strote != null and strote != ''">
+  			and a.stores_id = #{strote}
+  		</if>
+  		<!-- 根据新门店检索 -->
+  		<if test="newStrote != null and newStrote != ''">
+  			and a.new_stores_id = #{newStrote}
+  		</if>
+  		<!-- 根据合同编号检索 -->
+  		<if test="contractCode != null and contractCode !='' ">
+  			and c.contract_code like '%${contractCode }%'
+  		</if>
+  		<!-- 根据客户经理检索 -->
+  		<if test="manager != null and manager !='' ">
+  			and f.NAME like '%${manager }%'
+  		</if>
+  		<!-- 根据团队经理检索 -->
+  		<if test="teamManager != null and teamManager !='' ">
+  			and e.NAME like '%${teamManager }%'
+  		</if>
+  		<!-- 根据新客户经理检索 -->
+  		<if test="newManager != null and newManager !='' ">
+  			and k.NAME like '%${newManager }%'
+  		</if>
+  		<!-- 根据新团队经理检索 -->
+  		<if test="newTeamManager != null and newTeamManager !='' ">
+  			and j.NAME like '%${newTeamManager }%'
+  		</if>
+  		<!-- 根据时间搜索 -->
+  		<if test="startDate !=null and startDate !=''">
+  			and a.delivery_apply_time &gt;= #{startDate}
+  		</if>
+  		<if test="endDate !=null and endDate !=''">
+  			and a.delivery_apply_time &lt;= #{endDate}
+  		</if>
+	</select>
+	
+	<!-- 根据借款编码获得要办理的信息详情 -->
+	<select id="deliveryInfo" parameterType="java.lang.String" resultMap="deliveryWait">
+		select distinct
+		<include refid="delivery" />
+		where a.delivery_result = '1'	
+		and a.loan_code = #{loanCode}
+	</select>
+	
+	<!-- 交割结果提交 -->
+	<update id="deliveryResult" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewEx">
+		update jk.t_jk_task_delivery set
+			delivery_result = #{deliveryResult}	
+		<if test="rejectedReason != null and rejectedReason != '' ">
+			,rejected_reason = #{rejectedReason}
+		</if>
+		<if test="auditCode != null and auditCode != ''">
+			,audit_code = #{auditCode}
+		</if>
+		<if test="checkTime != null and checkTime != ''">
+			,check_time = #{checkTime}
+		</if>
+		<if test="modifyBy != null and modifyBy != ''">
+			,modify_by = #{modifyBy}
+		</if>
+		<if test="modifyTime != null and modifyTime != ''">
+			,modify_time = #{modifyTime}
+		</if>				
+			where 
+			delivery_result = '1'		
+			and loan_code = #{loanCode}					
+	</update>
+	
+	<!-- 交割审核通过(批量用) -->
+	<update id="passDelivery" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewEx">
+		update jk.t_jk_task_delivery set 
+			delivery_result = '2' 
+		<if test="auditCode != null and auditCode != ''">
+			,audit_code = #{auditCode}
+		</if>
+		<if test="checkTime != null and checkTime != ''">
+			,check_time = #{checkTime}
+		</if>
+		<if test="modifyBy != null and modifyBy != ''">
+			,modify_by = #{modifyBy}
+		</if>
+		<if test="modifyTime != null and modifyTime != ''">
+			,modify_time = #{modifyTime}
+		</if>
+		where delivery_result = '1' and loan_code = #{loanCode}	
+	</update>
+	<!-- 交割审核驳回(批量用) -->
+	<update id="regected" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewEx">
+		update jk.t_jk_task_delivery set 
+			delivery_result = '3'
+		<if test="rejectedReason != null and rejectedReason !='' ">
+			, rejected_reason = #{rejectedReason}
+		</if>
+		<if test="auditCode != null and auditCode != ''">
+			,audit_code = #{auditCode}
+		</if>
+		<if test="checkTime != null and checkTime != ''">
+			,check_time = #{checkTime}
+		</if>
+		<if test="modifyBy != null and modifyBy != ''">
+			,modify_by = #{modifyBy}
+		</if>
+		<if test="modifyTime != null and modifyTime != ''">
+			,modify_time = #{modifyTime}
+		</if>
+		where delivery_result = '1' and loan_code = #{loanCode}
+	</update>
+</mapper>

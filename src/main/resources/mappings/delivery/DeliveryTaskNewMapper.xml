@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.delivery.dao.DeliveryTaskNewDao">
+	<resultMap id="deliveryTask" type="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryViewExNew" >
+	    <result property="loanCustomerName" column="loan_customer_name" /><!-- 客户姓名 -->	
+		<result property="loanCode" column="loan_code" /><!-- 借款编码 -->
+		<result property="contractCode" column="contract_code" /><!-- 合同编号 -->
+		<result property="storesId" column="stores_id" /><!-- 门店id -->
+		<result property="storesName" column="stores_name" /><!-- 门店名称 -->
+		<result property="teamManagerName" column="team_managername" /><!-- 团队经理 -->
+		<result property="teamManagerCode" column="team_managercode" /><!-- 团队经理 员工号-->
+		<result property="managerName" column="manager_name" /><!-- 客户经理 -->
+		<result property="managerCode" column="manager_code" /><!-- 客户经理员工号 -->
+		<result property="customerServicesName" column="customer_servicesname" /><!-- 客服人员 -->
+		<result property="customerServicesCode" column="customer_servicescode" /><!-- 客服人员员工号 -->
+		<result property="newStoresId" column="new_stores_id" /><!-- 新门店id -->
+		<result property="newStoresName" column="new_stores_name" /><!-- 新门店名称 -->
+		<result property="newTeamManagerName" column="new_team_managername" /><!-- 新团队经理 -->
+		<result property="newTeamManagerCode" column="new_team_managercode" /><!--新 团队经理 员工号-->
+		<result property="newManagerName" column="new_managername" /><!-- 新客户经理 -->
+		<result property="newManagerCode" column="new_managercode" /><!-- 新客户经理员工号 -->
+		<result property="newCustomerServicesName" column="new_customer_servicesname" /><!-- 新客服人员 -->
+		<result property="newCustomerServicesCode" column="new_customer_servicescode" /><!--新 客服人员员工号 -->
+		<result property="deliveryResult" column="delivery_result" /><!-- 交割结果(状态) -->
+		<result property="rejectedReason" column="rejected_reason" /><!-- 驳回原因 (失败原因)-->	
+	</resultMap>
+	<select id="queryDeliveryList" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryReq" resultMap="deliveryTask">
+			select distinct a.id,
+				a.loan_code,
+				a.loan_customer_name,
+				a.contract_code,
+				a.stores_name,
+				a.team_managername,
+				a.team_managercode,
+				a.manager_name,
+				a.manager_code,
+				a.customer_servicesname,
+				a.customer_servicescode,
+				a.new_stores_name,
+				a.new_team_managername,
+				a.new_team_managercode,
+				a.new_managername,
+				a.new_managercode,
+				a.new_customer_servicesname,
+				a.new_customer_servicescode,
+				a.delivery_result,
+				a.rejected_reason
+			from jk.T_JK_DELIVERY a
+			where 1=1
+			<!-- 交割状态 -->
+	  		<if test="deliveryResult != null and deliveryResult !='' ">
+	  			and a.DELIVERY_RESULT=#{deliveryResult}
+	  		</if>
+	  		<if test="custCode != null and custCode !='' ">
+	  		    and ((a.team_managercode=#{custCode} and a.team_managername=#{custName})
+	  			or (a.manager_code = #{custCode} and a.manager_name=#{custName})
+	  			or (a.customer_servicescode = #{custCode} and a.customer_servicesname=#{custName})
+	  			or (a.new_team_managercode = #{custCode} and a.new_team_managername=#{custName})
+	  			or (a.new_managercode = #{custCode} and a.new_managername=#{custName})
+	  			or (a.new_customer_servicescode = #{custCode} and a.new_customer_servicesname=#{custName}))
+	  		</if>
+		
+	</select>
+	
+	<select id="exportList" parameterType="com.creditharmony.loan.borrow.delivery.entity.ex.DeliveryReq" resultMap="deliveryTask">
+			select distinct a.id,
+				a.loan_code,
+				a.loan_customer_name,
+				a.contract_code,
+				a.stores_name,
+				a.team_managername,
+				a.team_managercode,
+				a.manager_name,
+				a.manager_code,
+				a.customer_servicesname,
+				a.customer_servicescode,
+				a.new_stores_name,
+				a.new_team_managername,
+				a.new_team_managercode,
+				a.new_managername,
+				a.new_managercode,
+				a.new_customer_servicesname,
+				a.new_customer_servicescode,
+				a.delivery_result,
+				a.rejected_reason
+			from jk.T_JK_DELIVERY a
+			where 1=1
+			<if test="checkIds!= null and checkIds!=''">
+				<foreach collection="checkIds" item="item"  open="AND (" close=")" separator="or" index="">
+		            a.id=#{item}
+				</foreach>
+   		 	</if>
+			<!-- 交割状态 -->
+	  		<if test="deliveryResult != null and deliveryResult !='' ">
+	  			and a.DELIVERY_RESULT=#{deliveryResult}
+	  		</if>
+	  		<if test="custCode != null and custCode !='' ">
+	  		    and ((a.team_managercode=#{custCode} and a.team_managername=#{custName})
+	  			or (a.manager_code = #{custCode} and a.manager_name=#{custName})
+	  			or (a.customer_servicescode = #{custCode} and a.customer_servicesname=#{custName})
+	  			or (a.new_team_managercode = #{custCode} and a.new_team_managername=#{custName})
+	  			or (a.new_managercode = #{custCode} and a.new_managername=#{custName})
+	  			or (a.new_customer_servicescode = #{custCode} and a.new_customer_servicesname=#{custName}))
+	  		</if>
+	</select> 
+	<!-- 查询交割记录数 -->
+	<select id="queryDeliveryListCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+			select count(a.id) 
+			from jk.T_JK_DELIVERY a
+			where 1=1 and a.DELIVERY_RESULT=#{deliveryResult}
+	</select>
+	<!-- 删除交割记录 -->
+	<delete id="deleteDelivery">
+     	delete from jk.T_JK_DELIVERY 
+    </delete>
+</mapper>

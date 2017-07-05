@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.zcj.dao.ZcjGrantSureDao">
+  <resultMap id="baseResultMap" type="com.creditharmony.loan.common.workFlow.view.LoanFlowWorkItemView">
+    <result column="apply_id" jdbcType="VARCHAR" property="applyId" />
+    <result column="loan_code" jdbcType="VARCHAR" property="loanCode"  />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="name" jdbcType="VARCHAR" property="storeName" />
+    <result column="cobo_name" jdbcType="VARCHAR" property="coborrowerName" />
+    <result column="product_name" jdbcType="VARCHAR" property="replyProductName" /><!-- 借款产品名称 -->
+    <result column="grant_amount" jdbcType="NUMERIC" property="lendingMoney" />
+    <result column="contract_amount" jdbcType="NUMERIC" property="contractMoney" />
+    <result column="fee_urged_service" jdbcType="NUMERIC" property="urgeServiceFee" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="identityCode" />
+    <result column="loan_flag" jdbcType="VARCHAR" property="channelName" />
+    <result column="loan_urgent_flag" jdbcType="VARCHAR" property="urgentFlag" />
+    <result column="bank_name" jdbcType="VARCHAR" property="depositBank" />
+    <result column="bank_branch" jdbcType="VARCHAR" property="bankBranchName" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccountNumber" />
+    <result column="dict_loan_way" jdbcType="VARCHAR" property="lendingWayName" />
+    <result column="contract_months" jdbcType="NUMERIC" property="replyMonth" />
+    <result column="customer_telesales_flag" jdbcType="VARCHAR" property="telesalesFlag"/>
+    <result column="grant_recepic_result" jdbcType="VARCHAR" property="receiptResult"/>
+    <result column="grant_fail_result" jdbcType="VARCHAR" property="failReason"/>
+    <result column="grant_batch" jdbcType="VARCHAR" property="grantBatchCode"/>
+    <result column="grant_pch" jdbcType="VARCHAR" property="submissionBatch"/>
+    <result column="loan_store_orgid" jdbcType="VARCHAR" property="storeOrgId"/>
+    <result column="bank_account_name" jdbcType="VARCHAR" property="custBankAccountName"/>
+  </resultMap>
+  
+  <!-- 放款确认列表数据显示 -->
+  <select id="getZcjGrantSureList" resultMap="baseResultMap">
+	select
+		a.id, --放款id 
+		a.loan_code, --借款编码
+		d.apply_id, --applyId
+		a.contract_code, --合同编号
+		b.loan_customer_name, --客户姓名
+		c.customer_cert_num, --证件号码
+		d.cobo_name, --共借人
+		(select cobo_name from jk.t_jk_loan_coborrower w where id=(select best_coborrower_id from( 
+		select best_coborrower_id from jk.t_jk_audit_result t where loan_code=e.loan_code  order by create_time desc 
+		limit 1))) as newCoboName,-- 自然人保证人
+		(select product_name from jk.t_gl_jk_product t where t.product_code = d.product_type) as replyProductName, --借款产品
+		e.bank_account_name, --账户姓名
+		round(d.contract_amount,2) as contractMoney,--合同金额
+		round(a.grant_amount,2) as lendingMoney,-- 放款金额
+		round(sum(grant_amount) OVER (),2) as totalGrantMoney, --放款总金额
+		d.contract_months, --批复期限
+		e.bank_branch,--支行
+		e.bank_name,--开户行
+		e.bank_account, --账户
+		d.contract_back_result as backReason, --退回原因
+		b.dict_loan_status as loanStatusName,--借款状态
+		d.contract_version, --合同版本号
+		d.paperless_flag, --是否无纸化
+		d.sign_up_flag, --是否加盖
+		case when d.company_name is not null 
+    	 then '1' else '0' end as ensure_flag, --是否有保证人
+    	d.is_register as registFlag, --是否注册
+    	d.revisit_status, --回访状态
+    	d.back_flag, --退回标识
+    	d.auditing_time as checkTime, --审核时间
+		b.loan_urgent_flag as urgentFlag,--加急标识
+		c.customer_telesales_flag as telesalesFlag, --是否电销
+		b.loaninfo_oldornew_flag, --新老标识
+		b.frozen_flag, --是否门店申请冻结
+		case when t.verify_risk_level is not null and reconsider_risk_level is not null then reconsider_risk_level 
+		else verify_risk_level end as riskLevel, --风险等级
+		b.issplit, --拆分标识
+		b.loan_store_orgid as storeOrgId, --门店id
+		h.name as storeName --门店名称
+		, nvl(b.loan_urgent_flag,'0') DESC1
+	  	, nvl(b.frozen_flag,'0') DESC2
+	  	, NVL(d.back_flag,'0') DESC3
+	  	, (CASE b.dict_loan_status 
+	   		WHEN  '94' THEN '0'
+	   		WHEN  '65'  THEN '4'
+	   		ELSE  '12'
+	   		END) ASC4
+	  	,b.modify_time ASC5
+	from jk.t_jk_loan_grant a
+	left join jk.t_jk_loan_info b on b.loan_code = a.loan_code 
+	left join jk.t_jk_loan_customer c on c.loan_code = b.loan_code
+	left join jk.t_jk_contract d on d.loan_code = a.loan_code 
+	left join jk.t_jk_loan_bank e on e.loan_code = d.loan_code and e.bank_top_flag = '1' and e.repayment_flag = '0'
+	left join jk.t_jk_contract_fee f on f.contract_code = d.contract_code
+	left join jk.t_jk_audit_rating t on t.loan_code = b.old_loan_code
+	left join jk.t_gl_org h on h.id = b.loan_store_orgid
+	where b.dict_loan_status = '65' and b.loan_flag = '5'
+      <if test="customerName != null and customerName != ''" >
+        and loan_customer_name LIKE CONCAT('%', #{customerName}, '%')
+      </if>
+      <if test="identityCode != null and identityCode != ''" >
+        and customer_cert_num LIKE CONCAT('%', #{identityCode}, '%')
+      </if>
+      <if test="contractCode != null and contractCode != ''" >
+        and a.contract_code = #{contractCode}
+      </if>
+      <if test="storeOrgIds != null" > <!-- 门店id -->
+      	and b.loan_store_orgid in
+		<foreach item="item" index="index" collection="storeOrgIds" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+      </if>
+      <if test="applyIds != null">
+      	and d.apply_id in
+      	<foreach item="item" index="index" collection="applyIds" open="(" separator="," close=")">
+      		#{item}
+      	</foreach>
+      </if>
+      <if test="additionalFlag != null and additionalFlag != ''">
+      	and dict_is_additional = #{additionalFlag}
+      </if>
+	  <if test="telesalesFlag != null and telesalesFlag != ''">
+	  	and customer_telesales_flag =#{telesalesFlag}
+	  </if>
+	  <if test="urgentFlag != null and urgentFlag != ''">
+	  	and loan_urgent_flag = #{urgentFlag}
+	  </if>
+	  <if test="riskLevel != null and riskLevel != ''">
+	  	and (case when reconsider_risk_level is not null then reconsider_risk_level = #{riskLevel} else verify_risk_level = #{riskLevel} end)
+	  </if>
+	  <if test="paperLessFlag != null and paperLessFlag != ''">
+	  	and paperless_flag = #{paperLessFlag}
+	  </if>
+	  <if test="replyProductCode != null and replyProductCode != ''">
+	  	and d.product_type = #{replyProductCode}
+	  </if>
+	  <if test="contractVersion != null and contractVersion != ''">
+	  	and contract_version = #{contractVersion}
+	  </if>
+	  <if test="loanStatusCode != null and loanStatusCode == '1'.toString()">
+			and frozen_flag = '1'
+	  </if>
+	  <if test="loanStatusCode!= null and loanStatusCode == '65'.toString()">
+			and frozen_flag != '1'
+	  </if>
+	  <if test = "ensureManFlag != null and ensureManFlag != ''">
+	  	and (case when #{ensureManFlag} ='1' then company_name is not null else company_name is null end)
+	  </if>
+	  <if test = "registFlag != null and registFlag != ''">
+	  	and is_register = #{registFlag}
+	  </if>
+	  <if test = "signUpFlag != null and signUpFlag != ''">
+	  	and sign_up_flag = #{signUpFlag}
+	  </if>
+	  <if test = "checkTime != null and checkTime != ''">
+	  	and to_date(to_char(auditing_time,'yyyy-MM-dd')) = #{checkTime}
+	  </if>
+	    ORDER BY   DESC1 DESC,
+				   DESC2 DESC,
+				   DESC3 DESC,
+				   ASC4 ASC,
+				   ASC5 ASC
+  </select>
+  
+</mapper>

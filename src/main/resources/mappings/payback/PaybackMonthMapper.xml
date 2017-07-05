@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.PaybackMonthDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="months" jdbcType="INTEGER" property="months" />
+    <result column="month_pay_day" jdbcType="DATE" property="monthPayDay" />
+    <result column="month_pay_total" jdbcType="NUMERIC" property="monthPayTotal" />
+    <result column="month_pay_amount" jdbcType="NUMERIC" property="monthPayAmount" />
+    <result column="month_interest_backshould" jdbcType="NUMERIC" property="monthInterestBackshould" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="DATE" property="modifyTime" />
+    <result column="dict_month_status" jdbcType="VARCHAR" property="dictMonthStatus"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, contract_code, months, month_pay_day, month_pay_total,
+     month_interest_backshould, 
+    create_by, create_time, 
+    modify_by, modify_time
+  </sql>
+  <select id="findByContractCode" parameterType="map" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_payback_month
+    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </select>
+  <select id="findLastPaybackInfo" parameterType="map" resultMap="BaseResultMap">
+    select id, contract_code, months, month_pay_day, month_pay_total,
+     month_interest_backshould,dict_month_status, 
+    create_by, create_time, 
+    modify_by, modify_time 
+    from jk.t_jk_payback_month
+    where contract_code = #{contractCode,jdbcType=VARCHAR} order by months desc limit 1 
+  </select>
+  <delete id="deleteByContractCode" parameterType="map">
+    delete from jk.t_jk_payback_month
+    where contract_code = #{contractCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertPaybackMonth" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+    INSERT INTO JK.T_JK_PAYBACK_MONTH(ID,CONTRACT_CODE,MONTHS,MONTH_PAY_DAY,MONTH_PAY_TOTAL,
+    MONTH_RESIDUE_PAYACTUAL,
+    MONTH_PAY_AMOUNT,
+    MONTH_INTEREST_BACKSHOULD,MONTH_FEE_CONSULT,MONTH_MID_FEE_SERVICE,MONTH_FEE_SERVICE,
+    MONTH_PENALTY_SHOULD,MONTH_BEFORE_FINISH_AMOUNT,DICT_MONTH_STATUS,CREATE_BY,CREATE_TIME,MODIFY_BY,MODIFY_TIME) 
+    VALUES(#{id,jdbcType=VARCHAR},#{contractCode,jdbcType=VARCHAR},#{months,jdbcType=NUMERIC},
+    #{monthPayDay,jdbcType=TIMESTAMP},#{monthPayTotal,jdbcType=NUMERIC},
+    #{monthResiduePayactual,jdbcType=NUMERIC},
+    #{monthPayAmount,jdbcType=NUMERIC},#{monthInterestBackshould,jdbcType=NUMERIC},
+    #{monthFeeConsult,jdbcType=NUMERIC},#{monthMidFeeService,jdbcType=NUMERIC},
+    #{monthFeeService,jdbcType=NUMERIC},#{monthPenaltyShould,jdbcType=NUMERIC},
+    #{monthBeforeFinishAmount,jdbcType=NUMERIC},#{dictMonthStatus,jdbcType=VARCHAR},
+    #{createBy,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP},
+    #{modifyBy,jdbcType=VARCHAR},#{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  
+  <!--查询期供信息 by zhangfeng   -->
+  <select id="getPaybackMonthByContractCode" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+	select
+	sum(pm.month_penalty_should) as month_penalty_should_sum,
+
+	sum(pm.month_interest_punishshould) as month_interest_punishshould_sum,
+
+	sum(pm.month_late_fee) as month_late_fee_sum
+
+	from t_jk_payback_month pm where pm.contract_code = #{contractCode};
+</select>
+
+	<update id="updateStatusByContractCode">
+		update jk.t_jk_payback_month
+		set 
+		<if test="dictMonthStatus != null and dictMonthStatus == 1">
+			dict_month_status='2'
+		</if>
+		<if test="dictMonthStatus != null and dictMonthStatus == 0">
+			dict_month_status='3'
+		</if>
+		<if test="modifyBy != null and modifyBy != ''">
+			,modify_by=#{modifyBy}
+		</if>
+		<if test="modifyTime != null and modifyTime != ''">
+			,modify_Time=#{modifyTime}
+		</if>
+		where contract_code=#{contractCode} and dict_month_status=#{dictMonthStatus}
+	</update>
+</mapper>

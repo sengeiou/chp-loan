@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置结果类型 -->
+<mapper namespace="com.creditharmony.loan.borrow.transate.dao.LoanMinuteDao">
+     <!-- 映射关系配置   entity 与 sql 语句查询结果 的 映射关系-->
+      <resultMap id="loanMinute" type="com.creditharmony.loan.borrow.transate.entity.ex.LoanMinuteEx" >  
+      	<result property="loanCode" column="LOAN_CODE" /><!-- 借款编号 -->
+      	<result property="model" column="model" /><!-- 借款模式 -->     
+      	<result property="loanId" column="ID"/><!-- 借款信息表主键 -->
+      	<result property="applyId" column="APPLY_ID"/><!-- 借款信息表主键 -->
+      	<result property="contractCode" column="CONTRACT_CODE"  /><!-- 借款合同编号 -->
+      	<result property="dictLoanUse" column="DICT_LOAN_USE" /><!-- 门店名 -->
+      	<result property="customerName" column="LOAN_CUSTOMER_NAME" /><!-- 借款人姓名 -->
+      	<result property="customerCertType" column="DICT_CERT_TYPE" /><!-- 借款人证件类型 -->
+      	<result property="customerCertNum" column="CUSTOMER_CERT_NUM" /><!-- 借款人证件号码 -->
+      	<result property="coroName" column="COBO_NAME" /><!-- 共借人姓名 -->
+      	<result property="coroCertType" column="DICT_CERT_TYPE" /><!-- 共借人证件类型 -->
+      	<result property="coroCertNum" column="COBO_CERT_NUM" /><!-- 共借人证件号码 -->
+      	<result property="auditEnsureName" column="AUDIT_ENSURE_NAME" /><!-- 保证人 -->
+      	<result property="auditLegalMan" column="AUDIT_LEGAL_MAN" /><!-- 法定代表人 -->
+      	<result property="ensuremanBusinessPlace" column="ENSUREMAN_BUSINESS_PLACE" /><!-- 经营场所 -->
+      	<result property="middleName" column="MIDDLE_NAME" /><!-- 中间人 -->
+      	<result property="contractReplayDate" column="CONTRACT_REPLAY_DAY" /><!-- 起始还款日期 -->
+      	<result property="productName" column="PRODUCT_NAME" /><!-- 批复产品 -->
+      	<result property="dictRepayMethod" column="DICT_REPAY_METHOD" /><!-- 还款付息方式 -->
+      	<result property="contractMonths" column="CONTRACT_MONTHS" /><!-- 还款期数 -->
+      	<result property="feeAllRaio" column="FEE_ALL_RAIO" /><!-- 产品总费率 -->
+      	<result property="feeLoanRate" column="FEE_MONTH_RATE" /><!-- 借款利率 -->
+      	<result property="feePetitionFee" column="FEE_PETITION" /><!-- 信访费 -->
+      	<result property="feeExpeditedFee" column="FEE_EXPEDITED" /><!-- 加急费 -->
+      	<result property="money" column="AUDIT_AMOUNT" /><!-- 批借金额 -->
+      	<result property="loanMarking" column="LOAN_FLAG" /><!-- 标识 -->
+      	<result property="feeUrgedService" column="FEE_URGED_SERVICE" /><!-- 催收服务费 -->
+      	<result property="feeRealput" column="FEE_PAYMENT_AMOUNT" /><!-- 实放金额 -->
+      	<result property="feeConsult" column="FEE_CONSULT" /><!-- 咨询费 -->
+      	<result property="contractMoney" column="CONTRACT_AMOUNT" /><!-- 合同金额 -->
+      	<result property="feeCredit" column="FEE_AUDIT_AMOUNT" /><!-- 审核费 -->
+      	<result property="contractBackMonthMoney" column="CONTRACT_MONTH_REPAY_AMOUNT" /><!-- /月还款 -->
+      	<result property="feeService" column="FEE_SERVICE" /><!-- 居间服务费 -->
+      	<result property="contractExpectCount" column="CONTRACT_EXPECT_AMOUNT" /><!-- 预计还款总额 -->
+      	<result property="feeInfoService" column="FEE_INFO_SERVICE" /><!-- 信息服务费 -->
+      	<result property="contractFactDate" column="CONTRACT_FACT_DAY" /><!-- 合同签署日期 -->
+      	<result property="feeCount" column="FEE_COUNT" /><!-- 综合费用 -->
+      	<result property="trustRecharge" column="TRUST_RECHARGE" /><!-- 委托充值 -->
+      	<result property="trustCash" column="TRUST_CASH" /><!-- 委托提现 -->
+      	<result property="monthFeeConsult" column="MONTH_FEE_CONSULT"/><!-- 分期咨询费 -->
+      	<result property="monthMidFeeService" column="MONTH_MID_FEE_SERVICE"/><!-- 分期居间服务费 -->
+      	<result property="monthFeeService" column="MONTH_FEE_SERVICE"/><!-- 分期服务费 -->
+      	<result property="contractMonthRepayTotal" column="CONTRACT_MONTH_REPAY_TOTAL"/><!-- 月还款总额 -->
+      	<result property="loanInfoOldOrNewFlag" column="LOANINFO_OLDORNEW_FLAG"/><!-- 在信借申请列表点击办理根据此标识判断是跳转到旧版申请表页面还是新版申请表页面 -->
+      	<result property="companyname" column="company_name" /><!-- 合同表保证人 -->
+      	<result property="legalman" column="legal_man" /><!-- 合同表法定代表人 -->
+      	<result property="maddress" column="maddress" /><!-- 合同表经营场所 -->
+      	<result property="maddressName" column="maddressName" /><!-- 合同表经营场所+省市区 -->
+      	<result property="loanInfoOldOrNewFlag" column="loaninfo_oldornew_flag" /><!-- 新旧申请表标识 -->
+      	<result property="contractVersion" column="contract_version" /><!-- 新旧申请表标识 -->
+      	<result property="paperless" column="PAPERLESS_FLAG"></result><!--是否无纸化(0:否,1:是) -->
+      	<result property="new_flag" column="new_flag"/>
+      	<result property="riskLevel" column="riskLevel"/>
+      	<result property="oldLoanCode" column="old_loan_code"/>
+      	<result property="monthFee" column="month_fee_nxd"/>
+      	<result property="productType" column="product_type"/>
+     </resultMap>
+      
+  	<!-- 信借信息详情(借款_借款信息表a/合同表b/组织机构表c/借款客户信息d/借款_共借人基本信息表e/审核结果表f/中间人信息表g/合同_费率表h/产品表i) -->
+  	<select id="loanMinute" parameterType="java.lang.String" resultMap="loanMinute">
+		select 	distinct
+				b.contract_version,
+  				a.LOAN_CODE,
+  				a.APPLY_ID, 
+  				a.ID,
+  				b.CONTRACT_CODE,
+  				b.CONTRACT_MONTH_REPAY_TOTAL,
+  				c.NAME DICT_LOAN_USE,
+  				a.LOAN_CUSTOMER_NAME,
+  				d.DICT_CERT_TYPE,
+  				d.CUSTOMER_CERT_NUM,
+  				e.COBO_NAME,
+  				e.DICT_CERT_TYPE,
+  				e.COBO_CERT_NUM,
+  				f.AUDIT_ENSURE_NAME,
+  				f.AUDIT_LEGAL_MAN,
+  				f.ENSUREMAN_BUSINESS_PLACE,
+  				g.MIDDLE_NAME,
+  				b.CONTRACT_REPLAY_DAY,
+  				i.PRODUCT_NAME,
+  				b.DICT_REPAY_METHOD,
+  				b.CONTRACT_MONTHS,
+  				h.FEE_ALL_RAIO,
+  				h.FEE_MONTH_RATE,
+  				h.MONTH_FEE_CONSULT,
+  				h.MONTH_MID_FEE_SERVICE,
+  				h.MONTH_FEE_SERVICE,
+  				h.FEE_PETITION,
+  				h.FEE_EXPEDITED,
+  				a.LOAN_APPLY_AMOUNT,
+  				a.LOAN_FLAG,
+  				h.FEE_URGED_SERVICE,
+  				h.FEE_PAYMENT_AMOUNT,
+  				h.FEE_CONSULT,
+  				b.CONTRACT_AMOUNT,
+  				b.AUDIT_AMOUNT,
+  				h.FEE_AUDIT_AMOUNT,
+  				b.CONTRACT_MONTH_REPAY_AMOUNT,
+  				h.FEE_SERVICE,
+  				b.CONTRACT_EXPECT_AMOUNT,
+  				h.FEE_INFO_SERVICE,
+  				b.CONTRACT_DUE_DAY CONTRACT_FACT_DAY,
+  				h.FEE_COUNT,
+  				a.TRUST_RECHARGE,
+  				a.TRUST_CASH,
+  				a.LOANINFO_OLDORNEW_FLAG,
+  				b.model as model,
+  				b.company_name,
+  				b.legal_man,
+  				b.maddress,
+  				b.PAPERLESS_FLAG,
+  				a.loaninfo_oldornew_flag,
+  				case when pp.area_name =pc.area_name then pc.area_name ||  pa.area_name || b.maddress else pp.area_name || pc.area_name ||  pa.area_name || b.maddress
+  				end AS maddressName,
+  				b.new_flag,
+  				(
+					case
+						when reconsider_risk_level is null then verify_risk_level
+						else reconsider_risk_level
+					end
+				) as riskLevel,
+				a.old_loan_code,
+				h.month_fee_nxd,
+				a.product_type
+  	from	    jk.T_JK_LOAN_INFO a
+  	left join   jk.T_JK_CONTRACT  b on a.LOAN_CODE = b.LOAN_CODE
+  	left join	jk.T_GL_ORG c on a.loan_store_orgid = c.ID
+  	left join	jk.T_JK_LOAN_CUSTOMER d on a.OLD_LOAN_CODE = d.LOAN_CODE
+  	left join 	jk.T_JK_LOAN_COBORROWER e on a.LOAN_CODE = e.LOAN_CODE
+  	left join	jk.T_JK_AUDIT_RESULT f on a.LOAN_CODE = f.LOAN_CODE
+  	left join 	jk.T_JK_MIDDLE_PERSON g on b.MID_ID = g.ID
+  	left join 	jk.T_JK_CONTRACT_FEE h on b.CONTRACT_CODE = h.CONTRACT_CODE
+  	left join 	jk.T_GL_JK_PRODUCT i on a.LOAN_AUDIT_PRODUCT = i.PRODUCT_CODE
+  	left join   jk.t_jk_audit_result ar on a.loan_code = ar.loan_code
+  	left join   jk.t_gl_province_city pa on ar.ensureman_business_area=pa.id
+  	left join   jk.t_gl_province_city pc on pc.id=pa.parent_id
+  	left join   jk.t_gl_province_city pp on pp.id=pc.parent_id 
+  	left join 	jk.t_jk_audit_rating rating on rating.loan_code = a.old_loan_code
+  		         WHERE a.LOAN_CODE = #{loanCode} limit 0,1          
+  	</select>
+  	
+  	<!-- 更新委托提现标识 -->
+   	<update id="updateTrustCash">
+    	update jk.t_jk_loan_info 
+    	set trust_cash= cast(1-cast(trust_cash as numeric) as character) 
+    	where loan_code=#{loanCode,jdbcType=VARCHAR} 
+   	</update>
+   	
+  	<!-- 更新委托充值标识 -->
+   	<update id="updateTrustRecharge">
+    	update jk.t_jk_loan_info 
+    	set trust_recharge= cast(1-cast(trust_recharge as numeric) as character) 
+    	where loan_code=#{loanCode,jdbcType=VARCHAR}  
+   	</update>
+ 	
+ 	<select id="getCoborrower" parameterType="String" resultType="Map">
+ 		SELECT
+    cobo_name AS coboname,
+    (select label from t_gl_dict where type='jk_certificate_type' and value=dict_cert_type) AS dictcerttype,
+    cobo_cert_num as cobocertnum
+FROM
+    t_jk_loan_coborrower where loan_code=#{loanCode}
+ 	</select>
+ 	<select id="getCoborrowerOne" parameterType="String" resultType="Map">
+ 		SELECT
+    cobo_name AS coboname,
+    (select label from t_gl_dict where type='jk_certificate_type' and value=dict_cert_type) AS dictcerttype,
+    cobo_cert_num as cobocertnum
+	FROM  t_jk_loan_coborrower where id in (select best_coborrower_id 
+		from jk.t_jk_audit_result t 
+		where loan_code= #{loanCode,jdbcType=VARCHAR} order by t.create_time desc limit 1)
+ 	</select>
+ 	
+ 	<select id="getSendEMail" parameterType="Map" resultType="Map">
+ 		SELECT
+    		count(e.*) AS num
+		FROM  jk.t_jk_contract_sending_email e
+		where e.dict_mail_status != #{status} and e.dict_file_type = #{fileType} and e.contract_code = (select contract_code from jk.t_jk_contract c where c.loan_code=#{loanCode})
+ 	</select>
+ 	
+ 	<select id="getSend" parameterType="Map" resultType="Map">
+ 		SELECT
+    		count(s.*) AS num
+		FROM  jk.t_jk_contract_sending s
+		where s.dict_mail_status != '8' and s.dict_file_type = #{fileType} and s.contract_code = (select contract_code from jk.t_jk_contract c where c.loan_code=#{loanCode})
+ 	</select>
+</mapper>

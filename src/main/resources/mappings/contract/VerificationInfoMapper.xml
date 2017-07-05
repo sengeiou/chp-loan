@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.VerificationDao">
+ <resultMap type="com.creditharmony.loan.borrow.contract.entity.VerificationInfo" id="baseColumnMap">
+   <result column="id" property="id" jdbcType="VARCHAR"/>
+   <result column="loan_code" property="loanCode" jdbcType="VARCHAR"/>
+   <result column="customer_code" property="customerCode" jdbcType="VARCHAR"/>
+    <result column="customer_name" property="customerName" jdbcType="VARCHAR"/>
+   <result column="customer_cert_num" property="customerCertNum" jdbcType="VARCHAR"/>
+   <result column="verify_number" property="verifyNumber" jdbcType="NUMERIC"/>
+   <result column="fail_code" property="failCode" jdbcType="VARCHAR"/>
+   <result column="customer_type" property="customerType" jdbcType="VARCHAR"/>
+   <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+   <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+   <result column="modify_by" property="modifyBy" jdbcType="VARCHAR"/>
+   <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+   <result column="doc_id" property="docId" jdbcType="VARCHAR"/>
+ </resultMap>
+ <sql id="baseColumn">
+    id,loan_code,
+    customer_code,
+    customer_name,
+    customer_cert_num,
+    verify_number,
+    fail_code,
+    customer_type,
+    create_by,
+    create_time,
+    modify_by,
+    modify_time,
+    doc_id
+ </sql>
+ <select id="findList" resultMap="baseColumnMap">
+   select 
+     <include refid="baseColumn"/> 
+   from jk.t_jk_verification_failinfo
+   where 
+   1=1 
+   <if test="loanCode!=null and loanCode!=''">
+     and loan_code = #{loanCode,jdbcType=VARCHAR}
+   </if>
+   <if test="customerCode!=null and customerCode!=''">
+     and customer_code = #{customerCode,jdbcType=VARCHAR}
+   </if>
+   <if test="customerType!=null and customerType!=''">
+    and customer_type = #{customerType,jdbcType=VARCHAR}
+   </if>
+   <if test="failCode!=null and failCode!=''">
+    and fail_code = #{failCode,jdbcType=VARCHAR}
+   </if>
+   <if test="customerName!=null and customerName!=''">
+    and customer_name = #{customerName,jdbcType=VARCHAR}
+   </if>
+   <if test="customerCertNum!=null and customerCertNum!=''">
+    and customer_cert_num = #{customerCertNum,jdbcType=VARCHAR}
+   </if>
+    <if test="customerId!=null and customerId!=''">
+    and customer_id = #{customerId,jdbcType=VARCHAR}
+   </if>
+   order by modify_time desc  limit 1
+ </select> 
+ 
+  <update id="updateVer" parameterType="com.creditharmony.loan.borrow.contract.entity.VerificationInfo">
+    update jk.t_jk_verification_failinfo
+    <set>
+      <if test="verifyNumber!=null ">
+        verify_number = #{verifyNumber,jdbcType=NUMERIC},
+      </if>
+      <if test="docId!=null ">
+        doc_id= #{docId,jdbcType=VARCHAR},
+      </if>
+      <if test="customerName!=null ">
+        customer_name= #{customerName,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertNum!=null ">
+        customer_cert_num= #{customerCertNum,jdbcType=VARCHAR},
+      </if>
+       modify_by = #{modifyBy,jdbcType=VARCHAR},
+       modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+    </set>
+       where id=#{id,jdbcType=VARCHAR} 
+ </update>  
+ 
+ <insert id="insertSelective" parameterType="com.creditharmony.loan.borrow.contract.entity.VerificationInfo" >
+    insert into jk.t_jk_verification_failinfo
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="customerCode != null" >
+        customer_code,
+      </if>
+      <if test="customerName != null" >
+        customer_name,
+      </if>
+      <if test="customerCertNum != null" >
+        customer_cert_num,
+      </if>
+      <if test="verifyNumber != null" >
+        verify_number,
+      </if>
+      <if test="failCode != null" >
+        fail_code,
+      </if>
+      <if test="customerType != null" >
+        customer_type,
+      </if>
+      
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+      <if test="docId != null" >
+        doc_id,
+      </if>
+       <if test="customerId != null and customerId !=''" >
+        customer_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCode != null" >
+        #{customerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="customerName != null" >
+        #{customerName,jdbcType=VARCHAR},
+      </if>
+      <if test="customerCertNum != null" >
+        #{customerCertNum,jdbcType=VARCHAR},
+      </if>
+      <if test="verifyNumber != null" >
+        #{verifyNumber,jdbcType=NUMERIC},
+      </if>
+      <if test="failCode != null" >
+         #{failCode,jdbcType=VARCHAR},
+      </if>
+      <if test="customerType != null" >
+        #{customerType,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="docId != null" >
+         #{docId,jdbcType=VARCHAR},
+      </if>
+       <if test="customerId != null and customerId !=''" >
+         #{customerId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

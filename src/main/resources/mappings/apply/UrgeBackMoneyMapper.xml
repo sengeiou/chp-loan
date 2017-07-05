@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.UrgeBackMoneyDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.borrow.grant.entity.ex.UrgeBackMoneyEx">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="contract_code" jdbcType="VARCHAR" property="contractCode" />
+    <result column="loan_customer_name" jdbcType="VARCHAR" property="customerName" />
+    <result column="customer_cert_num" jdbcType="VARCHAR" property="customerCertNum" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccount" />
+    <result column="dict_loan_status" jdbcType="VARCHAR" property="dictLoanStatus" />
+    <result column="product_name" jdbcType="VARCHAR" property="productName" />
+    <result column="contract_amount" jdbcType="VARCHAR" property="contractAmount" />
+    <result column="grant_amount" jdbcType="VARCHAR" property="grantAmount" />
+    <result column="fee_urged_service" jdbcType="VARCHAR" property="feeUrgedService" />
+    <result column="payback_max_overduedays" jdbcType="VARCHAR" property="paybackMaxOverduedays" />
+    <result column="dict_pay_status" jdbcType="VARCHAR" property="dictPayStatus" />
+    <result column="dict_pay_result" jdbcType="VARCHAR" property="dictPayResult" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="settlement_time" jdbcType="TIMESTAMP" property="settlementTime" />
+    <result column="payback_back_amount" jdbcType="NUMERIC" property="paybackBackAmount" />
+    <result column="back_apply_pay_time" jdbcType="TIMESTAMP" property="backApplyPayTime" />
+    <result column="back_apply_departmen" jdbcType="VARCHAR" property="backApplyDepartmen" />
+    <result column="back_transactor" jdbcType="VARCHAR" property="backTransactor" />
+    <result column="back_transactor_team" jdbcType="VARCHAR" property="backTransactorTeam" />
+    <result column="back_time" jdbcType="TIMESTAMP" property="backTime" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="bank_branch" jdbcType="VARCHAR" property="bankBranch" />
+    <result column="area_name" jdbcType="VARCHAR" property="bankProvince" />
+     <result column="area_name" jdbcType="VARCHAR" property="bankCity" />
+     <result column="channel_flag" jdbcType="VARCHAR" property="channelFlag" />
+  </resultMap>
+    
+  <!-- 收款人所在省，收款人所在市为customer中的省市 -->
+  <sql id="Base_Column_List">
+    b.id, 
+    b.r_payback_id, 
+    b.contract_code, 
+    b.dict_pay_status, 
+    b.dict_pay_result, 
+    b.remark, 
+    b.settlement_time, 
+    b.payback_back_amount, 
+    b.back_apply_pay_time, 
+    b.back_apply_by, 
+    b.back_apply_departmen, 
+    b.back_transactor, 
+    b.back_transactor_team, 
+    b.back_time, 
+    b.create_by, 
+    b.create_time, 
+    b.modify_by, 
+    b.modify_time,
+    i.loan_customer_name as customerName,
+	t.contract_amount,
+	l.grant_amount,
+	x.label as bankName, --开户行
+	x.value as bankNameCode, --开户行code
+	a.bank_branch, --支行
+	a.bank_account,
+	i.dict_loan_status,
+	e.fee_urged_service,
+	p.payback_max_overduedays,
+	h.name as storesName, --门店名称
+	i.loan_store_orgid as storesCode, --门店id
+	g.area_name as bankProvince,
+	y.area_name as bankCity
+  </sql>
+
+	<!-- 查询催收返还列表，列表中的状态为待返款和已返款 -->
+  <select id="selectBackMoneyList"  resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeBackMoneyEx">
+   select
+		<include refid="Base_Column_List"/>
+	from
+		t_jk_urge_services_backamount b <!-- 催收服务费返款信息 -->
+		left join jk.t_jk_loan_grant l on l.contract_code = b.contract_code<!-- 放款记录表 -->
+		left join jk.t_jk_contract t on t.contract_code = l.contract_code<!--合同表  -->
+		left join jk.t_jk_loan_info i on i.loan_code = l.loan_code<!-- 借款_借款信息表 -->
+		left join jk.t_gl_org h ON h.ID = i.loan_store_orgid	<!-- 门店 -->
+		left join jk.t_jk_payback p on p.contract_code = b.contract_code<!-- 还款_还款主表 -->
+		left join jk.t_jk_loan_bank a on a.loan_code = i.loan_code and a.bank_top_flag = '1' and a.repayment_flag = '1'<!-- 借款_账户信息表 -->
+		left join jk.t_jk_contract_fee e on e.contract_code = b.contract_code<!-- 合同_费率表 -->
+		left join jk.t_gl_dict x on x.value = a.bank_name and  x.type = 'jk_open_bank'
+		left join jk.t_gl_province_city g ON g.area_code = a.bank_province
+		left join jk.t_gl_province_city y ON y.area_code = a.bank_city
+	where   1=1 
+		<if test="id != null and id != ''">
+		and b.id = #{id}
+		</if>
+		<if test="dictPayStatus!=null and dictPayStatus!=''">
+		and b.dict_pay_status=#{dictPayStatus}
+		</if>
+		<if test="paybackBackAmount!=null and paybackBackAmount!=''">
+		and b.payback_back_amount =cast(#{paybackBackAmount} as NUMERIC)
+		</if>
+		<if test="dictPayStatus ==null or dictPayStatus ==''">
+		and b.dict_pay_status in ('1','3')
+		</if>
+		<!-- 门店查询 -->
+		<if test="storesCode!=null">
+		and i.loan_store_orgid in
+		<foreach item="item" index="index" collection="storesCode" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+		</if>
+		<!-- 开户行查询 -->
+		<if test="bankNameCode!=null">
+		and x.value in
+		<foreach item="item" index="index" collection="bankNameCode" open="(" separator="," close=")">  
+        	 #{item}  
+       	</foreach> 
+		</if>
+		<if test="contractCode!=null and contractCode!=''">
+		and b.contract_code=#{contractCode}
+		</if>
+		<if test="backApplyPayTime!=null and backApplyPayTime!=''">
+		and cast(b.back_apply_pay_time as Date)  = #{backApplyPayTime}
+		</if>
+		<if test="dictPayResult!=null and dictPayResult!=''">
+		and b.dict_pay_result=#{dictPayResult}
+		</if>
+		<if test="channelFlag!=null and channelFlag!=''">
+		and t.channel_flag not in(#{channelFlag})
+		</if>
+	order by b.back_apply_pay_time DESC
+  </select>
+  
+  <select id="urgTongJi" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeStatisticsView">
+      select b.contract_code as contractCode,
+       c.customer_name as customerName,
+      b.contract_amount as contractAmount,
+      COALESCE(a.urge_moeny,'0') as yinShouFeeUrgedService,
+      COALESCE((COALESCE(a.urge_decute_moeny,'0')+COALESCE(a.audit_amount,'0')),'0') as yiShoufeeUrgedService,
+     e.lending_time as lendingTime,
+      a.urge_decute_date as lastDeductDate,
+      f.label as loanFlag
+ from jk.t_jk_urge_services_amount a
+ left join jk.t_jk_contract b on b.contract_code=a.contract_code
+ left join jk.t_jk_loan_info d on d.loan_code=b.loan_code
+ left join jk.t_jk_loan_customer c on c.loan_code=d.loan_code
+  left join jk.t_jk_loan_grant e on e.contract_code=a.contract_code
+  left join (select value,label from jk.t_gl_dict where type='jk_channel_flag') f on f.value=d.loan_flag
+  where 1=1
+  <if test="customerName!=null and customerName!=''">
+     and c.customer_name=#{customerName}
+  </if>
+  <if test="contractCode!=null and contractCode!=''">
+     and b.contract_code=#{contractCode}
+  </if>
+  <if test="huaKouBegin!=null and huaKouBegin!='' and huaKouEnd!=null and huaKouEnd!=''">
+     and to_date(a.urge_decute_date,'yyy-MM-dd') between #{huaKouBegin} and #{huaKouEnd}
+  </if>
+  <if test="huaKouBegin!=null and huaKouBegin!='' and huaKouEnd=null and huaKouEnd=''">
+     and to_date(a.urge_decute_date,'yyy-MM-dd') > #{huaKouBegin} 
+  </if>
+  <if test="fanKuanBegin!=null and fanKuanBegin!='' and fanKuanEnd!=null and fanKuanEnd!=''">
+     and to_date(e.lending_time,'yyy-MM-dd') between #{fanKuanBegin} and #{fanKuanEnd}
+  </if>
+  <if test="fanKuanBegin!=null and fanKuanBegin!='' and fanKuanEnd=null and fanKuanEnd=''">
+     and to_date(e.lending_time,'yyy-MM-dd') > #{fanKuanBegin} 
+  </if>
+  
+  </select>
+ 
+ <!-- 更新单子的返款状态 -->
+
+   <update id="updateUrgeBack" parameterType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeBackMoneyEx">
+    update t_jk_urge_services_backamount
+    <set>
+      <if test="dictPayStatus != null">
+        dict_pay_status = #{dictPayStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="dictPayResult != null">
+        dict_pay_result = #{dictPayResult,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="backTime != null">
+        back_time = #{backTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id}
+  </update> 
+  
+  <select id="getByContract" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeBackMoneyEx">
+	  select * from jk.t_jk_urge_services_backamount 
+	  where 1=1 
+	  <if test="contractCode!=null and contractCode!=''">
+	     and contract_code=#{contractCode}
+	  </if>
+  </select>
+  
+  <select id="get" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeBackMoneyEx" >
+	 SELECT *
+	 FROM t_jk_urge_services_backamount a
+	 WHERE a.id = #{id}
+  </select>
+	
+</mapper>

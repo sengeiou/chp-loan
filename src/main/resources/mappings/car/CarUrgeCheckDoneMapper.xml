@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.car.common.dao.CarUrgeCheckDoneDao">
+	<sql id="allUrgeCheckDoneList">
+	        lc.id as id,   
+			pa.id as checkApplyId,  
+			us.id as urgeId,
+			pa.contract_code,
+			round(pa.URGE_REALLY_AMOUNT,2) as urgeReallyAmount, 
+			pa.modify_time as urgeApplyDate,
+			pa.URGE_APPLY_STATUS,<!-- 申请状态，回盘结果 -->
+			round(pa.URGE_APPLY_AMOUNT,2) as urgeApplyAmount,
+			pa.urge_back_reason,<!-- 退回原因 -->
+			round((us.URGE_MOENY - us.URGE_DECUTE_MOENY - COALESCE(us.AUDIT_AMOUNT,0)),2) as waitUrgeMoeny, 
+			o.name as storeName , <!-- 门店名称 -->
+			lc.customer_cert_num,
+			lc.customer_name,
+			lc.customer_telesales_flag,
+			c.loan_code,
+			c.product_type,
+			round(c.contract_amount,2) as contractAmount,
+			c.contract_months,
+			c.contract_replay_day,
+			c.contract_end_day,
+			li.dict_loan_status,
+			li.store_code as orgId, <!-- 门店id -->
+			li.loan_flag,
+			lb.id as loanBankId,
+			lb.loan_code,
+			lb.bank_account_name, <!-- 开户姓名 -->
+			lb.bank_card_no as bankAccount,  <!-- 账号 -->
+			lb.apply_bank_name,  <!-- 具体支行 -->
+			lb.card_bank as bankName, <!-- 开卡行 -->
+			round(us.URGE_MOENY,2) as urgeMoeny,
+			round(lg.grant_amount,2) as grantAmount,
+			tp.product_name,
+			us.return_logo as refundFlag,
+			mp.bank_card_no,
+			mp.mid_bank_name
+	</sql>
+	<!-- 催收服务费查账已办列表 -->
+	<select id="selCheckDone" resultType="com.creditharmony.loan.car.carGrant.ex.CarUrgeCheckDoneEx">
+		select
+			<include refid="allUrgeCheckDoneList" />
+		from jk.T_CJ_URGE_SERVICES_CHECKAPPLY pa <!-- 催收查账申请表 -->
+			LEFT JOIN jk.t_cj_loan_grant lg ON lg.contract_code = pa.contract_code
+			LEFT JOIN jk.t_cj_contract c ON c.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_loan_customer lc ON lc.loan_code = c.loan_code  
+			LEFT JOIN jk.t_cj_loan_info li ON li.loan_code = c.loan_code
+			LEFT JOIN jk.t_cj_customer_bank_info lb ON lb.loan_code = c.loan_code and lb.top = '1' 
+			LEFT JOIN jk.t_cj_urge_services_amount us on us.id = pa.r_service_charge_id
+			LEFT JOIN JK.t_gl_jk_product pro on c.product_type = pro.product_code
+			LEFT JOIN jk.t_gl_org o ON o.id = li.store_code
+			LEFT JOIN jk.t_gl_jk_product tp ON tp.product_code = c.product_type and tp.product_type = #{carProductsType}
+			<!--存入银行 -->
+			LEFT JOIN jk.t_jk_middle_person mp ON
+			mp.bank_card_no=pa.dict_deposit_account
+		where (pa.urge_apply_status = '6' or pa.urge_apply_status = '7' or us.DICT_DEAL_STATUS = '6')<!-- 已办的查账状态为查账成功，查账退回-->
+		<if test="checkApplyId !=null and checkApplyId !=''"> <!-- 申请表的id -->
+		and pa.id = #{checkApplyId}
+		</if>
+		<if test="rServiceChargeId !=null and rServiceChargeId !=''"> <!-- 催收主表的id，关联id -->
+		and pa.R_SERVICE_CHARGE_ID = #{rServiceChargeId}
+		</if>
+		<if test="contractCode !=null and contractCode !=''"> <!-- 合同编号-->
+		and pa.contract_code = #{contractCode}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="orgId != null and orgId != ''">  <!-- 门店搜索 -->
+			 AND li.store_code in
+	  	    <foreach collection="orgId" index="index" item="item" open="(" separator="," close=")">   
+               #{item,jdbcType=VARCHAR}   
+             </foreach> 
+		</if>
+		<if test="urgeApplyStatus != null and urgeApplyStatus != ''">
+			and pa.urge_apply_status = #{urgeApplyStatus}  <!-- 回盘结果 -->
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and li.loan_flag = #{loanFlag} <!-- 标识 -->
+		</if>
+		<if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and li.dict_loan_status = #{dictLoanStatus} <!-- 借款状态 -->
+		</if>
+		<if test="urgeApplyBeginDate != null and urgeApplyBeginDate != '' and urgeApplyEndDate != null and urgeApplyEndDate != ''">
+			and to_date(to_char(pa.modify_time,'yyyy-mm-dd')) between #{urgeApplyBeginDate} and #{urgeApplyEndDate} <!-- 查账日期 to_date(to_char(pa.urge_apply_date,'yyyy-mm-dd'))-->
+		</if>
+		<if test="urgeReallyAmountMin != null and urgeReallyAmountMin != '' and urgeReallyAmountMax != null and urgeReallyAmountMax != ''">
+			and pa.urge_really_amount between #{urgeReallyAmountMin} and #{urgeReallyAmountMax} <!-- 实还金额 -->
+		</if>
+		<if test="refundFlag != null and refundFlag != ''">
+			and us.return_logo = #{refundFlag}
+		</if>
+	   <if test="bankCardNo != null and bankCardNo != '' ">
+	     	and mp.bank_card_no = #{bankCardNo} 
+	   </if>
+	</select>
+</mapper>

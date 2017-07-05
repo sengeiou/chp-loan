@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.DeductUpdateDao">
+	<!-- 集中划扣拆分回盘结果start -->
+	<insert id="batchInsertDeductSplit" parameterType="java.util.List">
+		INSERT INTO jk.t_jk_payback_split(
+		id,
+		r_payback_apply_id,
+		split_pch,
+		dict_r_deduct_type,
+		split_amount,
+		split_back_result,
+		splitback_date,
+		split_fail_result,
+		batch_flag,
+		dict_deal_type,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time,
+		enterprise_serialno,
+		loan_code,
+		payback_flag,
+		remark
+		)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(
+			#{item.id },
+			#{item.paybackApplyId },
+			#{item.splitPch },
+			#{item.deductType},
+			#{item.splitAmount},
+			#{item.splitBackResult },
+			#{item.splitbackDate },
+			#{item.splitFailResult },
+			#{item.batchFlag },
+			#{item.dealType },
+			#{item.createBy },
+			#{item.createTime },
+			#{item.modifyBy },
+			#{item.modifyTime },
+			#{item.enterpriseSerialno },
+			#{item.loanCode },
+			#{item.paybackFlag },
+			#{item.remark}
+			)
+		</foreach>
+	</insert>
+	<!-- 集中划扣拆分回盘结果end -->
+
+	<!-- 更新还款申请表START -->
+	
+	<update id="updatePaybackApply" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		update
+		jk.t_jk_payback_apply set split_back_result = #{splitBackResult},dict_deal_type = #{dictDealType}
+		,apply_really_amount = (COALESCE(apply_really_amount,0) + #{applyReallyAmount})
+		,split_flag = #{splitFlag},fail_reason = #{failReason},modify_by = #{modifyBy}
+		,modify_time= #{modifyTime},dict_payback_status = #{dictPaybackStatus}
+		where id = #{id}
+	</update>
+	
+	<!-- 更新还款申请表START  翁私-->
+	<update id="updateDeductsPaybackApply" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		update
+		jk.t_jk_deducts_payback_apply set dict_back_result = #{splitBackResult},dict_deal_type = #{dictDealType}
+		,apply_really_amount = (COALESCE(apply_really_amount,0) + COALESCE(#{applyReallyAmount},0)),
+		fail_reason = #{failReason}
+		,modify_by = #{modifyBy}
+		,modify_time= #{modifyTime}
+		,cpcn_count = (COALESCE(cpcn_count,0)+ COALESCE(#{cpcnCount},0))
+		,tl_count = (COALESCE(tl_count,0)+ COALESCE(#{tlCount},0))
+		where id = #{id}
+	</update>
+	<!-- 更新还款申请表START  翁私-->
+	<update id="updatePaybackListHis" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		update
+		jk.T_JK_PAYBACK_LIST_HIS  set split_back_result = #{splitBackResult},
+		 dict_deal_type = #{dictDealType},
+		 return_reasion = #{failReason}
+		,modify_by = #{modifyBy}
+		,modify_time= #{modifyTime}
+		where id = (select r_list_id   from t_jk_deducts_payback_apply where id = #{id})
+	</update>
+	<!-- 更新还款申请表END -->
+	
+	<!-- 更新还款申请表START  翁私-->
+	<update id="updatePaybackListHisByApplyHis" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		update
+		jk.T_JK_PAYBACK_LIST_HIS  set split_back_result = #{splitBackResult},
+		 dict_deal_type = #{dictDealType},
+		 return_reasion = #{failReason}
+		,modify_by = #{modifyBy}
+		,modify_time= #{modifyTime}
+		where id = #{id}
+	</update>
+	<!-- 更新还款申请表END -->
+
+	<!-- 更新还款主表（更新蓝补金额）START -->
+	<update id="updateBuleAmount" parameterType="com.creditharmony.loan.borrow.payback.entity.Payback">
+		update jk.t_jk_payback
+		set
+		payback_bule_amount = (COALESCE(payback_bule_amount,0) + COALESCE(#{paybackBuleAmount},0))
+		,modify_by = #{modifyBy}
+		,modify_time= #{modifyTime}
+		where id= #{id}
+	</update>
+	<!-- 更新还款主表END -->
+	
+	<!-- 根据合同编号更新还款主表（更新蓝补金额）START -->
+	<update id="updateBuleAmountByContractCode" parameterType="com.creditharmony.loan.borrow.payback.entity.Payback">
+		update jk.t_jk_payback
+		set
+		payback_bule_amount = (COALESCE(payback_bule_amount,0) + COALESCE(#{paybackBuleAmount},0))
+		,modify_by = #{modifyBy}
+		,modify_time= #{modifyTime}
+		where contract_code = #{contractCode}
+	</update>
+	<!-- 更新还款主表END -->
+
+	<!-- 更新还款主表（冲抵后更新）START -->
+	<update id="updatePayBack" parameterType="com.creditharmony.loan.borrow.payback.entity.Payback">
+		update jk.t_jk_payback
+		set
+		payback_bule_amount = #{paybackBuleAmount}
+		<if test="dictPayStatus!=null">
+			,dict_pay_status = #{dictPayStatus}
+		</if>
+		,payback_current_month = #{paybackCurrentMonth}
+		,modify_by = #{modifyBy}
+		,modify_time= #{modifyTime}
+		where contract_code = #{contractCode}
+	</update>
+	<!-- 更新还款主表END -->
+
+	<!-- 还款主表基本信息START -->
+	<resultMap id="BasePayBackMap"
+		type="com.creditharmony.loan.borrow.payback.entity.Payback">
+		<result column="id" property="id" />
+		<result column="contract_code" property="contractCode" />
+		<result column="customer_code" property="customerCode" />
+		<result column="payback_current_month" property="paybackCurrentMonth" />
+		<result column="payback_month_amount" property="paybackMonthAmount" />
+		<result column="payback_bule_amount" property="paybackBuleAmount" />
+		<result column="effective_flag" property="effectiveFlag" />
+		<result column="dict_pay_status" property="dictPayStatus" />
+		<result column="payback_day" property="paybackDay" />
+		<result column="payback_max_overduedays" property="paybackMaxOverduedays" />
+		<result column="payback_back_amount" property="paybackBackAmount" />
+	</resultMap>
+	<select id="getPayback" parameterType="map" resultMap="BasePayBackMap">
+		select
+		id,
+		contract_code,
+		customer_code,
+		payback_current_month,
+		payback_month_amount,
+		payback_bule_amount,
+		effective_flag,
+		dict_pay_status,
+		payback_day,
+		payback_max_overduedays,
+		payback_back_amount
+		from jk.t_jk_payback
+		where  1=1
+		<if test="contractCode != null and !contractCode.equals('')">
+			and contract_code = #{contractCode}
+		</if>
+		<if test="id != null and !id.equals('')">
+			and id = #{id}
+		</if>
+		
+	</select>
+	<!-- 还款主表基本信息END -->
+
+	<!-- 期供基本信息START -->
+	<resultMap id="BasePayMonthMap"
+		type="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+		<result column="id" property="id" />
+		<result column="contract_code" property="contractCode" />
+		<result column="months" property="months" />
+		<result column="month_pay_day" property="monthPayDay" />
+		<result column="month_pay_actualday" property="monthPayActualday" />
+		<result column="month_interest_backshould" property="monthInterestBackshould" />
+		<result column="month_capital_payactual" property="monthCapitalPayactual" />
+		<result column="month_interest_payactual" property="monthInterestPayactual" />
+		<result column="is_overdue" property="isOverdue" />
+		<result column="month_before_finish_amount" property="monthBeforeFinishAmount" />
+		<result column="month_before_reduction_amount" property="monthBeforeReductionAmount" />
+		<result column="month_interest_punishshould" property="monthInterestPunishshould" />
+		<result column="month_interest_punishactual" property="monthInterestPunishactual" />
+		<result column="month_punish_peduction" property="monthPunishReduction" />
+		<result column="month_penalty_should" property="monthPenaltyShould" />
+		<result column="month_penalty_actual" property="monthPenaltyActual" />
+		<result column="month_penalty_peduction" property="monthPenaltyReduction" />
+		<result column="month_overdue_days" property="monthOverdueDays" />
+		<result column="month_reduction_days" property="monthReductionDays" />
+		<result column="dict_month_status" property="dictMonthStatus" />
+		<result column="month_overdue_mes" property="monthOverdueMes" />
+		<result column="create_by" property="createBy" />
+		<result column="create_time" property="createTime" />
+		<result column="modify_by" property="modifyBy" />
+		<result column="modify_time" property="modifyTime" />
+	</resultMap>
+	<select id="getNotPayBack" parameterType="map" resultMap="BasePayMonthMap">
+		select
+		* from jk.T_JK_PAYBACK_MONTH where
+		contract_code=#{contractCode} and
+		months =
+		(select min(months) from T_JK_PAYBACK_MONTH where
+		contract_code=#{contractCode} and (DICT_MONTH_STATUS  = '0')
+		group by contract_code)
+	</select>
+	<!-- 期供基本信息END -->
+
+	<!-- 期供基本信息(指定期供)SRART -->
+	<select id="getPayBackByMonth" parameterType="map" resultMap="BasePayMonthMap">
+		select
+		* from jk.T_JK_PAYBACK_MONTH where
+		contract_code= #{contractCode}
+		and
+		months = #{months}
+	</select>
+	<!-- 期供基本信息(指定期供)END -->
+
+	<!-- 更新期供基本信息(指定期供)START -->
+	<update id="updatePaybackMonth" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth">
+		update jk.T_JK_PAYBACK_MONTH
+		set
+		<if test="monthPenaltyActual != null and !monthPenaltyActual.equals('')">
+			MONTH_PENALTY_ACTUAL = #{monthPenaltyActual} ,
+		</if>
+		<if test="monthInterestPunishactual != null and !monthInterestPunishactual.equals('')">
+			MONTH_INTEREST_PUNISHACTUAL = #{monthInterestPunishactual},
+		</if>
+		<if test="monthCapitalPayactual!= null">
+			MONTH_CAPITAL_PAYACTUAL = #{monthInterestPayactual} ,
+		</if>
+		<if test="monthInterestPayactual!= null">
+			MONTH_INTEREST_PAYACTUAL = #{monthCapitalPayactual},
+		</if>
+		<if test="dictMonthStatus!=null">
+			DICT_MONTH_STATUS = #{dictMonthStatus},
+		</if>
+		  modify_by =
+		#{modifyBy}
+		,modify_time= #{modifyTime}
+		where CONTRACT_CODE = #{contractCode}
+		and MONTHS = #{months}
+	</update>
+	<!-- 期供基本信息(指定期供)END -->
+
+	<!-- 根据合同编码查询当期期供表 -->
+	<select id="getPaybackMonth" resultType="com.creditharmony.loan.borrow.payback.entity.PaybackMonth"
+		parameterType="java.util.Map">
+		select (b.MONTH_PAY_AMOUNT-
+		COALESCE(b.MONTH_CAPITAL_PAYACTUAL,0)) as
+		monthPayAmount,
+		(b.MONTH_INTEREST_BACKSHOULD-COALESCE(b.MONTH_INTEREST_PAYACTUAL,0))
+		as monthInterestBackshould,
+		b.CONTRACT_CODE as contractCode,
+		b.DICT_MONTH_STATUS as dictMonthStatus,
+		b.ID as id,
+		(select max(MONTHS)
+		from jk.T_JK_PAYBACK_MONTH a where a.CONTRACT_CODE =
+		b.CONTRACT_CODE)
+		as maxMonths,
+		b.MONTHS as months
+		from jk.T_JK_PAYBACK_MONTH b
+		where
+		b.CONTRACT_CODE = #{contractCode}
+		and b.MONTHS = (select
+		PAYBACK_CURRENT_MONTH
+		from jk.T_JK_PAYBACK
+		where CONTRACT_CODE =
+		#{contractCode})
+	</select>
+
+	<!--增加还款还款历史明细 -->
+	<insert id="addPaybackHis" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackHis">
+		insert into
+		jk.T_JK_PAYBACK_HIS(
+		ID,R_MONTH_ID,CONTRACT_CODE,PAYMENT_AMOUNT,PAYMENT_DAY,PAYMENT_COMMISSIONER_CODE,CREATE_BY,CREATE_TIME,MODIFY_BY,MODIFY_TIME
+		) values(
+		#{id},
+		#{rMonthId},
+		#{contractCode},
+		#{paymentAmount},
+		#{paymentDay},
+		#{paymentCommissionerCode},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime}
+		)
+	</insert>
+
+	<!--增加还款蓝补交易明细 -->
+	<insert id="addBackBuleAmont" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackBuleAmont">
+		insert into
+		jk.T_JK_PAYBACK_BULE_AMONT(
+		id,R_MONTH_ID,DEAL_TIME,TRADE_TYPE,OPERATOR,
+		DICT_DEAL_USE,TRADE_AMOUNT,SURPLUS_BULE_AMOUNT,
+		CREATE_BY,CREATE_TIME,MODIFY_BY,MODIFY_TIME,contract_code
+		) values(
+		#{id},
+		#{rMonthId},
+		#{dealTime},
+		#{tradeType},
+		#{operator},
+		#{dictDealUse},
+		#{tradeAmount},
+		#{surplusBuleAmount},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime},
+		#{contractCode}
+		)
+	</insert>
+	
+	<!-- 更借款信息表的借款状态 为还款中-->
+	<update id="updateLoanInfo" parameterType="com.creditharmony.loan.borrow.applyinfo.entity.LoanInfo">
+		update jk.t_jk_loan_info
+		set
+	      dict_loan_status = #{dictLoanStatus}
+		 , modify_by =#{modifyBy}
+		,modify_time= #{modifyTime}
+		where loan_code = (select loan_code from  jk.t_jk_contract where CONTRACT_CODE = #{loanCode})
+	</update>
+	
+	 <!-- 更新催收服务费列表,根据id,可以为多个 -->
+  <update id="updataUrgeServices" parameterType="com.creditharmony.loan.borrow.grant.entity.UrgeServicesMoney">
+  	  update jk.t_jk_urge_services_amount
+      <set>
+			<if test="urgeDecuteMoeny != null">
+				urge_decute_moeny = #{urgeDecuteMoeny,jdbcType=NUMERIC},
+			</if>
+			<if test="urgeDecuteDate != null">
+				urge_decute_date = #{urgeDecuteDate,jdbcType=DATE},
+			</if>
+			<if test="dictDealStatus != null"> <!-- 处理状态 -->
+				dict_deal_status = #{dictDealStatus,jdbcType=VARCHAR},
+			</if>
+			<if test="dictDealType != null"><!-- 划扣平台 -->
+				dict_deal_type = #{dictDealType,jdbcType=VARCHAR},
+			</if>
+			<if test="deductStatus != null">
+				deduct_status = #{deductStatus,jdbcType=VARCHAR},
+			</if>
+			<if test="deductFailReason != null">
+				deduct_fail_reason = #{deductFailReason,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyBy != null">
+				modify_by = #{modifyBy,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=VARCHAR},
+			</if>
+			<if test="deductYesno  != null">
+				deduct_yesno  = #{deductYesno },
+			</if>
+		</set>
+      WHERE id = #{id}
+  </update>
+  
+  <!-- 查询要传送给批处理的list,根据催收主表id查询 -->
+	<select id="selSendList" resultType="com.creditharmony.core.deduct.bean.in.DeductReq"
+		parameterType="com.creditharmony.loan.borrow.grant.entity.UrgeServicesMoney">
+		select
+		a.id as batId,<!-- 请求批次id -->
+		b.contract_code as businessId, <!-- 请求id -->
+		a.urge_moeny as amount,  <!-- 金额 -->
+		d.bank_name as bankId, <!-- 银行id -->
+		d.bank_province as bankProv, <!-- 支行省 -->
+		d.bank_city as bankCity, <!-- 支行市 -->
+		d.bank_branch as bankName,  <!-- 支行名 -->
+		d.bank_account as accountNo, <!-- 账号 -->
+		d.bank_account_name as accountName, <!-- 账户名称 -->
+		c.dict_cert_type as idType, <!-- 证件类型 -->
+		c.customer_cert_num as idNo,<!-- 证件编号 -->
+		c.customer_phone_first as mobile <!-- 联系方式(手机) -->
+		,a.dict_deal_type as rule
+		from jk.t_jk_urge_services_amount a
+		left join jk.t_jk_loan_grant b on b.id = a.r_grant_id
+		left join jk.t_jk_loan_customer c on c.loan_code = b.loan_code
+		left join jk.t_jk_loan_bank d on b.loan_code = d.loan_code 
+		and d.bank_top_flag='1' and d.repayment_flag = '0'
+		where  a.dict_deal_status in (${dictDealStatus}) <!-- 主动控制将发送给批处理的单子只能为处理中（线下）或者失败的 -->
+		<if test="contractCode != null and ! contractCode!=''">
+			and b.contract_code in( ${contractCode} ) <!-- 根据催收和同编号进行查询 -->
+		</if>
+	</select>
+	
+	<!-- 集中划扣操作历史start -->
+	<insert id="batchInsertHis" parameterType="java.util.List">
+		INSERT INTO jk.t_jk_payback_ope(
+		id,
+		r_payback_id,
+		r_payback_apply_id,
+		dict_loan_status,
+		dict_r_deduct_type,
+		operate_result,
+		operator,
+		operator_code,
+		operate_time,
+		remark,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time)
+		VALUES 
+	    <foreach collection="list" item="item" index="index" separator=",">
+		(
+		#{item.id},
+		#{item.rPaybackId},
+		#{item.rPaybackApplyId},
+		#{item.dictLoanStatus},
+		#{item.dictRDeductType},
+		#{item.operateResult},
+		#{item.operator},
+		#{item.operateCode},
+		#{item.operateTime},
+		#{item.remarks},
+		#{item.createBy},
+		#{item.createTime},
+		#{item.modifyBy},
+		#{item.modifyTime}
+		)
+		</foreach>
+	</insert>
+	<!-- 集中划扣操作历史end-->
+	
+	<!-- 集中划扣操作历史 单条start -->
+	<insert id="singleInsertHis" parameterType="java.util.List">
+		INSERT INTO jk.t_jk_payback_ope(
+		id,
+		r_payback_id,
+		r_payback_apply_id,
+		dict_loan_status,
+		dict_r_deduct_type,
+		operate_result,
+		operator,
+		operator_code,
+		operate_time,
+		remark,
+		create_by,
+		create_time,
+		modify_by,
+		modify_time)
+		VALUES 
+		(
+		#{id},
+		#{rPaybackId},
+		#{rPaybackApplyId},
+		#{dictLoanStatus},
+		#{dictRDeductType},
+		#{operateResult},
+		#{operator},
+		#{operateCode},
+		#{operateTime},
+		#{remarks},
+		#{createBy},
+		#{createTime},
+		#{modifyBy},
+		#{modifyTime}
+		)
+	</insert>
+	
+	<!-- 集中划扣 单条操作历史end-->
+	
+	<!-- 获取蓝补金额大于0的数据，Start-->
+	<select id="getPaybackBuleAmount" parameterType="map" resultMap="BasePayBackMap">
+		select
+		id,
+		contract_code,
+		customer_code,
+		payback_current_month,
+		payback_month_amount,
+		payback_bule_amount,
+		effective_flag,
+		dict_pay_status,
+		payback_day,
+		payback_max_overduedays,
+		payback_back_amount
+		from jk.t_jk_payback
+		where payback_bule_amount > 0
+	</select>
+	<!-- 获取蓝补金额大于0的数据，End-->
+	
+	 <!--插入 还款_集中划扣还款申请归档表  -->
+   <insert id="insertDeductsPaybackApplyHis">
+      insert into jk.t_jk_deducts_payback_apply_his 
+           ( id, contract_code,loan_customer_name, dict_loan_cert_type, loan_customer_cert_num, 
+             customer_phone_first,month_id,apply_deduct_amount,dict_deal_type, 
+            apply_pay_day,repay_account_name,repay_deduct_account, apply_bank_name, 
+            bank_code, apply_really_amount,dict_back_result, return_logo, apply_back_mes,create_time,modify_time) select 
+            id,contract_code,loan_customer_name,dict_loan_cert_type,loan_customer_cert_num,
+            customer_phone_first,month_id,apply_deduct_amount,#{dictDealType},
+            apply_pay_day,repay_account_name,repay_deduct_account,apply_bank_name,
+            bank_code,apply_really_amount, dict_back_result,return_logo,apply_back_mes,now(),now() from jk.t_jk_deducts_payback_apply
+            where id = #{id}
+   </insert>
+	 <!--插入 还款_集中划扣还款申请归档表  -->
+   <insert id="addPaybackDeducts">
+     INSERT INTO jk.t_jk_payback_deducts(
+            id, r_split_urge_id,request_id,deduct_amount,dict_r_deduct_type,dict_decuct_flag,
+             decuct_time,
+             decuct_user_code, dict_back_result, 
+            create_by, 
+            create_time)
+    VALUES (#{id},#{rId},#{requestId},#{deductAmount},#{dictRDeductType},#{dictDecuctFlag}, 
+            #{decuctTime},
+            #{decuctUser}, #{dictBackResult}, 
+            #{createBy},#{createTime})
+     
+   </insert>
+   <delete id="deleteDeductsPaybackApply">
+      delete from  jk.t_jk_deducts_payback_apply where id=#{id}
+   </delete>
+   
+   <insert id="insert" parameterType="com.creditharmony.core.deduct.bean.out.LoanDeductEntity">
+    INSERT INTO jk.t_jk_batch_return_result_log(
+            id, remarks, sys_id, request_id, business_id, bat_id, ref_id, 
+            apply_amount, deduct_succeed_money, deduct_fail_money, deduct_time, 
+            deduct_sysid_type, fail_reason, create_by, create_time, modify_by, 
+            modify_time)
+    VALUES (#{id},#{remarks},#{sysId},#{requestId},#{businessId},#{batId},#{refId},
+            #{applyAmount},#{deductSucceedMoney},#{deductFailMoney},now(),
+            #{deductSysIdType}, #{failReason},'FinanceBatch',now(),'FinanceBatch', 
+            now())
+   </insert>
+   
+   <select id="queryPaybackApply" resultType ="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+     select id from jk.t_jk_deducts_payback_apply where id = #{id}
+   </select>
+   
+   <update id="updateDeductsPaybackApplyHis" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+    update
+		jk.t_jk_deducts_payback_apply_his set dict_back_result = #{splitBackResult},dict_deal_type = #{dictDealType}
+		,apply_really_amount = (COALESCE(apply_really_amount,0) + #{applyReallyAmount}),
+		fail_reason = #{failReason}
+		,modify_by = #{modifyBy}
+		,modify_time= #{modifyTime}
+		where id = #{id}
+   </update>
+   
+   <!-- 查询中金平余额不足交易响应码 -->
+   <select id="queryKinBank" resultType ="com.creditharmony.loan.common.entity.KinnobuBalanceIns">
+     select id,kinnobu_bank_code,kinnobu_bank_msg  from jk.t_jk_kinnobu_balance_ins 
+   </select>
+     
+   <insert id="saveBalanceInfo" parameterType="com.creditharmony.loan.common.entity.BalanceInfo">
+    INSERT INTO jk.t_jk_kinnobu_balance_info
+		(id, account, create_by, create_time, modify_by, modify_time)
+		VALUES(#{id}, #{accountNo},#{createBy},#{createTime},#{modifyBy},#{modifyTime});
+   </insert>
+   
+   <!-- 集中划扣申请表基本信息 -->
+    <resultMap id="deductsPaybackApply"
+		type="com.creditharmony.loan.borrow.payback.entity.DeductsPaybackApply">
+		<result column="id" property="id" />
+		<result column="contract_code" property="contractCode" />
+		<result column="month_id" property="monthId" />
+		<result column="apply_deduct_amount" property="applyDeductAmount" />
+	</resultMap>
+	
+	<!-- 非集中划扣申请表基本信息 -->
+    <resultMap id="paybackApply"
+		type="com.creditharmony.loan.borrow.payback.entity.PaybackApply">
+		<result column="id" property="id" />
+		<result column="contract_code" property="contractCode" />
+		<result column="apply_id" property="applyId" />
+		<result column="apply_amount" property="applyAmount" />
+	</resultMap>
+	
+	<!-- 通过集中划扣申请id获取期供id -->
+	<select id="getDeductsPaybackApply" parameterType="com.creditharmony.loan.borrow.payback.entity.DeductsPaybackApply"
+	 resultMap="deductsPaybackApply">
+		select id,
+			contract_code,
+			month_id,
+			apply_deduct_amount,
+			dict_deal_type
+		from jk.t_jk_deducts_payback_apply_his
+		where id=#{id}
+	</select>
+	
+	<!-- 通过非集中划扣申请id获取申请金额 -->
+	<select id="getPaybackApply" parameterType="com.creditharmony.loan.borrow.payback.entity.PaybackApply"
+	 resultMap="paybackApply">
+		select id,
+			contract_code,
+			apply_id,
+			apply_amount,
+			dict_deal_type
+		from jk.t_jk_payback_apply
+		where id=#{id}
+	</select>
+	
+	<!-- 查询是否是简易借数据且查账金额大于0 -->
+   <select id="queryJyjData"   resultType="com.creditharmony.loan.channel.jyj.entity.JyjUrgeServicesMoneyEx">
+	 select distinct
+		round(e.audit_amount,2) as money,
+		c.contract_code,
+		p.payback_bule_amount as   paybackBuleAmount,
+		e.id
+		from
+		jk.t_jk_urge_services_amount e
+		LEFT JOIN jk.t_jk_loan_grant c ON c.id=e.r_grant_id
+		LEFT JOIN jk.t_jk_contract d ON d.contract_code=c.contract_code
+		left join jk.t_jk_payback p on p.contract_code = d.contract_code
+		where e.return_logo !='1' and   e.urge_type ='1' and 
+		e.audit_amount > 0
+	   and e.id = #{id}
+	</select>
+</mapper>
+	

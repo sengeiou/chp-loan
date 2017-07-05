@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.LoanCustomerDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.loan.common.entity.LoanCustomer">
+    <result column="customer_code"  property="customerCode" />
+    <result column="id"  property="id" />
+    <result column="apply_id"  property="applyId" />
+    <result column="loan_code"  property="loanCode" />
+    <result column="customer_name"  property="customerName" />
+    <result column="dict_cert_type"  property="dictCertType" />
+    <result column="customer_cert_num"  property="customerCertNum" />
+    <result column="customer_cert_org"  property="customerCertOrg" />
+    <result column="id_start_day"  property="idStartDay" />
+    <result column="id_end_day"  property="idEndDay" />
+    <result column="customer_sex"  property="customerSex" />
+    <result column="customer_register_province"  property="customerRegisterProvince" />
+    <result column="customer_register_city"  property="customerRegisterCity" />
+    <result column="customer_register_area"  property="customerRegisterArea" />
+    <result column="customer_register_address"  property="customerRegisterAddress" />
+    <result column="customer_birthday"  property="customerBirthday" />
+    <result column="customer_ename"  property="customerEname" />
+    <result column="dict_marry_status"  property="dictMarry"/>
+    <result column="dict_education"  property="dictEducation" />
+    <result column="customer_graduation_day"  property="customerGraduationDay" />
+    <result column="customer_phone_first"  property="customerPhoneFirst" />
+    <result column="customer_phone_second"  property="customerPhoneSecond" />
+    <result column="customer_tel"  property="customerTel" />
+    <result column="customer_email"  property="customerEmail" />
+    <result column="issuing_authority"  property="issuingAuthority" />
+    <result column="customer_fax"  property="customerFax" />
+    <result column="customer_have_children"  property="customerHaveChildren" />
+    <result column="customer_live_province"  property="customerLiveProvince" />
+    <result column="customer_live_city"  property="customerLiveCity" />
+    <result column="customer_live_area"  property="customerLiveArea" />
+    <result column="customer_address"  property="customerAddress" />
+  <!--   <result column="customer_house_property"  property="customerHouseProperty" />
+    <result column="customer_post_code"  property="customerPostCode" /> -->
+    <result column="customer_status"  property="customerStatus" />
+    <result column="customer_other"  property="customerOther" />
+    <result column="dict_customer_is_danger"  property="dictCustomerDanger" />
+    <result column="dict_customer_diff" property="dictCustomerDiff"/>
+    <result column="dict_customer_status"  property="dictCustomerStatus" />
+    <result column="customer_contact_is_know"  property="contactIsKnow" />
+    <result column="dict_relation_type" property="dictRelationType"/>
+    <result column="customer_gold_flag"  property="customerIsGold" />
+    <result column="trusteeship_no"  property="trusteeshipNo" />
+    <result column="dict_customer_source"  property="dictCustomerSource" />
+    <result column="customer_telesales_source"  property="customerTeleSalesSource" />
+    <result column="customer_telesales_orgcode" property="customerTeleSalesOrgCode"/> 
+    <result column="customer_telesales_flag" property="customerTelesalesFlag"/> 
+    <result column="message_auth_code" property="customerPin"/> 
+    <result column="captcha_if_confirm" property="captchaIfConfirm"/>
+    <result column="confirm_timeout" property="confirmTimeout"/>
+    <result column="app_sign_flag" property="appSignFlag"/>
+    <result column="id_valid_flag" property="idValidFlag"/>
+    <result column="compose_photo_id" property="composePhotoId"/>
+    <result column="id_valid_score" property="idValidScore"/>
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="customer_children_count" property="customerChildrenCount"/>
+    <result column="customer_family_support" property="customerFamilySupport"/>
+    <result column="personal_year_income" property="personalYearIncome"/>
+    <result column="home_month_income" property="homeMonthIncome"/>
+    <result column="home_month_pay" property="homeMonthPay"/>
+    <result column="home_total_debt" property="homeTotalDebt"/>
+    <result column="social_security_number" property="socialSecurityNumber"/>
+    <result column="social_security_password" property="socialSecurityPassword"/>
+    <result column="register_property" property="registerProperty"/>
+    <result column="customer_qq" property="customerQq"/>
+    <result column="customer_weibo" property="customerWeibo"/>
+    <result column="credit_username" property="creditUsername"/>
+    <result column="credit_password" property="creditPassword"/>
+    <result column="credit_auth_code" property="creditAuthCode"/>
+    <result column="dict_customer_source_new" property="dictCustomerSourceNew"/>
+    <result column="dict_customer_source_new_other" property="dictCustomerSourceNewOther"/>
+    <result column="who_can_know_the_borrow" property="whoCanKnowBorrow"/>
+    <result column="who_can_know_the_borrow_other" property="whoCanKnowTheBorrowingRemark"/>
+    <result column="email_if_confirm" property="emailIfConfirm"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+    customer_code,
+	id, 
+	apply_id, 
+	loan_code, 
+	customer_name, 
+	dict_cert_type, 
+	customer_cert_num, 
+    customer_cert_org, 
+    id_start_day, 
+    id_end_day, 
+    customer_sex, 
+    customer_register_province, 
+    customer_register_city, 
+    customer_register_area, 
+    customer_register_address, 
+    customer_birthday, 
+    customer_ename, 
+    dict_marry_status, 
+    dict_education, 
+    customer_graduation_day, 
+    customer_phone_first, 
+    customer_phone_second, 
+    customer_tel, 
+    customer_email, 
+    issuing_authority,
+    customer_fax,
+    customer_have_children, 
+    customer_live_province, 
+    customer_live_city, 
+    customer_live_area, 
+    customer_address,
+    customer_status,
+    customer_other,
+    dict_customer_is_danger,
+    dict_customer_diff, 
+    dict_customer_status, 
+    customer_contact_is_know, 
+    dict_relation_type,
+    customer_gold_flag, 
+    dict_customer_source, 
+    customer_telesales_source,
+    customer_telesales_flag,
+    customer_telesales_orgcode,
+    trusteeship_no,
+    message_auth_code,
+    captcha_if_confirm,
+    confirm_timeout,
+    who_can_know_the_borrow,
+    who_can_know_the_borrow_other,
+    app_sign_flag,
+    id_valid_flag,
+    compose_photo_id,
+    id_valid_score,
+    create_by, 
+    create_time, 
+    modify_by, 
+    modify_time,
+    customer_children_count,
+    customer_family_support,
+    personal_year_income,
+    home_month_income,
+    home_month_pay,
+    home_total_debt,
+    social_security_number,
+    social_security_password,
+    register_property,
+    customer_qq,
+    customer_weibo,
+    credit_username,
+    credit_password,
+    credit_auth_code,
+    dict_customer_source_new,
+    dict_customer_source_new_other,
+    email_if_confirm
+  </sql>
+  
+  
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jk.t_jk_loan_customer
+    where create_time IN (select MAX(create_time) from jk.t_jk_loan_customer where  
+          customer_code = #{0}) 
+          and customer_code = #{0}
+          <!-- group by customer_code  order by create_time desc  -->
+  </select>
+  <select id="selectByConsultId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+       a.customer_code, a.id, a.apply_id, a.loan_code, a.customer_name, a.dict_cert_type, a.customer_cert_num, 
+    a.customer_cert_org, a.id_start_day, a.id_end_day, a.customer_sex, a.customer_register_province, 
+    a.customer_register_city, a.customer_register_area, a.customer_register_address, a.customer_birthday, 
+    a.customer_ename, a.dict_marry_status, a.dict_education, a.customer_graduation_day, a.customer_phone_first, 
+    a.customer_phone_second, a.customer_tel, a.customer_email, a.issuing_authority, a.customer_fax,a.customer_have_children, a.customer_live_province, a.customer_live_city, a.customer_live_area, 
+    a.customer_address,a.customer_other,a.dict_customer_is_danger,a.dict_customer_diff, a.dict_customer_status, a.customer_contact_is_know, 
+    a.dict_relation_type,a.customer_gold_flag, a.dict_customer_source, a.customer_telesales_source,a.customer_telesales_flag,a.customer_telesales_orgcode,
+    a.message_auth_code,a.captcha_if_confirm,a.confirm_timeout,app_sign_flag,id_valid_flag,compose_photo_id,
+    a.id_valid_score,a.create_by, a.create_time, a.modify_by, a.modify_time,
+    a.customer_children_count,
+    a.customer_family_support,
+    a.personal_year_income,
+    a.home_month_income,
+    a.home_month_pay,
+    a.home_total_debt,
+    a.social_security_number,
+    a.social_security_password,
+    a.register_property,
+    a.customer_qq,
+    a.customer_weibo,
+    a.credit_username,
+    a.credit_password,
+    a.credit_auth_code,
+    a.dict_customer_source_new,
+    a.dict_customer_source_new_other,
+    a.who_can_know_the_borrow,
+    a.who_can_know_the_borrow_other
+    from jk.t_jk_loan_customer a left join jk.t_jk_loan_info b on a.loan_code = b.loan_code 
+   where b.r_id=#{consultId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByApplyId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" /> 
+    from jk.t_jk_loan_customer 
+    where apply_id = #{applyId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByReconsiderApplyId"  parameterType="java.lang.String" resultMap="BaseResultMap">
+   select
+         a.customer_code, a.id, a.apply_id, a.loan_code, a.customer_name, a.dict_cert_type, a.customer_cert_num, 
+   		 a.customer_cert_org, a.id_start_day, a.id_end_day, a.customer_sex, a.customer_register_province, 
+    	 a.customer_register_city, a.customer_register_area, a.customer_register_address, a.customer_birthday, 
+   	     a.customer_ename, a.dict_marry_status, a.dict_education, a.customer_graduation_day, a.customer_phone_first, 
+    	 a.customer_phone_second, a.customer_tel, a.customer_email, a.issuing_authority, a.customer_fax,a.customer_have_children, a.customer_live_province, a.customer_live_city, a.customer_live_area, 
+    	 a.customer_address,a.customer_other,a.dict_customer_is_danger,a.dict_customer_diff, a.dict_customer_status, a.customer_contact_is_know, 
+    	 a.dict_relation_type,a.customer_gold_flag, a.dict_customer_source, a.customer_telesales_source,a.customer_telesales_flag,a.customer_telesales_orgcode,
+    	 a.message_auth_code,a.captcha_if_confirm,a.confirm_timeout,app_sign_flag,id_valid_flag,compose_photo_id,
+    	 a.id_valid_score,
+    	 a.create_by, a.create_time, a.modify_by, a.modify_time 
+   from  jk.t_jk_loan_customer a 
+   left join t_jk_reconsider_apply b
+   on a.loan_code = b.loan_code 
+  where b.apply_id = #{applyId,jdbcType=VARCHAR}
+  </select>
+   <select id="selectByLoanCode" parameterType="map" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" /> 
+    from jk.t_jk_loan_customer 
+    where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 插入数据 -->
+	<insert id="insert" parameterType="com.creditharmony.loan.common.entity.LoanCustomer">
+    insert into t_jk_loan_customer (id,customer_code,apply_id, 
+      loan_code, customer_name, dict_cert_type, 
+      customer_cert_num, customer_cert_org, id_start_day, 
+      id_end_day, customer_sex, customer_register_province, 
+      customer_register_city, customer_register_area, 
+      customer_register_address, customer_birthday, 
+      customer_ename, dict_marry_status, dict_education, 
+      customer_graduation_day, customer_phone_first, 
+      customer_phone_second, customer_tel, customer_email, issuing_authority,
+      customer_fax, customer_have_children, 
+      customer_live_province, customer_live_city, 
+      customer_live_area, customer_address,customer_status, customer_other, 
+      dict_customer_is_danger, dict_customer_diff, dict_customer_status, 
+      customer_contact_is_know,dict_relation_type, customer_gold_flag, dict_customer_source, 
+      customer_telesales_source, customer_telesales_flag, customer_telesales_orgcode,
+      message_auth_code,captcha_if_confirm,confirm_timeout,
+      app_sign_flag,id_valid_flag,compose_photo_id,id_valid_score,
+      create_by, create_time, modify_by, 
+      modify_time,
+	  customer_children_count,
+      customer_family_support,
+      personal_year_income,
+      home_month_income,
+      home_month_pay,
+      home_total_debt,
+      social_security_number,
+      social_security_password,
+      register_property,
+      customer_qq,
+      customer_weibo,
+      credit_username,
+      credit_password,
+      credit_auth_code,
+      dict_customer_source_new,
+      dict_customer_source_new_other,
+      who_can_know_the_borrow,
+      who_can_know_the_borrow_other
+      )
+    values (#{id,jdbcType=VARCHAR},#{customerCode,jdbcType=VARCHAR}, #{applyId,jdbcType=VARCHAR}, 
+      #{loanCode,jdbcType=VARCHAR}, #{customerName,jdbcType=VARCHAR}, #{dictCertType,jdbcType=VARCHAR}, 
+      #{customerCertNum,jdbcType=VARCHAR}, #{customerCertOrg,jdbcType=VARCHAR}, #{idStartDay,jdbcType=TIMESTAMP}, 
+      #{idEndDay,jdbcType=TIMESTAMP}, #{customerSex,jdbcType=VARCHAR}, #{customerRegisterProvince,jdbcType=VARCHAR}, 
+      #{customerRegisterCity,jdbcType=VARCHAR}, #{customerRegisterArea,jdbcType=VARCHAR}, 
+      #{customerRegisterAddress,jdbcType=VARCHAR}, #{customerBirthday,jdbcType=TIMESTAMP}, 
+      #{customerEname,jdbcType=VARCHAR}, #{dictMarry,jdbcType=VARCHAR}, #{dictEducation,jdbcType=VARCHAR}, 
+      #{customerGraduationDay,jdbcType=TIMESTAMP}, #{customerPhoneFirst,jdbcType=VARCHAR}, 
+      #{customerPhoneSecond,jdbcType=VARCHAR}, #{customerTel,jdbcType=VARCHAR}, #{customerEmail,jdbcType=VARCHAR}, #{issuingAuthority,jdbcType=VARCHAR},
+      #{customerFax,jdbcType=VARCHAR}, #{customerHaveChildren,jdbcType=VARCHAR}, 
+      #{customerLiveProvince,jdbcType=VARCHAR}, #{customerLiveCity,jdbcType=VARCHAR}, 
+      #{customerLiveArea,jdbcType=VARCHAR}, #{customerAddress,jdbcType=VARCHAR},
+      #{customerStatus,jdbcType=NUMERIC}, #{customerOther,jdbcType=VARCHAR}, 
+      #{dictCustomerDanger,jdbcType=VARCHAR}, #{dictCustomerDiff,jdbcType=VARCHAR}, #{dictCustomerStatus,jdbcType=VARCHAR}, 
+      #{contactIsKnow,jdbcType=VARCHAR},#{dictRelationType,jdbcType=VARCHAR}, #{customerIsGold,jdbcType=VARCHAR}, #{dictCustomerSource,jdbcType=VARCHAR}, 
+      #{customerTeleSalesSource,jdbcType=VARCHAR}, #{customerTelesalesFlag,jdbcType=VARCHAR}, #{customerTeleSalesOrgCode,jdbcType=VARCHAR}, 
+      #{customerPin,jdbcType=VARCHAR},#{captchaIfConfirm,jdbcType=VARCHAR},#{confirmTimeout,jdbcType=TIMESTAMP},
+      #{appSignFlag,jdbcType=VARCHAR},#{idValidFlag,jdbcType=VARCHAR},#{composePhotoId,jdbcType=VARCHAR},
+      #{idValidScore,jdbcType=NUMERIC},
+      #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP},
+      #{customerChildrenCount,jdbcType=VARCHAR},
+      #{customerFamilySupport,jdbcType=VARCHAR},
+      #{personalYearIncome,jdbcType=NUMERIC},
+      #{homeMonthIncome,jdbcType=NUMERIC},
+      #{homeMonthPay,jdbcType=NUMERIC},
+      #{homeTotalDebt,jdbcType=NUMERIC},
+      #{socialSecurityNumber,jdbcType=VARCHAR},
+      #{socialSecurityPassword,jdbcType=VARCHAR},
+      #{registerProperty,jdbcType=VARCHAR},
+      #{customerQq,jdbcType=VARCHAR},
+      #{customerWeibo,jdbcType=VARCHAR},
+      #{creditUsername,jdbcType=VARCHAR},
+      #{creditPassword,jdbcType=VARCHAR},
+      #{creditAuthCode,jdbcType=VARCHAR},
+      #{dictCustomerSourceNew,jdbcType=VARCHAR},
+      #{dictCustomerSourceNewOther,jdbcType=VARCHAR},
+      #{whoCanKnowBorrow,jdbcType=VARCHAR},
+      #{whoCanKnowTheBorrowingRemark,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="update">
+    update jk.t_jk_loan_customer
+    <set>
+    	id=#{id,jdbcType=TIMESTAMP}
+      <if test="idEndDay != null">
+        ,id_end_day = #{idEndDay,jdbcType=TIMESTAMP}
+      </if>
+      
+      <if test="applyId != null and applyId != ''">
+        ,apply_id = #{applyId,jdbcType=VARCHAR}
+      </if>
+      <if test="loanCode != null and loanCode != ''">
+        ,loan_code = #{loanCode,jdbcType=VARCHAR}
+      </if>
+      <if test="customerName != null and customerName != ''">
+        ,customer_name = #{customerName,jdbcType=VARCHAR}
+      </if>
+      <if test="dictCertType != null and dictCertType != ''">
+        ,dict_cert_type = #{dictCertType,jdbcType=VARCHAR}
+      </if>
+      <if test="customerCertNum != null and customerCertNum != ''">
+        ,customer_cert_num = #{customerCertNum,jdbcType=VARCHAR}
+      </if>
+      <if test="customerCertOrg != null and customerCertOrg != ''">
+        ,customer_cert_org = #{customerCertOrg,jdbcType=VARCHAR}
+      </if>
+      <if test="idStartDay != null">
+        ,id_start_day = #{idStartDay,jdbcType=TIMESTAMP}
+      </if>
+      <if test="customerSex != null and customerSex != ''">
+        ,customer_sex = #{customerSex,jdbcType=VARCHAR}
+      </if>
+      <if test="customerRegisterProvince != null and customerRegisterProvince != ''">
+        ,customer_register_province = #{customerRegisterProvince,jdbcType=VARCHAR}
+      </if>
+      <if test="customerRegisterCity != null and customerRegisterCity != ''">
+        ,customer_register_city = #{customerRegisterCity,jdbcType=VARCHAR}
+      </if>
+      <if test="customerRegisterArea != null and customerRegisterArea != ''">
+        ,customer_register_area = #{customerRegisterArea,jdbcType=VARCHAR}
+      </if>
+      <if test="customerRegisterAddress != null and customerRegisterAddress != ''">
+        ,customer_register_address = #{customerRegisterAddress,jdbcType=VARCHAR}
+      </if>
+      <if test="customerBirthday != null">
+        ,customer_birthday = #{customerBirthday,jdbcType=TIMESTAMP}
+      </if>
+      <if test="customerEname != null and customerEname != ''">
+        ,customer_ename = #{customerEname,jdbcType=VARCHAR}
+      </if>
+      <if test="dictMarry != null and dictMarry != ''">
+        ,dict_marry_status = #{dictMarry,jdbcType=VARCHAR}
+      </if>
+      <if test="dictEducation != null and dictEducation != ''">
+        ,dict_education = #{dictEducation,jdbcType=VARCHAR}
+      </if>
+      <if test="customerGraduationDay != null">
+        ,customer_graduation_day = #{customerGraduationDay,jdbcType=TIMESTAMP}
+      </if>
+      <if test="customerPhoneFirst != null and customerPhoneFirst != ''">
+        ,customer_phone_first = #{customerPhoneFirst,jdbcType=VARCHAR}
+      </if>
+      <if test="customerPhoneSecond != null and customerPhoneSecond != ''">
+        ,customer_phone_second = #{customerPhoneSecond,jdbcType=VARCHAR}
+      </if>
+      <if test="customerTel != null">
+        ,customer_tel = #{customerTel,jdbcType=VARCHAR}
+      </if>
+      <if test="customerEmail != null and customerEmail != ''">
+        ,customer_email = #{customerEmail,jdbcType=VARCHAR}
+      </if>
+      <if test="issuingAuthority != null and issuingAuthority != ''">
+        ,issuing_authority = #{issuingAuthority,jdbcType=VARCHAR}
+      </if>
+      <if test="customerFax != null and customerFax != ''">
+        ,customer_fax = #{customerFax,jdbcType=VARCHAR}
+      </if>
+      <if test="customerHaveChildren != null and customerHaveChildren != ''">
+        ,customer_have_children = #{customerHaveChildren,jdbcType=VARCHAR}
+      </if>
+      <if test="customerLiveProvince != null and customerLiveProvince != ''">
+        ,customer_live_province = #{customerLiveProvince,jdbcType=VARCHAR}
+      </if>
+      <if test="customerLiveCity != null and customerLiveCity != ''">
+        ,customer_live_city = #{customerLiveCity,jdbcType=VARCHAR}
+      </if>
+      <if test="customerLiveArea != null and customerLiveArea != ''">
+        ,customer_live_area = #{customerLiveArea,jdbcType=VARCHAR}
+      </if>
+      <if test="customerAddress != null and customerAddress != ''">
+        ,customer_address = #{customerAddress,jdbcType=VARCHAR}
+      </if>
+     <!--  <if test="customerHouseProperty != null">
+        CUSTOMER_HOUSE_property = #{customerHouseProperty,jdbcType=VARCHAR},
+      </if>
+      <if test="customerPostCode != null">
+        customer_post_code = #{customerPostCode,jdbcType=VARCHAR},
+      </if> -->
+      <if test="customerStatus != null and customerStatus != ''">
+        ,customer_status = #{customerStatus,jdbcType=NUMERIC}
+      </if>
+      <if test="customerOther != null and customerOther != ''">
+        ,customer_other = #{customerOther,jdbcType=VARCHAR}
+      </if>
+      <if test="dictCustomerDanger != null and dictCustomerDanger != ''">
+        ,dict_customer_danger = #{dictCustomerDanger,jdbcType=VARCHAR}
+      </if>
+      <if test="dictCustomerDiff != null and dictCustomerDiff != ''">
+        ,dict_customer_diff = #{dictCustomerDiff,jdbcType=VARCHAR}
+      </if>
+      <if test="dictCustomerStatus != null">
+        ,dict_customer_status = #{dictCustomerStatus,jdbcType=VARCHAR}
+      </if>
+      <if test="contactIsKnow != null and contactIsKnow != ''">
+        ,customer_contact_is_know = #{contactIsKnow,jdbcType=VARCHAR}
+      </if>
+      <if test="dictRelationType != null and dictRelationType != ''">
+        ,dict_relation_type = #{dictRelationType,jdbcType=VARCHAR}
+      </if>
+      <if test="customerIsGold != null and customerIsGold != ''">
+        ,customer_gold_flag = #{customerIsGold,jdbcType=VARCHAR}
+      </if>
+      <if test="trusteeshipNo != null and trusteeshipNo != ''">
+        ,trusteeship_no = #{trusteeshipNo,jdbcType=VARCHAR}
+      </if>      
+      <if test="dictCustomerSource != null and dictCustomerSource != ''">
+        ,dict_customer_source = #{dictCustomerSource,jdbcType=VARCHAR}
+      </if>
+      <if test="customerTeleSalesSource != null and customerTeleSalesSource != ''">
+        ,customer_telesales_source = #{customerTeleSalesSource,jdbcType=VARCHAR}
+      </if>
+      <if test="customerTelesalesFlag != null and customerTelesalesFlag != ''">
+        ,customer_telesales_flag = #{customerTelesalesFlag,jdbcType=VARCHAR}
+      </if>
+      <if test="customerTeleSalesOrgCode != null and customerTeleSalesOrgCode != ''">
+        ,customer_telesales_orgcode = #{customerTeleSalesOrgCode,jdbcType=VARCHAR}
+      </if>
+      <if test="customerPin!=null and customerPin != ''">
+        ,message_auth_code = #{customerPin,jdbcType=VARCHAR}
+      </if>
+      <if test="captchaIfConfirm!=null and captchaIfConfirm != ''">
+        ,captcha_if_confirm = #{captchaIfConfirm,jdbcType=VARCHAR}
+      </if>
+      <if test="confirmTimeout!=null">
+        ,confirm_timeout = #{confirmTimeout,jdbcType=TIMESTAMP}
+      </if>
+      <if test="appSignFlag!=null and appSignFlag!=''">
+        ,app_sign_flag = #{appSignFlag,jdbcType=VARCHAR}
+      </if>
+      <if test="idValidFlag != null and idValidFlag!=''">
+        ,id_valid_flag = #{idValidFlag,jdbcType=VARCHAR}
+      </if>
+      <if test="idValidScore!=null">
+           ,id_valid_score = #{idValidScore,jdbcType=NUMERIC}
+      </if>
+      <if test="composePhotoId != null and composePhotoId!=''">
+        ,compose_photo_id = #{composePhotoId,jdbcType=VARCHAR}
+      </if>
+      <if test="createBy != null and createBy!=''">
+        ,create_by = #{createBy,jdbcType=VARCHAR}
+      </if>
+      <if test="createTime != null">
+        ,create_time = #{createTime,jdbcType=TIMESTAMP}
+      </if>
+      <if test="modifyBy != null and modifyBy!=''">
+        ,modify_by = #{modifyBy,jdbcType=VARCHAR}
+      </if>
+      <if test="modifyTime != null">
+        ,modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+      </if>
+      <if test="customerChildrenCount != null">
+         ,customer_children_count= #{customerChildrenCount,jdbcType=VARCHAR}
+      </if>
+      <if test="customerFamilySupport != null and customerFamilySupport!=''">
+         ,customer_family_support= #{customerFamilySupport,jdbcType=NUMERIC}
+      </if>
+      <if test="personalYearIncome != null">
+         ,personal_year_income= #{personalYearIncome,jdbcType=NUMERIC}
+      </if>
+      <if test="homeMonthIncome != null">
+         ,home_month_income= #{homeMonthIncome,jdbcType=NUMERIC}
+      </if>
+      <if test="homeMonthPay != null">
+         ,home_month_pay= #{homeMonthPay,jdbcType=NUMERIC}
+      </if>
+      <if test="homeTotalDebt != null">
+         ,home_total_debt= #{homeTotalDebt,jdbcType=NUMERIC}
+      </if>
+      <if test="socialSecurityNumber != null">
+        ,social_security_number = #{socialSecurityNumber,jdbcType=VARCHAR}
+      </if>
+      <if test="socialSecurityPassword != null">
+        ,social_security_password = #{socialSecurityPassword,jdbcType=VARCHAR}
+      </if>
+      <if test="registerProperty != null and registerProperty !=''">
+         ,register_property= #{registerProperty,jdbcType=VARCHAR}
+      </if>
+      <if test="customerQq != null">
+         ,customer_qq= #{customerQq,jdbcType=VARCHAR}
+      </if>
+      <if test="customerWeibo != null">
+         ,customer_weibo= #{customerWeibo,jdbcType=VARCHAR}
+      </if>
+      <if test="creditUsername != null">
+         ,credit_username= #{creditUsername,jdbcType=VARCHAR}
+      </if>
+      <if test="creditPassword != null">
+         ,credit_password= #{creditPassword,jdbcType=VARCHAR}
+      </if>
+      <if test="creditAuthCode != null">
+         ,credit_auth_code= #{creditAuthCode,jdbcType=VARCHAR}
+      </if>
+      <if test="dictCustomerSourceNew != null">
+         ,dict_customer_source_new= #{dictCustomerSourceNew,jdbcType=VARCHAR}
+      </if>
+      <if test="dictCustomerSourceNewOther != null">
+         ,dict_customer_source_new_other= #{dictCustomerSourceNewOther,jdbcType=VARCHAR}
+      </if>
+      <if test="whoCanKnowBorrow != null">
+         ,who_can_know_the_borrow= #{whoCanKnowBorrow,jdbcType=VARCHAR}
+      </if>
+      <if test="whoCanKnowTheBorrowingRemark != null">
+         ,who_can_know_the_borrow_other= #{whoCanKnowTheBorrowingRemark,jdbcType=VARCHAR}
+      </if>
+      <if test="emailIfConfirm != null and emailIfConfirm!=''">
+         ,email_if_confirm= #{emailIfConfirm,jdbcType=VARCHAR}
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+   </update>
+   <update id="updateApplyId" parameterType="map">
+     update jk.t_jk_loan_customer 
+      set apply_id = #{applyId,jdbcType=VARCHAR} 
+      where loan_code=#{loanCode,jdbcType=VARCHAR} 
+   </update>
+   <update id="updateApplyIdByOldApplyId" parameterType="map">
+    update jk.t_jk_loan_customer 
+     set apply_id = #{applyId,jdbcType=VARCHAR} 
+     where apply_id = #{oldApplyId,jdbcType=VARCHAR}
+  </update>  
+  <update id="updateGoldFlag" parameterType="com.creditharmony.loan.common.entity.LoanCustomer">
+    update jk.t_jk_loan_customer 
+     set  
+     	customer_gold_flag = #{customerIsGold,jdbcType=VARCHAR},
+        trusteeship_no = #{customerPhoneFirst,jdbcType=VARCHAR}
+      where loan_code = #{loanCode,jdbcType=VARCHAR}
+  </update>
+  <select id="get" parameterType="string" resultMap="BaseResultMap">
+      select <include refid="Base_Column_List"/> 
+      from jk.t_jk_loan_customer 
+      where id = #{id,jdbcType=VARCHAR}
+  </select>
+   <select id="selectTrusteeshipAccount" parameterType="map" resultType="com.creditharmony.loan.borrow.trusteeship.entity.ex.TrusteeshipAccount">
+    select 
+    	apply_id, customer.loan_code, customer_name, customer_cert_num, dict_cert_type, customer_phone_first, 
+    	customer_email, fy_bank.fy_bank as bankName, fy_bank.bank_code as bankCode, customer.customer_code,
+    	bank_province, bank_city, bank_branch, bank_account_name, bank_account, bank_signing_platform, bank_jzh_khhss, 
+    	bank_jzh_khhqx
+    from jk.t_jk_loan_customer customer
+    left join jk.t_jk_loan_bank loanbank on loanbank.loan_code = customer.loan_code
+    left join jk.t_jk_fy_bank fy_bank on fy_bank.sys_bank_code = loanbank.bank_name    
+    where customer.loan_code = #{loanCode,jdbcType=VARCHAR}    
+  </select>
+  
+  <select id="selectAllTrusteeAccount" resultType="com.creditharmony.loan.borrow.trusteeship.entity.ex.TrusteeshipAccount">  
+    select 
+    	(row_number() over())::varchar as id,apply_id, customer.loan_code, customer_name, customer_cert_num, dict_cert_type,
+    	customer_phone_first, customer_email, loanbank.bank_name as bankName, fy_bank.bank_code as bankCode, customer.customer_code,
+    	bank_province, bank_city, bank_branch, bank_account_name, bank_account, bank_signing_platform, 
+    	fyArea.area_name as bankJzhKhhss, fyACode.area_name as bankJzhKhhqx
+    from jk.t_jk_loan_customer customer
+    left join jk.t_jk_loan_bank loanbank on loanbank.loan_code = customer.loan_code
+    left join jk.t_jk_fy_bank fy_bank on fy_bank.sys_bank_code = loanbank.bank_name
+    left join jk.t_jk_fy_area_code fyArea on fyArea.area_code = loanbank.bank_jzh_khhss 
+    left join jk.t_jk_fy_area_code fyACode on fyACode.area_code = loanbank.bank_jzh_khhqx 
+    where customer.loan_code in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")"> 
+			#{item}
+		</foreach> 
+	</select>
+	
+	<select id="getApplyIdByIdentity" resultType="com.creditharmony.loan.borrow.trusteeship.view.TrusteeshipView" parameterType="map">  
+    select 
+    	c.apply_id, c.loan_code,i.dict_loan_status
+    from jk.t_jk_loan_customer c
+   join jk.t_jk_loan_info i on i.loan_code=c.loan_code
+    where c.customer_name = #{customerName}
+    	and c.customer_cert_num = #{customerCertNum}
+    	and i.dict_loan_status= #{dictLoanStatus}
+	</select>
+	<update id="updatePaperlessMessage" parameterType="map">
+       update jk.t_jk_loan_customer 
+      <set>
+        <if test="appSignFlag!=null and appSignFlag!=''">
+          app_sign_flag = #{appSignFlag,jdbcType=VARCHAR},
+        </if>
+        <if test="idValidFlag!=null and idValidFlag!=''">
+         id_valid_flag = #{idValidFlag,jdbcType=VARCHAR},
+        </if>
+         <if test="idValidScore!=null">
+           id_valid_score = #{idValidScore,jdbcType=NUMERIC},
+         </if>
+        <if test="composePhotoId!=null and composePhotoId!=''">
+         compose_photo_id = #{composePhotoId,jdbcType=VARCHAR},
+        </if>
+        <if test="idArtificiaFlag!=null and idArtificiaFlag!=''">
+         id_artificia_flag = #{idArtificiaFlag,jdbcType=VARCHAR},
+        </if>
+      </set> 
+      where  customer_code in(select customer_code from jk.t_jk_loan_customer where id=#{customerId,jdbcType=VARCHAR})
+  </update>
+  	<!-- 修改以上可知晓本次借款的联系人 -->
+   	<update id="updateWhoCanKnowBorrow" parameterType="com.creditharmony.loan.common.entity.LoanCustomer">
+	  update jk.t_jk_loan_customer 
+	   	set  
+	   		who_can_know_the_borrow = #{whoCanKnowBorrow,jdbcType=VARCHAR},
+	      	who_can_know_the_borrow_other = #{whoCanKnowTheBorrowingRemark,jdbcType=VARCHAR}
+	    where id = #{id,jdbcType=VARCHAR}
+	</update>
+    <select id="getById" parameterType="string" resultMap="BaseResultMap">
+      select <include refid="Base_Column_List"/> 
+      from jk.t_jk_loan_customer 
+      where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <!-- 查询邮箱是否验证过 -->
+  <select id="checkIfEmailConfirm" parameterType="com.creditharmony.loan.common.entity.LoanCustomer" resultType="com.creditharmony.loan.common.entity.LoanCustomer">
+  	select c.customer_email,c.loan_code, c.id,
+  		b.customer_name,b.customer_code,b.email_if_confirm tempEmailIfConfirm,
+  		(case when c.customer_code is null then b.email_if_confirm else c.email_if_confirm end) email_if_confirm
+  	from jk.t_jk_customer_base b 
+  	LEFT JOIN jk.t_jk_loan_customer c ON b.customer_code=c.customer_code
+  		<if test="loanCode!=null and loanCode!=''">
+          and c.loan_code=#{loanCode}
+        </if>
+  	where b.customer_code=#{customerCode} limit 0,1
+  </select>
+  
+  <!-- 查询邮箱是否验证过 -->
+  <select id="checkEmailConfirm" parameterType="string" resultType="com.creditharmony.loan.common.entity.LoanCustomer">
+  	select b.loan_code, b.id,b.email_if_confirm 
+  	from jk.t_jk_loan_customer b 
+  	where b.id=#{id} 
+  </select>
+  <!-- 修改邮箱为未验证 -->
+  <update id="updateEmailConfirm" parameterType="com.creditharmony.loan.common.entity.LoanCustomer">
+  	update jk.t_jk_customer_base set email_if_confirm=#{emailIfConfirm} where customer_code=#{customerCode}
+  </update>
+  
+  <update id="updateCustomerEmailConfirm" parameterType="com.creditharmony.loan.common.entity.LoanCustomer">
+  	update jk.t_jk_loan_customer set email_if_confirm=#{emailIfConfirm} where id=#{id}
+  </update>
+  <!-- 根据证件号查询客户 -->
+  <select id="selectByCertNum" parameterType="String" resultMap="BaseResultMap">
+  	select
+		*
+	from
+		jk.t_jk_loan_customer customer
+	where
+		customer.customer_cert_num = #{certNum}
+	order by
+		customer.create_time 
+	limit 1
+  </select>
+  <select id="findByContractCode" parameterType="map" resultType="com.creditharmony.loan.common.entity.LoanCustomer">
+  	select cus.id,c.loan_code
+  	from jk.t_jk_loan_customer cus,jk.t_jk_contract c
+  	where cus.loan_code=c.loan_code
+  	<if test="contractCode!=null and contractCode!=''">
+        and c.contract_code=#{contractCode}
+    </if>
+  </select>
+</mapper>

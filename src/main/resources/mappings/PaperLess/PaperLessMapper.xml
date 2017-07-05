@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.contract.dao.PaperLessDao">
+	<update id="updateCustomerPinByLoanCode" parameterType="com.creditharmony.loan.borrow.contract.view.PaperLessView">
+		update jk.t_jk_loan_customer 
+		<set>
+		 <if test="loanCode != null and loanCode != ''" >
+		 	loan_code = #{loanCode},
+		 </if>
+		 <if test="pin != null and pin != ''" >
+		 	message_auth_code =#{pin},
+		 </if>
+		 <if test="captchaIfConfirm != null and captchaIfConfirm != ''" >
+			captcha_if_confirm =#{captchaIfConfirm},
+		 </if>
+		<if test="confirmTimeout != null and confirmTimeout != ''" >
+			confirm_timeout=#{confirmTimeout},
+		</if>
+		</set>
+		where loan_code = #{loanCode}
+	</update>
+	<update id="updateCustomerPinById" parameterType="com.creditharmony.loan.borrow.contract.view.PaperLessView">
+		update jk.t_jk_loan_coborrower 
+		<set>
+		 <if test="pin != null and pin != ''" >
+		 	message_auth_code =#{pin},
+		 </if>
+		 <if test="captchaIfConfirm != null and captchaIfConfirm != ''" >
+			captcha_if_confirm =#{captchaIfConfirm},
+		 </if>
+		<if test="confirmTimeout != null and confirmTimeout != ''" >
+			confirm_timeout=#{confirmTimeout}
+		</if>
+		</set>
+		where id = #{cobId}
+	</update>
+	
+	<!-- 车借修改共借人验证码 -->
+	<update id="updateCarCustomerPinById" parameterType="com.creditharmony.loan.borrow.contract.view.PaperLessView">
+		update jk.t_cj_loan_coborrower 
+		<set> 
+		 <if test="pin != null and pin != ''" >
+		 	message_auth_code =#{pin},
+		 </if>
+		 <if test="captchaIfConfirm != null and captchaIfConfirm != ''" >
+			captcha_if_confirm =#{captchaIfConfirm},
+		 </if>
+		<if test="confirmTimeout != null and confirmTimeout != ''" >
+			confirm_timeout=#{confirmTimeout}
+		</if>
+		</set>
+		where id = #{cobId}
+	</update>
+	
+</mapper>

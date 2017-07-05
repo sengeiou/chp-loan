@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.FileDiskInfoDao">
+  <resultMap id="baseMap" type="com.creditharmony.loan.common.entity.FileDiskInfo">
+    <result column="id" property="id" jdbcType="VARCHAR"/>
+    <result column="sys_ip" property="sysIp" jdbcType="VARCHAR"/>
+    <result column="secret_key" property="secretKey" jdbcType="VARCHAR"/>
+    <result column="u_id" property="uId" jdbcType="VARCHAR"/>
+    <result column="sys_pwd" property="sysPwd" jdbcType="VARCHAR"/>
+    <result column="app_id" property="appId" jdbcType="VARCHAR"/>
+    <result column="org_id" property="orgId" jdbcType="VARCHAR"/>
+    <result column="org_name" property="orgName" jdbcType="VARCHAR"/>
+    <result column="sys_flag" property="sysFlag" jdbcType="VARCHAR"/>
+    <result column="start_date" property="startDate" jdbcType="DATE"/>
+    <result column="end_date" property="endDate" jdbcType="DATE"/>
+    <result column="flag_hj" property="flagHj" jdbcType="VARCHAR"/>
+    <result column="flag_hc" property="flagHc" jdbcType="VARCHAR"/>
+    <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="DATE"/>
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR"/>
+    <result column="modify_time" property="modifyTime" jdbcType="DATE"/>
+  </resultMap>
+  <sql id="baseColumn">
+     id,sys_ip,start_date,end_date,flag_hj,flag_hc,secret_key,u_id,sys_pwd,app_id,org_id,org_name,
+     sys_flag,create_by,create_time,modify_by,
+     modify_time 
+  </sql>
+  <select id="getByParam" parameterType="map" resultMap="baseMap">
+      select 
+        <include refid="baseColumn"/>
+      	from jk.t_jk_hj_disk_info 
+      	where to_char(start_date,'yyyy-MM-dd')<![CDATA[<=]]>#{queryTime,jdbcType=VARCHAR} 
+       and  to_char(end_date,'yyyy-MM-dd')<![CDATA[>=]]>#{queryTime,jdbcType=VARCHAR} 
+       and sys_flag = #{sysFlag,jdbcType=VARCHAR} 
+  </select>
+  <select id="getLevel" parameterType="map" resultType="Map">
+      select level,file_right from t_jk_file_disk_more where index_flag=#{indexFlag} and step_name=#{stepName}
+  </select>
+  
+  <select id="getIndexComponentByQueryTime" parameterType="java.lang.String" resultType="hashmap">
+      SELECT 
+			image_index_hj, 
+			image_component_hj 
+		FROM jk.t_jk_file_disk_info 
+		WHERE to_char(start_date,'yyyyMMdd') &lt;= #{0} 
+			AND to_char(end_date,'yyyyMMdd') &gt;= #{0}
+			and sys_flag=#{1}
+		limit 1
+  </select>
+  
+</mapper>

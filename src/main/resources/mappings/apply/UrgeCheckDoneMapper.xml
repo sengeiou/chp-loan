@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.borrow.grant.dao.UrgeCheckDoneDao">
+	<sql id="allUrgeCheckDoneList">
+	       lc.id as id,
+			pa.id as checkApplyId,  
+			us.id as urgeId,
+			pa.contract_code,
+			round(pa.URGE_REALLY_AMOUNT,2) as urgeReallyAmount, 
+			pa.modify_time as urgeApplyDate,
+			pa.URGE_APPLY_STATUS,<!-- 申请状态，回盘结果 -->
+			round(pa.URGE_APPLY_AMOUNT,2) as urgeApplyAmount,
+			pa.urge_back_reason,<!-- 退回原因 -->
+			round((us.URGE_MOENY - us.URGE_DECUTE_MOENY-us.AUDIT_AMOUNT),2) as waitUrgeMoeny, 
+			o.name as storeName , <!-- 门店名称 -->
+			lc.customer_cert_num,
+			lc.customer_name,
+			lc.customer_telesales_flag,
+			c.loan_code,
+			c.product_type,
+			pro.product_name,
+			round(c.contract_amount,2) as contractAmount,
+			round(fee_petition,2) as feePetition, --信访费
+			round(fee_credit,2) as feeCredit,--征信费
+			(case when c.product_type = 'A021' then
+			round(fee_petition+fee_urged_service+fee_credit,2) else round(fee_urged_service,2) end) as feeSum, --费用总和	
+			c.contract_months,
+			c.contract_replay_day,
+			c.contract_end_day,
+			li.dict_loan_status,
+			li.loan_team_orgid,
+			li.loan_store_orgid as orgId, <!-- 门店id -->
+			li.loan_flag,
+			lb.id as loanBankId,
+			lb.loan_code,
+			lb.bank_account_name,
+			lb.bank_account,
+			lb.bank_branch,
+			lb.bank_name,
+			round(fee_urged_service,2) as urgeMoeny,
+			round(lg.grant_amount,2) as grantAmount,
+			pro.product_name,
+			us.return_logo as refundFlag,
+			mp.bank_card_no,
+			mp.mid_bank_name
+	</sql>
+	<!-- 催收服务费查账已办列表 -->
+	<select id="selCheckDone" resultType="com.creditharmony.loan.borrow.grant.entity.ex.UrgeCheckDoneEx">
+		select
+			<include refid="allUrgeCheckDoneList" />
+		from jk.T_JK_URGE_SERVICES_CHECKAPPLY pa <!-- 催收查账申请表 -->
+			LEFT JOIN jk.t_jk_loan_grant lg ON lg.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_contract c ON c.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_contract_fee cf ON cf.contract_code = c.contract_code
+			LEFT JOIN jk.t_jk_loan_info li ON li.loan_code = c.loan_code
+			LEFT JOIN jk.t_jk_loan_customer lc ON lc.loan_code = li.loan_code  
+			LEFT JOIN jk.t_jk_loan_Bank lb ON lb.loan_code = c.loan_code and lb.bank_top_flag = '1' and repayment_flag = '1' 
+			LEFT JOIN jk.t_jk_urge_services_amount us on us.id = pa.r_service_charge_id
+			LEFT JOIN JK.t_gl_jk_product pro on c.product_type = pro.product_code
+			LEFT JOIN jk.t_gl_org o ON o.id = li.loan_store_orgid
+			<!--存入银行 -->
+			LEFT JOIN jk.t_jk_middle_person mp ON
+			mp.bank_card_no=pa.dict_deposit_account
+		where us.urge_type = '0' and (pa.urge_apply_status = '6' or pa.urge_apply_status = '7' or us.DICT_DEAL_STATUS = '6')<!-- 已办的查账状态为查账成功，查账退回-->
+		<if test="checkApplyId !=null and checkApplyId !=''"> <!-- 申请表的id -->
+		and pa.id = #{checkApplyId}
+		</if>
+		<if test="rServiceChargeId !=null and rServiceChargeId !=''"> <!-- 催收主表的id，关联id -->
+		and pa.R_SERVICE_CHARGE_ID = #{rServiceChargeId}
+		</if>
+		<if test="contractCode !=null and contractCode !=''"> <!-- 合同编号-->
+		and pa.contract_code = #{contractCode}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="productName != null and productName != ''">
+			and c.product_type = #{productName}
+		</if>
+		<if test="orgId != null and orgId != ''">
+			and li.loan_store_orgid = #{orgId}  <!-- 门店名称 -->
+		</if>
+		<if test="urgeApplyStatus != null and urgeApplyStatus != ''">
+			and pa.urge_apply_status = #{urgeApplyStatus}  <!-- 回盘结果 -->
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and li.loan_flag = #{loanFlag} <!-- 标识 -->
+		</if>
+		<if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and li.dict_loan_status = #{dictLoanStatus} <!-- 借款状态 -->
+		</if>
+		<if test="urgeApplyBeginDate != null and urgeApplyBeginDate != '' and urgeApplyEndDate != null and urgeApplyEndDate != ''">
+			and to_date(to_char(pa.modify_time,'yyyy-mm-dd')) between #{urgeApplyBeginDate} and #{urgeApplyEndDate} <!-- 查账日期 to_date(to_char(pa.urge_apply_date,'yyyy-mm-dd'))-->
+		</if>
+		<if test="urgeReallyAmountMin != null and urgeReallyAmountMin != '' and urgeReallyAmountMax != null and urgeReallyAmountMax != ''">
+			and pa.urge_really_amount between #{urgeReallyAmountMin} and #{urgeReallyAmountMax} <!-- 实还金额 -->
+		</if>
+		<if test="refundFlag != null and refundFlag != ''">
+			and us.return_logo = #{refundFlag}
+		</if>
+	   <if test="bankCardNo != null and bankCardNo != '' ">
+	     	and mp.bank_card_no = #{bankCardNo} 
+	   </if>
+	</select>
+	
+	
+	
+	
+	
+	<select id="selCheckJYJDone" resultType="com.creditharmony.loan.channel.jyj.entity.UrgeCheckJYJDoneEx">
+		select
+			  lc.id as id,
+			pa.id as checkApplyId,  
+			us.id as urgeId,
+			pa.contract_code,
+			round(pa.URGE_REALLY_AMOUNT,2) as urgeReallyAmount,  
+			pa.modify_time as urgeApplyDate,
+			pa.URGE_APPLY_STATUS,<!-- 申请状态，回盘结果 -->
+			round(pa.URGE_APPLY_AMOUNT,2) as urgeApplyAmount, 
+			pa.urge_back_reason,<!-- 退回原因 -->
+			round((us.URGE_MOENY - us.URGE_DECUTE_MOENY-us.AUDIT_AMOUNT),2) as waitUrgeMoeny, 
+			o.name as storeName , <!-- 门店名称 -->
+			lc.customer_cert_num,
+			lc.customer_name,
+			lc.customer_telesales_flag,
+			c.loan_code,
+			c.product_type,
+			round(c.contract_amount,2) as contractAmount,
+			c.contract_months,
+			c.contract_replay_day,
+			c.contract_end_day,
+			li.dict_loan_status,
+			li.loan_team_orgid,
+			li.loan_store_orgid as orgId, <!-- 门店id -->
+			li.loan_flag,
+			lb.id as loanBankId,
+			lb.loan_code,
+			lb.bank_account_name,
+			lb.bank_account,
+			lb.bank_branch,
+			lb.bank_name,
+			round(us.URGE_MOENY,2) as urgeMoeny,
+			round(lg.grant_amount,2) as grantAmount,
+			pro.product_name,
+			us.return_logo as refundFlag,
+			mp.bank_card_no,
+			mp.mid_bank_name
+		,NVL(F.FIRST_GRANT_AMOUNT,0.0) FIRST_GRANT_AMOUNT <!-- 首次放款金额   -->
+		,NVL(us.URGE_MOENY ,0.0) ALL_FEE <!-- 费用总金额   -->
+		,NVL(F.FEE_COUNT,0.0) FEE_COUNT <!-- 前期综合服务费   -->
+		,ROUND(F.FEE_PETITION,2) FEE_PETITION <!-- 外访费   -->
+		,NVL(F.FEE_EXPEDITED,0.0) FEE_EXPEDITED <!-- 加急费   -->
+		,round(us.urge_moeny-us.urge_decute_moeny-us.audit_amount,2) as urgeAmount <!--  待查账金额  -->
+		from jk.T_JK_URGE_SERVICES_CHECKAPPLY pa <!-- 催收查账申请表 -->
+			LEFT JOIN jk.t_jk_loan_grant lg ON lg.contract_code = pa.contract_code
+			LEFT JOIN jk.t_jk_contract c ON c.contract_code = pa.contract_code
+			LEFT JOIN JK.T_JK_CONTRACT_FEE F ON F.CONTRACT_CODE = C.CONTRACT_CODE
+			LEFT JOIN jk.t_jk_loan_info li ON li.loan_code = c.loan_code
+			LEFT JOIN jk.t_jk_loan_customer lc ON lc.loan_code = li.loan_code  
+			LEFT JOIN jk.t_jk_loan_Bank lb ON lb.loan_code = c.loan_code and lb.bank_top_flag = '1' and repayment_flag = '1' 
+			LEFT JOIN jk.t_jk_urge_services_amount us on us.id = pa.r_service_charge_id
+			LEFT JOIN JK.t_gl_jk_product pro on c.product_type = pro.product_code
+			LEFT JOIN jk.t_gl_org o ON o.id = li.loan_store_orgid
+			<!--存入银行 -->
+			LEFT JOIN jk.t_jk_middle_person mp ON
+			mp.bank_card_no=pa.dict_deposit_account
+		where 1=1 and (pa.urge_apply_status = '6' or pa.urge_apply_status = '7' or us.DICT_DEAL_STATUS = '6')<!-- 已办的查账状态为查账成功，查账退回-->
+		and pro.product_code  = 'A020' 
+		<if test="checkApplyId !=null and checkApplyId !=''"> <!-- 申请表的id -->
+		and pa.id = #{checkApplyId}
+		</if>
+		<if test="rServiceChargeId !=null and rServiceChargeId !=''"> <!-- 催收主表的id，关联id -->
+		and pa.R_SERVICE_CHARGE_ID = #{rServiceChargeId}
+		</if>
+		<if test="contractCode !=null and contractCode !=''"> <!-- 合同编号-->
+		and pa.contract_code = #{contractCode}
+		</if>
+		<if test="customerName != null and customerName != ''">
+			and lc.customer_name LIKE CONCAT('%', #{customerName}, '%')
+		</if>
+		<if test="orgId != null and orgId != ''">
+			and li.loan_store_orgid = #{orgId}  <!-- 门店名称 -->
+		</if>
+		<if test="urgeApplyStatus != null and urgeApplyStatus != ''">
+			and pa.urge_apply_status = #{urgeApplyStatus}  <!-- 回盘结果 -->
+		</if>
+		<if test="loanFlag != null and loanFlag != ''">
+			and li.loan_flag = #{loanFlag} <!-- 标识 -->
+		</if>
+		<if test="dictLoanStatus != null and dictLoanStatus != ''">
+			and li.dict_loan_status = #{dictLoanStatus} <!-- 借款状态 -->
+		</if>
+		<if test="urgeApplyBeginDate != null and urgeApplyBeginDate != '' and urgeApplyEndDate != null and urgeApplyEndDate != ''">
+			and to_date(to_char(pa.modify_time,'yyyy-mm-dd')) between #{urgeApplyBeginDate} and #{urgeApplyEndDate} <!-- 查账日期 to_date(to_char(pa.urge_apply_date,'yyyy-mm-dd'))-->
+		</if>
+		<if test="urgeReallyAmountMin != null and urgeReallyAmountMin != '' and urgeReallyAmountMax != null and urgeReallyAmountMax != ''">
+			and pa.urge_really_amount between #{urgeReallyAmountMin} and #{urgeReallyAmountMax} <!-- 实还金额 -->
+		</if>
+		<if test="refundFlag != null and refundFlag != ''">
+			and us.return_logo = #{refundFlag}
+		</if>
+	   <if test="bankCardNo != null and bankCardNo != '' ">
+	     	and mp.bank_card_no = #{bankCardNo} 
+	   </if>
+	</select>
+</mapper>
